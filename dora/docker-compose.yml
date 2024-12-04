@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  dora:
+    image: pk910/dora-the-explorer:latest
+    container_name: dora
+    restart: unless-stopped
+    ports:
+      - "3070:3070"
+    volumes:
+      - "./config:/config"
+    command: -config=/config/explorer-config.yaml
