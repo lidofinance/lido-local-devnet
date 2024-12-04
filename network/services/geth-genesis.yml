@@ -5,10 +5,10 @@ services:
   geth-genesis:
     platform: linux/amd64
     image: "ethpandaops/geth:lightclient-prague-devnet-4-37035c5"
-    command: --datadir=/execution --state.scheme=hash init /execution/genesis.json
+    command: --datadir=/execution --state.scheme=hash init /opt/genesis.json
     volumes:
-      - ../execution:/execution
-      - ../execution/genesis.json:/execution/genesis.json
+      - gethdata:/execution:z
+      - ../execution/genesis.json:/opt/genesis.json
     depends_on:
       create-beacon-chain-genesis:
         condition: service_completed_successfully

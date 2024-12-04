@@ -8,4 +8,4 @@ services:
     image: "alpine:3.19.0"
     command: rm -rf /execution/geth
     volumes:
-      - ../execution:/execution
+      - gethdata:/execution

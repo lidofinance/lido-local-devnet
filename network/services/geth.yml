@@ -1,11 +1,17 @@
 version: "3.9"
 
+networks:
+  devnet:
+    name: devnet
+    external: true
+
 services:
   # Runs the go-ethereum execution client with the specified, unlocked account and necessary
   # APIs to allow for proof-of-stake consensus via Prysm.
   geth:
     platform: linux/amd64
     image: "ethpandaops/geth:lightclient-prague-devnet-4-37035c5"
+    hostname: execution
     command:
       - --http
       - --http.api=eth,net,web3,txpool
@@ -18,11 +24,11 @@ services:
       - --http.vhosts=*
       - --authrpc.vhosts=*
       - --authrpc.addr=0.0.0.0
-      - --authrpc.jwtsecret=/execution/jwtsecret
+      - --authrpc.jwtsecret=/opt/jwtsecret
       - --datadir=/execution
       - --allow-insecure-unlock
       - --unlock=0x123463a4b065722e99115d6c222f267d9cabb524
-      - --password=/execution/geth_password.txt
+      - --password=/opt/geth_password.txt
       - --nodiscover
       - --syncmode=full
       - --state.scheme=hash
@@ -30,13 +36,16 @@ services:
       - 8551:8551
       - 8545:8545
       - 8546:8546
+    networks:
+      - devnet
     depends_on:
       geth-genesis:
         condition: service_completed_successfully
       beacon-chain:
         condition: service_started
-
     volumes:
-      - ../execution:/execution
-      - ../execution/jwtsecret:/execution/jwtsecret
-      - ../execution/geth_password.txt:/execution/geth_password.txt
+      - gethdata:/execution
+      - ../execution/jwtsecret:/opt/jwtsecret:ro
+      - ../execution/geth_password.txt:/opt/geth_password.txt:ro
+      - ../execution/keystore:/execution/keystore:ro
+      - ../execution/sk.json:/execution/sk.json:ro

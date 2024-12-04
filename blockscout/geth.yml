@@ -1,5 +1,13 @@
 version: '3.9'
 
+networks:
+  devnet:
+    name: devnet
+    external: true
+  blockscout:
+    name: blockscout
+    driver: bridge
+
 services:
   redis-db:
     extends:
@@ -85,3 +93,9 @@ services:
     extends:
       file: ./services/nginx.yml
       service: proxy
+
+volumes:
+  redis-data:
+  blockscout-db-data:
+  stats-db-data:
+  logs-data:

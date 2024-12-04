@@ -1,5 +1,11 @@
 version: "3.9"
 
+# custom docker network that will be used for all services
+networks:
+  devnet:
+    name: devnet
+    driver: bridge
+
 services:
   create-beacon-chain-genesis:
     extends:
@@ -30,3 +36,6 @@ services:
     extends:
       file: ./services/validator.yml
       service: validator
+
+volumes:
+  gethdata:

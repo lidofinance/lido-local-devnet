@@ -14,8 +14,8 @@ services:
       - --genesis-time-delay=15
       - --output-ssz=/consensus/genesis.ssz
       - --chain-config-file=/consensus/config.yml
-      - --geth-genesis-json-in=/execution/genesis.json
-      - --geth-genesis-json-out=/execution/genesis.json
+      - --geth-genesis-json-in=/opt/genesis.json
+      - --geth-genesis-json-out=/opt/genesis.json
     volumes:
       - ../consensus:/consensus
-      - ../execution:/execution
+      - ../execution/genesis.json:/opt/genesis.json

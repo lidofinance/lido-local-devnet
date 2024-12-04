@@ -8,3 +8,6 @@
  */
 
 rootProject.name = "lido-local-devnet"
+include("network")
+include("blockscout")
+include("dora")

@@ -9,18 +9,24 @@ Project for launching DevNet with the Lido protocol locally. The project include
 > [!WARNING]
 > The project is currently under development, automatic deployment of smart contracts has not yet been implemented.
 
-To launch the environment, simply enter the command:
+To spin up the DevNet, simply enter the command:
 
 ```sh
-./scripts/start.sh
+gradle start
 ```
 
-This command will launch a new network and Blockscout.
+This command will launch a new network, Blockscout explorer and Dora CL explorer.
 
-To restart the network, simply enter the command:
+To restart the DevNet, simply enter the command:
 
 ```sh
-./scripts/restart.sh
+gradle restart
+```
+
+To stop the DevNet, simply enter the command:
+
+```sh
+gradle stop
 ```
 
 This command will properly delete the state of all services and restart them.

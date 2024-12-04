@@ -23,7 +23,7 @@ frontend:
   # Name of the site, displayed in the title tag
   siteName: "Lido DevNet"
   siteSubtitle: ""
-  
+
   # link to EL Explorer
   ethExplorerLink: ""
 
@@ -36,12 +36,12 @@ frontend:
   showPeerDASInfos: false
   showSubmitDeposit: false
   showSubmitElRequests: false
-  
+
 beaconapi:
   # beacon node rpc endpoints
   endpoints:
     - name: "local"
-      url: "http://host.docker.internal:3500"
+      url: "http://consensus:3500"
 
   # local cache for page models
   localCacheSize: 100 # 100MB
@@ -54,8 +54,8 @@ executionapi:
   # execution node rpc endpoints
   endpoints:
     - name: "local"
-      url: "http://host.docker.internal:8545"
-  
+      url: "http://execution:8545"
+
   logBatchSize: 1000
   depositDeployBlock: 0 # el block number from where to crawl the deposit contract (should be <=, but close to the deposit contract deployment block)
   electraDeployBlock: 0 # el block number from where to crawl the electra system contracts (should be <=, but close to electra fork activation block)
