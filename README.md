@@ -30,3 +30,4 @@ This command will properly delete the state of all services and restart them.
 - Execution Layer: http://localhost:8545
 - Consensus Layer: http://localhost:3500
 - Blockscout: http://localhost:3080
+- Dora: http://localhost:3070
