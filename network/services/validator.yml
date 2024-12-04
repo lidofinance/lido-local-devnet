@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  # We run a validator client with 64, deterministically-generated keys that match
+  # The validator keys present in the beacon chain genesis state generated a few steps above.
+  validator:
+    platform: linux/amd64
+    image: "ethpandaops/prysm-validator:develop-4aa5410"
+    command:
+      - --beacon-rpc-provider=beacon-chain:4000
+      - --datadir=/consensus/validatordata
+      - --accept-terms-of-use
+      - --interop-num-validators=64
+      - --interop-start-index=0
+      - --chain-config-file=/consensus/config.yml
+      - --force-clear-db
+    depends_on:
+      beacon-chain:
+        condition: service_started
+    volumes:
+      - ../consensus:/consensus

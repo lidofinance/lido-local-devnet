@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  # Removes the database of the go-ethereum execution client to ensure we start from a clean state.
+  # (geth has a `removedb` option, but it asks for a keyboard confirmation, so we use this instead)
+  geth-remove-db:
+    platform: linux/amd64
+    image: "alpine:3.19.0"
+    command: rm -rf /execution/geth
+    volumes:
+      - ../execution:/execution

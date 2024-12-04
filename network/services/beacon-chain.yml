@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  # Runs a Prysm beacon chain from a specified genesis state created in the previous step
+  # and connects to go-ethereum in the same network as the execution client.
+  # The account used in go-ethereum is set as the suggested fee recipient for transactions
+  # proposed via the validators attached to the beacon node.
+  beacon-chain:
+    platform: linux/amd64
+    image: "ethpandaops/prysm-beacon-chain:develop-4aa5410"
+    command:
+      - --datadir=/consensus/beacondata
+      # No peers to sync with in this testnet, so setting to 0
+      - --min-sync-peers=0
+      - --genesis-state=/consensus/genesis.ssz
+      - --bootstrap-node=
+      - --interop-eth1data-votes
+      # The chain configuration file used for setting up Prysm
+      - --chain-config-file=/consensus/config.yml
+      # We specify the chain id used by our execution client
+      - --contract-deployment-block=0
+      - --chain-id=${CHAIN_ID:-32382}
+      - --rpc-host=0.0.0.0
+      - --grpc-gateway-host=0.0.0.0
+      - --execution-endpoint=http://geth:8551
+      - --accept-terms-of-use
+      - --jwt-secret=/execution/jwtsecret
+      - --suggested-fee-recipient=0x123463a4b065722e99115d6c222f267d9cabb524
+      - --minimum-peers-per-subnet=0
+      - --enable-debug-rpc-endpoints
+      - --force-clear-db
+    depends_on:
+      create-beacon-chain-genesis:
+        condition: service_completed_successfully
+    ports:
+      - 4000:4000
+      - 3500:3500
+      # - 8080:8080
+      - 6060:6060
+      - 9090:9090
+    volumes:
+      - ../consensus:/consensus
+      - ../execution:/execution
+      - ../execution/jwtsecret:/execution/jwtsecret

@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  create-beacon-chain-genesis:
+    extends:
+      file: ./services/create-beacon-chain-genesis.yml
+      service: create-beacon-chain-genesis
+
+  geth-remove-db:
+    extends:
+      file: ./services/geth-remove-db.yml
+      service: geth-remove-db
+
+  geth-genesis:
+    extends:
+      file: ./services/geth-genesis.yml
+      service: geth-genesis
+
+  beacon-chain:
+    extends:
+      file: ./services/beacon-chain.yml
+      service: beacon-chain
+
+  geth:
+    extends:
+      file: ./services/geth.yml
+      service: geth
+
+  validator:
+    extends:
+      file: ./services/validator.yml
+      service: validator

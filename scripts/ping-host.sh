@@ -1,0 +1,1 @@
+docker run --rm python:3.8-slim sh -c "pip install requests && python -c \"import requests; url='http://host.docker.internal:8545/'; response = requests.get(url); print(response.status_code)\""

@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  # Sets up the genesis configuration for the go-ethereum client from a JSON file.
+  geth-genesis:
+    platform: linux/amd64
+    image: "ethpandaops/geth:lightclient-prague-devnet-4-37035c5"
+    command: --datadir=/execution --state.scheme=hash init /execution/genesis.json
+    volumes:
+      - ../execution:/execution
+      - ../execution/genesis.json:/execution/genesis.json
+    depends_on:
+      create-beacon-chain-genesis:
+        condition: service_completed_successfully
+      geth-remove-db:
+        condition: service_completed_successfully

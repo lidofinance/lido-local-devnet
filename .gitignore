@@ -1,0 +1,17 @@
+.idea/
+
+network/consensus/beacondata
+network/consensus/genesis.ssz
+network/consensus/validatordata
+network/execution/geth
+network/execution/geth.ipc
+
+blockscout/services/blockscout-db-data
+blockscout/services/stats-db-data
+blockscout/services/redis-data
+blockscout/services/logs
+blockscout/tmp
+
+network-back
+
+TODO.md

@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  # Runs the go-ethereum execution client with the specified, unlocked account and necessary
+  # APIs to allow for proof-of-stake consensus via Prysm.
+  geth:
+    platform: linux/amd64
+    image: "ethpandaops/geth:lightclient-prague-devnet-4-37035c5"
+    command:
+      - --http
+      - --http.api=eth,net,web3,txpool
+      - --http.addr=0.0.0.0
+      - --http.corsdomain=*
+      - --ws
+      - --ws.api=eth,net,web3
+      - --ws.addr=0.0.0.0
+      - --ws.origins=*
+      - --http.vhosts=*
+      - --authrpc.vhosts=*
+      - --authrpc.addr=0.0.0.0
+      - --authrpc.jwtsecret=/execution/jwtsecret
+      - --datadir=/execution
+      - --allow-insecure-unlock
+      - --unlock=0x123463a4b065722e99115d6c222f267d9cabb524
+      - --password=/execution/geth_password.txt
+      - --nodiscover
+      - --syncmode=full
+      - --state.scheme=hash
+    ports:
+      - 8551:8551
+      - 8545:8545
+      - 8546:8546
+    depends_on:
+      geth-genesis:
+        condition: service_completed_successfully
+      beacon-chain:
+        condition: service_started
+
+    volumes:
+      - ../execution:/execution
+      - ../execution/jwtsecret:/execution/jwtsecret
+      - ../execution/geth_password.txt:/execution/geth_password.txt
