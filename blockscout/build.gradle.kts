@@ -1,8 +1,17 @@
 import org.codehaus.groovy.runtime.ProcessGroovyMethods
+import java.awt.Desktop
+import java.net.URI
 
 fun String.execute(): Process = ProcessGroovyMethods.execute(this)
 fun List<String>.execute(): Process = ProcessGroovyMethods.execute(this)
 fun Process.text(): String = ProcessGroovyMethods.getText(this)
+
+fun openBrowser(url: String) {
+    if (Desktop.isDesktopSupported())
+    {
+        Desktop.getDesktop().browse(URI(url));
+    }
+}
 
 plugins {
     id("com.avast.gradle.docker-compose") version "0.17.11"
@@ -17,16 +26,24 @@ task("clean", Delete::class) {
     delete("${projectDir}/blockscout/services/redis-data")
 }
 
-task("start") {
+task("start", GradleBuild::class) {
     group = "blockscout"
     description = "Start Blockscout"
-    dependsOn("composeUp")
+    tasks = listOf("composeUp", "open-blockscout")
 }
 
 task("stop", GradleBuild::class) {
     group = "blockscout"
     description = "Stop Blockscout"
     tasks = listOf("composeDown", "clean")
+}
+
+task("open-blockscout") {
+    group = "blockscout"
+    description = "Open Blockscout explorer in the default browser"
+    doFirst {
+        openBrowser("http://localhost:3080/")
+    }
 }
 
 dockerCompose {

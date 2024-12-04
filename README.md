@@ -12,7 +12,7 @@ Project for launching DevNet with the Lido protocol locally. The project include
 To spin up the DevNet, simply enter the command:
 
 ```sh
-gradle start
+./gradlew start
 ```
 
 This command will launch a new network, Blockscout explorer and Dora CL explorer.
@@ -20,13 +20,13 @@ This command will launch a new network, Blockscout explorer and Dora CL explorer
 To restart the DevNet, simply enter the command:
 
 ```sh
-gradle restart
+./gradlew restart
 ```
 
 To stop the DevNet, simply enter the command:
 
 ```sh
-gradle stop
+./gradlew stop
 ```
 
 This command will properly delete the state of all services and restart them.
