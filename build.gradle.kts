@@ -5,22 +5,25 @@
  * https://docs.gradle.org/current/userguide/part6_writing_tasks.html
  */
 
-task("start", GradleBuild::class) {
+task("start") {
     group = "devnet"
-    tasks = listOf("network:start", "blockscout:start", "dora:start")
+    dependsOn(":network:up")
+    dependsOn(":blockscout:up")
+    dependsOn(":dora:up")
 }
 
-task("restart", GradleBuild::class) {
+task("restart") {
     group = "devnet"
-    tasks = listOf("stop", "start")
+    dependsOn("stop", "start")
+    tasks["start"].mustRunAfter("stop")
 }
 
-task("stop", GradleBuild::class) {
+task("stop") {
     group = "devnet"
-    tasks = listOf("dora:stop", "blockscout:stop", "network:stop")
+    dependsOn(":dora:down", ":blockscout:down", ":network:down")
 }
 
-task("clean", GradleBuild::class) {
+task("clean") {
     group = "devnet"
-    tasks = listOf("blockscout:clean", "network:clean")
+    dependsOn("blockscout:clean", "network:clean")
 }

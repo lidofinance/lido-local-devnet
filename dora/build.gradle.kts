@@ -18,22 +18,17 @@ plugins {
     id("org.ajoberstar.grgit") version "5.3.0"
 }
 
-task("start", GradleBuild::class) {
+task("up") {
     group = "dora"
     description = "Start Dora"
-    tasks = listOf("composeUp", "open-dora")
+    mustRunAfter(":network:up")
+    dependsOn("composeUp", "open-dora")
 }
 
-task("stop") {
+task("down") {
     group = "dora"
     description = "Stop Dora"
     dependsOn("composeDown")
-}
-
-task("restart", GradleBuild::class) {
-    group = "dora"
-    description = "Restart Dora"
-    tasks = listOf("stop", "clean", "start")
 }
 
 task("open-dora") {

@@ -26,16 +26,17 @@ task("clean", Delete::class) {
     delete("${projectDir}/blockscout/services/redis-data")
 }
 
-task("start", GradleBuild::class) {
+task("up") {
     group = "blockscout"
     description = "Start Blockscout"
-    tasks = listOf("composeUp", "open-blockscout")
+    mustRunAfter(":network:up")
+    dependsOn("composeUp", "open-blockscout")
 }
 
-task("stop", GradleBuild::class) {
+task("down") {
     group = "blockscout"
     description = "Stop Blockscout"
-    tasks = listOf("composeDown", "clean")
+    dependsOn("composeDown")
 }
 
 task("open-blockscout") {

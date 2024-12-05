@@ -24,22 +24,16 @@ task("clean", Delete::class) {
 }
 
 
-task("start") {
+task("up") {
     group = "network"
     description = "Start EL and CL Nodes"
     dependsOn("composeUp")
 }
 
-task("stop", GradleBuild::class) {
+task("down") {
     group = "network"
     description = "Stop EL and CL Nodes and clean"
-    tasks = listOf("composeDown", "clean")
-}
-
-task("restart", GradleBuild::class) {
-    group = "network"
-    description = "Restart EL and CL Nodes"
-    tasks = listOf("stop", "start")
+    dependsOn("composeDown")
 }
 
 task("check", Exec::class) {
