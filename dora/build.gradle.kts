@@ -15,7 +15,6 @@ fun openBrowser(url: String) {
 
 plugins {
     id("com.avast.gradle.docker-compose") version "0.17.11"
-    id("org.ajoberstar.grgit") version "5.3.0"
 }
 
 task("up") {

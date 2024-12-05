@@ -7,9 +7,6 @@ fun Process.text(): String = ProcessGroovyMethods.getText(this)
 plugins {
     // docs https://github.com/avast/gradle-docker-compose-plugin
     id("com.avast.gradle.docker-compose") version "0.17.11"
-
-    // docs https://ajoberstar.org/grgit/main/index.html
-    id("org.ajoberstar.grgit") version "5.3.0"
 }
 
 val foundryPath = File("${System.getProperty("user.home")}/.foundry/bin/")
