@@ -13,11 +13,13 @@ val foundryPath = File("${System.getProperty("user.home")}/.foundry/bin/")
 val castPath = File("${foundryPath}/cast").toString()
 
 task("clean", Delete::class) {
+    group = "network"
     description = "Cleans all EL + CL files and directories"
     delete("${projectDir}/network/consensus/beacondata")
     delete("${projectDir}/network/consensus/validatordata")
     delete("${projectDir}/network/consensus/genesis.ssz")
     delete("${projectDir}/network/execution/geth")
+    delete("${rootProject.buildDir}/network")
 }
 
 
@@ -31,6 +33,26 @@ task("down") {
     group = "network"
     description = "Stop EL and CL Nodes and clean"
     dependsOn("composeDown")
+}
+
+task("logs-el", Exec::class) {
+    group = "network"
+    description = "Tail EL Logs"
+    commandLine = listOf("docker","compose", "logs", "geth", "-f")
+    workingDir(projectDir)
+}
+
+task("logs-cl", Exec::class) {
+    group = "network"
+    description = "Tail CL Logs"
+    commandLine = listOf("docker","compose", "logs", "beacon-chain", "-f")
+    workingDir(projectDir)
+}
+
+task("logs-cl-validators", Exec::class) {
+    group = "network"
+    description = "Tail CL Validators"
+    commandLine = listOf("docker", "compose", "logs", "geth", "-f")
 }
 
 task("check", Exec::class) {
@@ -56,4 +78,5 @@ dockerCompose {
     useDockerComposeV2.set(true)
     removeVolumes.set(true)
     waitForTcpPorts.set(true)
+    captureContainersOutputToFiles.set(File("${rootProject.buildDir}/network"))
 }
