@@ -1,0 +1,26 @@
+{
+  "name": "Java with Gradle and Docker",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceFolder": "${localWorkspaceFolder}/",
+  "workspaceMount": "source=${localWorkspaceFolder}/.,target=${localWorkspaceFolder},type=bind",
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+      },
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  "postCreateCommand": "groupadd -g 999 docker && usermod -aG docker root && chmod 666 /var/run/docker.sock",
+  "forwardPorts": [],
+  // "postCreateCommand": "gradle build",
+  "remoteUser": "root"
+}

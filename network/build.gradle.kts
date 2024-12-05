@@ -55,5 +55,5 @@ dockerCompose {
     projectNamePrefix = ""
     useDockerComposeV2.set(true)
     removeVolumes.set(true)
-    waitForTcpPorts.set(true)
+    waitForTcpPorts.set(false)
 }
