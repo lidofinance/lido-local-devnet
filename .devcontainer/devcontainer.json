@@ -11,16 +11,37 @@
   "customizations": {
     "vscode": {
       "settings": {
+        "java.server.launchMode": "Standard",
+        "java.jdt.ls.java.home": "/usr/local/openjdk-11",
+        "java.configuration.runtimes": [
+          {
+            "name": "JavaSE-11",
+            "path": "/usr/local/openjdk-11",
+            "default": true
+          }
+        ],
         "terminal.integrated.shell.linux": "/bin/bash"
       },
       "extensions": [
+        "bierner.markdown-mermaid",
+        "eamodio.gitlens",
+        "editorconfig.editorconfig",
+        "esbenp.prettier-vscode",
+        "mathiasfrohlich.kotlin",
+        "redhat.java",
+        "visualstudioexptteam.intellicode-api-usage-examples",
+        "visualstudioexptteam.vscodeintellicode",
+        "vscjava.vscode-gradle",
+        "vscjava.vscode-java-debug",
+        "vscjava.vscode-java-dependency",
         "vscjava.vscode-java-pack",
-        "ms-azuretools.vscode-docker"
+        "vscjava.vscode-java-test",
+        "vscjava.vscode-maven",
+        "william-voyek.vscode-nginx"
       ]
     }
   },
-  "postCreateCommand": "groupadd -g 999 docker && usermod -aG docker root && chmod 666 /var/run/docker.sock",
-  "forwardPorts": [],
+  "runArgs": ["--network=devnet"],
   // "postCreateCommand": "gradle build",
   "remoteUser": "root"
 }
