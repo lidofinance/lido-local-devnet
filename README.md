@@ -4,10 +4,17 @@
 
 Project for launching DevNet with the Lido protocol locally. The project includes launching a new network, launching a block explorer, and deploying Lido smart contracts.
 
+## Requirements
+
+* Java 11+ (OpenJDK or other)
+* Docker 27+
+* docker-compose V2
+
 ## Getting Started
 
 > [!WARNING]
 > The project is currently under development, automatic deployment of smart contracts has not yet been implemented.
+
 
 To spin up the DevNet, simply enter the command:
 
