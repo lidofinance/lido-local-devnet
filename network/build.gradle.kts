@@ -59,6 +59,8 @@ task("check", Exec::class) {
     group = "network"
     description = "Check EL node is alive (can process transactions)"
     doFirst {
+        val isInDocker = File("/.dockerenv").exists()
+        val rpcUrl = if (isInDocker) "http://geth:8545/" else "http://localhost:8545/"
         commandLine = listOf(
             castPath,
             "send",
@@ -67,7 +69,7 @@ task("check", Exec::class) {
             "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
             listOf(castPath, "from-utf8", "hello-world").execute().text().trim(),
             "--rpc-url",
-            "http://127.0.0.1:8545/"
+            rpcUrl
         )
     }
 }
