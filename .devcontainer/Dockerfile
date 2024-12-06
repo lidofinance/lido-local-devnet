@@ -25,4 +25,10 @@ ENV PATH=$PATH:/opt/gradle/gradle-7.6.4/bin
 RUN echo "parse_git_branch() { git branch --show-current 2>/dev/null; }" >> /root/.bashrc && \
     echo "PS1='$\\[\\033[32m\\][\$(parse_git_branch)]\\[\\033[0m\\]:\\[\\033[34m\\]\W\\[\\033[0m\\] '" >> /root/.bashrc
 
+RUN curl -L https://foundry.paradigm.xyz | bash
+
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+RUN /root/.foundry/bin/foundryup
+
 WORKDIR /workspace
