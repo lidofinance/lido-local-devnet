@@ -41,7 +41,7 @@
       ]
     }
   },
-  "runArgs": ["--network=devnet"],
+  "runArgs": ["--network=host"],
   // "postCreateCommand": "gradle build",
   "remoteUser": "root"
 }
