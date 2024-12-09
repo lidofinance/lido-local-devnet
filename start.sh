@@ -1,0 +1,1 @@
+kurtosis run --enclave my-testnet5 github.com/ethpandaops/ethereum-package --args-file ./kurtosis/devnet5.yaml

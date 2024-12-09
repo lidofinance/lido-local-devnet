@@ -1,0 +1,107 @@
+participants:
+# EL
+  - el_type: geth
+    el_image: ethpandaops/geth:lightclient-prague-devnet-4-37035c5
+    el_log_level: ""
+    el_extra_env_vars: {}
+    el_extra_labels: {}
+    el_extra_params: []
+    el_tolerations: []
+    el_volume_size: 0
+    el_min_cpu: 0
+    el_max_cpu: 0
+    el_min_mem: 0
+    el_max_mem: 0
+# CL
+    cl_type: prysm
+    cl_image: ethpandaops/prysm-beacon-chain:develop-4aa5410
+    cl_log_level: ""
+    cl_extra_env_vars: {}
+    cl_extra_labels: {}
+    cl_extra_params: []
+    cl_tolerations: []
+    cl_volume_size: 0
+    cl_min_cpu: 0
+    cl_max_cpu: 0
+    cl_min_mem: 0
+    cl_max_mem: 0
+    supernode: false
+    use_separate_vc: true
+# Validator
+    vc_type: prysm
+    vc_image: ethpandaops/prysm-validator:develop-4aa5410
+    vc_log_level: ""
+    vc_extra_env_vars: {}
+    vc_extra_labels: {}
+    vc_extra_params: []
+    vc_tolerations: []
+    vc_min_cpu: 0
+    vc_max_cpu: 0
+    vc_min_mem: 0
+    vc_max_mem: 0
+    validator_count: null
+    use_remote_signer: false
+network_params:
+  network: kurtosis
+  network_id: "3151908"
+  deposit_contract_address: "0x4242424242424242424242424242424242424242"
+  seconds_per_slot: 12
+  num_validator_keys_per_node: 64
+  preregistered_validator_keys_mnemonic:
+    "giant issue aisle success illegal bike spike
+    question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy
+    very lucky have athlete"
+  preregistered_validator_count: 0
+  genesis_delay: 20
+  genesis_gaslimit: 30000000
+  max_per_epoch_activation_churn_limit: 8
+  churn_limit_quotient: 65536
+  ejection_balance: 16000000000
+  eth1_follow_distance: 2048
+  min_validator_withdrawability_delay: 256
+  shard_committee_period: 256
+  deneb_fork_epoch: 0
+  electra_fork_epoch: 100000000
+  fulu_fork_epoch: 100000001
+  eip7594_fork_epoch: 100000002
+  eip7594_fork_version: "0x60000038"
+  data_column_sidecar_subnet_count: 128
+  samples_per_slot: 8
+  custody_requirement: 4
+  max_blobs_per_block: 6
+  additional_preloaded_contracts: {}
+  devnet_repo: ethpandaops
+  prefunded_accounts: {}
+additional_services:
+  - dora
+dora_params:
+  image: "pk910/dora-the-explorer:latest"
+wait_for_finalization: false
+global_log_level: info
+snooper_enabled: false
+ethereum_metrics_exporter_enabled: false
+parallel_keystore_generation: false
+disable_peer_scoring: false
+persistent: false
+global_tolerations: []
+global_node_selectors: {}
+keymanager_enabled: false
+checkpoint_sync_enabled: false
+checkpoint_sync_url: ""
+port_publisher:
+  nat_exit_ip: KURTOSIS_IP_ADDR_PLACEHOLDER
+  el:
+    enabled: false
+    public_port_start: 32000
+  cl:
+    enabled: false
+    public_port_start: 33000
+  vc:
+    enabled: false
+    public_port_start: 34000
+  remote_signer:
+    enabled: false
+    public_port_start: 35000
+  additional_services:
+    enabled: false
+    public_port_start: 36000
