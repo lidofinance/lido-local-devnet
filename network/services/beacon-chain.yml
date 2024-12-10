@@ -1,5 +1,10 @@
 version: "3.9"
 
+networks:
+  devnet:
+    name: devnet
+    external: true
+
 services:
   # Runs a Prysm beacon chain from a specified genesis state created in the previous step
   # and connects to go-ethereum in the same network as the execution client.
@@ -7,6 +12,7 @@ services:
   # proposed via the validators attached to the beacon node.
   beacon-chain:
     platform: linux/amd64
+    hostname: consensus
     image: "ethpandaops/prysm-beacon-chain:develop-4aa5410"
     command:
       - --datadir=/consensus/beacondata
@@ -24,7 +30,7 @@ services:
       - --grpc-gateway-host=0.0.0.0
       - --execution-endpoint=http://geth:8551
       - --accept-terms-of-use
-      - --jwt-secret=/execution/jwtsecret
+      - --jwt-secret=/opt/jwtsecret
       - --suggested-fee-recipient=0x123463a4b065722e99115d6c222f267d9cabb524
       - --minimum-peers-per-subnet=0
       - --enable-debug-rpc-endpoints
@@ -36,9 +42,11 @@ services:
       - 4000:4000
       - 3500:3500
       # - 8080:8080
-      - 6060:6060
-      - 9090:9090
+      #- 6060:6060
+      #- 9090:9090
+    networks:
+      - devnet
     volumes:
       - ../consensus:/consensus
-      - ../execution:/execution
-      - ../execution/jwtsecret:/execution/jwtsecret
+      - gethdata:/execution
+      - ../execution/jwtsecret:/opt/jwtsecret:ro

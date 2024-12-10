@@ -1,5 +1,13 @@
 version: "3.9"
 
+networks:
+  devnet:
+    name: devnet
+    external: true
+  dora:
+    name: dora
+    driver: bridge
+
 services:
   dora:
     image: pk910/dora-the-explorer:latest
@@ -8,5 +16,8 @@ services:
     ports:
       - "3070:3070"
     volumes:
-      - "./config:/config"
+      - ./config:/config:ro # read-only config
+    networks:
+      - dora
+      - devnet
     command: -config=/config/explorer-config.yaml

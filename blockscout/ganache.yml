@@ -30,7 +30,7 @@ services:
       - db:database
     environment:
         ETHEREUM_JSONRPC_VARIANT: 'ganache'
-        ETHEREUM_JSONRPC_WS_URL: ws://host.docker.internal:8545/
+        ETHEREUM_JSONRPC_WS_URL: ws://execution:8545/
         INDEXER_DISABLE_INTERNAL_TRANSACTIONS_FETCHER: 'true'
         INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
         CHAIN_ID: '1337'
@@ -53,7 +53,7 @@ services:
       service: frontend
     environment:
       NEXT_PUBLIC_NETWORK_ID: '1337'
-      NEXT_PUBLIC_NETWORK_RPC_URL: http://host.docker.internal:8545/
+      NEXT_PUBLIC_NETWORK_RPC_URL: http://execution:8545/
 
   stats-db-init:
     extends:

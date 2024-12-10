@@ -1,5 +1,13 @@
 version: '3.9'
 
+networks:
+  devnet:
+    name: devnet
+    external: true
+  blockscout:
+    name: devnet
+    external: true
+
 services:
   visualizer:
     image: ghcr.io/blockscout/visualizer:${VISUALIZER_DOCKER_TAG:-latest}
@@ -7,5 +15,7 @@ services:
     platform: linux/amd64
     restart: always
     container_name: 'visualizer'
+    networks:
+      - blockscout
     env_file:
       -  ../envs/common-visualizer.env
