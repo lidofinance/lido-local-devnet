@@ -29,7 +29,7 @@ task("up") {
     group = "blockscout"
     description = "Start Blockscout"
     mustRunAfter(":network:up")
-    dependsOn("composeUp", "open-blockscout")
+    dependsOn("composeUp")
 }
 
 task("down") {

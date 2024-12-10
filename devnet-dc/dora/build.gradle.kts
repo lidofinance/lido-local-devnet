@@ -21,7 +21,7 @@ task("up") {
     group = "dora"
     description = "Start Dora"
     mustRunAfter(":network:up")
-    dependsOn("composeUp", "open-dora")
+    dependsOn("composeUp")
 }
 
 task("down") {
