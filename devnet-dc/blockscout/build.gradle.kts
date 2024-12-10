@@ -17,19 +17,22 @@ plugins {
     id("com.avast.gradle.docker-compose") version "0.17.11"
 }
 
-task("clean", Delete::class) {
-    description = "Cleans all Blockscout files and directories"
-    delete("${projectDir}/devnet-dc/blockscout/services/blockscout-db-data")
-    delete("${projectDir}/devnet-dc/blockscout/services/logs")
-    delete("${projectDir}/devnet-dc/blockscout/services/redis-data/dump.rdb")
-    delete("${projectDir}/devnet-dc/blockscout/services/redis-data")
-}
+
 
 task("up") {
     group = "blockscout"
     description = "Start Blockscout"
     mustRunAfter(":network:up")
     dependsOn("composeUp")
+}
+
+task("clean") {
+    group = "blockscout"
+    description = "Cleans all Blockscout files and directories"
+    delete("${projectDir}/devnet-dc/blockscout/services/blockscout-db-data")
+    delete("${projectDir}/devnet-dc/blockscout/services/logs")
+    delete("${projectDir}/devnet-dc/blockscout/services/redis-data/dump.rdb")
+    delete("${projectDir}/devnet-dc/blockscout/services/redis-data")
 }
 
 task("down") {
