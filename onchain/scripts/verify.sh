@@ -20,5 +20,4 @@ cd onchain/lido-core
 
 yarn
 
-bash scripts/dao-deploy.sh
-
+yarn verify:deployed --network local
