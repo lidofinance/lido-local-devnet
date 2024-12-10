@@ -23,21 +23,21 @@
         "terminal.integrated.shell.linux": "/bin/bash"
       },
       "extensions": [
-        "bierner.markdown-mermaid",
-        "eamodio.gitlens",
-        "editorconfig.editorconfig",
-        "esbenp.prettier-vscode",
-        "mathiasfrohlich.kotlin",
-        "redhat.java",
-        "visualstudioexptteam.intellicode-api-usage-examples",
-        "visualstudioexptteam.vscodeintellicode",
-        "vscjava.vscode-gradle",
-        "vscjava.vscode-java-debug",
-        "vscjava.vscode-java-dependency",
-        "vscjava.vscode-java-pack",
-        "vscjava.vscode-java-test",
-        "vscjava.vscode-maven",
-        "william-voyek.vscode-nginx"
+        // "bierner.markdown-mermaid",
+        // "eamodio.gitlens",
+        // "editorconfig.editorconfig",
+        // "esbenp.prettier-vscode",
+        // "mathiasfrohlich.kotlin",
+        // "redhat.java",
+        // "visualstudioexptteam.intellicode-api-usage-examples",
+        // "visualstudioexptteam.vscodeintellicode",
+        // "vscjava.vscode-gradle",
+        // "vscjava.vscode-java-debug",
+        // "vscjava.vscode-java-dependency",
+        // "vscjava.vscode-java-pack",
+        // "vscjava.vscode-java-test",
+        // "vscjava.vscode-maven",
+        // "william-voyek.vscode-nginx"
       ]
     }
   },
