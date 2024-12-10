@@ -8,6 +8,11 @@
  */
 
 rootProject.name = "lido-local-devnet"
-include("network")
-include("blockscout")
-include("dora")
+include(":network")
+project(":network").projectDir = file("devnet-dc/network")
+
+include(":blockscout")
+project(":blockscout").projectDir = file("devnet-dc/blockscout")
+
+include(":dora")
+project(":dora").projectDir = file("devnet-dc/dora")

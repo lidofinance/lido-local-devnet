@@ -19,10 +19,10 @@ plugins {
 
 task("clean", Delete::class) {
     description = "Cleans all Blockscout files and directories"
-    delete("${projectDir}/blockscout/services/blockscout-db-data")
-    delete("${projectDir}/blockscout/services/logs")
-    delete("${projectDir}/blockscout/services/redis-data/dump.rdb")
-    delete("${projectDir}/blockscout/services/redis-data")
+    delete("${projectDir}/devnet-dc/blockscout/services/blockscout-db-data")
+    delete("${projectDir}/devnet-dc/blockscout/services/logs")
+    delete("${projectDir}/devnet-dc/blockscout/services/redis-data/dump.rdb")
+    delete("${projectDir}/devnet-dc/blockscout/services/redis-data")
 }
 
 task("up") {
