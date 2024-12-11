@@ -19,3 +19,10 @@ project(":blockscout").projectDir = file("devnet-dc/blockscout")
 
 include(":dora")
 project(":dora").projectDir = file("devnet-dc/dora")
+
+gradle.beforeProject {
+    tasks.withType<Exec> {
+        environment("TERM", "xterm-256color")
+        environment("FORCE_COLOR", "true")
+    }
+}
