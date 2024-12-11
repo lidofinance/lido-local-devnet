@@ -17,10 +17,13 @@
     "topicSeparator": " ",
     "topics": {
       "dora": {
-        "description": "Manage the Dora explorer, a powerful tool for blockchain data visualization and interaction."
+        "description": "Manage the Dora explorer for blockchain data visualization."
       },
       "network": {
-        "description": "Commands to manage and interact with EL (Execution Layer) and CL (Consensus Layer) nodes."
+        "description": "Manage EL (Execution) and CL (Consensus) nodes."
+      },
+      "blockscout": {
+        "description": "Manage Blockscout, a blockchain explorer."
       }
     },
     "hooks": {}
