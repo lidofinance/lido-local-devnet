@@ -11,6 +11,9 @@ rootProject.name = "lido-local-devnet"
 include(":network")
 project(":network").projectDir = file("devnet-dc/network")
 
+include(":onchain")
+project(":onchain").projectDir = file("onchain")
+
 include(":blockscout")
 project(":blockscout").projectDir = file("devnet-dc/blockscout")
 
