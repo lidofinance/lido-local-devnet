@@ -15,6 +15,14 @@
     "commands": "./cli/commands",
     "dirname": "devnet",
     "topicSeparator": " ",
+    "topics": {
+      "dora": {
+        "description": "Manage the Dora explorer, a powerful tool for blockchain data visualization and interaction."
+      },
+      "network": {
+        "description": "Commands to manage and interact with EL (Execution Layer) and CL (Consensus Layer) nodes."
+      }
+    },
     "hooks": {}
   },
   "bin": {
