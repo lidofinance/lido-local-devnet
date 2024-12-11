@@ -17,7 +17,8 @@ const BLOCKSCOUT_ROOT = path.join(
 
 const SHARED_PK =
   "0x2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622";
-const EL_RPC_URL = "http://127.0.0.1:8545/";
+const EL_URL = "http://localhost:8545/";
+const CL_URL = "http://localhost:3500/";
 
 export const baseConfig = {
   utils: {
@@ -28,7 +29,10 @@ export const baseConfig = {
   },
   network: {
     el: {
-      rpcUrl: EL_RPC_URL,
+      url: EL_URL,
+    },
+    cl: {
+      url: CL_URL,
     },
     paths: {
       root: NETWORK_ROOT,
@@ -40,8 +44,9 @@ export const baseConfig = {
       ],
     },
   },
-  dora: { paths: { root: DORA_ROOT } },
+  dora: { url: "http://localhost:3070", paths: { root: DORA_ROOT } },
   blockscout: {
+    url: "http://localhost:3070",
     paths: {
       root: BLOCKSCOUT_ROOT,
       volumes: [

@@ -9,6 +9,8 @@ export default class DevNetUp extends Command {
       await this.config.runCommand("network:restart");
       await this.config.runCommand("blockscout:restart");
       await this.config.runCommand("dora:restart");
+
+      await this.config.runCommand("config")
     } catch (error: any) {
       this.error(`Failed to start DevNet: ${error.message}`);
     }

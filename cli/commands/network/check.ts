@@ -9,7 +9,7 @@ export default class NetworkCheck extends Command {
   async run() {
     const { castPath } = baseConfig.utils;
     const { sharedPk } = baseConfig.wallet;
-    const { rpcUrl } = baseConfig.network.el;
+    const { url } = baseConfig.network.el;
     const recipient = "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc";
 
     this.log(chalk.blue("Checking if EL node is alive..."));
@@ -30,7 +30,7 @@ export default class NetworkCheck extends Command {
           recipient,
           trimmedData,
           "--rpc-url",
-          rpcUrl,
+          url,
         ],
         { stdio: "inherit" }
       );
