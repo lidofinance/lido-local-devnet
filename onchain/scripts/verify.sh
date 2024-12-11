@@ -2,12 +2,14 @@
 set -e +u
 set -o pipefail
 
-export NETWORK=local
+export NETWORK=local-devnet
 export RPC_URL="http://127.0.0.1:8545"  # if defined use the value set to default otherwise
 
-export GENESIS_TIME=1639659600  # just some time
-# export WITHDRAWAL_QUEUE_BASE_URI="<< SET IF REQUIED >>"
-# export DSM_PREDEFINED_ADDRESS="<< SET IF REQUIED >>"
+export LOCAL_DEVNET_PK=0x2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622
+
+source onchain/scripts/get-genesis.sh
+
+echo "Current GENESIS_TIME is: $GENESIS_TIME"
 
 export DEPLOYER=0x123463a4b065722e99115d6c222f267d9cabb524  # first acc of default mnemonic "test test ..."
 export GAS_PRIORITY_FEE=1
@@ -20,4 +22,4 @@ cd onchain/lido-core
 
 yarn
 
-yarn verify:deployed --network local
+yarn verify:deployed --network local-devnet
