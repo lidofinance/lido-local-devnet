@@ -8,6 +8,7 @@ const NETWORK_ROOT = path.join(
   NETWORK_BOOTSTRAP_VERSION,
   "network"
 );
+const DORA_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "dora");
 const BLOCKSCOUT_ROOT = path.join(
   process.cwd(),
   NETWORK_BOOTSTRAP_VERSION,
@@ -39,17 +40,14 @@ export const baseConfig = {
       ],
     },
   },
+  dora: { paths: { root: DORA_ROOT } },
   blockscout: {
     paths: {
       root: BLOCKSCOUT_ROOT,
       volumes: [
         path.join(BLOCKSCOUT_ROOT, "services", "blockscout-db-data"),
         path.join(BLOCKSCOUT_ROOT, "services", "logs"),
-        path.join(
-          BLOCKSCOUT_ROOT,
-          "services",
-          "redis-data/dump.rdb"
-        ),
+        path.join(BLOCKSCOUT_ROOT, "services", "redis-data/dump.rdb"),
         path.join(BLOCKSCOUT_ROOT, "services", "redis-data"),
       ],
     },
