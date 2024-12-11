@@ -1,0 +1,23 @@
+{
+  "name": "lido-local-devnet",
+  "packageManager": "yarn@4.2.2",
+  "type": "module",
+  "dependencies": {
+    "@oclif/core": "^4.0.36",
+    "@oclif/plugin-help": "^6.2.19",
+    "@types/node": "^22.10.2",
+    "execa": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  },
+  "oclif": {
+    "bin": "devnet",
+    "commands": "./cli/commands",
+    "dirname": "devnet",
+    "topicSeparator": " ",
+    "hooks": {}
+  },
+  "bin": {
+    "devnet": "./bin/run.js"
+  }
+}
