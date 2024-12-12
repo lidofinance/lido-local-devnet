@@ -19,6 +19,12 @@ services:
       file: ./services/db.yml
       service: db-init
 
+  sc-verifier:
+    extends:
+      file: ./services/smart-contract-verifier.yml
+      service: smart-contract-verifier
+    ports:
+      - 8082:8050
   db:
     depends_on:
       db-init:

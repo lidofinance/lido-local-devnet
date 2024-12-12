@@ -15,11 +15,11 @@ val castPath = File("${foundryPath}/cast").toString()
 task("clean", Delete::class) {
     group = "network"
     description = "Cleans all EL + CL files and directories"
-    delete("${projectDir}/network/consensus/beacondata")
-    delete("${projectDir}/network/consensus/validatordata")
-    delete("${projectDir}/network/consensus/genesis.ssz")
-    delete("${projectDir}/network/execution/geth")
-    delete("${rootProject.buildDir}/network")
+    delete("${projectDir}/devnet-dc/network/consensus/beacondata")
+    delete("${projectDir}/devnet-dc/network/consensus/validatordata")
+    delete("${projectDir}/devnet-dc/network/consensus/genesis.ssz")
+    delete("${projectDir}/devnet-dc/network/execution/geth")
+    delete("${rootProject.buildDir}/devnet-dc/network")
 }
 
 

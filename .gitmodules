@@ -1,0 +1,6 @@
+[submodule "onchain/lido-core"]
+	path = onchain/lido-core
+	url = git@github.com:lidofinance/core.git
+[submodule "onchain/csm"]
+	path = onchain/csm
+	url = git@github.com:lidofinance/community-staking-module.git
