@@ -1,0 +1,1 @@
+kurtosis run --enclave my-testnet github.com/ethpandaops/ethereum-package --args-file devnet-kurosis/devnet-4-pectra.yml

@@ -1,0 +1,1 @@
+kurtosis enclave inspect my-testnet

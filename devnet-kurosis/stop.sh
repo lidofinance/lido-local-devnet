@@ -1,0 +1,1 @@
+kurtosis enclave rm --force my-testnet
