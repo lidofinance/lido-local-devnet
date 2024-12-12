@@ -24,6 +24,9 @@
       },
       "blockscout": {
         "description": "Manage Blockscout, a blockchain explorer."
+      },
+      "onchain": {
+        "description": "Manage and deploy protocol smart contracts."
       }
     },
     "hooks": {}
