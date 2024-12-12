@@ -8,6 +8,21 @@
  */
 
 rootProject.name = "lido-local-devnet"
-include("network")
-include("blockscout")
-include("dora")
+include(":network")
+project(":network").projectDir = file("devnet-dc/network")
+
+include(":onchain")
+project(":onchain").projectDir = file("onchain")
+
+include(":blockscout")
+project(":blockscout").projectDir = file("devnet-dc/blockscout")
+
+include(":dora")
+project(":dora").projectDir = file("devnet-dc/dora")
+
+gradle.beforeProject {
+    tasks.withType<Exec> {
+        environment("TERM", "xterm-256color")
+        environment("FORCE_COLOR", "true")
+    }
+}
