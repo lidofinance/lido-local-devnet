@@ -8,9 +8,10 @@ export default class DoraUp extends Command {
   async run() {
     this.log("Starting Dora...");
     try {
-      process.chdir(baseConfig.dora.paths.root);
-
-      await execa("docker", ["compose", "up", "-d"], { stdio: "inherit" });
+      await execa("docker", ["compose", "up", "-d"], {
+        stdio: "inherit",
+        cwd: baseConfig.dora.paths.root,
+      });
       this.log("Dora started successfully.");
     } catch (error: any) {
       this.error(`Failed to start Dora: ${error.message}`);

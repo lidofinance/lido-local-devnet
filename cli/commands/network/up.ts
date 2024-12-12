@@ -8,9 +8,10 @@ export default class NetworkUp extends Command {
   async run() {
     this.log("Starting EL and CL Nodes...");
     try {
-      process.chdir(baseConfig.network.paths.root);
-
-      await execa("docker", ["compose", "up", "-d"], { stdio: "inherit" });
+      await execa("docker", ["compose", "up", "-d"], {
+        stdio: "inherit",
+        cwd: baseConfig.network.paths.root,
+      });
       this.log("Nodes started successfully.");
     } catch (error) {
       this.error("Failed to start nodes. Ensure Docker is running.");

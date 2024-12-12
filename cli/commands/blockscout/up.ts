@@ -8,9 +8,9 @@ export default class BlockscoutUp extends Command {
   async run() {
     this.log("Starting Blockscout...");
     try {
-      process.chdir(baseConfig.blockscout.paths.root);
       await execa("docker", ["compose", "-f", "geth.yml", "up", "-d"], {
         stdio: "inherit",
+        cwd: baseConfig.blockscout.paths.root,
       });
       this.log("Blockscout started successfully.");
     } catch (error: any) {

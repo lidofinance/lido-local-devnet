@@ -8,9 +8,10 @@ export default class NetworkDown extends Command {
   async run() {
     this.log("Stopping EL and CL Nodes...");
     try {
-      process.chdir(baseConfig.network.paths.root);
-
-      await execa("docker", ["compose", "down"], { stdio: "inherit" });
+      await execa("docker", ["compose", "down"], {
+        stdio: "inherit",
+        cwd: baseConfig.network.paths.root,
+      });
       this.log("Nodes stopped successfully.");
     } catch (error) {
       this.error("Failed to stop nodes. Ensure Docker is running.");

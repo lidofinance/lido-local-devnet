@@ -7,9 +7,9 @@ export default class LogsEL extends Command {
   static description = "Tail EL Logs";
 
   async run() {
-    process.chdir(baseConfig.network.paths.root)
     await execa("docker", ["compose", "logs", "geth", "-f"], {
       stdio: "inherit",
+      cwd: baseConfig.network.paths.root,
     });
   }
 }
