@@ -19,4 +19,7 @@ RUN cast from-utf8 "foundry test OK"
 RUN yarn set version 4.5.0 && \
     yarn install
 
+# needed to store devnet json specs
+RUN mkdir /var/lido-core/devnet-specs
+
 ENTRYPOINT ["sleep", "infinity"]

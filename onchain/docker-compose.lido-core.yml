@@ -1,0 +1,35 @@
+version: "3.9"
+
+# custom docker network that will be used for on-chain
+networks:
+  devnet:
+    name: devnet
+    external: true
+
+services:
+  lido-core-scratch-deploy:
+    platform: linux/amd64
+    build:
+      dockerfile: lido-core.Dockerfile
+    container_name: lido-core-scratch-deploy
+    environment:
+      - "ETHERSCAN_API_KEY=${ETHERSCAN_API_KEY}"
+      - "NETWORK=${NETWORK}"
+      - "RPC_URL=${RPC_URL}"
+      - "LOCAL_DEVNET_PK=${LOCAL_DEVNET_PK}"
+      - "DEPLOYER=${DEPLOYER}"
+      - "GAS_PRIORITY_FEE=${GAS_PRIORITY_FEE}"
+      - "GAS_MAX_FEE=${GAS_MAX_FEE}"
+      - "NETWORK_STATE_FILE=${NETWORK_STATE_FILE}"
+      - "NETWORK_STATE_DEFAULTS_FILE=${NETWORK_STATE_DEFAULTS_FILE}"
+      - "GENESIS_TIME=${GENESIS_TIME}"
+    networks:
+      - devnet
+    volumes:
+      - ./deployed-testnet-defaults.json:/var/lido-core/deployed-testnet-defaults.json:ro
+      - ./lido-core-spec/:/var/lido-core/devnet-specs/
+      - cache:/root/.cache
+volumes:
+  cache:
+
+

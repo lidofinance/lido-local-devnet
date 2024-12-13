@@ -1,8 +1,12 @@
 /*
  * Lido core tasks
  */
+val hardhatNetwork = "local-devnet"
+val networkStateFileName = "deployed-${hardhatNetwork}.json"
+val containerName = "lido-core-scratch-deploy"
 
-val generateTestnetDefaults = tasks.register("generate-defaults", Copy::class) {
+
+val renderTestnetDefaults = tasks.register("render-defaults-from-template", Copy::class) {
     group = "lido-core-helpers"
     description = "Generates deployed-testnet-defaults.json file"
 
@@ -16,102 +20,76 @@ val generateTestnetDefaults = tasks.register("generate-defaults", Copy::class) {
     )
 }
 
-val buildLidoImage = tasks.register("build-image", Exec::class) {
+val statLidoCoreScratchDeployContainer = tasks.register("start-lido-core-containers") {
     group = "lido-core-helpers"
-    workingDir = file("${projectDir}")
-    val imageTag = "lido-core:latest"
-    val dockerFile = "lido-core.Dockerfile"
-    setIgnoreExitValue(false)
-    commandLine = listOf(
-        "docker",
-        "build",
-        "--no-cache",
-        "-t",
-        "${imageTag}",
-        "-f",
-        "${dockerFile}",
-        "."
-    )
+
+    dockerCompose {
+        setProjectName("onchain")
+        captureContainersOutput.set(true)
+        projectNamePrefix = ""
+        buildBeforeUp.set(true)
+        checkContainersRunning.set(true)
+        useComposeFiles.set(listOf("docker-compose.lido-core.yml"))
+        useDockerComposeV2.set(true)
+        removeVolumes.set(false)
+        captureContainersOutputToFiles.set(File("${rootProject.buildDir}/onchain"))
+        environment.putAll(
+            mapOf(
+                "GENESIS_TIME" to getGenesisTime(file("${rootDir}/devnet-dc/network/execution/genesis.json")),
+                "ETHERSCAN_API_KEY" to "",
+                "DEPOSIT_CONTRACT" to "0x4242424242424242424242424242424242424242",
+                "NETWORK" to hardhatNetwork,
+                "RPC_URL" to "http://execution:8545",
+                "LOCAL_DEVNET_PK" to "0x2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622",
+                "DEPLOYER" to "0x123463a4b065722e99115d6c222f267d9cabb524",
+                "GAS_PRIORITY_FEE" to "1",
+                "GAS_MAX_FEE" to "100",
+                "NETWORK_STATE_FILE" to networkStateFileName,
+                "NETWORK_STATE_DEFAULTS_FILE" to "deployed-testnet-defaults.json"
+            )
+        )
+    }
+
+    dependsOn("composeUp")
+    dependsOn(renderTestnetDefaults)
+    tasks["composeUp"].shouldRunAfter(renderTestnetDefaults)
 }
 
-val removeContainerIfAny = tasks.register("remove-container", Exec::class) {
+val daoDeploy = tasks.register("dao-deploy", Exec::class) {
     group = "lido-core-helpers"
-    workingDir = file("${projectDir}")
-    val imageTag = "lido-core:latest"
-    val dockerFile = "lido-core.Dockerfile"
-    setIgnoreExitValue(true)
+    dependsOn(statLidoCoreScratchDeployContainer)
     commandLine = listOf(
-        "docker",
-        "container",
-        "rm",
-        "lido-core-scratch-deploy",
-        "--force",
-        "--volumes",
-    )
-}
-
-val lidoContainer = tasks.register("run-container", Exec::class) {
-    group = "lido-core-helpers"
-
-    dependsOn(generateTestnetDefaults)
-    dependsOn(removeContainerIfAny)
-    dependsOn(buildLidoImage)
-
-    val hardhatNetwork = "local-devnet"
-    val dockerEnvs = mapOf(
-        "GENESIS_TIME" to getGenesisTime(file("${rootDir}/devnet-dc/network/execution/genesis.json")).toString(),
-        "ETHERSCAN_API_KEY" to "",
-        "DEPOSIT_CONTRACT" to "0x4242424242424242424242424242424242424242",
-        "NETWORK" to hardhatNetwork,
-        "RPC_URL" to "http://execution:8545",
-        "LOCAL_DEVNET_PK" to "0x2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622",
-        "DEPLOYER" to "0x123463a4b065722e99115d6c222f267d9cabb524",
-        "GAS_PRIORITY_FEE" to "1",
-        "GAS_MAX_FEE" to "100",
-        "NETWORK_STATE_FILE" to "deployed-${hardhatNetwork}.json",
-        "NETWORK_STATE_DEFAULTS_FILE" to "deployed-testnet-defaults.json"
-    ).map { "--env=${it.key}=${it.value}" }
-
-    val cmd = listOf(
-        "docker",
-        "run",
-        *(dockerEnvs.toTypedArray()),
-        "--volume", "${projectDir}/deployed-testnet-defaults.json:/var/lido-core/deployed-testnet-defaults.json:ro",
-        "--volume", "${projectDir}/lido-core-specs:/var/lido-core/scripts/scratch",
-        "--network", "devnet",
-        "--name", "lido-core-scratch-deploy",
-        "--detach",
-        "--tty",
-        "--rm",
-        "lido-core:latest",
-    )
-    //println("dockerEnvs = ${dockerEnvs}")
-    //println("cmd = ${cmd.joinToString(" ")}")
-
-    workingDir = file("${projectDir}")
-    commandLine = cmd
-}
-
-val lidoExecContainer = tasks.register("exec-container", Exec::class) {
-    group = "lido-core-helpers"
-    dependsOn(lidoContainer)
-
-    workingDir = file("${projectDir}")
-    commandLine = listOf(
-        "docker",
-        "exec",
-        //"-it",
-        "lido-core-scratch-deploy",
+        "docker", "exec",
+        containerName,
         "/bin/bash", "-c", "./scripts/dao-deploy.sh"
     )
-    doLast {
-        "docker stop lido-core-scratch-deploy --force".execute().text().trim()
-    }
+}
+
+val copyDevNetJsonFile = tasks.register("copy-devnet-json-file", Exec::class) {
+    group = "lido-core-helpers"
+    dependsOn(daoDeploy)
+    commandLine = listOf(
+        "docker", "exec",
+        containerName,
+        "cp", "${networkStateFileName}", "/var/lido-core/devnet-specs/${networkStateFileName}"
+    )
+}
+
+val chmodDevNetJsonFile = tasks.register("chmod-devnet-json-file", Exec::class) {
+    group = "lido-core-helpers"
+    dependsOn(copyDevNetJsonFile)
+    commandLine = listOf(
+        "docker", "exec",
+        containerName,
+        "/bin/chmod", "-R" ,"o+rwx", "/var/lido-core/devnet-specs/"
+    )
 }
 
 tasks.register("deploy-lido-core") {
     group = "lido-core"
-    description = "Deploys Lido Core to devnet"
+    description = "Deploys Lido Core to devnet and get devnet.json file"
 
-    dependsOn(lidoExecContainer)
+    dependsOn(chmodDevNetJsonFile)
+    dependsOn("composeDown")
+    tasks["composeDown"].shouldRunAfter(chmodDevNetJsonFile)
 }
