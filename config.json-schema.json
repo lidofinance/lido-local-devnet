@@ -1,0 +1,14 @@
+{
+  "properties": {
+    "config": {
+      "type": "object",
+      "description": "Some property",
+      "properties": {
+        "param1": {
+          "type": "string"
+        }
+      },
+      "required": ["param1"]
+    }
+  }
+}
