@@ -1,91 +1,117 @@
-import org.gradle.api.tasks.Exec
-import groovy.json.JsonSlurper
-import java.io.File
+/*
+ * Lido core tasks
+ */
 
-val shellScriptPath = "${projectDir}/scripts/get-genesis.sh"
+val generateTestnetDefaults = tasks.register("generate-defaults", Copy::class) {
+    group = "lido-core-helpers"
+    description = "Generates deployed-testnet-defaults.json file"
 
-fun Exec.setupEnvironmentVars() {
-    val genesisTime = project.ext["GENESIS_TIME"] as? String
-    if (genesisTime.isNullOrEmpty()) {
-        throw GradleException("GENESIS_TIME is not set. Ensure extract-genesis-time has run successfully.")
-    }
-
-    environment("NETWORK", "local-devnet")
-    environment("RPC_URL", "http://127.0.0.1:8545")
-    environment("LOCAL_DEVNET_PK", "0x2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622")
-    environment("DEPLOYER", "0x123463a4b065722e99115d6c222f267d9cabb524")
-    environment("GAS_PRIORITY_FEE", "1")
-    environment("GAS_MAX_FEE", "100")
-    environment("NETWORK_STATE_FILE", "deployed-${environment["NETWORK"]}.json")
-    environment("NETWORK_STATE_DEFAULTS_FILE", "scripts/scratch/deployed-testnet-defaults.json")
-    environment("GENESIS_TIME", genesisTime)
+    include("deployed-testnet-defaults.json.template")
+    from("${projectDir}")
+    into("${projectDir}")
+    rename { file -> "deployed-testnet-defaults.json" }
+    expand(
+        "GENESIS_TIME" to getGenesisTime(file("${rootDir}/devnet-dc/network/execution/genesis.json")),
+        "DEPOSIT_CONTRACT" to "0x4242424242424242424242424242424242424242",
+    )
 }
 
-task("extract-genesis-time") {
-    group = "onchain"
+val buildLidoImage = tasks.register("build-image", Exec::class) {
+    group = "lido-core-helpers"
+    workingDir = file("${projectDir}")
+    val imageTag = "lido-core:latest"
+    val dockerFile = "lido-core.Dockerfile"
+    setIgnoreExitValue(false)
+    commandLine = listOf(
+        "docker",
+        "build",
+        "--no-cache",
+        "-t",
+        "${imageTag}",
+        "-f",
+        "${dockerFile}",
+        "."
+    )
+}
+
+val removeContainerIfAny = tasks.register("remove-container", Exec::class) {
+    group = "lido-core-helpers"
+    workingDir = file("${projectDir}")
+    val imageTag = "lido-core:latest"
+    val dockerFile = "lido-core.Dockerfile"
+    setIgnoreExitValue(true)
+    commandLine = listOf(
+        "docker",
+        "container",
+        "rm",
+        "lido-core-scratch-deploy",
+        "--force",
+        "--volumes",
+    )
+}
+
+val lidoContainer = tasks.register("run-container", Exec::class) {
+    group = "lido-core-helpers"
+
+    dependsOn(generateTestnetDefaults)
+    dependsOn(removeContainerIfAny)
+    dependsOn(buildLidoImage)
+
+    val hardhatNetwork = "local-devnet"
+    val dockerEnvs = mapOf(
+        "GENESIS_TIME" to getGenesisTime(file("${rootDir}/devnet-dc/network/execution/genesis.json")).toString(),
+        "ETHERSCAN_API_KEY" to "",
+        "DEPOSIT_CONTRACT" to "0x4242424242424242424242424242424242424242",
+        "NETWORK" to hardhatNetwork,
+        "RPC_URL" to "http://execution:8545",
+        "LOCAL_DEVNET_PK" to "0x2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622",
+        "DEPLOYER" to "0x123463a4b065722e99115d6c222f267d9cabb524",
+        "GAS_PRIORITY_FEE" to "1",
+        "GAS_MAX_FEE" to "100",
+        "NETWORK_STATE_FILE" to "deployed-${hardhatNetwork}.json",
+        "NETWORK_STATE_DEFAULTS_FILE" to "deployed-testnet-defaults.json"
+    ).map { "--env=${it.key}=${it.value}" }
+
+    val cmd = listOf(
+        "docker",
+        "run",
+        *(dockerEnvs.toTypedArray()),
+        "--volume", "${projectDir}/deployed-testnet-defaults.json:/var/lido-core/deployed-testnet-defaults.json:ro",
+        "--volume", "${projectDir}/lido-core-specs:/var/lido-core/scripts/scratch",
+        "--network", "devnet",
+        "--name", "lido-core-scratch-deploy",
+        "--detach",
+        "--tty",
+        "--rm",
+        "lido-core:latest",
+    )
+    //println("dockerEnvs = ${dockerEnvs}")
+    //println("cmd = ${cmd.joinToString(" ")}")
+
+    workingDir = file("${projectDir}")
+    commandLine = cmd
+}
+
+val lidoExecContainer = tasks.register("exec-container", Exec::class) {
+    group = "lido-core-helpers"
+    dependsOn(lidoContainer)
+
+    workingDir = file("${projectDir}")
+    commandLine = listOf(
+        "docker",
+        "exec",
+        //"-it",
+        "lido-core-scratch-deploy",
+        "/bin/bash", "-c", "./scripts/dao-deploy.sh"
+    )
     doLast {
-        val jsonFilePath = "${projectDir}/../devnet-dc/network/execution/genesis.json"
-        val jsonFile = File(jsonFilePath)
-
-        if (!jsonFile.exists()) {
-            throw GradleException("JSON file does not exist at $jsonFilePath")
-        }
-
-        // Using JsonSlurper for JSON parsing
-        val jsonSlurper = JsonSlurper()
-        val jsonObject = jsonSlurper.parse(jsonFile) as Map<String, Any?>
-
-        val timestampHex = jsonObject["timestamp"] as? String
-
-        if (timestampHex.isNullOrEmpty()) {
-            throw GradleException("The 'timestamp' property was not found or is empty.")
-        }
-
-        val timestampHexClean = timestampHex.removePrefix("0x")
-        val timestampDec = timestampHexClean.toLong(16)
-
-        println("GENESIS_TIME has been set to $timestampDec")
-
-        project.ext.set("GENESIS_TIME", timestampDec.toString())
+        "docker stop lido-core-scratch-deploy --force".execute().text().trim()
     }
 }
 
-task("setup-environment") {
-    group = "onchain"
-    dependsOn("extract-genesis-time")
+tasks.register("deploy-lido-core") {
+    group = "lido-core"
+    description = "Deploys Lido Core to devnet"
 
-    doFirst {
-        // Retrieve GENESIS_TIME from project.ext
-        val genesisTime = project.ext["GENESIS_TIME"] as? String
-        if (genesisTime.isNullOrEmpty()) {
-            throw GradleException("GENESIS_TIME is not set. Ensure extract-genesis-time has run successfully.")
-        }
-        println("GENESIS_TIME in setup-environment: $genesisTime")
-    }
-}
-
-task("yarn-install", type = Exec::class) {
-    group = "onchain"
-    workingDir = file("${projectDir}/lido-core")
-    commandLine("bash", "-c", "corepack enable && yarn")
-}
-
-task("verify-core", type = Exec::class) {
-    group = "onchain"
-    dependsOn("setup-environment", "yarn-install")
-    workingDir = file("${projectDir}/lido-core")
-    doFirst {
-        setupEnvironmentVars()
-        commandLine("bash", "-c", "yarn verify:deployed --network \$NETWORK || true")
-    }
-}
-
-task("deploy-core-contracts", type = Exec::class) {
-    group = "onchain"
-    dependsOn("setup-environment", "yarn-install")
-    workingDir = file("${projectDir}/lido-core")
-    doFirst {
-        setupEnvironmentVars()
-        commandLine("bash", "-c", "scripts/dao-deploy.sh")
-    }
+    dependsOn(lidoExecContainer)
 }

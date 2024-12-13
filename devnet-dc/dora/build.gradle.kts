@@ -1,21 +1,6 @@
-import org.codehaus.groovy.runtime.ProcessGroovyMethods
-import java.awt.Desktop
-import java.net.URI
-
-fun String.execute(): Process = ProcessGroovyMethods.execute(this)
-fun List<String>.execute(): Process = ProcessGroovyMethods.execute(this)
-fun Process.text(): String = ProcessGroovyMethods.getText(this)
-
-fun openBrowser(url: String) {
-    if (Desktop.isDesktopSupported())
-    {
-        Desktop.getDesktop().browse(URI(url))
-    }
-}
-
-plugins {
-    id("com.avast.gradle.docker-compose") version "0.17.11"
-}
+/*
+ * Dora explorer tasks
+ */
 
 task("up") {
     group = "dora"
