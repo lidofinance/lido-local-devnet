@@ -1,13 +1,16 @@
+import { readFileSync } from "fs";
 import path from "path";
+import YAML from "yaml";
 
 const NETWORK_BOOTSTRAP_VERSION = "devnet-dc";
-
 // services roots
 const NETWORK_ROOT = path.join(
   process.cwd(),
   NETWORK_BOOTSTRAP_VERSION,
   "network"
 );
+const KURTOSIS_ROOT = path.join(process.cwd(), "devnet-kurtosis");
+const KURTOSIS_CONFIG_PATH = path.join(KURTOSIS_ROOT, "/configs/devnet4.yml");
 const DORA_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "dora");
 const BLOCKSCOUT_ROOT = path.join(
   process.cwd(),
@@ -15,7 +18,6 @@ const BLOCKSCOUT_ROOT = path.join(
   "blockscout"
 );
 const ONCHAIN_ROOT = path.join(process.cwd(), "onchain");
-
 const SHARED_WALLET_ADDRESS = "0x123463a4b065722e99115d6c222f267d9cabb524";
 const SHARED_PK =
   "0x2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622";
@@ -29,6 +31,13 @@ export const baseConfig = {
   wallet: {
     address: SHARED_WALLET_ADDRESS,
     sharedPk: SHARED_PK,
+  },
+  kurtosis: {
+    paths: {
+      root: KURTOSIS_ROOT,
+      config: KURTOSIS_CONFIG_PATH,
+    },
+    config: YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, 'utf-8')),
   },
   network: {
     el: {
