@@ -6,7 +6,7 @@ Project for launching DevNet with the Lido protocol locally. The project include
 
 ## Requirements
 
-* Java 11+ (OpenJDK or other)
+* Node 20+
 * Docker 27+
 * docker-compose V2
 
@@ -17,6 +17,18 @@ Project for launching DevNet with the Lido protocol locally. The project include
 
 
 To spin up the DevNet, simply enter the command:
+
+```sh
+git submodule init
+```
+
+```sh
+git submodule update
+```
+
+```sh
+yarn
+```
 
 ```sh
 ./gradlew start

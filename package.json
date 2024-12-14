@@ -22,6 +22,12 @@
       "network": {
         "description": "Manage EL (Execution) and CL (Consensus) nodes."
       },
+      "network:dc": {
+        "description": "Manage Ethereum DevNet using Docker Compose."
+      },
+      "network:kurtosis": {
+        "description": "Manage Ethereum DevNet using Kurtosis."
+      },
       "blockscout": {
         "description": "Manage Blockscout, a blockchain explorer."
       },

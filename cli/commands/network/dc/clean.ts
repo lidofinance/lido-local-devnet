@@ -1,6 +1,6 @@
 import { Command } from "@oclif/core";
 import { rmSync } from "fs";
-import { baseConfig } from "../../config/index.js";
+import { baseConfig } from "../../../config/index.js";
 
 export default class NetworkClean extends Command {
   static description = "Cleans all EL + CL files and directories";
