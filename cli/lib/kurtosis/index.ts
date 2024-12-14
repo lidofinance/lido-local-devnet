@@ -1,4 +1,8 @@
-import { KurtosisContext, StarlarkRunConfig } from "kurtosis-sdk";
+import {
+  EnclaveContext,
+  KurtosisContext,
+  StarlarkRunConfig,
+} from "kurtosis-sdk";
 import { createEnclaveArgs } from "./utils.js";
 import internal from "stream";
 
@@ -58,6 +62,42 @@ export class KurtosisAPI {
     await this.connect();
 
     const result = await this.kurtosisContext.getEnclaveContext(name);
+
+    if (result.isErr()) {
+      throw new Error(result.error.message);
+    }
+
+    return result.value;
+  }
+
+  public async getEnclaveInfo(name: string) {
+    const enclaveCtx = await this.getEnclave(name);
+    const services = await this.getServices(enclaveCtx);
+    return await Promise.all(
+      [...services.entries()].map(async ([name, uid]) => {
+        const serviceCtx = await this.getServiceContext(enclaveCtx, uid);
+        const publicPorts = await serviceCtx.getPublicPorts();
+        return { name, uid, publicPorts: Object.fromEntries(publicPorts) };
+      })
+    );
+  }
+
+  public async getServices(enclaveCtx: EnclaveContext) {
+    await this.connect();
+
+    const result = await enclaveCtx.getServices();
+
+    if (result.isErr()) {
+      throw new Error(result.error.message);
+    }
+
+    return result.value;
+  }
+
+  public async getServiceContext(enclaveCtx: EnclaveContext, uid: string) {
+    await this.connect();
+
+    const result = await enclaveCtx.getServiceContext(uid);
 
     if (result.isErr()) {
       throw new Error(result.error.message);
