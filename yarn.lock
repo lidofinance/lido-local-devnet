@@ -614,6 +614,8 @@ __metadata:
     execa: "npm:^9.5.2"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.7.2"
+  bin:
+    devnet: ./bin/run.js
   languageName: unknown
   linkType: soft
 

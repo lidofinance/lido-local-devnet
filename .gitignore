@@ -1,4 +1,7 @@
 .idea/
+.yarn
+node_modules
+
 
 devnet-dc/network/consensus/beacondata
 devnet-dc/network/consensus/genesis.ssz
@@ -22,4 +25,4 @@ TODO.md
 build
 
 
-node_modules
+
