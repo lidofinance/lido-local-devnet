@@ -36,6 +36,7 @@ export const baseConfig = {
     paths: {
       root: ARTIFACTS_PATH,
       network: path.join(ARTIFACTS_PATH, "network"),
+      genesis: path.join(ARTIFACTS_PATH, "network", "genesis.json"),
     },
   },
   utils: {
@@ -62,7 +63,6 @@ export const baseConfig = {
     },
     paths: {
       root: NETWORK_ROOT,
-      genesis: path.join(NETWORK_ROOT, "execution", "genesis.json"),
     },
   },
   dora: { url: "http://localhost:3070", paths: { root: DORA_ROOT } },
@@ -80,9 +80,8 @@ export const baseConfig = {
         },
         env: {
           NETWORK: "local-devnet",
-          RPC_URL: EL_URL,
-          LOCAL_DEVNET_PK: SHARED_PK,
-          DEPLOYER: SHARED_WALLET_ADDRESS,
+          LOCAL_DEVNET_PK: sharedWallet[0].privateKey,
+          DEPLOYER: sharedWallet[0].publicKey,
           GAS_PRIORITY_FEE: "1",
           GAS_MAX_FEE: "100",
           NETWORK_STATE_FILE: `deployed-local-devnet.json`,

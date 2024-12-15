@@ -7,7 +7,7 @@ export default class ExtractGenesisTime extends Command {
 
   async run() {
     this.log(
-      `Genesis time is ${getGenesisTime(baseConfig.network.paths.genesis)}`
+      `Genesis time is ${getGenesisTime(baseConfig.artifacts.paths.genesis)}`
     );
   }
 }

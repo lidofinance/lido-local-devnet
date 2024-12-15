@@ -1,7 +1,6 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
-import { join } from "path";
-import { baseConfig } from "../../config/index.js";
+import { baseConfig } from "../../../config/index.js";
 
 export class LidoCoreInstall extends Command {
   static description = "Install dependencies in the lido-core directory";

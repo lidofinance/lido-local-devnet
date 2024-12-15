@@ -26,6 +26,9 @@
       },
       "onchain": {
         "description": "Manage and deploy protocol smart contracts."
+      },
+      "onchain:lido": {
+        "description": "Manage and deploy core smart contracts."
       }
     },
     "hooks": {}
