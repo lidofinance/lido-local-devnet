@@ -16,20 +16,19 @@ export class JsonDb {
     try {
       const data = await fs.readFile(this.filePath, "utf8");
       return JSON.parse(data);
-    } catch (error) {
-      console.error("Error reading the JSON file:", error);
-      throw new Error("Failed to read data");
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+        console.log("File not found, returning empty object.");
+        return {};
+      } else {
+        throw error;
+      }
     }
   }
 
   async write(data: DataStructure): Promise<void> {
-    try {
-      await fs.mkdir(dirname(this.filePath), { recursive: true });
-      await fs.writeFile(this.filePath, JSON.stringify(data, null, 2), "utf8");
-    } catch (error) {
-      console.error("Error writing to the JSON file:", error);
-      throw new Error("Failed to write data");
-    }
+    await fs.mkdir(dirname(this.filePath), { recursive: true });
+    await fs.writeFile(this.filePath, JSON.stringify(data, null, 2), "utf8");
   }
 
   async update(value: any): Promise<void> {

@@ -24,7 +24,7 @@ TODO.md
 # Ignore Gradle build output directory
 build
 
-artifacts/network
+artifacts
 
 
 

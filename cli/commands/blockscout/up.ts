@@ -7,7 +7,6 @@ export default class BlockscoutUp extends Command {
   static description = "Start Blockscout";
 
   async run() {
-    console.log(baseConfig.blockscout.paths.root);
     this.log("Starting Blockscout...");
     const state = await jsonDb.read();
     const { network } = baseConfig;
