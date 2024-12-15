@@ -6,6 +6,7 @@
     "@oclif/core": "^4.0.36",
     "@oclif/plugin-help": "^6.2.19",
     "@types/node": "^22.10.2",
+    "ethers": "^6.13.4",
     "execa": "^9.5.2",
     "kurtosis-sdk": "^1.4.3",
     "ts-node": "^10.9.2",

@@ -1,7 +1,10 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
 import { baseConfig, jsonDb } from "../../../config/index.js";
-import { getGenesisTime } from "../../../lib/index.js";
+import {
+  getGenesisTime,
+  sendTransactionWithRetry,
+} from "../../../lib/index.js";
 
 export default class DeployLidoContracts extends Command {
   static description =
@@ -19,6 +22,14 @@ export default class DeployLidoContracts extends Command {
     if (!rpc) {
       this.error("RPC_URL not found in deployed state");
     }
+
+    this.log(`Waiting for the execution node at ${rpc} to be ready...`);
+    await sendTransactionWithRetry({
+      providerUrl: rpc,
+      privateKey: baseConfig.sharedWallet[0].privateKey,
+      toAddress: "0xf93Ee4Cf8c6c40b329b0c0626F28333c132CF241",
+      amount: "1",
+    });
 
     const deployEnv = {
       ...env,
