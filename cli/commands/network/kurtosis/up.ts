@@ -6,17 +6,26 @@ export default class KurtosisUp extends Command {
   static description = "Check EL node is alive (can process transactions)";
 
   async run() {
+    const name = "my-testnet";
     const output = await kurtosisApi.runPackage(
-      "my-testnet",
+      name,
       "github.com/ethpandaops/ethereum-package",
       baseConfig.kurtosis.config
     );
 
-    this.logJson(output)
+    this.logJson(output);
 
-    const info = await kurtosisApi.getEnclaveInfo("my-testnet");
+    const info = await kurtosisApi.getEnclaveInfo(name);
 
-    await jsonDb.update('network', info)
-    await jsonDb.update('kurtosis-config', baseConfig.kurtosis.config)
+    const elNodes = info
+      .filter((n) => n.name.startsWith("el"))
+      .map((n) => n.url);
+    const clNodes = info
+      .filter((n) => n.name.startsWith("cl"))
+      .map((n) => n.url);
+
+    await jsonDb.update({
+      network: { name, elNodes, clNodes, kurtosis: { services: info } },
+    });
   }
 }

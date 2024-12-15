@@ -32,10 +32,9 @@ export class JsonDb {
     }
   }
 
-  async update(key: string, value: any): Promise<void> {
+  async update(value: any): Promise<void> {
     const data = await this.read();
-    data[key] = value;
-    await this.write(data);
+    await this.write({ ...data, ...value });
   }
 
   async clean(): Promise<void> {
