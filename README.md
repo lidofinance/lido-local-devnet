@@ -6,17 +6,13 @@ Project for launching DevNet with the Lido protocol locally. The project include
 
 ## Requirements
 
-* Node 20+
-* Docker 27+
-* docker-compose V2
+- Node 20+
+- Docker 27+
+- docker-compose V2
 
 ## Getting Started
 
-> [!WARNING]
-> The project is currently under development, automatic deployment of smart contracts has not yet been implemented.
-
-
-To spin up the DevNet, simply enter the command:
+To spin up the DevNet, simply enter the following commands:
 
 ```sh
 git submodule init
@@ -31,28 +27,25 @@ yarn
 ```
 
 ```sh
-./gradlew start
+./bin/run.js up-full
 ```
 
-This command will launch a new network, Blockscout explorer and Dora CL explorer.
-
-To restart the DevNet, simply enter the command:
-
-```sh
-./gradlew restart
-```
+These commands will launch a new network, including the Blockscout explorer and Dora CL explorer, and deploy protocol smart contracts.
 
 To stop the DevNet, simply enter the command:
 
 ```sh
-./gradlew stop
+./bin/run.js stop
 ```
 
 This command will properly delete the state of all services and restart them.
 
 ## Available Services
 
-- Execution Layer: http://localhost:8545
-- Consensus Layer: http://localhost:3500
-- Blockscout: http://localhost:3080
-- Dora: http://localhost:3070
+To get the current links to the available services, enter the command:
+
+```sh
+./bin/run.js network info
+```
+
+This command will provide you with the most up-to-date information on the available network services.
