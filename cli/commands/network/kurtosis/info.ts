@@ -1,6 +1,6 @@
 import { Command } from "@oclif/core";
-import { baseConfig } from "../../../config/index.js";
 import { kurtosisApi } from "../../../lib/kurtosis/index.js";
+import { displayTable } from "../../../lib/console/index.js";
 
 export default class KurtosisUp extends Command {
   static description = "Check EL node is alive (can process transactions)";
@@ -8,6 +8,6 @@ export default class KurtosisUp extends Command {
   async run() {
     const output = await kurtosisApi.getEnclaveInfo("my-testnet");
 
-    this.logJson(output);
+    displayTable(output)
   }
 }
