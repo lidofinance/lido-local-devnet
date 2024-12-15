@@ -1,7 +1,6 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
 import { baseConfig, jsonDb } from "../../config/index.js";
-import { env } from "process";
 
 export default class BlockscoutUp extends Command {
   static description = "Start Blockscout";
