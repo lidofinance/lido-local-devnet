@@ -1,5 +1,5 @@
 // Function to display data as a table in the console
-export function displayTable(
+export function displayUrlTable(
   data: {
     name: string;
     url: string;

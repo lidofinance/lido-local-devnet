@@ -2,6 +2,7 @@ import { readFileSync } from "fs";
 import path from "path";
 import YAML from "yaml";
 import { JsonDb } from "../lib/state/index.js";
+import { sharedWallet } from "./shared-wallet.js";
 
 const NETWORK_BOOTSTRAP_VERSION = "devnet-dc";
 // services roots
@@ -96,4 +97,5 @@ export const baseConfig = {
       },
     },
   },
+  sharedWallet,
 };
