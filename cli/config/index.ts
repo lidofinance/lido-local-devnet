@@ -45,6 +45,7 @@ export const baseConfig = {
     config: YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, "utf-8")),
   },
   network: {
+    name: "my-testnet",
     el: {
       url: EL_URL,
     },

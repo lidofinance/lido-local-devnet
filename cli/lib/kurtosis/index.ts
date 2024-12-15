@@ -77,10 +77,15 @@ export class KurtosisAPI {
       [...services.entries()].map(async ([name, uid]) => {
         const serviceCtx = await this.getServiceContext(enclaveCtx, uid);
         const publicPorts = await serviceCtx.getPublicPorts();
+        const privatePorts = await serviceCtx.getPrivatePorts();
+        const privateIp = await serviceCtx.getPrivateIPAddress();
+
         const service = {
           name,
           uid,
           publicPorts: Object.fromEntries(publicPorts),
+          privateIp,
+          privatePorts: Object.fromEntries(privatePorts),
         };
 
         return service;

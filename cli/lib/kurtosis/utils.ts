@@ -25,18 +25,36 @@ interface ServiceInfo {
   publicPorts: {
     [k: string]: PortSpec;
   };
+  privatePorts: {
+    [k: string]: PortSpec;
+  };
+  privateIp: string;
 }
 export const createNetworkMapping = (enclaveServicesInfo: ServiceInfo[]) => {
   return enclaveServicesInfo
     .map((info) => {
-      const res = { ...info, url: "" };
+      const res = { ...info, url: "" } as ServiceInfo & {
+        url: string;
+        privateUrl: string;
+        privateWsUrl: string;
+        wsUrl?: string;
+      };
       if (info.name.startsWith("el")) {
-        res.url = formUrl(info.publicPorts.rpc);
+        res.url = formUrl(info.publicPorts.rpc.number);
+        res.wsUrl = formUrl(info.publicPorts.ws.number);
+
+        res.privateUrl = formUrl(info.privatePorts.rpc.number, info.privateIp);
+        res.privateWsUrl = formUrl(info.privatePorts.ws.number, info.privateIp);
         return res;
       }
 
       //   if (info.name.startsWith("cl")) {
-      res.url = info.publicPorts.http ? formUrl(info.publicPorts.http) : "";
+      res.url = info.publicPorts.http
+        ? formUrl(info.publicPorts.http.number)
+        : "";
+      res.privateUrl = info.privatePorts.http
+        ? formUrl(info.privatePorts.http.number, info.privateIp)
+        : "";
       return res;
       //   }
 
@@ -45,8 +63,5 @@ export const createNetworkMapping = (enclaveServicesInfo: ServiceInfo[]) => {
     .filter((val) => val);
 };
 
-const formUrl = (networkConfig: {
-  number: number;
-  transportProtocol: number;
-  maybeApplicationProtocol?: string;
-}) => `http://localhost:${networkConfig.number}`;
+const formUrl = (port: number, host = "localhost") =>
+  `http://${host}:${port}`;
