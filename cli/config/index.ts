@@ -63,25 +63,13 @@ export const baseConfig = {
     paths: {
       root: NETWORK_ROOT,
       genesis: path.join(NETWORK_ROOT, "execution", "genesis.json"),
-      volumes: [
-        path.join(NETWORK_ROOT, "consensus", "beacondata"),
-        path.join(NETWORK_ROOT, "consensus", "validatordata"),
-        path.join(NETWORK_ROOT, "consensus", "genesis.ssz"),
-        path.join(NETWORK_ROOT, "execution", "geth"),
-      ],
     },
   },
   dora: { url: "http://localhost:3070", paths: { root: DORA_ROOT } },
   blockscout: {
-    url: "http://localhost:3070",
+    url: "http://localhost:3080",
     paths: {
       root: BLOCKSCOUT_ROOT,
-      volumes: [
-        path.join(BLOCKSCOUT_ROOT, "services", "blockscout-db-data"),
-        path.join(BLOCKSCOUT_ROOT, "services", "logs"),
-        path.join(BLOCKSCOUT_ROOT, "services", "redis-data/dump.rdb"),
-        path.join(BLOCKSCOUT_ROOT, "services", "redis-data"),
-      ],
     },
   },
   onchain: {
