@@ -3,9 +3,10 @@ import { baseConfig, jsonDb } from "../../config/index.js";
 import { kurtosisApi } from "../../lib/kurtosis/index.js";
 
 export default class KurtosisUp extends Command {
-  static description = "Check EL node is alive (can process transactions)";
+  static description = "Runs a specific Ethereum package in Kurtosis and updates local JSON database with the network information.";
 
   async run() {
+    this.log("Running Ethereum package in Kurtosis...");
     const name = baseConfig.network.name;
     const output = await kurtosisApi.runPackage(
       name,
@@ -13,29 +14,20 @@ export default class KurtosisUp extends Command {
       baseConfig.kurtosis.config
     );
 
-    this.logJson(output);
+    if (
+      output.executionError ||
+      output.interpretationError ||
+      output.validationErrors.length
+    ) {
+      this.warn("An error occurred while starting the package.");
+      this.logJson(output);
+    } else {
+      this.log("Package started successfully.");
+    }
 
     const info = await kurtosisApi.getEnclaveInfo(name);
 
-    // const elNodes = info
-    //   .filter((n) => n.name.startsWith("el"))
-    //   .map((n) => n.url);
-    // const elNodesGrpc = info
-    //   .filter((n) => n.name.startsWith("el"))
-    //   .map((n) => n.wsUrl);
-    // const clNodes = info
-    //   .filter((n) => n.name.startsWith("cl"))
-    //   .map((n) => n.url);
-
-    // const elNodesPrivate = info
-    //   .filter((n) => n.name.startsWith("el"))
-    //   .map((n) => n.privateUrl);
-    // const elNodesGrpcPrivate = info
-    //   .filter((n) => n.name.startsWith("el"))
-    //   .map((n) => n.privateWsUrl);
-    // const clNodesPrivate = info
-    //   .filter((n) => n.name.startsWith("cl"))
-    //   .map((n) => n.privateUrl);
+    // Process and display node information
     const elNodes = info.filter((n) => n.name.startsWith("el"));
     const clNodes = info.filter((n) => n.name.startsWith("cl"));
 
@@ -55,5 +47,7 @@ export default class KurtosisUp extends Command {
         kurtosis: { services: info },
       },
     });
+
+    this.log("Network information updated in the local JSON database.");
   }
 }
