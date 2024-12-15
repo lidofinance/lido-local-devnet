@@ -16,7 +16,6 @@ export default class BlockscoutUp extends Command {
     const grpc = state.network?.binding?.elNodesGrpcPrivate?.[0] ?? network.el.url;
     const name = state.network?.binding?.name ?? network.name;
 
-    console.log(rpc, grpc, name);
     try {
       await execa("docker", ["compose", "-f", "geth.yml", "up", "-d"], {
         stdio: "inherit",

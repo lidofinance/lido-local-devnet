@@ -10,6 +10,12 @@ export default class KurtosisGetInfo extends Command {
   async run() {
     this.log("Retrieving Kurtosis enclave information...");
     const output = await kurtosisApi.getEnclaveInfo(baseConfig.network.name);
-    displayUrlTable(output);
+    // In the current version of etherium-package not Blockscout doesn't work correctly, so we use our own, which runs statically
+    const blockscoutTempConfig = {
+      name: "blockscout",
+      url: baseConfig.blockscout.url,
+    };
+
+    displayUrlTable([...output, blockscoutTempConfig]);
   }
 }
