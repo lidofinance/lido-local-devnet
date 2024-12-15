@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
 import path from "path";
 import YAML from "yaml";
+import { JsonDb } from "../lib/state/index.js";
 
 const NETWORK_BOOTSTRAP_VERSION = "devnet-dc";
 // services roots
@@ -24,6 +25,10 @@ const SHARED_PK =
 const EL_URL = "http://localhost:8545";
 const CL_URL = "http://localhost:3500";
 
+const STATE_DB_PATH = path.join(process.cwd(), ".state");
+
+export const jsonDb = new JsonDb(STATE_DB_PATH);
+
 export const baseConfig = {
   utils: {
     castPath: `${process.env.HOME}/.foundry/bin/cast`,
@@ -37,7 +42,7 @@ export const baseConfig = {
       root: KURTOSIS_ROOT,
       config: KURTOSIS_CONFIG_PATH,
     },
-    config: YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, 'utf-8')),
+    config: YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, "utf-8")),
   },
   network: {
     el: {

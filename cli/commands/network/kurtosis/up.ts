@@ -1,5 +1,5 @@
 import { Command } from "@oclif/core";
-import { baseConfig } from "../../../config/index.js";
+import { baseConfig, jsonDb } from "../../../config/index.js";
 import { kurtosisApi } from "../../../lib/kurtosis/index.js";
 
 export default class KurtosisUp extends Command {
@@ -13,5 +13,10 @@ export default class KurtosisUp extends Command {
     );
 
     this.logJson(output)
+
+    const info = await kurtosisApi.getEnclaveInfo("my-testnet");
+
+    await jsonDb.update('network', info)
+    await jsonDb.update('kurtosis-config', baseConfig.kurtosis.config)
   }
 }
