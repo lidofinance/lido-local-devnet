@@ -1,7 +1,7 @@
 // el_cl_genesis_data
 import { Command } from "@oclif/core";
 import fs from "node:fs/promises";
-import { baseConfig } from "../../../config/index.js";
+import { baseConfig } from "../../config/index.js";
 import { execa } from "execa";
 import path from "node:path";
 

@@ -1,7 +1,7 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
 import chalk from "chalk";
-import { baseConfig } from "../../../config/index.js";
+import { baseConfig } from "../../config/index.js";
 
 export default class NetworkCheck extends Command {
   static description = "Check EL node is alive (can process transactions)";

@@ -1,6 +1,6 @@
 import { Command } from "@oclif/core";
-import { kurtosisApi } from "../../../lib/kurtosis/index.js";
-import { baseConfig, jsonDb } from "../../../config/index.js";
+import { kurtosisApi } from "../../lib/kurtosis/index.js";
+import { baseConfig, jsonDb } from "../../config/index.js";
 import fs from "node:fs/promises";
 
 export default class KurtosisUp extends Command {
