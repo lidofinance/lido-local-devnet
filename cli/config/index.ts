@@ -26,11 +26,18 @@ const SHARED_PK =
 const EL_URL = "http://localhost:8545";
 const CL_URL = "http://localhost:3500";
 
-const STATE_DB_PATH = path.join(process.cwd(), ".state");
+const ARTIFACTS_PATH = path.join(process.cwd(), "artifacts");
+const STATE_DB_PATH = path.join(ARTIFACTS_PATH, "state.json");
 
 export const jsonDb = new JsonDb(STATE_DB_PATH);
 
 export const baseConfig = {
+  artifacts: {
+    paths: {
+      root: ARTIFACTS_PATH,
+      network: path.join(ARTIFACTS_PATH, "network"),
+    },
+  },
   utils: {
     castPath: `${process.env.HOME}/.foundry/bin/cast`,
   },
