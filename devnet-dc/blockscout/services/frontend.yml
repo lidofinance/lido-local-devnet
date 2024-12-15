@@ -2,10 +2,10 @@ version: '3.9'
 
 networks:
   devnet:
-    name: devnet
+    name: ${DOCKER_NETWORK_NAME}
     external: true
   blockscout:
-    name: devnet
+    name: blockscout
     external: true
 
 services:

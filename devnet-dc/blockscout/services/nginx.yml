@@ -2,10 +2,10 @@ version: '3.9'
 
 networks:
   devnet:
-    name: devnet
+    name: ${DOCKER_NETWORK_NAME}
     external: true
   blockscout:
-    name: devnet
+    name: blockscout
     external: true
 
 services:
@@ -25,5 +25,5 @@ services:
         published: 3080
       - target: 8080
         published: 8080
-      - target: 8081
-        published: 8081
+      # - target: 8081
+      #   published: 8781

@@ -2,7 +2,7 @@ version: '3.9'
 
 networks:
   devnet:
-    name: devnet
+    name: ${DOCKER_NETWORK_NAME}
     external: true
   blockscout:
     name: blockscout
@@ -44,6 +44,9 @@ services:
       - db:database
     environment:
         ETHEREUM_JSONRPC_VARIANT: 'geth'
+        ETHEREUM_JSONRPC_WS_URL: ${BLOCKSCOUT_WS_RPC_URL}
+        ETHEREUM_JSONRPC_TRACE_URL: ${BLOCKSCOUT_RPC_URL}
+        ETHEREUM_JSONRPC_HTTP_URL: ${BLOCKSCOUT_RPC_URL}
 
   visualizer:
     extends:
