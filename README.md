@@ -9,6 +9,7 @@ Project for launching DevNet with the Lido protocol locally. The project include
 - Node 20+
 - Docker 27+
 - docker-compose V2
+- kurtosis
 
 ## Getting Started
 
@@ -19,7 +20,11 @@ git submodule init
 ```
 
 ```sh
-git submodule update
+git submodule update --init --recursive
+```
+
+```sh
+kurtosis engine start
 ```
 
 ```sh
