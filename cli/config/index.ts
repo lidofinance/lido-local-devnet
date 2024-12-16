@@ -106,6 +106,17 @@ export const baseConfig = {
     lidoCLI: {
       paths: {
         root: path.join(OFCHAIN_ROOT, "lido-cli"),
+        configs: path.join(OFCHAIN_ROOT, "lido-cli", "configs"),
+      },
+      activate: {
+        env: {
+          DEPLOYED: "deployed-local-devnet.json",
+          EL_CHAIN_ID: "32382",
+          EL_NETWORK_NAME: "local-devnet",
+          PRIVATE_KEY: sharedWallet[0].privateKey,
+        },
+        oracles: [sharedWallet[10], sharedWallet[11]],
+        councils: [sharedWallet[12], sharedWallet[13]],
       },
     },
   },
