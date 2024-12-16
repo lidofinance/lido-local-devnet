@@ -13,3 +13,5 @@ build
 artifacts
 
 dist
+
+devnet-dc/dora/config/explorer-config.yaml

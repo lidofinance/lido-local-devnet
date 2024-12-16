@@ -8,7 +8,7 @@ export default class DoraDown extends Command {
   async run() {
     this.log("Stopping Dora...");
     try {
-      await execa("docker", ["compose", "down"], {
+      await execa("docker", ["compose", "down", "-v"], {
         stdio: "inherit",
         cwd: baseConfig.dora.paths.root,
       });

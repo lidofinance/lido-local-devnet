@@ -65,7 +65,14 @@ export const baseConfig = {
       root: NETWORK_ROOT,
     },
   },
-  dora: { url: "http://localhost:3070", paths: { root: DORA_ROOT } },
+  dora: {
+    url: "http://localhost:3070",
+    paths: {
+      root: DORA_ROOT,
+      configTemplate: path.join(DORA_ROOT, "config/explorer-config-template.yaml"),
+      config: path.join(DORA_ROOT, "config/explorer-config.yaml"),
+    },
+  },
   blockscout: {
     url: "http://localhost:3080",
     paths: {

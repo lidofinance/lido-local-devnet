@@ -4,7 +4,6 @@ import {
   StarlarkRunConfig,
 } from "kurtosis-sdk";
 import { createEnclaveArgs, createNetworkMapping } from "./utils.js";
-import internal from "stream";
 
 export class KurtosisAPI {
   private kurtosisContext!: KurtosisContext;

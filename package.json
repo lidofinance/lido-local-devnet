@@ -23,6 +23,9 @@
         "description": "Manage EL (Execution) and CL (Consensus) nodes."
       },
       "blockscout": {
+        "description": "Manage Dora, a Consensus Layer explorer."
+      },
+      "dora": {
         "description": "Manage Blockscout, a blockchain explorer."
       },
       "onchain": {
