@@ -6,11 +6,20 @@ export class LidoCoreInstall extends Command {
   static description = "Install dependencies in the lido-core directory";
 
   async run() {
-    this.log("Running yarn install...");
+    // Logging the specific directory for clarity
+    this.log(`Initiating 'yarn install' in the lido-core directory at ${baseConfig.onchain.lido.core.paths.root}...`);
     await execa("bash", ["-c", "corepack enable && yarn"], {
       cwd: baseConfig.onchain.lido.core.paths.root,
       stdio: "inherit",
     });
-    this.log("Yarn install completed.");
+    this.log("Dependencies installation completed successfully in the lido-core directory.");
+
+    // Ensure that the directory log for the lido-cli installation is also specific and clear
+    this.log(`Initiating 'yarn install' in the lido-cli directory at ${baseConfig.ofchain.lidoCLI.paths.root}...`);
+    await execa("bash", ["-c", "yarn"], {
+      cwd: baseConfig.ofchain.lidoCLI.paths.root,
+      stdio: "inherit",
+    });
+    this.log("Dependencies installation completed successfully in the lido-cli directory.");
   }
 }

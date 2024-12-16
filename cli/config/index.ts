@@ -20,6 +20,7 @@ const BLOCKSCOUT_ROOT = path.join(
   "blockscout"
 );
 const ONCHAIN_ROOT = path.join(process.cwd(), "onchain");
+const OFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
 const SHARED_WALLET_ADDRESS = "0x123463a4b065722e99115d6c222f267d9cabb524";
 const SHARED_PK =
   "0x2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622";
@@ -69,7 +70,10 @@ export const baseConfig = {
     url: "http://localhost:3070",
     paths: {
       root: DORA_ROOT,
-      configTemplate: path.join(DORA_ROOT, "config/explorer-config-template.yaml"),
+      configTemplate: path.join(
+        DORA_ROOT,
+        "config/explorer-config-template.yaml"
+      ),
       config: path.join(DORA_ROOT, "config/explorer-config.yaml"),
     },
   },
@@ -95,6 +99,13 @@ export const baseConfig = {
           NETWORK_STATE_DEFAULTS_FILE:
             "scripts/scratch/deployed-testnet-defaults.json",
         },
+      },
+    },
+  },
+  ofchain: {
+    lidoCLI: {
+      paths: {
+        root: path.join(OFCHAIN_ROOT, "lido-cli"),
       },
     },
   },
