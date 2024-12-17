@@ -98,6 +98,7 @@ export const baseConfig = {
           NETWORK_STATE_FILE: `deployed-local-devnet.json`,
           NETWORK_STATE_DEFAULTS_FILE:
             "scripts/scratch/deployed-testnet-defaults.json",
+          DEPOSIT_CONTRACT: "0x4242424242424242424242424242424242424242",
         },
       },
     },
