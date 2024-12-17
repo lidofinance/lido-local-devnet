@@ -2,55 +2,70 @@
 
 <img src="https://docs.lido.fi/img/logo.svg" height="90px" align="right" width="90px">
 
-Project for launching DevNet with the Lido protocol locally. The project includes launching a new network, launching a block explorer, and deploying Lido smart contracts.
+## Project for Launching DevNet with the Lido Protocol Locally
+This project includes launching a new network, a block explorer, and deploying Lido smart contracts.
 
-## Requirements
+### Requirements
 
 - Node 20+
 - Docker 27+
-- docker-compose V2
-- kurtosis
+- Docker-compose V2
+- Kurtosis
 
-## Getting Started
+### Getting Started
 
-To spin up the DevNet, simply enter the following commands:
+To spin up the DevNet, simply follow these commands:
 
-```sh
-git submodule init
-```
+1. **Start the Kurtosis instance** - This is necessary for launching Ethereum nodes:
+   ```sh
+   kurtosis engine start
+   ```
 
-```sh
-git submodule update --init --recursive
-```
+2. **Install project dependencies**:
+   ```sh
+   yarn
+   ```
 
-```sh
-kurtosis engine start
-```
+3. **Install subdependencies of the project**:
+   ```sh
+   ./bin/run.js install
+   ```
 
-```sh
-yarn
-```
+4. **To launch the environment and immediately deploy the protocol's smart contracts**:
+   ```sh
+   ./bin/run.js up-full
+   ```
 
-```sh
-./bin/run.js up-full
-```
+5. **Alternatively, you can raise the environment without smart contracts**:
+   ```sh
+   ./bin/run.js up
+   ```
 
-These commands will launch a new network, including the Blockscout explorer and Dora CL explorer, and deploy protocol smart contracts.
+6. **And then deploy the smart contracts separately**:
+   ```sh
+   ./bin/run.js onchain lido deploy
+   ```
+
+7. **After deploying the smart contracts, it is necessary to activate the protocol**:
+   - This command will finalize the setup of oracles and DSM and then activate the protocol; this command requires confirmation:
+   ```sh
+   ./bin/run.js onchain lido activate
+   ```
+
+8. **Done!** You have launched the network, infrastructure, and protocol locally.
+
+### To Stop the DevNet
 
 To stop the DevNet, simply enter the command:
-
 ```sh
 ./bin/run.js stop
 ```
-
 This command will properly delete the state of all services and restart them.
 
-## Available Services
+### Available Services
 
 To get the current links to the available services, enter the command:
-
 ```sh
 ./bin/run.js network info
 ```
-
 This command will provide you with the most up-to-date information on the available network services.
