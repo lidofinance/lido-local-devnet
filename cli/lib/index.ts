@@ -14,16 +14,11 @@ export const getGenesisTime = (genesisPath: string) => {
 
   const jsonContent = readFileSync(genesisPath, "utf-8");
   const jsonObject = JSON.parse(jsonContent);
-
-  const timestampHex = jsonObject.timestamp;
-  if (!timestampHex || typeof timestampHex !== "string") {
+  const timestamp = jsonObject.timestamp;
+  if (!timestamp) {
     throw new Error("The 'timestamp' property was not found or is empty.");
   }
-
-  const timestampHexClean = timestampHex.replace(/^0x/, "");
-  const timestampDec = parseInt(timestampHexClean, 16);
-
-  return timestampDec.toString();
+  return timestamp.toString();
 };
 
 interface TransactionDetails {
@@ -33,6 +28,21 @@ interface TransactionDetails {
   amount: string;
   timeout?: number;
 }
+
+export const calcEpoch = async (providerUrl: string, genesis: number) => {
+  const provider = new JsonRpcProvider(providerUrl);
+  const SECONDS_PER_SLOT = 12;
+  const timestamp = (await provider.getBlock("latest"))!.timestamp;
+  console.log(
+    "(timestamp - genesis) / SECONDS_PER_SLOT",
+    genesis,
+    timestamp,
+    (timestamp - genesis) / SECONDS_PER_SLOT,
+    (await provider.getBlock("latest"))?.number
+  );
+
+  return (timestamp - genesis) / SECONDS_PER_SLOT;
+};
 
 export const sendTransactionWithRetry = ({
   providerUrl,
