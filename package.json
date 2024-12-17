@@ -2,6 +2,9 @@
   "name": "lido-local-devnet",
   "packageManager": "yarn@4.2.2",
   "type": "module",
+  "scripts": {
+    "postinstall": "git submodule update --init --recursive"
+  },
   "dependencies": {
     "@oclif/core": "^4.0.36",
     "@oclif/plugin-help": "^6.2.19",
