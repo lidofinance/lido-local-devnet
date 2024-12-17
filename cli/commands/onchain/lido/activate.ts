@@ -41,10 +41,10 @@ export default class ActivateLidoProtocol extends Command {
     await setupDevNet(
       {
         oraclesMembers: oracles.map(({ publicKey }) => publicKey),
-        oraclesQuorum: 2,
+        oraclesQuorum: oracles.length,
         oraclesInitialEpoch: 1,
         dsmGuardians: councils.map(({ publicKey }) => publicKey),
-        dsmQuorum: 2,
+        dsmQuorum: councils.length,
         rolesBeneficiary: baseConfig.sharedWallet[0].publicKey,
       },
       baseConfig.ofchain.lidoCLI.paths.root,

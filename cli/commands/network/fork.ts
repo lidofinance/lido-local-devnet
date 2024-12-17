@@ -1,5 +1,3 @@
-// start-anvil.ts
-
 import { Command } from "@oclif/core";
 import { execa } from "execa";
 import { jsonDb } from "../../config/index.js";
