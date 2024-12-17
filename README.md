@@ -3,7 +3,7 @@
 <img src="https://docs.lido.fi/img/logo.svg" height="90px" align="right" width="90px">
 
 ## Project for Launching DevNet with the Lido Protocol Locally
-This project includes launching a new network, a block explorer, and deploying Lido smart contracts.
+Project for launching DevNet with the Lido protocol locally. The project includes launching a new network, launching a block explorer, and deploying Lido smart contracts.
 
 ### Requirements
 
@@ -35,7 +35,7 @@ To spin up the DevNet, simply follow these commands:
    ```sh
    ./bin/run.js up-full
    ```
-
+> ***If you use this command, proceed directly to step 7.***
 5. **Alternatively, you can raise the environment without smart contracts**:
    ```sh
    ./bin/run.js up
@@ -69,3 +69,4 @@ To get the current links to the available services, enter the command:
 ./bin/run.js network info
 ```
 This command will provide you with the most up-to-date information on the available network services.
+
