@@ -2,7 +2,6 @@
 
 <img src="https://docs.lido.fi/img/logo.svg" height="90px" align="right" width="90px">
 
-## Project for Launching DevNet with the Lido Protocol Locally
 Project for launching DevNet with the Lido protocol locally. The project includes launching a new network, launching a block explorer, and deploying Lido smart contracts.
 
 ### Requirements
