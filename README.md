@@ -6,10 +6,12 @@ Project for launching DevNet with the Lido protocol locally. The project include
 
 ### Requirements
 
-- Node 20+
-- Docker 27+
-- Docker-compose V2
-- Kurtosis
+- **Node** 20+ (https://nodejs.org/)
+- **Docker** 27+ (https://www.docker.com/)
+- **Docker-compose** V2 (https://docs.docker.com/compose/)
+- **Kurtosis** (https://www.kurtosistech.com/)
+- **Foundry tools**: [Get Started with Foundry](https://book.getfoundry.sh/getting-started/installation)
+- **Just**: [Just on GitHub](https://github.com/casey/just)
 
 ### Getting Started
 
@@ -32,7 +34,11 @@ To spin up the DevNet, simply follow these commands:
 
 4. **To launch the environment and immediately deploy the protocol's smart contracts**:
    ```sh
-   ./bin/run.js up-full
+   ./bin/run.js up --full
+   ```
+   Or you can use the command with the optional `--verify` flag to deploy smart contracts with verification on the block explorer
+   ```sh
+   ./bin/run.js up --full --verify
    ```
 > ***If you use this command, proceed directly to step 7.***
 5. **Alternatively, you can raise the environment without smart contracts**:
@@ -43,6 +49,9 @@ To spin up the DevNet, simply follow these commands:
 6. **And then deploy the smart contracts separately**:
    ```sh
    ./bin/run.js onchain lido deploy
+   ```
+    ```sh
+   ./bin/run.js onchain csm deploy
    ```
 
 7. **After deploying the smart contracts, it is necessary to activate the protocol**:
