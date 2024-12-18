@@ -7,6 +7,7 @@ export default class DevNetUp extends Command {
     this.log("Installing DevNet dependencies...");
 
     await this.config.runCommand("onchain:lido:install");
+    await this.config.runCommand("onchain:csm:install");
 
     this.log("DevNet dependencies installed successfully.");
   }
