@@ -1,4 +1,4 @@
-import { Command } from "@oclif/core";
+import { Command, Flags } from "@oclif/core";
 import { execa } from "execa";
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import {
@@ -9,8 +9,16 @@ import {
 export default class DeployLidoContracts extends Command {
   static description =
     "Deploys lido-core smart contracts using configured deployment scripts.";
+  static flags = {
+    verify: Flags.boolean({
+      char: "v",
+      description: "Verify smart contracts",
+    }),
+  };
 
   async run() {
+    const { flags } = await this.parse(DeployLidoContracts);
+
     this.log("Initiating the deployment of lido-core smart contracts...");
     await this.config.runCommand("onchain:lido:install");
 
@@ -46,6 +54,8 @@ export default class DeployLidoContracts extends Command {
     });
 
     await this.config.runCommand("onchain:lido:update-state");
+
+    if (flags.verify) await this.config.runCommand("onchain:lido:verify");
 
     this.log("Deployment of smart contracts completed successfully.");
   }

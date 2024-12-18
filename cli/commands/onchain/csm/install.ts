@@ -28,9 +28,9 @@ export class LidoCoreInstall extends Command {
     this.log("---------------------------------------------------");
     this.log();
 
-    this.log(
-      `Initiating 'just build' in the csm directory at ${commandRoot}...`
-    );
+    // this.log(
+    //   `Initiating 'just build' in the csm directory at ${commandRoot}...`
+    // );
 
     // await execa("just", ["build"], {
     //   cwd: commandRoot,
@@ -38,7 +38,7 @@ export class LidoCoreInstall extends Command {
     //   env: { CHAIN: csmConfig.env.CHAIN },
     // });
 
-    this.log("Dependencies build completed successfully in the csm directory.");
-    this.log();
+    // this.log("Dependencies build completed successfully in the csm directory.");
+    // this.log();
   }
 }
