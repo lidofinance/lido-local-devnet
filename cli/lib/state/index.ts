@@ -5,6 +5,7 @@ interface DataStructure {
   [key: string]: any;
 }
 
+type Path = string | (string | number)[];
 export class JsonDb {
   private filePath: string;
 
@@ -26,6 +27,11 @@ export class JsonDb {
     }
   }
 
+  async getReader() {
+    const state = await this.read();
+    return new JsonDbReader(state);
+  }
+
   async write(data: DataStructure): Promise<void> {
     await fs.mkdir(dirname(this.filePath), { recursive: true });
     await fs.writeFile(this.filePath, JSON.stringify(data, null, 2), "utf8");
@@ -38,5 +44,32 @@ export class JsonDb {
 
   async clean(): Promise<void> {
     await this.write({});
+  }
+}
+
+class JsonDbReader<T> {
+  state!: T;
+  constructor(state: T) {
+    this.state = state;
+  }
+  public getOrError(path: Path): any {
+    const keys = typeof path === "string" ? path.split(".") : path;
+    let result: any = this.state;
+
+    for (const key of keys) {
+      if (
+        result === undefined ||
+        result === null ||
+        typeof result !== "object"
+      ) {
+        throw new Error(`Property not found: ${keys.join(".")}`);
+      }
+      result = result[key];
+    }
+
+    if (result === undefined) {
+      throw new Error(`Property not found: ${keys.join(".")}`);
+    }
+    return result;
   }
 }
