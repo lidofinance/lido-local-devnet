@@ -4,6 +4,8 @@ import YAML from "yaml";
 import { JsonDb } from "../lib/state/index.js";
 import { sharedWallet } from "./shared-wallet.js";
 
+const CHAIN_ID = "32382";
+
 const NETWORK_BOOTSTRAP_VERSION = "devnet-dc";
 // services roots
 const NETWORK_ROOT = path.join(
@@ -20,6 +22,7 @@ const BLOCKSCOUT_ROOT = path.join(
   "blockscout"
 );
 const ONCHAIN_ROOT = path.join(process.cwd(), "onchain");
+const CSM_ROOT = path.join(ONCHAIN_ROOT, "csm");
 const OFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
 const SHARED_WALLET_ADDRESS = "0x123463a4b065722e99115d6c222f267d9cabb524";
 const SHARED_PK =
@@ -99,6 +102,41 @@ export const baseConfig = {
           NETWORK_STATE_DEFAULTS_FILE:
             "scripts/scratch/deployed-testnet-defaults.json",
           DEPOSIT_CONTRACT: "0x4242424242424242424242424242424242424242",
+        },
+      },
+      csm: {
+        paths: {
+          root: CSM_ROOT,
+        },
+        env: {
+          // Address of the Aragon agent
+          CSM_ARAGON_AGENT_ADDRESS: sharedWallet[0].publicKey,
+          // Address of the EVM script executor
+          EVM_SCRIPT_EXECUTOR_ADDRESS: sharedWallet[1].publicKey,
+          // Address of the first administrator, usually a Dev team EOA
+          CSM_FIRST_ADMIN_ADDRESS: sharedWallet[0].publicKey,
+          // First oracle member address
+          CSM_ORACLE_1_ADDRESS: sharedWallet[14].publicKey,
+          // Second oracle member address
+          CSM_ORACLE_2_ADDRESS: sharedWallet[15].publicKey,
+          // Address of the second administrator, usually a Dev team EOA
+          CSM_SECOND_ADMIN_ADDRESS: sharedWallet[1].publicKey,
+          // Lido's locator address
+          CSM_LOCATOR_ADDRESS: "",
+          // Genesis time for the development network
+          DEVNET_GENESIS_TIME: "",
+          // Address of the treasury associated with the locator
+          CSM_LOCATOR_TREASURY_ADDRESS: "",
+          RPC_URL: "",
+          DEPLOYER_PRIVATE_KEY: sharedWallet[0].privateKey,
+          DEPLOY_CONFIG: "./artifacts/local-devnet/deploy-local-devnet.json",
+          UPGRADE_CONFIG: "./artifacts/local-devnet/deploy-local-devnet.json",
+          CHAIN: "local-devnet",
+          ARTIFACTS_DIR: "./artifacts/local-devnet/",
+          // verify params
+          VERIFIER_URL: "http://localhost:3080/api",
+          DEVNET_CHAIN_ID: CHAIN_ID,
+          VERIFIER_API_KEY:"local-testnet"
         },
       },
     },
