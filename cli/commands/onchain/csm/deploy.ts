@@ -1,9 +1,9 @@
-import { Command } from "@oclif/core";
+import { Command, Flags } from "@oclif/core";
 import { execa } from "execa";
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import {
   getGenesisTime,
-  sendTransactionWithRetry,
+//   sendTransactionWithRetry,
 } from "../../../lib/index.js";
 
 type CSMENVConfig = typeof baseConfig.onchain.lido.csm.env;
@@ -11,8 +11,16 @@ type CSMENVConfig = typeof baseConfig.onchain.lido.csm.env;
 export default class DeployLidoContracts extends Command {
   static description =
     "Deploys csm smart contracts using configured deployment scripts.";
+  static flags = {
+    verify: Flags.boolean({
+      char: "v",
+      description: "Verify smart contracts",
+    }),
+  };
 
   async run() {
+    const { flags } = await this.parse(DeployLidoContracts);
+
     this.log("Initiating the deployment of csm smart contracts...");
     await this.config.runCommand("onchain:csm:install");
 
@@ -76,7 +84,10 @@ export default class DeployLidoContracts extends Command {
 
     this.log("Executing deployment scripts...");
 
-    await execa("just", ["deploy-local-devnet"], {
+    const args = ["deploy-local-devnet"];
+    if (flags.verify) args.push("--verify");
+
+    await execa("just", args, {
       cwd: commandRoot,
       stdio: "inherit",
       env: deployEnv,
