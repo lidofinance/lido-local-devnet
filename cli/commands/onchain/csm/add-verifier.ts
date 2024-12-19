@@ -6,18 +6,18 @@ import fs from "fs/promises";
 
 export default class DeployCSVerifier extends Command {
   static description =
-    "Deploys csm smart contracts using configured deployment scripts.";
+    "Deploys the CSVerifier smart contract using configured deployment scripts.";
   static flags = {
     verify: Flags.boolean({
       char: "v",
-      description: "Verify smart contracts",
+      description: "Verify the smart contract after deployment",
     }),
   };
 
   async run() {
     const { flags } = await this.parse(DeployCSVerifier);
 
-    this.log("Initiating the deployment of csm smart contracts...");
+    this.log("Initiating the deployment of the CSVerifier smart contract...");
 
     const csmConfig = baseConfig.onchain.lido.csm;
     const commandRoot = csmConfig.paths.root;
@@ -28,12 +28,12 @@ export default class DeployCSVerifier extends Command {
     const rpc = state.getOrError("network.binding.elNodes.0");
     // const rpc = "http://localhost:8545";
 
-    this.log(`Waiting for the execution node at ${rpc} to be ready...`);
+    this.log(`Waiting for the Execution Layer node at ${rpc} to be ready...`);
 
     await waitEL(rpc);
 
     const deployEnv = {
-      // infra
+      // Infrastructure
       RPC_URL: rpc,
       DEPLOYER_PRIVATE_KEY: csmDefaultEnv.DEPLOYER_PRIVATE_KEY,
       DEPLOY_CONFIG: csmDefaultEnv.DEPLOY_CONFIG,
@@ -53,8 +53,8 @@ export default class DeployCSVerifier extends Command {
 
     this.logJson(deployEnv);
 
-    this.log("Executing deployment scripts...");
-
+    this.log("Executing CSVerifier deployment scripts...");
+    // forge script ./script/DeployCSVerifierElectra.s.sol:DeployCSVerifier[Holesky|Mainnet|DevNet]
     await execa("just", ["clean"], {
       cwd: commandRoot,
       stdio: "inherit",
@@ -62,7 +62,7 @@ export default class DeployCSVerifier extends Command {
     });
 
     await this.config.runCommand("onchain:csm:install");
-    // forge script ./script/DeployCSVerifierElectra.s.sol:DeployCSVerifier[Holesky|Mainnet|DevNet]
+
     const args = [
       "script",
       "./script/DeployCSVerifierElectra.s.sol:DeployCSVerifierDevNet",
@@ -89,12 +89,12 @@ export default class DeployCSVerifier extends Command {
       env: deployEnv,
     });
 
-    const deployedVerifier = baseConfig.onchain.lido.csm.paths.deployedVerifier
+    const deployedVerifier = baseConfig.onchain.lido.csm.paths.deployedVerifier;
     const fileContent = await fs.readFile(deployedVerifier, "utf8");
     const jsonData = JSON.parse(fileContent);
 
     await jsonDb.update({ electraVerifier: jsonData });
 
-    this.log("Deployment of smart contracts completed successfully.");
+    this.log("CSVerifier smart contract deployment completed successfully.");
   }
 }
