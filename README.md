@@ -59,8 +59,22 @@ To spin up the DevNet, simply follow these commands:
    ```sh
    ./bin/run.js onchain lido activate
    ```
+8. **After activating and finalizing the main protocol, you can connect the CSM Module**:
+   - Use this command to activate the CSM module:
+   ```sh
+   ./bin/run.js onchain csm activate
+   ```
+9. **Next, you can deploy an additional CSVerifier for testing Pectra**:
+   - Use this command to add a CSVerifier:
+   ```sh
+   ./bin/run.js onchain csm add-verifier
+   ```
+   - You can also execute this command with smart contract verification:
+   ```sh
+   ./bin/run.js onchain csm add-verifier --verify
+   ```
 
-8. **Done!** You have launched the network, infrastructure, and protocol locally.
+10. **Done!** You have launched the network, infrastructure, and protocol locally.
 
 ### To Stop the DevNet
 
