@@ -3,7 +3,7 @@ import { execa } from "execa";
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import {
   getGenesisTime,
-//   sendTransactionWithRetry,
+  //   sendTransactionWithRetry,
 } from "../../../lib/index.js";
 
 type CSMENVConfig = typeof baseConfig.onchain.lido.csm.env;
@@ -22,7 +22,6 @@ export default class DeployLidoContracts extends Command {
     const { flags } = await this.parse(DeployLidoContracts);
 
     this.log("Initiating the deployment of csm smart contracts...");
-    await this.config.runCommand("onchain:csm:install");
 
     const csmConfig = baseConfig.onchain.lido.csm;
     const commandRoot = csmConfig.paths.root;
@@ -59,9 +58,13 @@ export default class DeployLidoContracts extends Command {
         "lidoCore.lidoLocator.proxy.address"
       ),
       // Address of the Aragon agent
-      CSM_ARAGON_AGENT_ADDRESS: csmDefaultEnv.CSM_ARAGON_AGENT_ADDRESS,
+      CSM_ARAGON_AGENT_ADDRESS: state.getOrError(
+        "lidoCore.app:aragon-agent.proxy.address"
+      ),
       // Address of the EVM script executor
-      EVM_SCRIPT_EXECUTOR_ADDRESS: csmDefaultEnv.EVM_SCRIPT_EXECUTOR_ADDRESS,
+      EVM_SCRIPT_EXECUTOR_ADDRESS:  state.getOrError(
+        "lidoCore.app:aragon-agent.proxy.address"
+      ),
       // Address of the first administrator, usually a Dev team EOA
       CSM_FIRST_ADMIN_ADDRESS: csmDefaultEnv.CSM_FIRST_ADMIN_ADDRESS,
       // First oracle member address
@@ -84,6 +87,14 @@ export default class DeployLidoContracts extends Command {
 
     this.log("Executing deployment scripts...");
 
+    await execa("just", ["clean"], {
+      cwd: commandRoot,
+      stdio: "inherit",
+      env: deployEnv,
+    });
+
+    await this.config.runCommand("onchain:csm:install");
+
     const args = ["deploy-local-devnet"];
     if (flags.verify) args.push("--verify");
 
@@ -93,13 +104,7 @@ export default class DeployLidoContracts extends Command {
       env: deployEnv,
     });
 
-    // await execa("just", ["verify-devnet"], {
-    //     cwd: commandRoot,
-    //     stdio: "inherit",
-    //     env: deployEnv,
-    //   });
-
-    // await this.config.runCommand("onchain:lido:update-state");
+    await this.config.runCommand("onchain:csm:update-state");
 
     this.log("Deployment of smart contracts completed successfully.");
   }

@@ -114,9 +114,9 @@ export const baseConfig = {
         },
         env: {
           // Address of the Aragon agent
-          CSM_ARAGON_AGENT_ADDRESS: sharedWallet[0].publicKey,
+          CSM_ARAGON_AGENT_ADDRESS: "",
           // Address of the EVM script executor
-          EVM_SCRIPT_EXECUTOR_ADDRESS: sharedWallet[1].publicKey,
+          EVM_SCRIPT_EXECUTOR_ADDRESS: "",
           // Address of the first administrator, usually a Dev team EOA
           CSM_FIRST_ADMIN_ADDRESS: sharedWallet[0].publicKey,
           // First oracle member address
