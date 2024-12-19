@@ -49,7 +49,7 @@ export const sendTransactionWithRetry = ({
   privateKey,
   toAddress,
   amount,
-  timeout = 180000,
+  // timeout = 180000,
 }: TransactionDetails): Promise<TransactionReceipt> => {
   const provider = new JsonRpcProvider(providerUrl);
   const wallet = new ethers.Wallet(privateKey, provider);
@@ -80,9 +80,9 @@ export const sendTransactionWithRetry = ({
     }
   };
 
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error("Timeout reached")), timeout);
-  });
-
-  return Promise.race([attemptToSendTransaction(), timeoutPromise]);
+  // const timeoutPromise = new Promise<never>((_, reject) => {
+  //   setTimeout(() => reject(new Error("Timeout reached")), timeout);
+  // });
+  return attemptToSendTransaction()
+  // return Promise.race([attemptToSendTransaction(), timeoutPromise]);
 };
