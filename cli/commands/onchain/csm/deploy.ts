@@ -3,8 +3,8 @@ import { execa } from "execa";
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import {
   getGenesisTime,
-  //   sendTransactionWithRetry,
 } from "../../../lib/index.js";
+import { waitEL } from "../../../lib/network/index.js";
 
 type CSMENVConfig = typeof baseConfig.onchain.lido.csm.env;
 
@@ -29,18 +29,12 @@ export default class DeployLidoContracts extends Command {
 
     const state = await jsonDb.getReader();
 
-    // const rpc = state.network?.binding?.elNodes?.[0];
     const rpc = state.getOrError("network.binding.elNodes.0");
     // const rpc = "http://localhost:8545";
 
     this.log(`Waiting for the execution node at ${rpc} to be ready...`);
-    // await sendTransactionWithRetry({
-    //   providerUrl: rpc,
-    //   privateKey: baseConfig.sharedWallet[0].privateKey,
-    //   toAddress: "0xf93Ee4Cf8c6c40b329b0c0626F28333c132CF241",
-    //   amount: "1",
-    // });
-    //"lidoLocator.proxy
+
+    await waitEL(rpc);
 
     const deployEnv: CSMENVConfig = {
       // infra
@@ -62,7 +56,7 @@ export default class DeployLidoContracts extends Command {
         "lidoCore.app:aragon-agent.proxy.address"
       ),
       // Address of the EVM script executor
-      EVM_SCRIPT_EXECUTOR_ADDRESS:  state.getOrError(
+      EVM_SCRIPT_EXECUTOR_ADDRESS: state.getOrError(
         "lidoCore.app:aragon-agent.proxy.address"
       ),
       // Address of the first administrator, usually a Dev team EOA
@@ -96,7 +90,14 @@ export default class DeployLidoContracts extends Command {
     await this.config.runCommand("onchain:csm:install");
 
     const args = ["deploy-local-devnet"];
-    if (flags.verify) args.push("--verify");
+    if (flags.verify)
+      args.push(
+        "--verify",
+        " --verifier",
+        "custom",
+        "--chain",
+        csmDefaultEnv.DEVNET_CHAIN_ID
+      );
 
     await execa("just", args, {
       cwd: commandRoot,
