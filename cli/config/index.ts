@@ -111,6 +111,10 @@ export const baseConfig = {
             CSM_ROOT,
             "artifacts/latest/deploy-local-devnet.json"
           ),
+          deployedVerifier: path.join(
+            CSM_ROOT,
+            "artifacts/latest/deploy-verifier-devnet.json"
+          )
         },
         env: {
           // Address of the Aragon agent
