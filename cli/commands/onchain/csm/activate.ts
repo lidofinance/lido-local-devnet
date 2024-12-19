@@ -29,8 +29,8 @@ export default class ActivateCSM extends Command {
     await this.config.runCommand("onchain:lido:install");
 
     const state = await jsonDb.getReader();
-    // const rpc = state.getOrError("network.binding.elNodes.0");
-    const rpc = "http://localhost:8545";
+    const rpc = state.getOrError("network.binding.elNodes.0");
+    // const rpc = "http://localhost:8545";
 
     const CSModule = state.getOrError("csm.CSModule");
     const CSAccounting = state.getOrError("csm.CSAccounting");
