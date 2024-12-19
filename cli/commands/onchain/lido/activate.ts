@@ -2,6 +2,7 @@ import { Command } from "@oclif/core";
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import { sendTransactionWithRetry } from "../../../lib/index.js";
 import { setupDevNet } from "../../../lib/lido-cli/index.js";
+import { waitEL } from "../../../lib/network/index.js";
 
 export default class ActivateLidoProtocol extends Command {
   static description =
@@ -21,12 +22,7 @@ export default class ActivateLidoProtocol extends Command {
     }
 
     this.log(`Ensuring the execution node at ${rpc} is ready...`);
-    await sendTransactionWithRetry({
-      providerUrl: rpc,
-      privateKey: baseConfig.sharedWallet[0].privateKey,
-      toAddress: "0xf93Ee4Cf8c6c40b329b0c0626F28333c132CF241",
-      amount: "1",
-    });
+    await waitEL(rpc);
 
     this.log("Execution node is ready.");
 
