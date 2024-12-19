@@ -107,12 +107,20 @@ export const baseConfig = {
       csm: {
         paths: {
           root: CSM_ROOT,
+          deployed: path.join(
+            CSM_ROOT,
+            "artifacts/latest/deploy-local-devnet.json"
+          ),
+          deployedVerifier: path.join(
+            CSM_ROOT,
+            "artifacts/latest/deploy-verifier-devnet.json"
+          )
         },
         env: {
           // Address of the Aragon agent
-          CSM_ARAGON_AGENT_ADDRESS: sharedWallet[0].publicKey,
+          CSM_ARAGON_AGENT_ADDRESS: "",
           // Address of the EVM script executor
-          EVM_SCRIPT_EXECUTOR_ADDRESS: sharedWallet[1].publicKey,
+          EVM_SCRIPT_EXECUTOR_ADDRESS: "",
           // Address of the first administrator, usually a Dev team EOA
           CSM_FIRST_ADMIN_ADDRESS: sharedWallet[0].publicKey,
           // First oracle member address
@@ -136,7 +144,7 @@ export const baseConfig = {
           // verify params
           VERIFIER_URL: "http://localhost:3080/api",
           DEVNET_CHAIN_ID: CHAIN_ID,
-          VERIFIER_API_KEY:"local-testnet"
+          VERIFIER_API_KEY: "local-testnet",
         },
       },
     },
@@ -146,6 +154,7 @@ export const baseConfig = {
       paths: {
         root: path.join(OFCHAIN_ROOT, "lido-cli"),
         configs: path.join(OFCHAIN_ROOT, "lido-cli", "configs"),
+        activateCSM: path.join(OFCHAIN_ROOT, "lido-cli", "configs"),
       },
       activate: {
         env: {
@@ -156,6 +165,11 @@ export const baseConfig = {
         },
         oracles: [sharedWallet[10], sharedWallet[11]],
         councils: [sharedWallet[12], sharedWallet[13]],
+      },
+      activateCSM: {
+        CS_MODULE_ADDRESS: "",
+        CS_ACCOUNTING_ADDRESS: "",
+        CS_ORACLE_HASH_CONSENSUS_ADDRESS: "",
       },
     },
   },

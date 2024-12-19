@@ -1,14 +1,10 @@
 import { Command, Flags } from "@oclif/core";
 import { execa } from "execa";
 import { baseConfig, jsonDb } from "../../../config/index.js";
-import {
-  getGenesisTime,
-} from "../../../lib/index.js";
 import { waitEL } from "../../../lib/network/index.js";
+import fs from "fs/promises";
 
-type CSMENVConfig = typeof baseConfig.onchain.lido.csm.env;
-
-export default class DeployLidoContracts extends Command {
+export default class DeployCSVerifier extends Command {
   static description =
     "Deploys csm smart contracts using configured deployment scripts.";
   static flags = {
@@ -19,7 +15,7 @@ export default class DeployLidoContracts extends Command {
   };
 
   async run() {
-    const { flags } = await this.parse(DeployLidoContracts);
+    const { flags } = await this.parse(DeployCSVerifier);
 
     this.log("Initiating the deployment of csm smart contracts...");
 
@@ -36,7 +32,7 @@ export default class DeployLidoContracts extends Command {
 
     await waitEL(rpc);
 
-    const deployEnv: CSMENVConfig = {
+    const deployEnv = {
       // infra
       RPC_URL: rpc,
       DEPLOYER_PRIVATE_KEY: csmDefaultEnv.DEPLOYER_PRIVATE_KEY,
@@ -44,37 +40,15 @@ export default class DeployLidoContracts extends Command {
       UPGRADE_CONFIG: csmDefaultEnv.UPGRADE_CONFIG,
       CHAIN: csmDefaultEnv.CHAIN,
       ARTIFACTS_DIR: csmDefaultEnv.ARTIFACTS_DIR,
-      // smart contract params
-      // genesis time from local network genesis.json file
-      DEVNET_GENESIS_TIME: getGenesisTime(baseConfig.artifacts.paths.genesis),
-      // Lido's locator address
-      CSM_LOCATOR_ADDRESS: state.getOrError(
-        "lidoCore.lidoLocator.proxy.address"
-      ),
-      // Address of the Aragon agent
-      CSM_ARAGON_AGENT_ADDRESS: state.getOrError(
-        "lidoCore.app:aragon-agent.proxy.address"
-      ),
-      // Address of the EVM script executor
-      EVM_SCRIPT_EXECUTOR_ADDRESS: state.getOrError(
-        "lidoCore.app:aragon-agent.proxy.address"
-      ),
-      // Address of the first administrator, usually a Dev team EOA
-      CSM_FIRST_ADMIN_ADDRESS: csmDefaultEnv.CSM_FIRST_ADMIN_ADDRESS,
-      // First oracle member address
-      CSM_ORACLE_1_ADDRESS: csmDefaultEnv.CSM_ORACLE_1_ADDRESS,
-      // Second oracle member address
-      CSM_ORACLE_2_ADDRESS: csmDefaultEnv.CSM_ORACLE_2_ADDRESS,
-      // Address of the treasury associated with the locator
-      CSM_LOCATOR_TREASURY_ADDRESS: state.getOrError(
-        "lidoCore.lidoLocator.implementation.constructorArgs.0.treasury"
-      ),
-      // Address of the second administrator, usually a Dev team EOA
-      CSM_SECOND_ADMIN_ADDRESS: csmDefaultEnv.CSM_SECOND_ADMIN_ADDRESS,
 
       VERIFIER_URL: csmDefaultEnv.VERIFIER_URL,
       DEVNET_CHAIN_ID: csmDefaultEnv.DEVNET_CHAIN_ID,
       VERIFIER_API_KEY: csmDefaultEnv.VERIFIER_API_KEY,
+
+      CSM_WITHDRAWAL_VAULT: state.getOrError(
+        "lidoCore.withdrawalVault.proxy.address"
+      ),
+      CSM_MODULE: state.getOrError("csm.CSModule"),
     };
 
     this.logJson(deployEnv);
@@ -88,24 +62,38 @@ export default class DeployLidoContracts extends Command {
     });
 
     await this.config.runCommand("onchain:csm:install");
-
-    const args = ["deploy-local-devnet"];
+    // forge script ./script/DeployCSVerifierElectra.s.sol:DeployCSVerifier[Holesky|Mainnet|DevNet]
+    const args = [
+      "script",
+      "./script/DeployCSVerifierElectra.s.sol:DeployCSVerifierDevNet",
+      "--broadcast",
+      "--rpc-url",
+      rpc,
+    ];
     if (flags.verify)
       args.push(
         "--verify",
-        " --verifier",
+        "--verifier",
         "custom",
         "--chain",
-        csmDefaultEnv.DEVNET_CHAIN_ID
+        csmDefaultEnv.DEVNET_CHAIN_ID,
+        "--verifier-url",
+        csmDefaultEnv.VERIFIER_URL,
+        "--verifier-api-key",
+        csmDefaultEnv.VERIFIER_API_KEY
       );
 
-    await execa("just", args, {
+    await execa("forge", args, {
       cwd: commandRoot,
       stdio: "inherit",
       env: deployEnv,
     });
 
-    await this.config.runCommand("onchain:csm:update-state");
+    const deployedVerifier = baseConfig.onchain.lido.csm.paths.deployedVerifier
+    const fileContent = await fs.readFile(deployedVerifier, "utf8");
+    const jsonData = JSON.parse(fileContent);
+
+    await jsonDb.update({ electraVerifier: jsonData });
 
     this.log("Deployment of smart contracts completed successfully.");
   }

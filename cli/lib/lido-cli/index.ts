@@ -9,7 +9,7 @@ type DevNetSetupParams = {
   rolesBeneficiary: string;
 };
 
-type DevNetEnv = {
+export type DevNetLidoCliBaseEnv = {
   DEPLOYED: string;
   EL_CHAIN_ID: string;
   EL_NETWORK_NAME: string;
@@ -20,7 +20,7 @@ type DevNetEnv = {
 export async function setupDevNet(
   params: DevNetSetupParams,
   cwd: string,
-  env: DevNetEnv
+  env: DevNetLidoCliBaseEnv
 ) {
   const command = "npx";
   const args = [
