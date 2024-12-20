@@ -1,17 +1,6 @@
 .idea/
-
-devnet-dc/network/consensus/beacondata
-devnet-dc/network/consensus/genesis.ssz
-devnet-dc/network/consensus/validatordata
-devnet-dc/network/execution/geth
-devnet-dc/network/execution/geth.ipc
-
-devnet-dc/blockscout/services/blockscout-db-data
-devnet-dc/blockscout/services/stats-db-data
-devnet-dc/blockscout/services/redis-data
-devnet-dc/blockscout/services/logs
-devnet-dc/blockscout/tmp
-
+.yarn
+node_modules
 network-back
 
 TODO.md
@@ -20,3 +9,9 @@ TODO.md
 
 # Ignore Gradle build output directory
 build
+
+artifacts
+
+dist
+
+devnet-dc/dora/config/explorer-config.yaml

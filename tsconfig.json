@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "Node16",
+    "outDir": "dist",
+    "rootDir": "./cli",
+    "strict": true,
+    "target": "ESNext",
+    "moduleResolution": "node16"
+  },
+  "include": ["cli/**/*"],
+  "ts-node": {
+    "esm": true
+  }
+}

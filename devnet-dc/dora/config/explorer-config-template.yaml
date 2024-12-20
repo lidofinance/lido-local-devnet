@@ -69,10 +69,10 @@ indexer:
   disableSynchronizer: false
 
   # reset synchronization state to this epoch on startup - only use to resync database, comment out afterwards
-  #resyncFromEpoch: 0
+  resyncFromEpoch: 0
 
   # force re-synchronization of epochs that are already present in DB - only use to fix missing data after schema upgrades
-  #resyncForceUpdate: true
+  resyncForceUpdate: true
 
   # number of seconds to pause the synchronization between each epoch (don't overload CL client)
   syncEpochCooldown: 2

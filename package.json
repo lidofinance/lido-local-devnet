@@ -1,0 +1,46 @@
+{
+  "name": "lido-local-devnet",
+  "packageManager": "yarn@4.2.2",
+  "type": "module",
+  "scripts": {
+    "postinstall": "git submodule update --init --recursive"
+  },
+  "dependencies": {
+    "@oclif/core": "^4.0.37",
+    "@oclif/plugin-help": "^6.2.19",
+    "@types/node": "^22.10.2",
+    "ethers": "^6.13.4",
+    "execa": "^9.5.2",
+    "kurtosis-sdk": "^1.4.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2",
+    "yaml": "^2.6.1"
+  },
+  "oclif": {
+    "bin": "./bin/run.js",
+    "commands": "./cli/commands",
+    "dirname": "devnet",
+    "topicSeparator": " ",
+    "topics": {
+      "network": {
+        "description": "Manage EL (Execution) and CL (Consensus) nodes."
+      },
+      "blockscout": {
+        "description": "Manage Dora, a Consensus Layer explorer."
+      },
+      "dora": {
+        "description": "Manage Blockscout, a blockchain explorer."
+      },
+      "onchain": {
+        "description": "Manage and deploy protocol smart contracts."
+      },
+      "onchain:lido": {
+        "description": "Manage and deploy core smart contracts."
+      }
+    },
+    "hooks": {}
+  },
+  "bin": {
+    "devnet": "./bin/run.js"
+  }
+}

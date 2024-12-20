@@ -1,0 +1,25 @@
+participants_matrix:
+  el:
+    - el_type: geth
+      el_image: ethpandaops/geth:lightclient-prague-devnet-1-37c4b03
+  cl:
+    - cl_type: teku
+      cl_image: ethpandaops/teku:master-2d2d17b
+network_params:
+  network_id: "32382"
+  electra_fork_epoch: 5
+  min_validator_withdrawability_delay: 1
+  shard_committee_period: 1
+  # preset: minimal #minimal
+  preset: mainnet #minimal
+keymanager_enabled: true
+additional_services:
+  - assertoor
+  - dora
+assertoor_params:
+  image: "ethpandaops/assertoor:master"
+  run_stability_check: false
+  run_block_proposal_check: false
+  tests:
+    - https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/validator-withdrawal-test.yaml
+    - https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/validator-exit-test.yaml

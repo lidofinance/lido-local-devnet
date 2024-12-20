@@ -4,43 +4,91 @@
 
 Project for launching DevNet with the Lido protocol locally. The project includes launching a new network, launching a block explorer, and deploying Lido smart contracts.
 
-## Requirements
+### Requirements
 
-* Java 11+ (OpenJDK or other)
-* Docker 27+
-* docker-compose V2
+- **Node** 20+ (https://nodejs.org/)
+- **Docker** 27+ (https://www.docker.com/)
+- **Docker-compose** V2 (https://docs.docker.com/compose/)
+- **Kurtosis** (https://www.kurtosistech.com/)
+- **Foundry tools**: [Get Started with Foundry](https://book.getfoundry.sh/getting-started/installation)
+- **Just**: [Just on GitHub](https://github.com/casey/just)
 
-## Getting Started
+### Getting Started
 
-> [!WARNING]
-> The project is currently under development, automatic deployment of smart contracts has not yet been implemented.
+To spin up the DevNet, simply follow these commands:
 
+1. **Start the Kurtosis instance** - This is necessary for launching Ethereum nodes:
+   ```sh
+   kurtosis engine start
+   ```
 
-To spin up the DevNet, simply enter the command:
+2. **Install project dependencies**:
+   ```sh
+   yarn
+   ```
 
-```sh
-./gradlew start
-```
+3. **Install subdependencies of the project**:
+   ```sh
+   ./bin/run.js install
+   ```
 
-This command will launch a new network, Blockscout explorer and Dora CL explorer.
+4. **To launch the environment and immediately deploy the protocol's smart contracts**:
+   ```sh
+   ./bin/run.js up --full
+   ```
+   Or you can use the command with the optional `--verify` flag to deploy smart contracts with verification on the block explorer
+   ```sh
+   ./bin/run.js up --full --verify
+   ```
+> ***If you use this command, proceed directly to step 7.***
+5. **Alternatively, you can raise the environment without smart contracts**:
+   ```sh
+   ./bin/run.js up
+   ```
 
-To restart the DevNet, simply enter the command:
+6. **And then deploy the smart contracts separately**:
+   ```sh
+   ./bin/run.js onchain lido deploy
+   ```
+    ```sh
+   ./bin/run.js onchain csm deploy
+   ```
 
-```sh
-./gradlew restart
-```
+7. **After deploying the smart contracts, it is necessary to activate the protocol**:
+   - This command will finalize the setup of oracles and DSM and then activate the protocol; this command requires confirmation:
+   ```sh
+   ./bin/run.js onchain lido activate
+   ```
+8. **After activating and finalizing the main protocol, you can connect the CSM Module**:
+   - Use this command to activate the CSM module:
+   ```sh
+   ./bin/run.js onchain csm activate
+   ```
+9. **Next, you can deploy an additional CSVerifier for testing Pectra**:
+   - Use this command to add a CSVerifier:
+   ```sh
+   ./bin/run.js onchain csm add-verifier
+   ```
+   - You can also execute this command with smart contract verification:
+   ```sh
+   ./bin/run.js onchain csm add-verifier --verify
+   ```
+
+10. **Done!** You have launched the network, infrastructure, and protocol locally.
+
+### To Stop the DevNet
 
 To stop the DevNet, simply enter the command:
-
 ```sh
-./gradlew stop
+./bin/run.js stop
 ```
-
 This command will properly delete the state of all services and restart them.
 
-## Available Services
+### Available Services
 
-- Execution Layer: http://localhost:8545
-- Consensus Layer: http://localhost:3500
-- Blockscout: http://localhost:3080
-- Dora: http://localhost:3070
+To get the current links to the available services, enter the command:
+```sh
+./bin/run.js network info
+```
+This command will provide you with the most up-to-date information on the available network services.
+

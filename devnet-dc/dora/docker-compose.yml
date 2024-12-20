@@ -2,7 +2,7 @@ version: "3.9"
 
 networks:
   devnet:
-    name: devnet
+    name: ${DOCKER_NETWORK_NAME}
     external: true
   dora:
     name: dora
@@ -10,7 +10,7 @@ networks:
 
 services:
   dora:
-    image: pk910/dora-the-explorer:latest
+    image: ethpandaops/dora:master-5df6232
     container_name: dora
     restart: unless-stopped
     ports:

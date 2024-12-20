@@ -10,7 +10,7 @@ services:
   # APIs to allow for proof-of-stake consensus via Prysm.
   geth:
     platform: linux/amd64
-    image: "ethpandaops/geth:lightclient-prague-devnet-4-37035c5"
+    image: "ethpandaops/geth:master-f808d73"
     hostname: execution
     command:
       - --http
