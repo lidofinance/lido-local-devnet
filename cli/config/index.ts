@@ -3,6 +3,7 @@ import path from "path";
 import YAML from "yaml";
 import { JsonDb } from "../lib/state/index.js";
 import { sharedWallet } from "./shared-wallet.js";
+import assert from "assert";
 
 const CHAIN_ID = "32382";
 
@@ -13,8 +14,19 @@ const NETWORK_ROOT = path.join(
   NETWORK_BOOTSTRAP_VERSION,
   "network"
 );
+
 const KURTOSIS_ROOT = path.join(process.cwd(), "devnet-kurtosis");
 const KURTOSIS_CONFIG_PATH = path.join(KURTOSIS_ROOT, "/configs/devnet4.yml");
+const KURTOSIS_CONFIG = YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, "utf-8"));
+const KURTOSIS_PRESET = KURTOSIS_CONFIG?.network_params?.preset;
+
+assert(
+  KURTOSIS_PRESET !== undefined,
+  "Please install preset in Kurtosis config (network_params.preset = mainnet|minimal)"
+);
+const KURTOSIS_IS_MINIMAL_MODE = KURTOSIS_PRESET === "minimal";
+const SLOTS_PER_EPOCH = KURTOSIS_IS_MINIMAL_MODE ? 8 : 32;
+
 const DORA_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "dora");
 const BLOCKSCOUT_ROOT = path.join(
   process.cwd(),
@@ -45,7 +57,7 @@ export const baseConfig = {
       root: ARTIFACTS_PATH,
       network: path.join(ARTIFACTS_PATH, "network"),
       genesis: path.join(ARTIFACTS_PATH, "network", "genesis.json"),
-      validator: path.join(ARTIFACTS_PATH, "validator")
+      validator: path.join(ARTIFACTS_PATH, "validator"),
     },
   },
   utils: {
@@ -60,7 +72,9 @@ export const baseConfig = {
       root: KURTOSIS_ROOT,
       config: KURTOSIS_CONFIG_PATH,
     },
-    config: YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, "utf-8")),
+    config: KURTOSIS_CONFIG,
+    isMinimalMode: KURTOSIS_PRESET === "minimal",
+    slotsPerEpoch: SLOTS_PER_EPOCH,
   },
   network: {
     name: "my-testnet",
@@ -150,7 +164,7 @@ export const baseConfig = {
           VERIFIER_URL: "http://localhost:3080/api",
           DEVNET_CHAIN_ID: CHAIN_ID,
           VERIFIER_API_KEY: "local-testnet",
-          DEVNET_SLOTS_PER_EPOCH: "8"
+          DEVNET_SLOTS_PER_EPOCH: "8",
         },
       },
     },
