@@ -24,6 +24,7 @@ const BLOCKSCOUT_ROOT = path.join(
 const ONCHAIN_ROOT = path.join(process.cwd(), "onchain");
 const CSM_ROOT = path.join(ONCHAIN_ROOT, "csm");
 const OFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
+const DEPOSIT_CLI_ROOT = path.join(OFCHAIN_ROOT, "deposit-cli");
 const SHARED_WALLET_ADDRESS = "0x123463a4b065722e99115d6c222f267d9cabb524";
 const SHARED_PK =
   "0x2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622";
@@ -34,6 +35,9 @@ const ARTIFACTS_PATH = path.join(process.cwd(), "artifacts");
 const STATE_DB_PATH = path.join(ARTIFACTS_PATH, "state.json");
 
 export const jsonDb = new JsonDb(STATE_DB_PATH);
+export const parsedConsensusGenesis = new JsonDb(
+  path.join(ARTIFACTS_PATH, "network/parsed/parsedConsensusGenesis.json")
+);
 
 export const baseConfig = {
   artifacts: {
@@ -41,6 +45,7 @@ export const baseConfig = {
       root: ARTIFACTS_PATH,
       network: path.join(ARTIFACTS_PATH, "network"),
       genesis: path.join(ARTIFACTS_PATH, "network", "genesis.json"),
+      validator: path.join(ARTIFACTS_PATH, "validator")
     },
   },
   utils: {
@@ -114,7 +119,7 @@ export const baseConfig = {
           deployedVerifier: path.join(
             CSM_ROOT,
             "artifacts/latest/deploy-verifier-devnet.json"
-          )
+          ),
         },
         env: {
           // Address of the Aragon agent
@@ -145,6 +150,7 @@ export const baseConfig = {
           VERIFIER_URL: "http://localhost:3080/api",
           DEVNET_CHAIN_ID: CHAIN_ID,
           VERIFIER_API_KEY: "local-testnet",
+          DEVNET_SLOTS_PER_EPOCH: "8"
         },
       },
     },
@@ -170,6 +176,14 @@ export const baseConfig = {
         CS_MODULE_ADDRESS: "",
         CS_ACCOUNTING_ADDRESS: "",
         CS_ORACLE_HASH_CONSENSUS_ADDRESS: "",
+      },
+    },
+  },
+  dockerRunner: {
+    depositCli: {
+      paths: {
+        root: DEPOSIT_CLI_ROOT,
+        dockerfile: path.join(DEPOSIT_CLI_ROOT, "Dockerfile"),
       },
     },
   },
