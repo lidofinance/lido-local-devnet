@@ -3,6 +3,7 @@ import {
   baseConfig,
   jsonDb,
   parsedConsensusGenesis,
+  validatorsState,
 } from "../../config/index.js";
 import { runDepositCli } from "../../lib/docker-runner/index.js";
 import { manageKeystores } from "../../lib/deposit/keystore-manager.js";
@@ -33,7 +34,12 @@ export default class DevNetConfig extends Command {
     //   "current_version": "0x50000038",
     //   "epoch": "0"
     // },
-    console.log(devnetSetting);
+
+    const currentState = await validatorsState.read();
+    const depositData = currentState?.depositData;
+
+    const startIndex = String(depositData ? depositData.length - 1 : 0);
+    console.log(startIndex, "startIndex");
     await runDepositCli(
       [
         "--non_interactive",
@@ -47,7 +53,7 @@ export default class DevNetConfig extends Command {
         "--num_validators",
         "10",
         "--validator_start_index",
-        "0",
+        startIndex,
         "--mnemonic",
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
         "--keystore_password",

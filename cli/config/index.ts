@@ -50,6 +50,9 @@ export const jsonDb = new JsonDb(STATE_DB_PATH);
 export const parsedConsensusGenesis = new JsonDb(
   path.join(ARTIFACTS_PATH, "network/parsed/parsedConsensusGenesis.json")
 );
+export const validatorsState = new JsonDb(
+  path.join(ARTIFACTS_PATH, "validator", "state.json")
+);
 
 export const baseConfig = {
   artifacts: {
