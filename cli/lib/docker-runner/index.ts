@@ -20,6 +20,7 @@ export async function buildAndRunCommandInDocker(
   imageName: string,
   command: string,
   args: string[],
+  volume: string,
   opts?: ExecOpts
   //   platform: string = 'linux/amd64'
 ) {
@@ -55,7 +56,7 @@ export async function buildAndRunCommandInDocker(
       "run",
       "--rm",
       "-v",
-      `${baseConfig.artifacts.paths.validator}:/app/validator_keys`, // Mount the current directory to /workspace in the container
+      volume,
       ...formatDockerEnvVars(opts?.env),
       imageName, // Use the existing or newly built image
       command,
@@ -79,9 +80,10 @@ export const runDepositCli = async (
     args, `deposit-cli:${gitHash}`)
   return buildAndRunCommandInDocker(
     dockerRunner.depositCli.paths.dockerfile,
-    `deposit-cli:${gitHash}-1`,
+    `deposit-cli:${gitHash}`,
     command,
     args,
+    `${baseConfig.artifacts.paths.validatorGenerated}:/app/validator_keys`,
     {...opts, cwd: dockerRunner.depositCli.paths.root}
   );
 };

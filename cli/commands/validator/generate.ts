@@ -5,6 +5,7 @@ import {
   parsedConsensusGenesis,
 } from "../../config/index.js";
 import { runDepositCli } from "../../lib/docker-runner/index.js";
+import { manageKeystores } from "../../lib/deposit/keystore-manager.js";
 
 // new-mnemonic --folder . --num_validators 20 --mnemonic_language english --chain holesky --eth1_withdrawal_address 0xdc46b6c07C14e808155d67C35d6b9C67A0FB4328
 
@@ -63,6 +64,11 @@ export default class DevNetConfig extends Command {
           GENESIS_VALIDATORS_ROOT: devnetSetting.genesis_validator_root,
         },
       }
+    );
+
+    await manageKeystores(
+      baseConfig.artifacts.paths.validatorGenerated,
+      baseConfig.artifacts.paths.validator
     );
   }
 }

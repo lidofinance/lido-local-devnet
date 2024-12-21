@@ -36,7 +36,7 @@ const BLOCKSCOUT_ROOT = path.join(
 const ONCHAIN_ROOT = path.join(process.cwd(), "onchain");
 const CSM_ROOT = path.join(ONCHAIN_ROOT, "csm");
 const OFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
-const DEPOSIT_CLI_ROOT = path.join(OFCHAIN_ROOT, "deposit-cli");
+const DEPOSIT_CLI_ROOT = path.join(OFCHAIN_ROOT, "staking-deposit-cli");
 const SHARED_WALLET_ADDRESS = "0x123463a4b065722e99115d6c222f267d9cabb524";
 const SHARED_PK =
   "0x2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622";
@@ -58,6 +58,7 @@ export const baseConfig = {
       network: path.join(ARTIFACTS_PATH, "network"),
       genesis: path.join(ARTIFACTS_PATH, "network", "genesis.json"),
       validator: path.join(ARTIFACTS_PATH, "validator"),
+      validatorGenerated: path.join(ARTIFACTS_PATH, "validator-generated"),
     },
   },
   utils: {
