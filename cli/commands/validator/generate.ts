@@ -1,7 +1,6 @@
-import { Command } from "@oclif/core";
+import { Command, Flags } from "@oclif/core";
 import {
   baseConfig,
-  jsonDb,
   parsedConsensusGenesis,
   validatorsState,
 } from "../../config/index.js";
@@ -10,16 +9,22 @@ import { manageKeystores } from "../../lib/deposit/keystore-manager.js";
 import { copyFile } from "fs/promises";
 import path from "path";
 
-// new-mnemonic --folder . --num_validators 20 --mnemonic_language english --chain holesky --eth1_withdrawal_address 0xdc46b6c07C14e808155d67C35d6b9C67A0FB4328
+export default class GenerateDevNetKeys extends Command {
+  static description =
+    "Create deposit keys for validators in the DevNet configuration";
 
-// docker run -it --rm -v $(pwd)/devnet3-keys:/app/validator_keys deposit-cli:948d3fc --non_interactive --language english existing-mnemonic --mnemonic="abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" --keystore_password 12345678  --folder . --validator_start_index 0 --num_validators 20 --chain holesky --eth1_withdrawal_address 0xdc46b6c07C14e808155d67C35d6b9C67A0FB4328
-
-export default class DevNetConfig extends Command {
-  static description = "Print public DevNet config";
+  static flags = {
+    wc: Flags.string({
+      char: "w",
+      description: "Custom withdrawal credentials (optional)",
+    }),
+  };
 
   async run() {
+    const { flags } = await this.parse(GenerateDevNetKeys);
+    const customWC = flags.wc;
+
     const state = await parsedConsensusGenesis.getReader();
-    // '{"network_name": "<NETWORK_NAME>", "genesis_fork_version": "<GENESIS_FORK_VERSION>", "genesis_validator_root": "<GENESIS_VALIDATOR_ROOT>"}'
     const devnetSetting = {
       network_name: baseConfig.network.name,
       genesis_fork_version: (
@@ -29,19 +34,11 @@ export default class DevNetConfig extends Command {
         state.getOrError("genesis_validators_root") as string
       ).replace("0x", ""),
     };
-    // "genesis_validators_root": "0xd61ea484febacfae5298d52a2b581f3e305a51f3112a9241b968dccf019f7b11",
-    // "slot": "0",
-    // "fork": {
-    //   "previous_version": "0x40000038",
-    //   "current_version": "0x50000038",
-    //   "epoch": "0"
-    // },
 
     const currentState = await validatorsState.read();
     const depositData = currentState?.depositData;
-    // | `--validator_start_index` | Non-negative integer | The index of the first validator's keys you wish to generate. If this is your first time generating keys with this mnemonic, use 0. If you have generated keys using this mnemonic before, use the next index from which you want to start generating keys from (eg, if you've generated 4 keys before (keys #0, #1, #2, #3), then enter 4 here.|
     const startIndex = String(depositData?.length ?? 0);
-    console.log(startIndex, "startIndex");
+
     await runDepositCli(
       [
         "--non_interactive",
@@ -50,8 +47,6 @@ export default class DevNetConfig extends Command {
         "existing-mnemonic",
         "--chain",
         "devnet",
-        // "--folder",
-        // "./dist",
         "--num_validators",
         "10",
         "--validator_start_index",
@@ -61,14 +56,11 @@ export default class DevNetConfig extends Command {
         "--keystore_password",
         "12345678",
         "--eth1_withdrawal_address",
-        baseConfig.sharedWallet[3].publicKey,
-        // "--devnet_chain_setting",
-        // JSON.stringify(devnetSetting),
+        customWC || baseConfig.sharedWallet[3].publicKey, // Use the custom WC if provided, otherwise use the default
       ],
       {
         env: {
-          // GENESIS_FORK_VERSION: devnetSetting.genesis_fork_version,
-          GENESIS_FORK_VERSION: "10000038", // GENESIS_FORK_VERSION fron network/config.yaml
+          GENESIS_FORK_VERSION: "10000038", // Using hardcoded value as per initial code
           GENESIS_VALIDATORS_ROOT: devnetSetting.genesis_validator_root,
         },
       }
@@ -79,6 +71,9 @@ export default class DevNetConfig extends Command {
       baseConfig.artifacts.paths.validator
     );
 
-    await copyFile(baseConfig.artifacts.paths.clConfig, path.join(baseConfig.artifacts.paths.validator, "config.yaml"))
+    await copyFile(
+      baseConfig.artifacts.paths.clConfig,
+      path.join(baseConfig.artifacts.paths.validator, "config.yaml")
+    );
   }
 }
