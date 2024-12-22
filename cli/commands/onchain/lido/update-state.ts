@@ -3,6 +3,26 @@ import { baseConfig, jsonDb } from "../../../config/index.js";
 import path from "path";
 import fs from "fs/promises";
 
+const lidoCliTpl = (c) =>
+  `
+# Private key for account
+PRIVATE_KEY=${c.ok}
+
+# Contract addresses
+DEPLOYED=${c.deployed}
+
+# Execution Layer API provider
+EL_CHAIN_ID=${c.chainId}
+EL_NETWORK_NAME=${c.networkName}
+EL_API_PROVIDER=${c.el}
+
+# Consensus Layer API provider
+CL_API_PROVIDER=${c.cl}
+
+# TODO
+KEYS_API_PROVIDER=https://keys-api.testnet.fi
+`;
+
 export class LidoCoreUpdateState extends Command {
   static description =
     "Reads the network state file for lido-core and updates the JSON database accordingly.";
@@ -19,6 +39,12 @@ export class LidoCoreUpdateState extends Command {
     // save state to lido-cli folder
     await fs.writeFile(
       path.join(lidoCLI.paths.configs, lidoCLI.activate.env.DEPLOYED),
+      fileContent,
+      "utf-8"
+    );
+    // create .env
+    await fs.writeFile(
+      path.join(lidoCLI.paths.configs, ".env"),
       fileContent,
       "utf-8"
     );
