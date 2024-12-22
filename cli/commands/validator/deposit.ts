@@ -34,6 +34,8 @@ export default class DevNetConfig extends Command {
       this.error("Deposit data not found in validator/state.json file");
     }
     for (const [index, data] of (depositData as any[]).entries()) {
+      if (data.used) continue;
+
       await makeDeposit(
         data.pubkey,
         data.withdrawal_credentials,

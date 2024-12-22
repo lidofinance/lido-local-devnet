@@ -11,6 +11,7 @@ export async function generateDockerComposeOneService(
     dockerNetwork,
     dockerImage,
     validatorFeeRecipient,
+    graffiti
   }: {
     validatorsInfo: Validator[];
     keysDir: string;
@@ -18,6 +19,7 @@ export async function generateDockerComposeOneService(
     dockerNetwork: string;
     dockerImage: string;
     validatorFeeRecipient: string;
+    graffiti: string
   }
 ) {
   let dockerComposeContent = `version: '3.9'\nservices:\n`;
@@ -35,10 +37,12 @@ export async function generateDockerComposeOneService(
     networks:
       - devnet
     command: >
-      validator-client --network=auto
+      validator-client
+      --network=/validator_keys/config.yaml
       ${keysCommand}
       --beacon-node-api-endpoint=${clPrivateUrl}
       --validators-proposer-default-fee-recipient=${validatorFeeRecipient}
+      --validators-graffiti=${graffiti}
     restart: unless-stopped\n`;
 
   dockerComposeContent += `

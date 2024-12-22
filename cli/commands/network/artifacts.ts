@@ -14,6 +14,7 @@ export default class DownloadKurtosisArtifacts extends Command {
     const networkName = baseConfig.network.name;
 
     await fs.mkdir(baseConfig.artifacts.paths.root, { recursive: true });
+    // getting network data from kurtosis
     await execa(
       "kurtosis",
       [
@@ -27,6 +28,21 @@ export default class DownloadKurtosisArtifacts extends Command {
         stdio: "inherit",
       }
     );
+    // TODO: in the future, get the key from here
+    // await execa(
+    //   "kurtosis",
+    //   [
+    //     "files",
+    //     "download",
+    //     networkName,
+    //     "keymanager_file",
+    //     path.join(baseConfig.artifacts.paths.root, 'keymanager'),
+    //   ],
+    //   {
+    //     stdio: "inherit",
+    //   }
+    // );
+    // validator-key-generation-cl-validator-keystore
     this.log("Genesis data downloaded successfully.");
   }
 

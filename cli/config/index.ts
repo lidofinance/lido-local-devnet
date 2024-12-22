@@ -67,6 +67,7 @@ export const baseConfig = {
       root: ARTIFACTS_PATH,
       network: path.join(ARTIFACTS_PATH, "network"),
       genesis: path.join(ARTIFACTS_PATH, "network", "genesis.json"),
+      clConfig: path.join(ARTIFACTS_PATH, "network", "config.yaml"),
       validator: path.join(ARTIFACTS_PATH, "validator"),
       validatorGenerated: path.join(ARTIFACTS_PATH, "validator-generated"),
     },

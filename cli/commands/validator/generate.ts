@@ -7,6 +7,8 @@ import {
 } from "../../config/index.js";
 import { runDepositCli } from "../../lib/docker-runner/index.js";
 import { manageKeystores } from "../../lib/deposit/keystore-manager.js";
+import { copyFile } from "fs/promises";
+import path from "path";
 
 // new-mnemonic --folder . --num_validators 20 --mnemonic_language english --chain holesky --eth1_withdrawal_address 0xdc46b6c07C14e808155d67C35d6b9C67A0FB4328
 
@@ -37,8 +39,8 @@ export default class DevNetConfig extends Command {
 
     const currentState = await validatorsState.read();
     const depositData = currentState?.depositData;
-
-    const startIndex = String(depositData ? depositData.length - 1 : 0);
+    // | `--validator_start_index` | Non-negative integer | The index of the first validator's keys you wish to generate. If this is your first time generating keys with this mnemonic, use 0. If you have generated keys using this mnemonic before, use the next index from which you want to start generating keys from (eg, if you've generated 4 keys before (keys #0, #1, #2, #3), then enter 4 here.|
+    const startIndex = String(depositData?.length ?? 0);
     console.log(startIndex, "startIndex");
     await runDepositCli(
       [
@@ -76,5 +78,7 @@ export default class DevNetConfig extends Command {
       baseConfig.artifacts.paths.validatorGenerated,
       baseConfig.artifacts.paths.validator
     );
+
+    await copyFile(baseConfig.artifacts.paths.clConfig, path.join(baseConfig.artifacts.paths.validator, "config.yaml"))
   }
 }

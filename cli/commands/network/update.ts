@@ -4,10 +4,10 @@ import { kurtosisApi } from "../../lib/kurtosis/index.js";
 
 export default class KurtosisUp extends Command {
   static description =
-    "Runs a specific Ethereum package in Kurtosis and updates local JSON database with the network information.";
+    "Updates the network configuration using a specific Ethereum package in Kurtosis and stores the configuration in the local JSON database.";
 
   async run() {
-    this.log("Running Ethereum package in Kurtosis...");
+    this.log("Updating network configuration using Ethereum package in Kurtosis...");
     const name = baseConfig.network.name;
 
     const info = await kurtosisApi.getEnclaveInfo(name);
@@ -15,6 +15,7 @@ export default class KurtosisUp extends Command {
     // Process and display node information
     const elNodes = info.filter((n) => n.name.startsWith("el"));
     const clNodes = info.filter((n) => n.name.startsWith("cl"));
+    const validators = info.filter((n) => n.name.startsWith("vc"));
 
     const binding = {
       elNodes: elNodes.map((n) => n.url),
@@ -23,6 +24,8 @@ export default class KurtosisUp extends Command {
       elNodesGrpcPrivate: elNodes.map((n) => n.privateWsUrl),
       clNodes: clNodes.map((n) => n.url),
       clNodesPrivate: clNodes.map((n) => n.privateUrl),
+      validatorsApi: validators.map((n) => n.url),
+      validatorsApiPrivate: validators.map((n) => n.privateUrl),
     };
 
     await jsonDb.update({
@@ -33,6 +36,6 @@ export default class KurtosisUp extends Command {
       },
     });
 
-    this.log("Network information updated in the local JSON database.");
+    this.log("Network configuration updated successfully and stored in the local JSON database.");
   }
 }
