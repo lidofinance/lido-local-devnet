@@ -3,10 +3,19 @@ import { baseConfig, jsonDb } from "../../../config/index.js";
 import path from "path";
 import fs from "fs/promises";
 
-const lidoCliTpl = (c) =>
+interface LidoCliConfig {
+  pk: string;
+  deployed: string;
+  chainId: string | number;
+  networkName: string;
+  el: string;
+  cl: string;
+}
+
+const lidoCliTpl = (c: LidoCliConfig) =>
   `
 # Private key for account
-PRIVATE_KEY=${c.ok}
+PRIVATE_KEY=${c.pk}
 
 # Contract addresses
 DEPLOYED=${c.deployed}
@@ -31,6 +40,11 @@ export class LidoCoreUpdateState extends Command {
     this.log("Reading network state file...");
     const { env, paths } = baseConfig.onchain.lido.core;
     const deployedNetworkPath = path.join(paths.root, env.NETWORK_STATE_FILE);
+
+    const state = await jsonDb.getReader();
+    const el: string = state.getOrError("network.binding.elNodes.0");
+    const cl: string = state.getOrError("network.binding.clNodes.0");
+
     const fileContent = await fs.readFile(deployedNetworkPath, "utf8");
     const jsonData = JSON.parse(fileContent);
     await jsonDb.update({ lidoCore: jsonData });
@@ -44,8 +58,15 @@ export class LidoCoreUpdateState extends Command {
     );
     // create .env
     await fs.writeFile(
-      path.join(lidoCLI.paths.configs, ".env"),
-      fileContent,
+      path.join(lidoCLI.paths.root, ".env"),
+      lidoCliTpl({
+        pk: lidoCLI.activate.env.PRIVATE_KEY,
+        deployed: lidoCLI.activate.env.DEPLOYED,
+        el,
+        cl,
+        chainId: lidoCLI.activate.env.EL_CHAIN_ID,
+        networkName: lidoCLI.activate.env.EL_NETWORK_NAME,
+      }),
       "utf-8"
     );
     this.log(
