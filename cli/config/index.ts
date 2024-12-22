@@ -30,6 +30,8 @@ const KURTOSIS_IS_MINIMAL_MODE = KURTOSIS_PRESET === "minimal";
 const SLOTS_PER_EPOCH = KURTOSIS_IS_MINIMAL_MODE ? 8 : 32;
 
 const DORA_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "dora");
+const KAPI_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "kapi");
+
 const BLOCKSCOUT_ROOT = path.join(
   process.cwd(),
   NETWORK_BOOTSTRAP_VERSION,
@@ -100,6 +102,11 @@ export const baseConfig = {
     paths: {
       root: NETWORK_ROOT,
     },
+  },
+  kapi: {
+    paths: {
+      root: KAPI_ROOT
+    }
   },
   dora: {
     url: "http://localhost:3070",
