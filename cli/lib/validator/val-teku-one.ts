@@ -1,36 +1,41 @@
 import fs from "fs/promises";
 import { Validator } from "./interfaces.js";
 import path from "path";
+import { getAddress } from "ethers";
 
 export async function generateDockerComposeOneService(
   outDir: string,
   {
-    validatorsInfo,
     keysDir,
     clPrivateUrl,
     dockerNetwork,
     dockerImage,
-    validatorFeeRecipient,
-    graffiti
+    graffiti,
+    valGroups,
   }: {
-    validatorsInfo: Validator[];
     keysDir: string;
     clPrivateUrl: string;
     dockerNetwork: string;
     dockerImage: string;
-    validatorFeeRecipient: string;
-    graffiti: string
+    graffiti: string;
+    valGroups: Record<string, Validator[]>;
   }
 ) {
   let dockerComposeContent = `version: '3.9'\nservices:\n`;
-  const serviceName = "teku_validators";
-  
-  let keysCommand = validatorsInfo.map(val =>
-    `--validator-keys=/validator_keys/${val.validator.pubkey.replace("0x", "")}.json:/validator_keys/password.txt`
-  ).join(' ');
 
-  dockerComposeContent += `
-  ${serviceName}:
+  Object.entries(valGroups).forEach(([groupName, validators]) => {
+    let keysCommand = validators
+      .map(
+        (val) =>
+          `--validator-keys=/validator_keys/${val.validator.pubkey.replace(
+            "0x",
+            ""
+          )}.json:/validator_keys/password.txt`
+      )
+      .join(" ");
+
+    dockerComposeContent += `
+  teku_validator_${groupName.slice(-5)}:
     image: ${dockerImage}
     volumes:
       - ${keysDir}:/validator_keys
@@ -41,9 +46,12 @@ export async function generateDockerComposeOneService(
       --network=/validator_keys/config.yaml
       ${keysCommand}
       --beacon-node-api-endpoint=${clPrivateUrl}
-      --validators-proposer-default-fee-recipient=${validatorFeeRecipient}
+      --validators-proposer-default-fee-recipient=${getAddress(
+        groupName.replace("0x010000000000000000000000", "0x")
+      )}
       --validators-graffiti=${graffiti}
     restart: unless-stopped\n`;
+  });
 
   dockerComposeContent += `
 networks:
