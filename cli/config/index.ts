@@ -20,6 +20,8 @@ const KURTOSIS_CONFIG_PATH = path.join(KURTOSIS_ROOT, "/configs/devnet4.yml");
 const KURTOSIS_CONFIG = YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, "utf-8"));
 const KURTOSIS_PRESET = KURTOSIS_CONFIG?.network_params?.preset;
 
+const VALIDATOR_COMPOSE_DIR = path.join(process.cwd(), "devnet-dc", "validator-teku");
+
 assert(
   KURTOSIS_PRESET !== undefined,
   "Please install preset in Kurtosis config (network_params.preset = mainnet|minimal)"
@@ -55,6 +57,11 @@ export const validatorsState = new JsonDb(
 );
 
 export const baseConfig = {
+  validator: {
+    paths: {
+      docker: VALIDATOR_COMPOSE_DIR
+    }
+  },
   artifacts: {
     paths: {
       root: ARTIFACTS_PATH,

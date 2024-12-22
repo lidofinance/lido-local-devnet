@@ -102,4 +102,19 @@ export async function manageKeystores(
 ): Promise<void> {
   await createDirectory(destinationDirectory);
   await processFiles(sourceDirectory, destinationDirectory);
+  await fs.writeFile(path.join(destinationDirectory, "password.txt"), "12345678", "utf-8");
+}
+
+export async function deleteLockFiles(dir: string): Promise<void> {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const entryPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            await deleteLockFiles(entryPath);
+        } else if (entry.isFile() && path.extname(entry.name) === '.lock') {
+            await fs.unlink(entryPath);
+            console.log(`Deleted: ${entryPath}`);
+        }
+    }
 }
