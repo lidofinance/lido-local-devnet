@@ -40,10 +40,23 @@ export default class DevNetConfig extends Command {
 
     const baseDir = baseConfig.artifacts.paths.validatorKeysDump;
     const filePath = path.join(baseDir, `${flags.name}.json`);
-
+    // validator dir
     await fs.mkdir(baseDir, { recursive: true });
     await fs.writeFile(
       filePath,
+      JSON.stringify(lidoUnusedKeys, null, 2),
+      "utf-8"
+    );
+
+    // lido cli dir
+    const cliKeysRoot = path.join(
+      baseConfig.ofchain.lidoCLI.paths.root,
+      "generated-keys"
+    );
+    const cliKeysFileName = path.join(cliKeysRoot, `${flags.name}.json`);
+    await fs.mkdir(cliKeysRoot, { recursive: true });
+    await fs.writeFile(
+      cliKeysFileName,
       JSON.stringify(lidoUnusedKeys, null, 2),
       "utf-8"
     );
@@ -53,5 +66,6 @@ export default class DevNetConfig extends Command {
     await validatorsState.write(currentState);
 
     this.log(`Keys written to ${filePath}`);
+    this.log(`Keys written to ${cliKeysFileName}`);
   }
 }
