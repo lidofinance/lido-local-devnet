@@ -133,6 +133,21 @@ To spin up the DevNet, simply follow these commands:
    ./bin/run.js validator logs
    ```
 
+### Launching Additional Tooling
+
+#### KAPI
+To launch the service, simply enter the following command:
+```sh
+./bin/run.js kapi up
+```
+To view the logs:
+```sh
+./bin/run.js kapi logs
+```
+To stop the service:
+```sh
+./bin/run.js kapi down
+```
 ### To Stop the DevNet
 
 To stop the DevNet, simply enter the command:
