@@ -110,6 +110,11 @@ To spin up the DevNet, simply follow these commands:
    If you need to add more keys, you can repeat this process as many times as necessary, with different validators.
 
 3. **Deposit**:
+   - To operate deposits without DSM, enter the following command:
+   ```sh
+   ./run.sh devnet replace-dsm-with-eoa 0x8943545177806ED17B9F23F0a21ee5948eCaa776
+   ```
+   `0x8943545177806ED17B9F23F0a21ee5948eCaa776` — this is the primary address used in all scripts by default.
    - To complete the deposit process, follow the steps in this guide: https://hackmd.io/@george-avs/HkYfg3GHyx#Increase-Staking-Limit, starting with the `Increase-Staking-Limit` section.
 
 4. **Validator Launch**:
