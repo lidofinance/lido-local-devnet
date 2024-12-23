@@ -3,15 +3,15 @@ import {
   baseConfig,
   parsedConsensusGenesis,
   validatorsState,
-} from "../../config/index.js";
-import { runDepositCli } from "../../lib/docker-runner/index.js";
-import { manageKeystores } from "../../lib/deposit/keystore-manager.js";
+} from "../../../config/index.js";
+import { runDepositCli } from "../../../lib/docker-runner/index.js";
+import { manageKeystores } from "../../../lib/deposit/keystore-manager.js";
 import { copyFile } from "fs/promises";
 import path from "path";
 
 export default class GenerateDevNetKeys extends Command {
   static description =
-    "Create deposit keys for validators in the DevNet configuration";
+    "Create deposit keys for vanilla validators in the DevNet configuration";
 
   static flags = {
     wc: Flags.string({
@@ -23,13 +23,10 @@ export default class GenerateDevNetKeys extends Command {
   async run() {
     const { flags } = await this.parse(GenerateDevNetKeys);
     const customWC = flags.wc;
-
+    console.log(baseConfig.sharedWallet[3].publicKey, customWC);
     const state = await parsedConsensusGenesis.getReader();
     const devnetSetting = {
       network_name: baseConfig.network.name,
-      genesis_fork_version: (
-        state.getOrError("fork.current_version") as string
-      ).replace("0x", ""),
       genesis_validator_root: (
         state.getOrError("genesis_validators_root") as string
       ).replace("0x", ""),

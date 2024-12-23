@@ -1,10 +1,10 @@
 import { Command } from "@oclif/core";
 
-import { jsonDb } from "../../config/index.js";
+import { jsonDb } from "../../../config/index.js";
 import {
   fetchKeystores,
   fetchValidatorGraffiti,
-} from "../../lib/keymanager-api/index.js";
+} from "../../../lib/keymanager-api/index.js";
 
 export class FetchCommittees extends Command {
   static description =

@@ -19,6 +19,5 @@ export default class DevNetConfig extends Command {
       (d: { withdrawal_credentials: string }) => d.withdrawal_credentials === WC
     );
     this.logJson(lidoKeys);
-    //withdrawal_credentials
   }
 }
