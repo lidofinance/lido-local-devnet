@@ -17,3 +17,4 @@
 [submodule "ofchain/kapi"]
 	path = ofchain/kapi
 	url = git@github.com:lidofinance/lido-keys-api.git
+	branch = feat/devnet
