@@ -25,29 +25,6 @@ export default class KurtosisUp extends Command {
       this.log("Package started successfully.");
     }
 
-    const info = await kurtosisApi.getEnclaveInfo(name);
-
-    // Process and display node information
-    const elNodes = info.filter((n) => n.name.startsWith("el"));
-    const clNodes = info.filter((n) => n.name.startsWith("cl"));
-
-    const binding = {
-      elNodes: elNodes.map((n) => n.url),
-      elNodesGrpc: elNodes.map((n) => n.wsUrl),
-      elNodesPrivate: elNodes.map((n) => n.privateUrl),
-      elNodesGrpcPrivate: elNodes.map((n) => n.privateWsUrl),
-      clNodes: clNodes.map((n) => n.url),
-      clNodesPrivate: clNodes.map((n) => n.privateUrl),
-    };
-
-    await jsonDb.update({
-      network: {
-        name,
-        binding,
-        kurtosis: { services: info },
-      },
-    });
-
-    this.log("Network information updated in the local JSON database.");
+    await this.config.runCommand("network:update")
   }
 }

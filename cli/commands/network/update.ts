@@ -2,7 +2,7 @@ import { Command } from "@oclif/core";
 import { baseConfig, jsonDb } from "../../config/index.js";
 import { kurtosisApi } from "../../lib/kurtosis/index.js";
 
-export default class KurtosisUp extends Command {
+export default class KurtosisUpdate extends Command {
   static description =
     "Updates the network configuration using a specific Ethereum package in Kurtosis and stores the configuration in the local JSON database.";
 
