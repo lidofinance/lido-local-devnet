@@ -128,6 +128,10 @@ To spin up the DevNet, simply follow these commands:
    ```sh
    ./bin/run.js validator down
    ```
+   To show validators logs, use the command:
+   ```sh
+   ./bin/run.js validator logs
+   ```
 
 ### To Stop the DevNet
 
