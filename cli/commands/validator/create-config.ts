@@ -56,7 +56,7 @@ export default class CreateValidatorConfig extends Command {
     );
 
     if (!targetValidators.length) {
-      this.error("No validators found");
+      this.error("No validators found, make sure the deposit has been made ");
     }
     const validatorsApi = state.network?.binding?.validatorsApi?.[0];
 
