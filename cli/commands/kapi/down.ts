@@ -9,11 +9,15 @@ export default class KapiDown extends Command {
     this.log("Stopping Kapi...");
 
     try {
-      await execa("docker", ["compose", "down", "-v"], {
-        stdio: "inherit",
-        cwd: baseConfig.kapi.paths.ofchain,
-        // cwd: baseConfig.kapi.paths.root,
-      });
+      await execa(
+        "docker",
+        ["compose", "-f", "docker-compose.devnet.yml", "down", "-v"],
+        {
+          stdio: "inherit",
+          cwd: baseConfig.kapi.paths.ofchain,
+          // cwd: baseConfig.kapi.paths.root,
+        }
+      );
       this.log("Kapi stopped successfully.");
     } catch (error: any) {
       this.error(`Failed to stop Kapi: ${error.message}`);

@@ -59,14 +59,20 @@ export default class KapiUp extends Command {
     };
 
     const envPath = `${baseConfig.kapi.paths.ofchain}/.env`;
-    const envContent = Object.entries(env).map(([key, value]) => `${key}=${value}`).join("\n");
+    const envContent = Object.entries(env)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("\n");
     await fs.writeFile(envPath, envContent, "utf-8");
 
     try {
-      await execa("docker", ["compose","up", "--build", "-d"], {
-        stdio: "inherit",
-        cwd: baseConfig.kapi.paths.ofchain
-      });
+      await execa(
+        "docker",
+        ["compose", "-f", "docker-compose.devnet.yml", "up", "--build", "-d"],
+        {
+          stdio: "inherit",
+          cwd: baseConfig.kapi.paths.ofchain,
+        }
+      );
       this.log("Kapi started successfully.");
     } catch (error: any) {
       this.error(`Failed to start Kapi: ${error.message}`);
