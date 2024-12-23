@@ -11,7 +11,8 @@ export default class KapiDown extends Command {
     try {
       await execa("docker", ["compose", "down", "-v"], {
         stdio: "inherit",
-        cwd: baseConfig.kapi.paths.root,
+        cwd: baseConfig.kapi.paths.ofchain,
+        // cwd: baseConfig.kapi.paths.root,
       });
       this.log("Kapi stopped successfully.");
     } catch (error: any) {
@@ -19,4 +20,3 @@ export default class KapiDown extends Command {
     }
   }
 }
-

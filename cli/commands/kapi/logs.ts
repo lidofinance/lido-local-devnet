@@ -8,7 +8,8 @@ export default class KapiLogs extends Command {
   async run() {
     await execa("docker", ["compose", "logs", "-f"], {
       stdio: "inherit",
-      cwd: baseConfig.kapi.paths.root,
+      cwd: baseConfig.kapi.paths.ofchain,
+    //   cwd: baseConfig.kapi.paths.root,
     });
   }
 }
