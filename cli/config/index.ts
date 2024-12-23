@@ -105,7 +105,9 @@ export const baseConfig = {
   },
   kapi: {
     paths: {
-      root: KAPI_ROOT
+      root: KAPI_ROOT,
+      ofchain: path.join(OFCHAIN_ROOT, 'kapi'),
+      dockerfile: path.join(OFCHAIN_ROOT, 'kapi', "Dockerfile")
     }
   },
   dora: {
