@@ -9,7 +9,7 @@ import {
 } from "../../lib/lido/index.js";
 import fs from "fs/promises";
 
-interface ENV {
+interface CONFIG {
   CHAIN_ID: string;
   PROVIDERS_URLS: string;
 
