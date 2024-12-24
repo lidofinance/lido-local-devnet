@@ -12,6 +12,21 @@ export const getLidoWC = async () => {
   return withdrawalCredentials;
 };
 
+export const getStakingRouterAddress = async () => {
+  await SRContract.initContract();
+  return await SRContract.instance.getAddress();
+};
+
+export const getCuratedModuleAddress = async () => {
+  await SRContract.initContract();
+  return (await SRContract.instance.getStakingModule(1))[1];
+};
+
+export const getCSMModuleAddress = async () => {
+  await SRContract.initContract();
+  return (await SRContract.instance.getStakingModule(3))[1];
+};
+
 export const getLidoLocatorAddress = async () => {
   await LocatorContract.initContract();
 

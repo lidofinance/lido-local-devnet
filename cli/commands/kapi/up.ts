@@ -1,7 +1,12 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
 import { baseConfig, jsonDb } from "../../config/index.js";
-import { getLidoLocatorAddress } from "../../lib/lido/index.js";
+import {
+  getCSMModuleAddress,
+  getCuratedModuleAddress,
+  getLidoLocatorAddress,
+  getStakingRouterAddress,
+} from "../../lib/lido/index.js";
 import fs from "fs/promises";
 
 interface ENV {
@@ -25,6 +30,9 @@ interface ENV {
   PROVIDER_CONCURRENT_REQUESTS: string;
   LIDO_LOCATOR_DEVNET_ADDRESS: string;
   MIKRO_ORM_DISABLE_FOREIGN_KEYS: string;
+  CURATED_MODULE_DEVNET_ADDRESS: string;
+  CSM_MODULE_DEVNET_ADDRESS: string;
+  STAKING_ROUTER_DEVNET_ADDRESS: string;
 }
 
 export default class KapiUp extends Command {
@@ -38,6 +46,10 @@ export default class KapiUp extends Command {
     const name: string = state.getOrError("network.name");
 
     const locator = await getLidoLocatorAddress();
+    const stakingRouter = await getStakingRouterAddress();
+    const curatedModule = await getCuratedModuleAddress();
+    const csmModule = await getCSMModuleAddress();
+
     const env = {
       CHAIN_ID: "32382",
       PROVIDERS_URLS: el,
@@ -56,6 +68,9 @@ export default class KapiUp extends Command {
       LIDO_LOCATOR_DEVNET_ADDRESS: locator,
       MIKRO_ORM_DISABLE_FOREIGN_KEYS: "false",
       DOCKER_NETWORK_NAME: `kt-${name}`,
+      CURATED_MODULE_DEVNET_ADDRESS: curatedModule,
+      CSM_MODULE_DEVNET_ADDRESS: csmModule,
+      STAKING_ROUTER_DEVNET_ADDRESS: stakingRouter,
     };
 
     const envPath = `${baseConfig.kapi.paths.ofchain}/.env`;
