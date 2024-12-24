@@ -3,6 +3,7 @@ import path from "path";
 import YAML from "yaml";
 import { JsonDb } from "../lib/state/index.js";
 import { sharedWallet } from "./shared-wallet.js";
+import assert from "assert";
 
 const CHAIN_ID = "32382";
 
@@ -13,9 +14,24 @@ const NETWORK_ROOT = path.join(
   NETWORK_BOOTSTRAP_VERSION,
   "network"
 );
+
 const KURTOSIS_ROOT = path.join(process.cwd(), "devnet-kurtosis");
 const KURTOSIS_CONFIG_PATH = path.join(KURTOSIS_ROOT, "/configs/devnet4.yml");
+const KURTOSIS_CONFIG = YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, "utf-8"));
+const KURTOSIS_PRESET = KURTOSIS_CONFIG?.network_params?.preset;
+
+const VALIDATOR_COMPOSE_DIR = path.join(process.cwd(), "devnet-dc", "validator-teku");
+
+assert(
+  KURTOSIS_PRESET !== undefined,
+  "Please install preset in Kurtosis config (network_params.preset = mainnet|minimal)"
+);
+const KURTOSIS_IS_MINIMAL_MODE = KURTOSIS_PRESET === "minimal";
+const SLOTS_PER_EPOCH = KURTOSIS_IS_MINIMAL_MODE ? 8 : 32;
+
 const DORA_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "dora");
+const KAPI_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "kapi");
+
 const BLOCKSCOUT_ROOT = path.join(
   process.cwd(),
   NETWORK_BOOTSTRAP_VERSION,
@@ -24,6 +40,7 @@ const BLOCKSCOUT_ROOT = path.join(
 const ONCHAIN_ROOT = path.join(process.cwd(), "onchain");
 const CSM_ROOT = path.join(ONCHAIN_ROOT, "csm");
 const OFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
+const DEPOSIT_CLI_ROOT = path.join(OFCHAIN_ROOT, "staking-deposit-cli");
 const SHARED_WALLET_ADDRESS = "0x123463a4b065722e99115d6c222f267d9cabb524";
 const SHARED_PK =
   "0x2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622";
@@ -34,13 +51,28 @@ const ARTIFACTS_PATH = path.join(process.cwd(), "artifacts");
 const STATE_DB_PATH = path.join(ARTIFACTS_PATH, "state.json");
 
 export const jsonDb = new JsonDb(STATE_DB_PATH);
+export const parsedConsensusGenesis = new JsonDb(
+  path.join(ARTIFACTS_PATH, "network/parsed/parsedConsensusGenesis.json")
+);
+export const validatorsState = new JsonDb(
+  path.join(ARTIFACTS_PATH, "validator", "state.json")
+);
 
 export const baseConfig = {
+  validator: {
+    paths: {
+      docker: VALIDATOR_COMPOSE_DIR
+    }
+  },
   artifacts: {
     paths: {
       root: ARTIFACTS_PATH,
       network: path.join(ARTIFACTS_PATH, "network"),
       genesis: path.join(ARTIFACTS_PATH, "network", "genesis.json"),
+      clConfig: path.join(ARTIFACTS_PATH, "network", "config.yaml"),
+      validator: path.join(ARTIFACTS_PATH, "validator"),
+      validatorKeysDump: path.join(ARTIFACTS_PATH, "validator", "dump"),
+      validatorGenerated: path.join(ARTIFACTS_PATH, "validator-generated"),
     },
   },
   utils: {
@@ -55,7 +87,9 @@ export const baseConfig = {
       root: KURTOSIS_ROOT,
       config: KURTOSIS_CONFIG_PATH,
     },
-    config: YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, "utf-8")),
+    config: KURTOSIS_CONFIG,
+    isMinimalMode: KURTOSIS_PRESET === "minimal",
+    slotsPerEpoch: SLOTS_PER_EPOCH,
   },
   network: {
     name: "my-testnet",
@@ -68,6 +102,13 @@ export const baseConfig = {
     paths: {
       root: NETWORK_ROOT,
     },
+  },
+  kapi: {
+    paths: {
+      root: KAPI_ROOT,
+      ofchain: path.join(OFCHAIN_ROOT, 'kapi'),
+      dockerfile: path.join(OFCHAIN_ROOT, 'kapi', "Dockerfile")
+    }
   },
   dora: {
     url: "http://localhost:3070",
@@ -114,7 +155,7 @@ export const baseConfig = {
           deployedVerifier: path.join(
             CSM_ROOT,
             "artifacts/latest/deploy-verifier-devnet.json"
-          )
+          ),
         },
         env: {
           // Address of the Aragon agent
@@ -145,6 +186,7 @@ export const baseConfig = {
           VERIFIER_URL: "http://localhost:3080/api",
           DEVNET_CHAIN_ID: CHAIN_ID,
           VERIFIER_API_KEY: "local-testnet",
+          DEVNET_SLOTS_PER_EPOCH: "8",
         },
       },
     },
@@ -170,6 +212,14 @@ export const baseConfig = {
         CS_MODULE_ADDRESS: "",
         CS_ACCOUNTING_ADDRESS: "",
         CS_ORACLE_HASH_CONSENSUS_ADDRESS: "",
+      },
+    },
+  },
+  dockerRunner: {
+    depositCli: {
+      paths: {
+        root: DEPOSIT_CLI_ROOT,
+        dockerfile: path.join(DEPOSIT_CLI_ROOT, "Dockerfile"),
       },
     },
   },

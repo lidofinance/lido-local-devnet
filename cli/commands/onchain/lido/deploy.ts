@@ -43,6 +43,7 @@ export default class DeployLidoContracts extends Command {
       ...env,
       RPC_URL: rpc,
       GENESIS_TIME: getGenesisTime(baseConfig.artifacts.paths.genesis),
+      SLOTS_PER_EPOCH: String(baseConfig.kurtosis.slotsPerEpoch),
     };
 
     this.log("Executing deployment scripts...");

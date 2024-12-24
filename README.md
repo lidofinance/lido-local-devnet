@@ -76,11 +76,89 @@ To spin up the DevNet, simply follow these commands:
 
 10. **Done!** You have launched the network, infrastructure, and protocol locally.
 
+### Next steps
+
+1. **Key Generation**:
+   - To generate keys, enter the following command:
+   ```sh
+   ./bin/run.js lido keys generate
+   ```
+   After this, the keys will be created in the `artifacts/validator` directory.
+   Important! Do not delete files from this directory.
+
+2. **Using the Keys in the Module**:
+   - To use the keys, enter this command:
+   ```sh
+   ./bin/run.js lido keys use --name my_awesome_operator
+   ```
+   Next, navigate to the Lido-CLI directory:
+   ```sh
+   cd ofchain/lido-cli
+   ```
+   Add the module:
+   ```sh
+   ./run.sh nor add-operator -n <NAME> -a <ADDRESS>
+   ```
+   And connect your new keys:
+   `generated-keys/my_awesome_operator.json` — this is the path to the key file, which is automatically generated when you run:
+   ```sh
+   ./bin/run.js lido keys use --name my_awesome_operator
+   ```
+   ```sh
+   ./run.sh nor add-keys-from-file <OPERATOR_ID> generated-keys/my_awesome_operator.json
+   ```
+   If you need to add more keys, you can repeat this process as many times as necessary, with different validators.
+
+3. **Deposit**:
+   - To operate deposits without DSM, enter the following command:
+   ```sh
+   ./run.sh devnet replace-dsm-with-eoa 0x8943545177806ED17B9F23F0a21ee5948eCaa776
+   ```
+   `0x8943545177806ED17B9F23F0a21ee5948eCaa776` — this is the primary address used in all scripts by default.
+   - To complete the deposit process, follow the steps in this guide: https://hackmd.io/@george-avs/HkYfg3GHyx#Increase-Staking-Limit, starting with the `Increase-Staking-Limit` section.
+
+4. **Validator Launch**:
+   - After the deposit, wait approximately 10 minutes.
+   - Once the deposit is completed, enter the following command to create a validator configuration:
+   ```sh
+   ./bin/run.js lido create-validator-config
+   ```
+   This command will create a configuration file at `devnet-dc/validator-teku/docker-compose.yaml`.
+   
+   You can then launch this configuration using the command:
+   ```sh
+   ./bin/run.js validator up
+   ```
+   To stop the validators, use the command:
+   ```sh
+   ./bin/run.js validator down
+   ```
+   To show validators logs, use the command:
+   ```sh
+   ./bin/run.js validator logs
+   ```
+
+### Launching Additional Tooling
+
+#### KAPI
+To launch the service, simply enter the following command:
+```sh
+./bin/run.js kapi up
+```
+To view the logs:
+```sh
+./bin/run.js kapi logs
+```
+To stop the service:
+```sh
+./bin/run.js kapi down
+```
 ### To Stop the DevNet
 
 To stop the DevNet, simply enter the command:
 ```sh
 ./bin/run.js stop
+./bin/run.js validator down
 ```
 This command will properly delete the state of all services and restart them.
 

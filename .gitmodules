@@ -10,3 +10,11 @@
 	path = ofchain/lido-cli
 	url = git@github.com:lidofinance/lido-cli.git
 	branch = feature/devnet-command
+[submodule "ofchain/staking-deposit-cli"]
+	path = ofchain/staking-deposit-cli
+	url = git@github.com:lidofinance/staking-deposit-cli-devnet.git
+	branch = devnet
+[submodule "ofchain/kapi"]
+	path = ofchain/kapi
+	url = git@github.com:lidofinance/lido-keys-api.git
+	branch = feat/devnet

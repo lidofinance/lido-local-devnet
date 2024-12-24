@@ -48,6 +48,13 @@ export const createNetworkMapping = (enclaveServicesInfo: ServiceInfo[]) => {
         return res;
       }
 
+      if (info.name.startsWith("vc")) {
+        res.url = formUrl(info.publicPorts['http-validator'].number);
+
+        res.privateUrl = formUrl(info.privatePorts['http-validator'].number, info.privateIp);
+        return res;
+      }
+
       //   if (info.name.startsWith("cl")) {
       res.url = info.publicPorts.http
         ? formUrl(info.publicPorts.http.number)

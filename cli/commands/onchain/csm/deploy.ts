@@ -71,6 +71,7 @@ export default class DeployLidoContracts extends Command {
       ),
       // Address of the second administrator, usually a Dev team EOA
       CSM_SECOND_ADMIN_ADDRESS: csmDefaultEnv.CSM_SECOND_ADMIN_ADDRESS,
+      DEVNET_SLOTS_PER_EPOCH: String(baseConfig.kurtosis.slotsPerEpoch),
 
       VERIFIER_URL: csmDefaultEnv.VERIFIER_URL,
       DEVNET_CHAIN_ID: csmDefaultEnv.DEVNET_CHAIN_ID,
