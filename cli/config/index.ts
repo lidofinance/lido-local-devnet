@@ -31,6 +31,7 @@ const SLOTS_PER_EPOCH = KURTOSIS_IS_MINIMAL_MODE ? 8 : 32;
 
 const DORA_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "dora");
 const KAPI_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "kapi");
+const ORACLE_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "oracle");
 
 const BLOCKSCOUT_ROOT = path.join(
   process.cwd(),
@@ -108,6 +109,13 @@ export const baseConfig = {
       root: KAPI_ROOT,
       ofchain: path.join(OFCHAIN_ROOT, 'kapi'),
       dockerfile: path.join(OFCHAIN_ROOT, 'kapi', "Dockerfile")
+    }
+  },
+  oracle: {
+    paths: {
+      root: ORACLE_ROOT,
+      ofchain: path.join(OFCHAIN_ROOT, 'oracle-v5'),
+      dockerfile: path.join(OFCHAIN_ROOT, 'oracle-v5', "Dockerfile")
     }
   },
   dora: {
