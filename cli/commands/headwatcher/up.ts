@@ -1,6 +1,6 @@
 import {Command} from "@oclif/core";
 import {execa} from "execa";
-import {getEnv} from "./common.js";
+import {getEnv} from "../../lib/headwatcher/env.js";
 
 export default class HeadwatcherUp extends Command {
   static description = "Start Ethereum Head Watcher";

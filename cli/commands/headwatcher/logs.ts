@@ -1,6 +1,6 @@
 import {Command} from "@oclif/core";
 import {execa} from "execa";
-import {getEnv} from "./common.js";
+import {getEnv} from "../../lib/headwatcher/env.js";
 
 export default class HeadwatcherLogs extends Command {
   static description = "Output logs of Ethereum Head Watcher";

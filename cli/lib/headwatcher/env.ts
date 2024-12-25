@@ -1,5 +1,5 @@
 import {baseConfig, jsonDb} from "../../config/index.js";
-import {getLidoLocatorAddress} from "../../lib/lido/index.js";
+import {getLidoLocatorAddress} from "../lido/index.js";
 import fs from "node:fs";
 
 export async function getEnv() {
