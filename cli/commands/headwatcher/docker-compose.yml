@@ -1,0 +1,38 @@
+networks:
+  devnet:
+    name: ${DOCKER_NETWORK_NAME}
+    external: true
+
+services:
+  stub_alertmanager:
+    container_name: ethereum-head-watcher-stub-alertmanager
+    build: ./stub_alertmanager
+    networks:
+      - devnet
+    volumes:
+      - ${ALERTS_OUTPUT_DIR:-../../../artifacts/headwatcher}:/opt/alerts:rw
+    environment:
+      - ALERTS_DIR=/opt/alerts
+    expose:
+      - 41288
+
+  app:
+    container_name: ethereum-head-watcher
+    build: ${DOCKER_FILE_PATH}
+    restart: unless-stopped
+    networks:
+      - devnet
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+    depends_on:
+      - stub_alertmanager
+    environment:
+      - CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}
+      - EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}
+      - LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}
+      - KEYS_SOURCE=keys_api
+      - KEYS_API_URI=${KEYS_API_URI}
+      - ALERTMANAGER_URI="http://stub_alertmanager:41288"
+      - LOG_LEVEL=INFO

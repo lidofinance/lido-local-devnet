@@ -1,8 +1,8 @@
-import { readFileSync } from "fs";
+import {readFileSync} from "fs";
 import path from "path";
 import YAML from "yaml";
-import { JsonDb } from "../lib/state/index.js";
-import { sharedWallet } from "./shared-wallet.js";
+import {JsonDb} from "../lib/state/index.js";
+import {sharedWallet} from "./shared-wallet.js";
 import assert from "assert";
 
 const CHAIN_ID = "32382";
@@ -126,6 +126,10 @@ export const baseConfig = {
     paths: {
       root: BLOCKSCOUT_ROOT,
     },
+  },
+  headwatcher: {
+    root: path.join(OFCHAIN_ROOT, "headwatcher"),
+    alertsOutputPath: path.join(ARTIFACTS_PATH, "headwatcher"),
   },
   onchain: {
     lido: {
