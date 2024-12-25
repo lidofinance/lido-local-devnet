@@ -22,7 +22,15 @@
 	path = ofchain/scripts
 	url = git@github.com:lidofinance/scripts.git
 	branch = feat/pectra-devnet
-[submodule "ofchain/headwatcher"]
+[submodule "ofchain/oracle-master"]
+	path = ofchain/oracle-master
+	url = git@github.com:lidofinance/lido-oracle.git
+	branch = master
+[submodule "ofchain/oracle-v5"]
+	path = ofchain/oracle-v5
+	url = git@github.com:lidofinance/lido-oracle.git
+	branch = feat/oracle-v5-devnet
+  [submodule "ofchain/headwatcher"]
 	path = ofchain/headwatcher
 	url = git@github.com:lidofinance/ethereum-head-watcher.git
 	branch = feature/val-1404-eip-7251-head-watcher-alerts-for-new-el-requests
