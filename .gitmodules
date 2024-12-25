@@ -18,3 +18,7 @@
 	path = ofchain/kapi
 	url = git@github.com:lidofinance/lido-keys-api.git
 	branch = feat/devnet
+[submodule "ofchain/scripts"]
+	path = ofchain/scripts
+	url = git@github.com:lidofinance/scripts.git
+	branch = feat/pectra-devnet
