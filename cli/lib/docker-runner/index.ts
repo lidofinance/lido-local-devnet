@@ -1,6 +1,7 @@
 import { execa } from "execa";
 import { baseConfig } from "../../config/index.js";
 import { getShortGitBranchHash } from "../git/index.js";
+import assert from "node:assert";
 
 const { dockerRunner } = baseConfig;
 
@@ -49,6 +50,12 @@ export async function buildAndRunCommandInDocker(
     );
   }
 
+  const uid = process.getuid?.()
+  const gid = process.getgid?.()
+  // These functions are only available on POSIX platforms (i.e. not on Windows or Android).
+  assert(typeof uid === 'number', "uid is not defined make sure you are running the software on a Linux/OSx system")
+  assert(typeof gid === 'number', "gid is not defined make sure you are running the software on a Linux/OSx system")
+
   // Run the command inside the Docker container
   const result = execa(
     "docker",
@@ -58,6 +65,8 @@ export async function buildAndRunCommandInDocker(
       "-v",
       volume,
       ...formatDockerEnvVars(opts?.env),
+      "--user",
+      `${uid}:${gid}`,
       imageName, // Use the existing or newly built image
       command,
       ...args,
@@ -75,15 +84,16 @@ export const runDepositCli = async (
   [command, ...args]: string[],
   opts?: ExecOpts
 ) => {
-  const gitHash = await getShortGitBranchHash(dockerRunner.depositCli.paths.root);
-  console.log(gitHash, command,
-    args, `deposit-cli:${gitHash}`)
+  const gitHash = await getShortGitBranchHash(
+    dockerRunner.depositCli.paths.root
+  );
+  console.log(gitHash, command, args, `deposit-cli:${gitHash}`);
   return buildAndRunCommandInDocker(
     dockerRunner.depositCli.paths.dockerfile,
     `deposit-cli:${gitHash}`,
     command,
     args,
     `${baseConfig.artifacts.paths.validatorGenerated}:/app/validator_keys`,
-    {...opts, cwd: dockerRunner.depositCli.paths.root}
+    { ...opts, cwd: dockerRunner.depositCli.paths.root }
   );
 };
