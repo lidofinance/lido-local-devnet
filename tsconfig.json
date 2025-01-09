@@ -5,7 +5,8 @@
     "rootDir": "./cli",
     "strict": true,
     "target": "ESNext",
-    "moduleResolution": "node16"
+    "moduleResolution": "node16",
+    "types": ["node"]
   },
   "include": ["cli/**/*"],
   "ts-node": {
