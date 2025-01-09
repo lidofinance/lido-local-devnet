@@ -1,6 +1,7 @@
 import { execa } from "execa";
 import { baseConfig } from "../../config/index.js";
 import { getShortGitBranchHash } from "../git/index.js";
+import assert from "node:assert";
 
 const { dockerRunner } = baseConfig;
 
@@ -22,26 +23,15 @@ export async function buildAndRunCommandInDocker(
   args: string[],
   volume: string,
   opts?: ExecOpts
-  //   platform: string = 'linux/amd64'
 ) {
-  // Check for the existence of the Docker image
   try {
     await execa("docker", ["inspect", imageName]);
     console.log("Image already exists, skipping build...");
-  } catch (error) {
-    // If the image is not found, build it
+  } catch {
     console.log("Image not found, building...");
     await execa(
       "docker",
-      [
-        "build",
-        // '--platform', platform,
-        "-f",
-        dockerfilePath,
-        "-t",
-        imageName,
-        ".", // Indicates the build context as the current directory
-      ],
+      ["build", "-f", dockerfilePath, "-t", imageName, "."],
       {
         cwd: opts?.cwd,
         stdio: "inherit",
@@ -49,8 +39,19 @@ export async function buildAndRunCommandInDocker(
     );
   }
 
-  // Run the command inside the Docker container
-  const result = execa(
+  const uid = process.getuid?.();
+  const gid = process.getgid?.();
+
+  assert(
+    typeof uid === "number",
+    "UID is not defined. Ensure you are running this on a Linux/OSX system."
+  );
+  assert(
+    typeof gid === "number",
+    "GID is not defined. Ensure you are running this on a Linux/OSX system."
+  );
+
+  const result = await execa(
     "docker",
     [
       "run",
@@ -58,13 +59,17 @@ export async function buildAndRunCommandInDocker(
       "-v",
       volume,
       ...formatDockerEnvVars(opts?.env),
-      imageName, // Use the existing or newly built image
+      "-e",
+      `UID=${uid}`,
+      "-e",
+      `GID=${gid}`,
+      imageName,
       command,
       ...args,
     ],
     {
       cwd: opts?.cwd,
-      stdio: "inherit", // Inherit stdio to display output directly in the terminal
+      stdio: "inherit",
     }
   );
 
@@ -75,15 +80,16 @@ export const runDepositCli = async (
   [command, ...args]: string[],
   opts?: ExecOpts
 ) => {
-  const gitHash = await getShortGitBranchHash(dockerRunner.depositCli.paths.root);
-  console.log(gitHash, command,
-    args, `deposit-cli:${gitHash}`)
+  const gitHash = await getShortGitBranchHash(
+    dockerRunner.depositCli.paths.root
+  );
+  console.log(gitHash, command, args, `deposit-cli:${gitHash}`);
   return buildAndRunCommandInDocker(
     dockerRunner.depositCli.paths.dockerfile,
     `deposit-cli:${gitHash}`,
     command,
     args,
     `${baseConfig.artifacts.paths.validatorGenerated}:/app/validator_keys`,
-    {...opts, cwd: dockerRunner.depositCli.paths.root}
+    { ...opts, cwd: dockerRunner.depositCli.paths.root }
   );
 };
