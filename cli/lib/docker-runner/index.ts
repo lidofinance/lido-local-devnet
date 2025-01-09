@@ -78,7 +78,7 @@ export const runDepositCli = async (
   const gitHash = await getShortGitBranchHash(dockerRunner.depositCli.paths.root);
   console.log(gitHash, command,
     args, `deposit-cli:${gitHash}`)
-  return buildAndRunCommandInDocker(
+  const output = await buildAndRunCommandInDocker(
     dockerRunner.depositCli.paths.dockerfile,
     `deposit-cli:${gitHash}`,
     command,
@@ -86,4 +86,18 @@ export const runDepositCli = async (
     `${baseConfig.artifacts.paths.validatorGenerated}:/app/validator_keys`,
     {...opts, cwd: dockerRunner.depositCli.paths.root}
   );
+
+  const uid = 1012;
+  const gid = 1012;
+
+  buildAndRunCommandInDocker(
+    dockerRunner.depositCli.paths.dockerfile,
+    `deposit-cli:${gitHash}`,
+    `chown`,
+    [`-R`, `${uid}:${gid}`, `/app/validator_keys`],
+    `${baseConfig.artifacts.paths.validatorGenerated}:/app/validator_keys`,
+    {...opts, cwd: dockerRunner.depositCli.paths.root}
+  );
+
+  return output;
 };

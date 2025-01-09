@@ -1,0 +1,19 @@
+version: '3.9'
+
+networks:
+  devnet:
+    name: ${DOCKER_NETWORK_NAME}
+    external: true
+
+services:
+
+  assertoor:
+    image: ethpandaops/assertoor:latest
+    entrypoint: ['/bin/bash', '-c', 'sleep infinity']
+    platform: linux/amd64
+    networks:
+      - devnet
+    ports:
+      - '32080:8080'
+    volumes:
+      - ./config/:/config

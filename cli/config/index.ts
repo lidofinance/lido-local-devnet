@@ -32,6 +32,7 @@ const SLOTS_PER_EPOCH = KURTOSIS_IS_MINIMAL_MODE ? 8 : 32;
 const DORA_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "dora");
 const KAPI_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "kapi");
 const ORACLE_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "oracle");
+const ASSERTOOR_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "assertoor");
 
 const BLOCKSCOUT_ROOT = path.join(
   process.cwd(),
@@ -109,6 +110,11 @@ export const baseConfig = {
       root: KAPI_ROOT,
       ofchain: path.join(OFCHAIN_ROOT, 'kapi'),
       dockerfile: path.join(OFCHAIN_ROOT, 'kapi', "Dockerfile")
+    }
+  },
+  assertoor: {
+    paths: {
+      root: ASSERTOOR_ROOT,
     }
   },
   oracle: {
@@ -213,7 +219,7 @@ export const baseConfig = {
           EL_NETWORK_NAME: "local-devnet",
           PRIVATE_KEY: sharedWallet[0].privateKey,
         },
-        oracles: [sharedWallet[10], sharedWallet[11]],
+        oracles: [sharedWallet[10], sharedWallet[11], sharedWallet[12]],
         councils: [sharedWallet[12], sharedWallet[13]],
       },
       activateCSM: {
