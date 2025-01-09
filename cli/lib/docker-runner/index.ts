@@ -23,26 +23,15 @@ export async function buildAndRunCommandInDocker(
   args: string[],
   volume: string,
   opts?: ExecOpts
-  //   platform: string = 'linux/amd64'
 ) {
-  // Check for the existence of the Docker image
   try {
     await execa("docker", ["inspect", imageName]);
     console.log("Image already exists, skipping build...");
-  } catch (error) {
-    // If the image is not found, build it
+  } catch {
     console.log("Image not found, building...");
     await execa(
       "docker",
-      [
-        "build",
-        // '--platform', platform,
-        "-f",
-        dockerfilePath,
-        "-t",
-        imageName,
-        ".", // Indicates the build context as the current directory
-      ],
+      ["build", "-f", dockerfilePath, "-t", imageName, "."],
       {
         cwd: opts?.cwd,
         stdio: "inherit",
@@ -50,14 +39,19 @@ export async function buildAndRunCommandInDocker(
     );
   }
 
-  const uid = process.getuid?.()
-  const gid = process.getgid?.()
-  // These functions are only available on POSIX platforms (i.e. not on Windows or Android).
-  assert(typeof uid === 'number', "uid is not defined make sure you are running the software on a Linux/OSx system")
-  assert(typeof gid === 'number', "gid is not defined make sure you are running the software on a Linux/OSx system")
+  const uid = process.getuid?.();
+  const gid = process.getgid?.();
 
-  // Run the command inside the Docker container
-  const result = execa(
+  assert(
+    typeof uid === "number",
+    "UID is not defined. Ensure you are running this on a Linux/OSX system."
+  );
+  assert(
+    typeof gid === "number",
+    "GID is not defined. Ensure you are running this on a Linux/OSX system."
+  );
+
+  const result = await execa(
     "docker",
     [
       "run",
@@ -65,15 +59,17 @@ export async function buildAndRunCommandInDocker(
       "-v",
       volume,
       ...formatDockerEnvVars(opts?.env),
-      "--user",
-      `${uid}:${gid}`,
-      imageName, // Use the existing or newly built image
+      "-e",
+      `UID=${uid}`,
+      "-e",
+      `GID=${gid}`,
+      imageName,
       command,
       ...args,
     ],
     {
       cwd: opts?.cwd,
-      stdio: "inherit", // Inherit stdio to display output directly in the terminal
+      stdio: "inherit",
     }
   );
 
