@@ -1,6 +1,6 @@
-import { Command } from "@oclif/core";
-import { execa } from "execa";
-import { baseConfig, jsonDb } from "../../config/index.js";
+import {Command} from "@oclif/core";
+import {execa} from "execa";
+import {baseConfig, jsonDb} from "../../config/index.js";
 import {
   getCSMModuleAddress,
   getCuratedModuleAddress,
@@ -11,28 +11,19 @@ import fs from "fs/promises";
 
 interface ENV {
   CHAIN_ID: string;
-  PROVIDERS_URLS: string;
 
-  PORT: string;
-  LOG_LEVEL: string;
-  LOG_FORMAT: string;
+  EXECUTION_CLIENT_URI: string,
+  CONSENSUS_CLIENT_URI: string,
+  LIDO_LOCATOR_ADDRESS: string,
+  CSM_MODULE_ADDRESS: string,
 
-  VALIDATOR_REGISTRY_ENABLE: string;
+  MEMBER_PRIV_KEY_1: string,
+  MEMBER_PRIV_KEY_2: string,
+  PINATA_JWT: string,
+  GW3_ACCESS_KEY: string,
+  GW3_SECRET_KEY: string,
 
-  DB_NAME: string;
-  DB_PORT: string;
-  DB_HOST: string;
-  DB_USER: string;
-  DB_PASSWORD: string;
-
-  PROVIDER_JSON_RPC_MAX_BATCH_SIZE: string;
-  PROVIDER_BATCH_AGGREGATION_WAIT_MS: string;
-  PROVIDER_CONCURRENT_REQUESTS: string;
-  LIDO_LOCATOR_DEVNET_ADDRESS: string;
-  MIKRO_ORM_DISABLE_FOREIGN_KEYS: string;
-  CURATED_MODULE_DEVNET_ADDRESS: string;
-  CSM_MODULE_DEVNET_ADDRESS: string;
-  STAKING_ROUTER_DEVNET_ADDRESS: string;
+  DOCKER_NETWORK_NAME: string,
 }
 
 export default class OracleUp extends Command {
@@ -47,11 +38,9 @@ export default class OracleUp extends Command {
     const name: string = state.getOrError("network.name");
 
     const locator = await getLidoLocatorAddress();
-    const stakingRouter = await getStakingRouterAddress();
-    const curatedModule = await getCuratedModuleAddress();
     const csmModule = await getCSMModuleAddress();
 
-    const env = {
+    const env: ENV = {
       CHAIN_ID: "32382",
 
       EXECUTION_CLIENT_URI: el,
@@ -59,12 +48,11 @@ export default class OracleUp extends Command {
       LIDO_LOCATOR_ADDRESS: locator,
       CSM_MODULE_ADDRESS: csmModule,
 
-      MEMBER_PRIV_KEY_1: '',
-      MEMBER_PRIV_KEY_2: '',
+      MEMBER_PRIV_KEY_1: baseConfig.sharedWallet[10]['privateKey'],
+      MEMBER_PRIV_KEY_2: baseConfig.sharedWallet[11]['privateKey'],
       PINATA_JWT: '',
-      GW3_ACCESS_KEY: '',
-      GW3_SECRET_KEY: '',
-
+      GW3_ACCESS_KEY: process.env.CSM_ORACLE_GW3_ACCESS_KEY ?? '',
+      GW3_SECRET_KEY: process.env.CSM_ORACLE_GW3_SECRET_KEY ?? '',
       DOCKER_NETWORK_NAME: `kt-${name}`,
     };
 
@@ -79,8 +67,8 @@ export default class OracleUp extends Command {
         "docker",
         ["compose", "-f", "docker-compose.devnet.yml", "up", "--build", "-d"],
         {
-          stdio: "inherit",
-          cwd: baseConfig.oracle.paths.ofchain,
+            stdio: "inherit",
+            cwd: baseConfig.oracle.paths.ofchain,
         }
       );
       this.log("Oracle(s) started successfully.");
