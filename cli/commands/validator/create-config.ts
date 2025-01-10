@@ -31,10 +31,10 @@ export default class CreateValidatorConfig extends Command {
     }
 
     const VC_IMAGE =
-      baseConfig.kurtosis.config.participants_matrix?.cl?.[0]?.cl_image;
+      baseConfig.kurtosis.config.participants[0]?.cl_image;
     assert(
       VC_IMAGE !== undefined,
-      "CL_IMAGE is not declared, check the path in the Kurtosis config (participants_matrix?.cl?.[0]?.cl_image)"
+      "CL_IMAGE is not declared, check the path in the Kurtosis config (config.participants[0]?.cl_image)"
     );
 
     const currentState = await validatorsState.read();
