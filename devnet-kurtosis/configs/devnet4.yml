@@ -1,5 +1,4 @@
 participants:
-participants:
   - el_type: geth
     el_image: ethpandaops/geth:prague-devnet-5-a193537
     cl_type: teku
