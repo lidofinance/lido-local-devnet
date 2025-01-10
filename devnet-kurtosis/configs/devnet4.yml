@@ -9,7 +9,7 @@ participants:
 
 network_params:
   network_id: "32382"
-  electra_fork_epoch: 3
+  electra_fork_epoch: 1
   min_validator_withdrawability_delay: 1
   shard_committee_period: 1
   eth1_follow_distance: 12
@@ -22,12 +22,12 @@ network_params:
 keymanager_enabled: true
 
 additional_services:
-  - assertoor
+  # - assertoor
   - dora
-assertoor_params:
-  image: "ethpandaops/assertoor:master-f0413d8"
-  tests:
-    - file: https://raw.githubusercontent.com/ethpandaops/assertoor/refs/heads/master/playbooks/pectra-dev/kurtosis/all.yaml
+# assertoor_params:
+#   image: "ethpandaops/assertoor:master-f0413d8"
+#   tests:
+#     - file: https://raw.githubusercontent.com/ethpandaops/assertoor/refs/heads/master/playbooks/pectra-dev/kurtosis/all.yaml
 
 port_publisher:
   el:
