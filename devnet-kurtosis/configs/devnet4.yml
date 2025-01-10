@@ -1,9 +1,11 @@
 participants:
-  - el_type: besu
-    el_image: ethpandaops/besu:pectra-devnet-5-interop-cb1357e
-    cl_type: lighthouse
-    cl_image: ethpandaops/lighthouse:unstable-7e0cdde
-    count: 2g
+participants:
+  - el_type: geth
+    el_image: ethpandaops/geth:prague-devnet-5-a193537
+    cl_type: teku
+    cl_image: ethpandaops/teku:master-cc94afc
+    cl_extra_env_vars: { "JAVA_TOOL_OPTIONS": "-XX:UseSVE=0" } # for apple M4
+    count: 1
 
 network_params:
   network_id: "32382"
@@ -14,21 +16,18 @@ network_params:
   seconds_per_slot: 12
   # seconds_per_eth1_block: 12
   # slots_per_epoch: 32
-  preset: minimal #minimal
   # preset: mainnet #minimal
+  preset: mainnet #minimal
 
 keymanager_enabled: true
 
 additional_services:
-  # - assertoor
+  - assertoor
   - dora
-# assertoor_params:
-#   image: "ethpandaops/assertoor:master"
-#   run_stability_check: false
-#   run_block_proposal_check: falseOracleReportLimits
-#   tests:
-#     - https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/validator-withdrawal-test.yaml
-#     - https://raw.githubusercontent.com/ethpandaops/assertoor-test/master/assertoor-tests/validator-exit-test.yaml
+assertoor_params:
+  image: "ethpandaops/assertoor:master-f0413d8"
+  tests:
+    - file: https://raw.githubusercontent.com/ethpandaops/assertoor/refs/heads/master/playbooks/pectra-dev/kurtosis/all.yaml
 
 port_publisher:
   el:
