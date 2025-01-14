@@ -210,6 +210,7 @@ export const baseConfig = {
           DEVNET_CHAIN_ID: CHAIN_ID,
           VERIFIER_API_KEY: "local-testnet",
           DEVNET_SLOTS_PER_EPOCH: "8",
+          DEVNET_ELECTRA_EPOCH: ""
         },
       },
     },

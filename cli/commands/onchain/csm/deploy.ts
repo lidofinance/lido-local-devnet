@@ -76,6 +76,7 @@ export default class DeployLidoContracts extends Command {
       VERIFIER_URL: csmDefaultEnv.VERIFIER_URL,
       DEVNET_CHAIN_ID: csmDefaultEnv.DEVNET_CHAIN_ID,
       VERIFIER_API_KEY: csmDefaultEnv.VERIFIER_API_KEY,
+      DEVNET_ELECTRA_EPOCH: String(baseConfig.network.ELECTRA_FORK_EPOCH)
     };
 
     this.logJson(deployEnv);
