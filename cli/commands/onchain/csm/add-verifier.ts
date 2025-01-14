@@ -49,7 +49,8 @@ export default class DeployCSVerifier extends Command {
         "lidoCore.withdrawalVault.proxy.address"
       ),
       CSM_MODULE: state.getOrError("csm.CSModule"),
-      DEVNET_SLOTS_PER_EPOCH: String(baseConfig.kurtosis.slotsPerEpoch)
+      DEVNET_SLOTS_PER_EPOCH: String(baseConfig.kurtosis.slotsPerEpoch),
+      DEVNET_ELECTRA_EPOCH: String(baseConfig.network.ELECTRA_FORK_EPOCH)
     };
 
     this.logJson(deployEnv);
