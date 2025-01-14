@@ -78,6 +78,9 @@ export default class DevNetUp extends Command {
         ]);
         this.log(`Operator ${NOR_DEVNET_OPERATOR} added`);
 
+        this.log(`Inc staking limit NOR`)
+        this.config.runCommand("onchain:lido:set-staking-limit", ["--operatorId", "0", "--limit", "30"])
+
         this.log("Add NOR keys.");
         await this.config.runCommand("onchain:lido:add-keys", [
           "--name",
