@@ -131,7 +131,8 @@ export const baseConfig = {
       root: ORACLE_ROOT,
       ofchain: path.join(OFCHAIN_ROOT, 'oracle-v5'),
       dockerfile: path.join(OFCHAIN_ROOT, 'oracle-v5', "Dockerfile")
-    }
+    },
+    wallet: LIDO_ORACLES
   },
   dora: {
     url: "http://localhost:3070",
