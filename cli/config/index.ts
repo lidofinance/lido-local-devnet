@@ -52,6 +52,8 @@ const CL_URL = "http://localhost:3500";
 const ARTIFACTS_PATH = path.join(process.cwd(), "artifacts");
 const STATE_DB_PATH = path.join(ARTIFACTS_PATH, "state.json");
 
+const LIDO_ORACLES = [sharedWallet[10], sharedWallet[11], sharedWallet[12]]
+
 export const jsonDb = new JsonDb(STATE_DB_PATH);
 export const parsedConsensusGenesis = new JsonDb(
   path.join(ARTIFACTS_PATH, "network/parsed/parsedConsensusGenesis.json")
@@ -178,10 +180,10 @@ export const baseConfig = {
           EVM_SCRIPT_EXECUTOR_ADDRESS: "",
           // Address of the first administrator, usually a Dev team EOA
           CSM_FIRST_ADMIN_ADDRESS: sharedWallet[0].publicKey,
-          // First oracle member address
-          CSM_ORACLE_1_ADDRESS: sharedWallet[14].publicKey,
-          // Second oracle member address
-          CSM_ORACLE_2_ADDRESS: sharedWallet[15].publicKey,
+          // oracle member addresses
+          CSM_ORACLE_1_ADDRESS: LIDO_ORACLES[0].publicKey,
+          CSM_ORACLE_2_ADDRESS: LIDO_ORACLES[1].publicKey,
+          CSM_ORACLE_3_ADDRESS: LIDO_ORACLES[2].publicKey,
           // Address of the second administrator, usually a Dev team EOA
           CSM_SECOND_ADMIN_ADDRESS: sharedWallet[1].publicKey,
           // Lido's locator address
@@ -219,13 +221,14 @@ export const baseConfig = {
           EL_NETWORK_NAME: "local-devnet",
           PRIVATE_KEY: sharedWallet[0].privateKey,
         },
-        oracles: [sharedWallet[10], sharedWallet[11], sharedWallet[12]],
+        oracles: LIDO_ORACLES,
         councils: [sharedWallet[12], sharedWallet[13]],
       },
       activateCSM: {
         CS_MODULE_ADDRESS: "",
         CS_ACCOUNTING_ADDRESS: "",
         CS_ORACLE_HASH_CONSENSUS_ADDRESS: "",
+        CS_ORACLE_INITIAL_EPOCH: "60",
       },
     },
   },
