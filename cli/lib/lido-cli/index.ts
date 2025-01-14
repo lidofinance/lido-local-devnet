@@ -1,5 +1,16 @@
 import { execa } from "execa";
 
+export const runLidoCLI = async (args: string[], cwd: string, env: any) => {
+  const command = "npx";
+  const baseArgs = ["ts-node", "index", "--non-interactive"];
+
+  return await execa(command, [...baseArgs, ...args], {
+    stdio: "inherit",
+    cwd,
+    env,
+  });
+};
+
 type DevNetSetupParams = {
   oraclesMembers: string[];
   oraclesQuorum: number;
@@ -22,10 +33,7 @@ export async function setupDevNet(
   cwd: string,
   env: DevNetLidoCliBaseEnv
 ) {
-  const command = "npx";
   const args = [
-    "ts-node",
-    "index",
     "devnet",
     "setup",
     "--oracles-members",
@@ -42,14 +50,5 @@ export async function setupDevNet(
     params.rolesBeneficiary,
   ];
 
-  try {
-    console.log(env)
-    await execa(command, args, {
-      stdio: "inherit",
-      cwd,
-      env,
-    });
-  } catch (error) {
-    console.error("Failed to execute script:", error);
-  }
+  return runLidoCLI(args, cwd, env);
 }
