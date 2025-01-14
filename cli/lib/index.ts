@@ -44,15 +44,18 @@ export const calcEpoch = async (providerUrl: string, genesis: number) => {
   return (timestamp - genesis) / SECONDS_PER_SLOT;
 };
 
-export const sendTransactionWithRetry = ({
+export const sendTransactionWithRetry = async ({
   providerUrl,
   privateKey,
   toAddress,
   amount,
-  // timeout = 180000,
-}: TransactionDetails): Promise<TransactionReceipt> => {
+}: // timeout = 180000,
+TransactionDetails): Promise<TransactionReceipt | undefined> => {
   const provider = new JsonRpcProvider(providerUrl);
   const wallet = new ethers.Wallet(privateKey, provider);
+
+  const latestBlock = await provider.getBlock("latest");
+  if (latestBlock?.number && latestBlock?.number > 20) return;
 
   const tx = {
     to: toAddress,
@@ -83,6 +86,6 @@ export const sendTransactionWithRetry = ({
   // const timeoutPromise = new Promise<never>((_, reject) => {
   //   setTimeout(() => reject(new Error("Timeout reached")), timeout);
   // });
-  return attemptToSendTransaction()
+  return attemptToSendTransaction();
   // return Promise.race([attemptToSendTransaction(), timeoutPromise]);
 };
