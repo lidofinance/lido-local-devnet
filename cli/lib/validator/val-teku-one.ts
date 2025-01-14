@@ -32,7 +32,7 @@ export async function generateDockerComposeOneService(
           `--validator-keys=/validator_keys/${val.pubkey.replace(
             "0x",
             ""
-          )}.json:/devnet_config_dir/password.txt`
+          )}.json:/validator_keys/password.txt`
       )
       .join(" ");
 
@@ -40,13 +40,12 @@ export async function generateDockerComposeOneService(
   teku_validator_${groupName.slice(-5)}:
     image: ${dockerImage}
     volumes:
-      - ${keysDir}:/validator_keys
-      - ${configDir}:/devnet_config_dir
+      - ${configDir}:/validator_keys
     networks:
       - devnet
     command: >
       validator-client
-      --network=/devnet_config_dir/config.yaml
+      --network=/validator_keys/config.yaml
       ${keysCommand}
       --beacon-node-api-endpoint=${clPrivateUrl}
       --validators-proposer-default-fee-recipient=${getAddress(
