@@ -57,6 +57,57 @@ export default class DevNetUp extends Command {
 
         this.log("Replaces the DSM with an EOA.");
         await this.config.runCommand("onchain:lido:replace-dsm");
+
+        const NOR_DEVNET_OPERATOR = "devnet_nor_1";
+        const CSM_DEVNET_OPERATOR = "devnet_csm_1";
+
+        this.log("Generate keys for NOR Module.");
+        await this.config.runCommand("lido:keys:generate");
+        this.log("Allocate keys for NOR Module.");
+        await this.config.runCommand("lido:keys:use", ['--name', NOR_DEVNET_OPERATOR]);
+
+        this.log("Generate keys for NOR Module.");
+        await this.config.runCommand("lido:keys:generate");
+        this.log("Allocate keys for NOR Module.");
+        await this.config.runCommand("lido:keys:use", ['--name', CSM_DEVNET_OPERATOR]);
+
+        this.log("Add NOR operator.");
+        await this.config.runCommand("onchain:lido:add-operator", [
+          "--name",
+          NOR_DEVNET_OPERATOR,
+        ]);
+        this.log(`Operator ${NOR_DEVNET_OPERATOR} added`);
+
+        this.log("Add NOR keys.");
+        await this.config.runCommand("onchain:lido:add-keys", [
+          "--name",
+          NOR_DEVNET_OPERATOR,
+          "--id",
+          "0",
+        ]);
+        this.log(`Keys for operator ${NOR_DEVNET_OPERATOR} added`);
+
+        this.log("Add CSM operator with keys.");
+        await this.config.runCommand("onchain:csm:add-operator", [
+          "--name",
+          CSM_DEVNET_OPERATOR,
+        ]);
+        this.log(`Keys for operator ${CSM_DEVNET_OPERATOR} added`);
+
+        this.log("Run keys-api service.");
+        await this.config.runCommand("kapi:up");
+
+        this.log(`Make Deposit to NOR`);
+        await this.config.runCommand("onchain:lido:deposit", ["--id", "1"]);
+
+        this.log(`Make Deposit to CSM`);
+        await this.config.runCommand("onchain:lido:deposit", ["--id", "3"]);
+
+        this.log(`Generate validator config`);
+        await this.config.runCommand("lido:create-validator-config");
+
+        this.log(`Run validators`);
+        await this.config.runCommand("validator:up");
       }
 
       // Display network information
