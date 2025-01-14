@@ -24,7 +24,7 @@ To spin up the DevNet, simply follow these commands:
 
 2. **Install project dependencies**:
    ```sh
-   yarn
+   yarn && yarn submodule
    ```
 
 3. **Install subdependencies of the project**:
