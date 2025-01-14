@@ -61,10 +61,10 @@ export default class DeployLidoContracts extends Command {
       ),
       // Address of the first administrator, usually a Dev team EOA
       CSM_FIRST_ADMIN_ADDRESS: csmDefaultEnv.CSM_FIRST_ADMIN_ADDRESS,
-      // First oracle member address
+      // oracle member addresses
       CSM_ORACLE_1_ADDRESS: csmDefaultEnv.CSM_ORACLE_1_ADDRESS,
-      // Second oracle member address
       CSM_ORACLE_2_ADDRESS: csmDefaultEnv.CSM_ORACLE_2_ADDRESS,
+      CSM_ORACLE_3_ADDRESS: csmDefaultEnv.CSM_ORACLE_3_ADDRESS,
       // Address of the treasury associated with the locator
       CSM_LOCATOR_TREASURY_ADDRESS: state.getOrError(
         "lidoCore.lidoLocator.implementation.constructorArgs.0.treasury"
