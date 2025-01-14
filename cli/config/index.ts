@@ -211,6 +211,8 @@ export const baseConfig = {
         root: path.join(OFCHAIN_ROOT, "lido-cli"),
         configs: path.join(OFCHAIN_ROOT, "lido-cli", "configs"),
         activateCSM: path.join(OFCHAIN_ROOT, "lido-cli", "configs"),
+        // ofchain/lido-cli/configs/extra-deployed-local-devnet.json
+        extraDataConfig: path.join(OFCHAIN_ROOT, "lido-cli", "configs", "extra-deployed-local-devnet.json"),
       },
       activate: {
         env: {
