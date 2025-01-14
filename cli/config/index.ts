@@ -19,6 +19,7 @@ const KURTOSIS_ROOT = path.join(process.cwd(), "devnet-kurtosis");
 const KURTOSIS_CONFIG_PATH = path.join(KURTOSIS_ROOT, "/configs/devnet4.yml");
 const KURTOSIS_CONFIG = YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, "utf-8"));
 const KURTOSIS_PRESET = KURTOSIS_CONFIG?.network_params?.preset;
+const ELECTRA_FORK_EPOCH = KURTOSIS_CONFIG?.network_params?.electra_fork_epoch as number;
 
 const VALIDATOR_COMPOSE_DIR = path.join(process.cwd(), "devnet-dc", "validator-teku");
 
@@ -26,6 +27,12 @@ assert(
   KURTOSIS_PRESET !== undefined,
   "Please install preset in Kurtosis config (network_params.preset = mainnet|minimal)"
 );
+
+assert(
+  ELECTRA_FORK_EPOCH !== undefined,
+  "Please install electra_fork_epoch in Kurtosis config"
+);
+
 const KURTOSIS_IS_MINIMAL_MODE = KURTOSIS_PRESET === "minimal";
 const SLOTS_PER_EPOCH = KURTOSIS_IS_MINIMAL_MODE ? 8 : 32;
 
@@ -73,6 +80,7 @@ export const baseConfig = {
       genesis: path.join(ARTIFACTS_PATH, "network", "genesis.json"),
       clConfig: path.join(ARTIFACTS_PATH, "network", "config.yaml"),
       validator: path.join(ARTIFACTS_PATH, "validator"),
+      validatorDocker: path.join(ARTIFACTS_PATH, "validator_docker", "validator_keys"),
       validatorKeysDump: path.join(ARTIFACTS_PATH, "validator", "dump"),
       validatorGenerated: path.join(ARTIFACTS_PATH, "validator-generated"),
     },
@@ -104,6 +112,7 @@ export const baseConfig = {
     paths: {
       root: NETWORK_ROOT,
     },
+    ELECTRA_FORK_EPOCH
   },
   kapi: {
     paths: {

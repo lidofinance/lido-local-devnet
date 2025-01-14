@@ -1,4 +1,4 @@
-import { Validator, ValidatorsResponse } from "./interfaces.js";
+import { DepositData, Validator, ValidatorsResponse } from "./interfaces.js";
 
 export async function fetchActiveValidators(beaconNode: string): Promise<ValidatorsResponse> {
     const response = await fetch(`${beaconNode}/eth/v1/beacon/states/head/validators`);
@@ -8,11 +8,11 @@ export async function fetchActiveValidators(beaconNode: string): Promise<Validat
     return response.json() as Promise<ValidatorsResponse>;
 }
 
-export const groupByWithdrawalCredentials = (validators: Validator[]): Record<string, Validator[]> => {
-    const groups: Record<string, Validator[]> = {};
+export const groupByWithdrawalCredentials = (validators: DepositData[]): Record<string, DepositData[]> => {
+    const groups: Record<string, DepositData[]> = {};
 
     for (const validator of validators) {
-        const credentials = validator.validator.withdrawal_credentials;
+        const credentials = validator.withdrawal_credentials;
         if (!groups[credentials]) {
             groups[credentials] = [];
         }

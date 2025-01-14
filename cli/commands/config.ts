@@ -17,7 +17,8 @@ export default class DevNetConfig extends Command {
         privateKey: baseConfig.wallet.privateKey,
         kurtosis: baseConfig.kurtosis,
         vcImage: VC_IMAGE,
-        slotsPerEpoch: baseConfig.kurtosis.slotsPerEpoch
+        slotsPerEpoch: baseConfig.kurtosis.slotsPerEpoch,
+        ELECTRA_FORK_EPOCH: baseConfig.network.ELECTRA_FORK_EPOCH
     });
   }
 }
