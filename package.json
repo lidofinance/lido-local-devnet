@@ -3,7 +3,7 @@
   "packageManager": "yarn@4.2.2",
   "type": "module",
   "scripts": {
-    "postinstall": "git submodule update --init --recursive"
+    "postinstall": "git submodule update --init --remote --recursive"
   },
   "dependencies": {
     "@oclif/core": "^4.0.37",
