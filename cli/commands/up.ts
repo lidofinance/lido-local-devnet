@@ -38,13 +38,22 @@ export default class DevNetUp extends Command {
           args.push("--verify");
           this.log("Smart contract verification is enabled.");
         }
-
         // Deploy specific smart contracts with optional verification
+        this.log("Deploy Lido Core contracts.");
         await this.config.runCommand("onchain:lido:deploy", args);
         this.log("Lido contracts deployed.");
 
+        this.log("Deploy CSM contracts.");
         await this.config.runCommand("onchain:csm:deploy", args);
         this.log("CSM contracts deployed.");
+
+        this.log("Activate Lido Core protocol.");
+        await this.config.runCommand("onchain:lido:activate");
+        this.log("Lido Core protocol activated.");
+
+        this.log("Activate CSM protocol.");
+        await this.config.runCommand("onchain:csm:activate");
+        this.log("CSM protocol activated.");
       }
 
       // Display network information
