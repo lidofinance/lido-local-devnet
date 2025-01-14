@@ -8,7 +8,7 @@ export default class NetworkCheck extends Command {
 
   async run() {
     const { castPath } = baseConfig.utils;
-    const { sharedPk } = baseConfig.wallet;
+    const { privateKey } = baseConfig.wallet;
     const { url } = baseConfig.network.el;
     const recipient = "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc";
 
@@ -26,7 +26,7 @@ export default class NetworkCheck extends Command {
         [
           "send",
           "--private-key",
-          sharedPk,
+          privateKey,
           recipient,
           trimmedData,
           "--rpc-url",
