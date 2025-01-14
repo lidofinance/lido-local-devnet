@@ -54,6 +54,9 @@ export default class DevNetUp extends Command {
         this.log("Activate CSM protocol.");
         await this.config.runCommand("onchain:csm:activate");
         this.log("CSM protocol activated.");
+
+        this.log("Replaces the DSM with an EOA.");
+        await this.config.runCommand("onchain:lido:replace-dsm");
       }
 
       // Display network information
