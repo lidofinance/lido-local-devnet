@@ -12,6 +12,7 @@ services:
   proxy:
     image: nginx
     container_name: proxy
+    restart: unless-stopped
     volumes:
       - "../proxy:/etc/nginx/templates"
     environment:
