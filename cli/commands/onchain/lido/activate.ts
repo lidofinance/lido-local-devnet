@@ -38,7 +38,7 @@ export default class ActivateLidoProtocol extends Command {
       {
         oraclesMembers: oracles.map(({ publicKey }) => publicKey),
         oraclesQuorum: oracles.length,
-        oraclesInitialEpoch: 1,
+        oraclesInitialEpoch: 60,
         dsmGuardians: councils.map(({ publicKey }) => publicKey),
         dsmQuorum: councils.length,
         rolesBeneficiary: baseConfig.sharedWallet[0].publicKey,
