@@ -1,34 +1,62 @@
-participants:
-  - el_type: geth
-    el_image: ethpandaops/geth:prague-devnet-5-a193537
-    el_extra_params: [--gcmode=archive]
-    cl_type: teku
-    cl_image: ethpandaops/teku:master-cc94afc
-    # only for mac with M4
-    # cl_extra_env_vars: { "JAVA_TOOL_OPTIONS": "-XX:UseSVE=0" }
-    count: 1
+# participants:
+#   - el_type: geth
+#     el_image: ethpandaops/geth:prague-devnet-5-a193537
+#     el_extra_params: [--gcmode=archive]
+#     cl_type: teku
+#     cl_image: consensys/teku@sha256:fc83bf29d95ea0e7a96f86d3dbb524e2f9e229baa05bb743a2bbe9ccaf93d3b5
+#     # only for mac with M4
+#     # cl_extra_env_vars: { "JAVA_TOOL_OPTIONS": "-XX:UseSVE=0" }
+#     count: 1
+
+
+participants_matrix:
+  el:
+    - el_type: geth
+      el_image: ethpandaops/geth:prague-devnet-5-f85cde7
+      el_extra_params: [--gcmode=archive]
+  cl:
+    - cl_type: teku
+      cl_image: consensys/teku@sha256:fc83bf29d95ea0e7a96f86d3dbb524e2f9e229baa05bb743a2bbe9ccaf93d3b5
+      use_separate_vc: true
+    # nimbus can't be run with slot times different than 6 seconds with minimal preset
+    # - cl_type: nimbus
+    #   cl_image: ethpandaops/nimbus-eth2:unstable-minimal-046c379
+    - cl_type: lodestar
+      cl_image: ethpandaops/lodestar:devnet-5-1c2b5ed
+      use_separate_vc: true
+    - cl_type: prysm
+      cl_image: ethpandaops/prysm-beacon-chain:devnet5-minimal-ae44429
+      vc_image: ethpandaops/prysm-validator:devnet5-minimal-ae44429
+      use_separate_vc: true
 
 network_params:
   network_id: "32382"
-  electra_fork_epoch: 5
+
+
+  preset: minimal
+  electra_fork_epoch: 1
   min_validator_withdrawability_delay: 1
   shard_committee_period: 1
+  churn_limit_quotient: 16
+  genesis_delay: 240
+  # electra_fork_epoch: 1
   eth1_follow_distance: 12
   seconds_per_slot: 12
-  # seconds_per_eth1_block: 12
-  # slots_per_epoch: 32
+  # preset: minimal #minimal
   # preset: mainnet #minimal
-  preset: mainnet #minimal
 
 keymanager_enabled: true
 
 additional_services:
-  # - assertoor
+  - assertoor
   - dora
-# assertoor_params:
-#   image: "ethpandaops/assertoor:master-f0413d8"
-#   tests:
-#     - file: https://raw.githubusercontent.com/ethpandaops/assertoor/refs/heads/master/playbooks/pectra-dev/kurtosis/all.yaml
+assertoor_params:
+  image: "ethpandaops/assertoor:master-cd6b1b7"
+  tests:
+    - file: https://raw.githubusercontent.com/ethpandaops/assertoor/refs/heads/master/playbooks/pectra-dev/kurtosis/all.yaml
+
+dora_params:
+  image: "ethpandaops/dora:master-latest"
 
 port_publisher:
   el:
