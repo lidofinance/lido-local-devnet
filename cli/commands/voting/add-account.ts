@@ -6,6 +6,9 @@ export default class AddBrownieAccount extends Command {
   static description = "Add a new account to Brownie in silent mode";
 
   async run() {
+
+    await this.config.runCommand("voting:install")
+
     const { privateKey, address } = baseConfig.wallet;
 
     this.log("====================================");

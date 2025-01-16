@@ -111,6 +111,9 @@ export default class DevNetUp extends Command {
 
         // this.log(`Run validators`);
         // await this.config.runCommand("validator:up");
+
+        this.log("Add new CSM Verifier")
+        await this.config.runCommand('onchain:csm:add-verifier', args)
       }
 
       // Display network information

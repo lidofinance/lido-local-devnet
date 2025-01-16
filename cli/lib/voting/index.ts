@@ -76,11 +76,10 @@ export async function mustVote(
 
   while (!voted || !executed) {
     console.log("Checking for votes...");
-   [voted, executed] = await processVotes(
-      contractAddress,
-      providerUrl,
-      privateKey
-    );
+    const result = await processVotes(contractAddress, providerUrl, privateKey);
+
+    if (!voted) voted = result[0];
+    if (!executed) executed = result[1];
 
     if (!voted || !executed) {
       console.log(
