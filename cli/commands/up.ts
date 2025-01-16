@@ -79,7 +79,7 @@ export default class DevNetUp extends Command {
         this.log(`Operator ${NOR_DEVNET_OPERATOR} added`);
 
         this.log(`Inc staking limit NOR`)
-        this.config.runCommand("onchain:lido:set-staking-limit", ["--operatorId", "0", "--limit", "30"])
+        await this.config.runCommand("onchain:lido:set-staking-limit", ["--operatorId", "0", "--limit", "30"])
 
         this.log("Add NOR keys.");
         await this.config.runCommand("onchain:lido:add-keys", [
@@ -97,20 +97,20 @@ export default class DevNetUp extends Command {
         ]);
         this.log(`Keys for operator ${CSM_DEVNET_OPERATOR} added`);
 
-        this.log("Run keys-api service.");
-        await this.config.runCommand("kapi:up");
+        // this.log("Run keys-api service.");
+        // await this.config.runCommand("kapi:up");
 
         this.log(`Make Deposit to NOR`);
         await this.config.runCommand("onchain:lido:deposit", ["--id", "1"]);
 
-        this.log(`Make Deposit to CSM`);
+        // this.log(`Make Deposit to CSM`);
         await this.config.runCommand("onchain:lido:deposit", ["--id", "3"]);
 
-        this.log(`Generate validator config`);
-        await this.config.runCommand("lido:create-validator-config");
+        // this.log(`Generate validator config`);
+        // await this.config.runCommand("lido:create-validator-config");
 
-        this.log(`Run validators`);
-        await this.config.runCommand("validator:up");
+        // this.log(`Run validators`);
+        // await this.config.runCommand("validator:up");
       }
 
       // Display network information
