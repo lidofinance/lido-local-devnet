@@ -30,3 +30,35 @@
 	path = dependencies/oracle-v5/repository
 	url = git@github.com:lidofinance/lido-oracle.git
 	branch = feat/oracle-v5
+[submodule "dependencies/repositories/lido-core"]
+	path = dependencies/repositories/lido-core
+	url = git@github.com:lidofinance/core.git
+	branch = feat/local-devnet
+[submodule "dependencies/repositories/csm"]
+	path = dependencies/repositories/csm
+	url = git@github.com:lidofinance/community-staking-module.git
+	branch = feat/devnet
+[submodule "dependencies/repositories/lido-cli"]
+	path = dependencies/repositories/lido-cli
+	url = git@github.com:lidofinance/lido-cli.git
+	branch = feature/devnet-command
+[submodule "dependencies/repositories/staking-deposit-cli"]
+	path = dependencies/repositories/staking-deposit-cli
+	url = git@github.com:lidofinance/staking-deposit-cli-devnet.git
+	branch = devnet
+[submodule "dependencies/repositories/kapi"]
+	path = dependencies/repositories/kapi
+	url = git@github.com:lidofinance/lido-keys-api.git
+	branch = feat/devnet
+[submodule "dependencies/repositories/scripts"]
+	path = dependencies/repositories/scripts
+	url = git@github.com:lidofinance/scripts.git
+	branch = feat/pectra-devnet
+[submodule "dependencies/repositories/oracle-master"]
+	path = dependencies/repositories/oracle-master
+	url = git@github.com:lidofinance/lido-oracle.git
+	branch = master
+[submodule "dependencies/repositories/oracle-v5"]
+	path = dependencies/repositories/oracle-v5
+	url = git@github.com:lidofinance/lido-oracle.git
+	branch = feat/oracle-v5
