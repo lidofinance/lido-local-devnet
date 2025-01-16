@@ -7,6 +7,10 @@
     "postinstall": "yarn submodule"
   },
   "dependencies": {
+    "@chainsafe/bls": "^8.1.0",
+    "@chainsafe/bls-keystore": "^3.1.0",
+    "@chainsafe/blst": "^2.2.0",
+    "@chainsafe/ssz": "^0.18.0",
     "@oclif/core": "^4.0.37",
     "@oclif/plugin-help": "^6.2.19",
     "@types/node": "^22.10.5",
