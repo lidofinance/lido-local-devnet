@@ -19,9 +19,15 @@ const KURTOSIS_ROOT = path.join(process.cwd(), "devnet-kurtosis");
 const KURTOSIS_CONFIG_PATH = path.join(KURTOSIS_ROOT, "/configs/devnet4.yml");
 const KURTOSIS_CONFIG = YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, "utf-8"));
 const KURTOSIS_PRESET = KURTOSIS_CONFIG?.network_params?.preset;
-const ELECTRA_FORK_EPOCH = KURTOSIS_CONFIG?.network_params?.electra_fork_epoch as number;
+const ELECTRA_FORK_EPOCH = KURTOSIS_CONFIG?.network_params
+  ?.electra_fork_epoch as number;
+// const ELECTRA_FORK_EPOCH = 0;
 
-const VALIDATOR_COMPOSE_DIR = path.join(process.cwd(), "devnet-dc", "validator-teku");
+const VALIDATOR_COMPOSE_DIR = path.join(
+  process.cwd(),
+  "devnet-dc",
+  "validator-teku"
+);
 
 assert(
   KURTOSIS_PRESET !== undefined,
@@ -38,8 +44,16 @@ const SLOTS_PER_EPOCH = KURTOSIS_IS_MINIMAL_MODE ? 8 : 32;
 
 const DORA_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "dora");
 const KAPI_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "kapi");
-const ORACLE_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "oracle");
-const ASSERTOOR_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "assertoor");
+const ORACLE_ROOT = path.join(
+  process.cwd(),
+  NETWORK_BOOTSTRAP_VERSION,
+  "oracle"
+);
+const ASSERTOOR_ROOT = path.join(
+  process.cwd(),
+  NETWORK_BOOTSTRAP_VERSION,
+  "assertoor"
+);
 
 const BLOCKSCOUT_ROOT = path.join(
   process.cwd(),
@@ -57,7 +71,10 @@ const CL_URL = "http://localhost:3500";
 const ARTIFACTS_PATH = path.join(process.cwd(), "artifacts");
 const STATE_DB_PATH = path.join(ARTIFACTS_PATH, "state.json");
 
-const LIDO_ORACLES = [sharedWallet[10], sharedWallet[11], sharedWallet[12]]
+const LIDO_ORACLES = [sharedWallet[10], sharedWallet[11], sharedWallet[12]];
+
+const OFFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
+const SCRIPTS_PATH = path.join(OFFCHAIN_ROOT, "scripts");
 
 export const jsonDb = new JsonDb(STATE_DB_PATH);
 export const parsedConsensusGenesis = new JsonDb(
@@ -70,7 +87,12 @@ export const validatorsState = new JsonDb(
 export const baseConfig = {
   validator: {
     paths: {
-      docker: VALIDATOR_COMPOSE_DIR
+      docker: VALIDATOR_COMPOSE_DIR,
+    },
+  },
+  voting: {
+    paths: {
+      root: SCRIPTS_PATH
     }
   },
   artifacts: {
@@ -80,7 +102,11 @@ export const baseConfig = {
       genesis: path.join(ARTIFACTS_PATH, "network", "genesis.json"),
       clConfig: path.join(ARTIFACTS_PATH, "network", "config.yaml"),
       validator: path.join(ARTIFACTS_PATH, "validator"),
-      validatorDocker: path.join(ARTIFACTS_PATH, "validator_docker", "validator_keys"),
+      validatorDocker: path.join(
+        ARTIFACTS_PATH,
+        "validator_docker",
+        "validator_keys"
+      ),
       validatorKeysDump: path.join(ARTIFACTS_PATH, "validator", "dump"),
       validatorGenerated: path.join(ARTIFACTS_PATH, "validator-generated"),
     },
@@ -112,27 +138,27 @@ export const baseConfig = {
     paths: {
       root: NETWORK_ROOT,
     },
-    ELECTRA_FORK_EPOCH
+    ELECTRA_FORK_EPOCH,
   },
   kapi: {
     paths: {
       root: KAPI_ROOT,
-      ofchain: path.join(OFCHAIN_ROOT, 'kapi'),
-      dockerfile: path.join(OFCHAIN_ROOT, 'kapi', "Dockerfile")
-    }
+      ofchain: path.join(OFCHAIN_ROOT, "kapi"),
+      dockerfile: path.join(OFCHAIN_ROOT, "kapi", "Dockerfile"),
+    },
   },
   assertoor: {
     paths: {
       root: ASSERTOOR_ROOT,
-    }
+    },
   },
   oracle: {
     paths: {
       root: ORACLE_ROOT,
-      ofchain: path.join(OFCHAIN_ROOT, 'oracle-v5'),
-      dockerfile: path.join(OFCHAIN_ROOT, 'oracle-v5', "Dockerfile")
+      ofchain: path.join(OFCHAIN_ROOT, "oracle-v5"),
+      dockerfile: path.join(OFCHAIN_ROOT, "oracle-v5", "Dockerfile"),
     },
-    wallet: LIDO_ORACLES
+    wallet: LIDO_ORACLES,
   },
   dora: {
     url: "http://localhost:3070",
@@ -211,7 +237,7 @@ export const baseConfig = {
           DEVNET_CHAIN_ID: CHAIN_ID,
           VERIFIER_API_KEY: "local-testnet",
           DEVNET_SLOTS_PER_EPOCH: "8",
-          DEVNET_ELECTRA_EPOCH: ""
+          DEVNET_ELECTRA_EPOCH: "",
         },
       },
     },
@@ -223,7 +249,12 @@ export const baseConfig = {
         configs: path.join(OFCHAIN_ROOT, "lido-cli", "configs"),
         activateCSM: path.join(OFCHAIN_ROOT, "lido-cli", "configs"),
         // ofchain/lido-cli/configs/extra-deployed-local-devnet.json
-        extraDataConfig: path.join(OFCHAIN_ROOT, "lido-cli", "configs", "extra-deployed-local-devnet.json"),
+        extraDataConfig: path.join(
+          OFCHAIN_ROOT,
+          "lido-cli",
+          "configs",
+          "extra-deployed-local-devnet.json"
+        ),
       },
       activate: {
         env: {
