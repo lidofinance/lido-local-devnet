@@ -49,7 +49,7 @@ export class LidoCoreUpdateState extends Command {
     const jsonData = JSON.parse(fileContent);
     await jsonDb.update({ lidoCore: jsonData });
 
-    const { lidoCLI } = baseConfig.ofchain;
+    const { lidoCLI } = baseConfig.services;
     // save state to lido-cli folder
     await fs.writeFile(
       path.join(lidoCLI.paths.configs, lidoCLI.activate.env.DEPLOYED),

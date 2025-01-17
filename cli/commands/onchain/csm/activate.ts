@@ -1,4 +1,4 @@
-// ofchain/lido-cli/programs/omnibus-scripts/devnet-csm-start.ts
+// services/lido-cli/programs/omnibus-scripts/devnet-csm-start.ts
 import { Command } from "@oclif/core";
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import {
@@ -11,7 +11,7 @@ const {
   activateCSM,
   activate,
   paths: { root },
-} = baseConfig.ofchain.lidoCLI;
+} = baseConfig.services.lidoCLI;
 
 type CSMActivateENV = typeof activateCSM;
 

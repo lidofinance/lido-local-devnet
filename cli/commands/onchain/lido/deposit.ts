@@ -9,7 +9,7 @@ import { waitEL } from "../../../lib/network/index.js";
 
 const {
   paths: { root },
-} = baseConfig.ofchain.lidoCLI;
+} = baseConfig.services.lidoCLI;
 
 export default class LidoDeposit extends Command {
   static description = "Handles deposits to the Lido protocol.";

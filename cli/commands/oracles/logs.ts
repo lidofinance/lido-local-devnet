@@ -12,7 +12,7 @@ export default class OracleLogs extends Command {
       ["compose", "-f", "docker-compose.devnet.yml", "logs", "-f"],
       {
         stdio: "inherit",
-        cwd: baseConfig.oracle.paths.ofchain,
+        cwd: baseConfig.oracle.paths.repository,
         //   cwd: baseConfig.kapi.paths.root,
       }
     );

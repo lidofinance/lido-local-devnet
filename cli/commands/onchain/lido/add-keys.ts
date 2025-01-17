@@ -6,7 +6,7 @@ import { waitEL } from "../../../lib/network/index.js";
 
 const {
   paths: { root },
-} = baseConfig.ofchain.lidoCLI;
+} = baseConfig.services.lidoCLI;
 
 export default class LidoAddKeys extends Command {
   static description = "Adds validator keys for an existing node operator to the Lido protocol.";

@@ -6,7 +6,7 @@ import { waitEL } from "../../../lib/network/index.js";
 
 const {
   paths: { root },
-} = baseConfig.ofchain.lidoCLI;
+} = baseConfig.services.lidoCLI;
 
 export default class LidoAddCSMOperatorWithKeys extends Command {
   static description = "Adds a new node operator to the CSM module along with validator keys.";

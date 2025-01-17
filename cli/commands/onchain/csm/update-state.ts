@@ -17,7 +17,7 @@ export class CSMUpdateState extends Command {
     await jsonDb.update({ csm: jsonData });
     const reader = await jsonDb.getReader();
 
-    const { lidoCLI } = baseConfig.ofchain;
+    const { lidoCLI } = baseConfig.services;
     // // save state to lido-cli folder
     // await fs.writeFile(
     //   path.join(lidoCLI.paths.configs, lidoCLI.activate.env.DEPLOYED),

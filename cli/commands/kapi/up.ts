@@ -73,7 +73,7 @@ export default class KapiUp extends Command {
       STAKING_ROUTER_DEVNET_ADDRESS: stakingRouter,
     };
 
-    const envPath = `${baseConfig.kapi.paths.ofchain}/.env`;
+    const envPath = `${baseConfig.kapi.paths.repository}/.env`;
     const envContent = Object.entries(env)
       .map(([key, value]) => `${key}=${value}`)
       .join("\n");
@@ -85,7 +85,7 @@ export default class KapiUp extends Command {
         ["compose", "-f", "docker-compose.devnet.yml", "up", "--build", "-d"],
         {
           stdio: "inherit",
-          cwd: baseConfig.kapi.paths.ofchain,
+          cwd: baseConfig.kapi.paths.repository,
         }
       );
       this.log("Kapi started successfully.");

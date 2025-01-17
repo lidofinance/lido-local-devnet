@@ -93,7 +93,7 @@ To spin up the DevNet, simply follow these commands:
    ```
    Next, navigate to the Lido-CLI directory:
    ```sh
-   cd ofchain/lido-cli
+   cd submodules/lido-cli
    ```
    Add the module:
    ```sh

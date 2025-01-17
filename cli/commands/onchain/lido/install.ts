@@ -26,11 +26,11 @@ export class LidoCoreInstall extends Command {
 
     // Ensure that the directory log for the lido-cli installation is also specific and clear
     this.log(
-      `Initiating 'yarn install' in the lido-cli directory at ${baseConfig.ofchain.lidoCLI.paths.root}...`
+      `Initiating 'yarn install' in the lido-cli directory at ${baseConfig.services.lidoCLI.paths.root}...`
     );
 
     await execa("bash", ["-c", "yarn"], {
-      cwd: baseConfig.ofchain.lidoCLI.paths.root,
+      cwd: baseConfig.services.lidoCLI.paths.root,
       stdio: "inherit",
     });
 

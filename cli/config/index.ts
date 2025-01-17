@@ -62,8 +62,8 @@ const BLOCKSCOUT_ROOT = path.join(
 );
 const ONCHAIN_ROOT = path.join(process.cwd(), "onchain");
 const CSM_ROOT = path.join(ONCHAIN_ROOT, "csm");
-const OFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
-const DEPOSIT_CLI_ROOT = path.join(OFCHAIN_ROOT, "staking-deposit-cli");
+const SERVICES_ROOT = path.join(process.cwd(), "services");
+const DEPOSIT_CLI_ROOT = path.join(SERVICES_ROOT, "staking-deposit-cli");
 
 const EL_URL = "http://localhost:8545";
 const CL_URL = "http://localhost:3500";
@@ -73,8 +73,7 @@ const STATE_DB_PATH = path.join(ARTIFACTS_PATH, "state.json");
 
 const LIDO_ORACLES = [sharedWallet[10], sharedWallet[11], sharedWallet[12]];
 
-const OFFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
-const SCRIPTS_PATH = path.join(OFFCHAIN_ROOT, "scripts");
+const SCRIPTS_PATH = path.join(SERVICES_ROOT, "scripts");
 
 export const jsonDb = new JsonDb(STATE_DB_PATH);
 export const parsedConsensusGenesis = new JsonDb(
@@ -143,8 +142,8 @@ export const baseConfig = {
   kapi: {
     paths: {
       root: KAPI_ROOT,
-      ofchain: path.join(OFCHAIN_ROOT, "kapi"),
-      dockerfile: path.join(OFCHAIN_ROOT, "kapi", "Dockerfile"),
+      repository: path.join(SERVICES_ROOT, "kapi"),
+      dockerfile: path.join(SERVICES_ROOT, "kapi", "Dockerfile"),
     },
   },
   assertoor: {
@@ -155,8 +154,8 @@ export const baseConfig = {
   oracle: {
     paths: {
       root: ORACLE_ROOT,
-      ofchain: path.join(OFCHAIN_ROOT, "oracle-v5"),
-      dockerfile: path.join(OFCHAIN_ROOT, "oracle-v5", "Dockerfile"),
+      repository: path.join(SERVICES_ROOT, "oracle-v5"),
+      dockerfile: path.join(SERVICES_ROOT, "oracle-v5", "Dockerfile"),
     },
     wallet: LIDO_ORACLES,
   },
@@ -242,15 +241,15 @@ export const baseConfig = {
       },
     },
   },
-  ofchain: {
+  services: {
     lidoCLI: {
       paths: {
-        root: path.join(OFCHAIN_ROOT, "lido-cli"),
-        configs: path.join(OFCHAIN_ROOT, "lido-cli", "configs"),
-        activateCSM: path.join(OFCHAIN_ROOT, "lido-cli", "configs"),
-        // ofchain/lido-cli/configs/extra-deployed-local-devnet.json
+        root: path.join(SERVICES_ROOT, "lido-cli"),
+        configs: path.join(SERVICES_ROOT, "lido-cli", "configs"),
+        activateCSM: path.join(SERVICES_ROOT, "lido-cli", "configs"),
+        // services/lido-cli/configs/extra-deployed-local-devnet.json
         extraDataConfig: path.join(
-          OFCHAIN_ROOT,
+          SERVICES_ROOT,
           "lido-cli",
           "configs",
           "extra-deployed-local-devnet.json"

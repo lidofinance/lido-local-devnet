@@ -50,7 +50,7 @@ export default class DevNetConfig extends Command {
 
     // lido cli dir
     const cliKeysRoot = path.join(
-      baseConfig.ofchain.lidoCLI.paths.root,
+      baseConfig.services.lidoCLI.paths.root,
       "generated-keys"
     );
     const cliKeysFileName = path.join(cliKeysRoot, `${flags.name}.json`);

@@ -61,17 +61,14 @@ export default class PreparePectraVoting extends Command {
       // didnt find there to fix "Unexpected name of net. Should be one of: dict_keys(['mainnet', 'goerli', 'holesky', 'sepolia'])"
       CHAIN_NETWORK_NAME: "mainnet",
     };
-    // TODO: add network to scripts config
-    const OFFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
-    const SCRIPTS_PATH = path.join(OFFCHAIN_ROOT, "scripts");
 
-    const envPath = `${SCRIPTS_PATH}/configs/config_devnet4.py`;
+    const envPath = `${baseConfig.voting.paths.root}/configs/config_devnet4.py`;
     const configContent = Object.entries(config)
       .map(([key, value]) => `${key}="${value}"`)
       .join("\n");
     await fs.writeFile(envPath, configContent, "utf-8");
 
-    const networkPath = path.join(SCRIPTS_PATH, "network-config.yaml");
+    const networkPath = path.join(baseConfig.voting.paths.root, "network-config.yaml");
     const configTemplateYaml = YAML.parse(
       await fs.readFile(networkPath, "utf-8")
     );

@@ -6,7 +6,7 @@ import { waitEL } from "../../../lib/network/index.js";
 
 const {
   paths: { root },
-} = baseConfig.ofchain.lidoCLI;
+} = baseConfig.services.lidoCLI;
 
 export default class LidoSetStakingLimit extends Command {
   static description = "Increases the staking limit for a node operator in the Lido protocol.";

@@ -26,7 +26,7 @@ export default class ActivateLidoProtocol extends Command {
 
     this.log("Execution node is ready.");
 
-    const { oracles, councils, env } = baseConfig.ofchain.lidoCLI.activate;
+    const { oracles, councils, env } = baseConfig.services.lidoCLI.activate;
     const deployEnv = {
       ...env,
       EL_API_PROVIDER: rpc,
@@ -43,7 +43,7 @@ export default class ActivateLidoProtocol extends Command {
         dsmQuorum: councils.length,
         rolesBeneficiary: baseConfig.sharedWallet[0].publicKey,
       },
-      baseConfig.ofchain.lidoCLI.paths.root,
+      baseConfig.services.lidoCLI.paths.root,
       deployEnv
     );
 

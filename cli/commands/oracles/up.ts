@@ -56,7 +56,7 @@ export default class OracleUp extends Command {
       DOCKER_NETWORK_NAME: `kt-${name}`,
     };
 
-    const envPath = `${baseConfig.oracle.paths.ofchain}/.env`;
+    const envPath = `${baseConfig.oracle.paths.repository}/.env`;
     const envContent = Object.entries(env)
       .map(([key, value]) => `${key}=${value}`)
       .join("\n");
@@ -68,7 +68,7 @@ export default class OracleUp extends Command {
         ["compose", "-f", "docker-compose.devnet.yml", "up", "--build", "-d"],
         {
             stdio: "inherit",
-            cwd: baseConfig.oracle.paths.ofchain,
+            cwd: baseConfig.oracle.paths.repository,
         }
       );
       this.log("Oracle(s) started successfully.");

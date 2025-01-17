@@ -11,7 +11,7 @@ export default class KapiLogs extends Command {
       ["compose", "-f", "docker-compose.devnet.yml", "logs", "-f"],
       {
         stdio: "inherit",
-        cwd: baseConfig.kapi.paths.ofchain,
+        cwd: baseConfig.kapi.paths.repository,
         //   cwd: baseConfig.kapi.paths.root,
       }
     );
