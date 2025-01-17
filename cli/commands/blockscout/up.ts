@@ -10,8 +10,8 @@ export default class BlockscoutUp extends Command {
     const state = await jsonDb.read();
     const { network } = baseConfig;
 
-    const rpc = state.network?.binding?.elNodesPrivate?.[0] ?? network.el.url;
-    const grpc = state.network?.binding?.elNodesGrpcPrivate?.[0] ?? network.el.url;
+    const rpc = state.network?.binding?.elNodesPrivate?.[0];
+    const grpc = state.network?.binding?.elNodesGrpcPrivate?.[0];
     const name = state.network?.binding?.name ?? network.name;
 
     try {

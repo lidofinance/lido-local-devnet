@@ -7,27 +7,26 @@ import assert from "assert";
 
 const CHAIN_ID = "32382";
 
-const NETWORK_BOOTSTRAP_VERSION = "devnet-dc";
-// services roots
-const NETWORK_ROOT = path.join(
+// services paths begin
+const SERVICES_ROOT = path.join(process.cwd(), "services");
+const DORA_ROOT = path.join(process.cwd(), SERVICES_ROOT, "dora");
+const KAPI_ROOT = path.join(process.cwd(), SERVICES_ROOT, "kapi");
+const ASSERTOOR_ROOT = path.join(process.cwd(), SERVICES_ROOT, "assertoor");
+const BLOCKSCOUT_ROOT = path.join(process.cwd(), SERVICES_ROOT, "blockscout");
+const VALIDATOR_COMPOSE_DIR = path.join(
   process.cwd(),
-  NETWORK_BOOTSTRAP_VERSION,
-  "network"
+  SERVICES_ROOT,
+  "validator-teku"
 );
 
-const KURTOSIS_ROOT = path.join(process.cwd(), "devnet-kurtosis");
-const KURTOSIS_CONFIG_PATH = path.join(KURTOSIS_ROOT, "/configs/devnet4.yml");
+const KURTOSIS_ROOT = path.join(SERVICES_ROOT, "kurtosis");
+const KURTOSIS_CONFIG_PATH = path.join(KURTOSIS_ROOT, "devnet4.yml");
 const KURTOSIS_CONFIG = YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, "utf-8"));
+// services paths end
+
 const KURTOSIS_PRESET = KURTOSIS_CONFIG?.network_params?.preset;
 const ELECTRA_FORK_EPOCH = KURTOSIS_CONFIG?.network_params
   ?.electra_fork_epoch as number;
-// const ELECTRA_FORK_EPOCH = 0;
-
-const VALIDATOR_COMPOSE_DIR = path.join(
-  process.cwd(),
-  "devnet-dc",
-  "validator-teku"
-);
 
 assert(
   KURTOSIS_PRESET !== undefined,
@@ -42,38 +41,19 @@ assert(
 const KURTOSIS_IS_MINIMAL_MODE = KURTOSIS_PRESET === "minimal";
 const SLOTS_PER_EPOCH = KURTOSIS_IS_MINIMAL_MODE ? 8 : 32;
 
-const DORA_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "dora");
-const KAPI_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "kapi");
-const ORACLE_ROOT = path.join(
-  process.cwd(),
-  NETWORK_BOOTSTRAP_VERSION,
-  "oracle"
-);
-const ASSERTOOR_ROOT = path.join(
-  process.cwd(),
-  NETWORK_BOOTSTRAP_VERSION,
-  "assertoor"
-);
 
-const BLOCKSCOUT_ROOT = path.join(
-  process.cwd(),
-  NETWORK_BOOTSTRAP_VERSION,
-  "blockscout"
-);
-const ONCHAIN_ROOT = path.join(process.cwd(), "onchain");
-const CSM_ROOT = path.join(ONCHAIN_ROOT, "csm");
-const SERVICES_ROOT = path.join(process.cwd(), "services");
-const DEPOSIT_CLI_ROOT = path.join(SERVICES_ROOT, "staking-deposit-cli");
-
-const EL_URL = "http://localhost:8545";
-const CL_URL = "http://localhost:3500";
+// submodules paths begin
+const SUBMODULES_ROOT = path.join(process.cwd(), "submodules");
+const DEPOSIT_CLI_ROOT = path.join(SUBMODULES_ROOT, "staking-deposit-cli");
+const CSM_ROOT = path.join(SUBMODULES_ROOT, "csm");
+const ORACLE_ROOT = path.join(process.cwd(), SUBMODULES_ROOT, "oracle");
+const VOTING_SCRIPTS_PATH = path.join(SUBMODULES_ROOT, "scripts");
 
 const ARTIFACTS_PATH = path.join(process.cwd(), "artifacts");
 const STATE_DB_PATH = path.join(ARTIFACTS_PATH, "state.json");
+// submodules paths end
 
 const LIDO_ORACLES = [sharedWallet[10], sharedWallet[11], sharedWallet[12]];
-
-const SCRIPTS_PATH = path.join(SERVICES_ROOT, "scripts");
 
 export const jsonDb = new JsonDb(STATE_DB_PATH);
 export const parsedConsensusGenesis = new JsonDb(
@@ -91,8 +71,8 @@ export const baseConfig = {
   },
   voting: {
     paths: {
-      root: SCRIPTS_PATH
-    }
+      root: VOTING_SCRIPTS_PATH,
+    },
   },
   artifacts: {
     paths: {
@@ -128,22 +108,13 @@ export const baseConfig = {
   },
   network: {
     name: "my-testnet",
-    el: {
-      url: EL_URL,
-    },
-    cl: {
-      url: CL_URL,
-    },
-    paths: {
-      root: NETWORK_ROOT,
-    },
     ELECTRA_FORK_EPOCH,
   },
   kapi: {
     paths: {
       root: KAPI_ROOT,
-      repository: path.join(SERVICES_ROOT, "kapi"),
-      dockerfile: path.join(SERVICES_ROOT, "kapi", "Dockerfile"),
+      repository: path.join(SUBMODULES_ROOT, "kapi"),
+      dockerfile: path.join(SUBMODULES_ROOT, "kapi", "Dockerfile"),
     },
   },
   assertoor: {
@@ -154,8 +125,8 @@ export const baseConfig = {
   oracle: {
     paths: {
       root: ORACLE_ROOT,
-      repository: path.join(SERVICES_ROOT, "oracle-v5"),
-      dockerfile: path.join(SERVICES_ROOT, "oracle-v5", "Dockerfile"),
+      repository: path.join(SUBMODULES_ROOT, "oracle-v5"),
+      dockerfile: path.join(SUBMODULES_ROOT, "oracle-v5", "Dockerfile"),
     },
     wallet: LIDO_ORACLES,
   },
@@ -180,7 +151,7 @@ export const baseConfig = {
     lido: {
       core: {
         paths: {
-          root: path.join(ONCHAIN_ROOT, "lido-core"),
+          root: path.join(SUBMODULES_ROOT, "lido-core"),
         },
         env: {
           NETWORK: "local-devnet",
@@ -244,12 +215,12 @@ export const baseConfig = {
   services: {
     lidoCLI: {
       paths: {
-        root: path.join(SERVICES_ROOT, "lido-cli"),
-        configs: path.join(SERVICES_ROOT, "lido-cli", "configs"),
-        activateCSM: path.join(SERVICES_ROOT, "lido-cli", "configs"),
+        root: path.join(SUBMODULES_ROOT, "lido-cli"),
+        configs: path.join(SUBMODULES_ROOT, "lido-cli", "configs"),
+        activateCSM: path.join(SUBMODULES_ROOT, "lido-cli", "configs"),
         // services/lido-cli/configs/extra-deployed-local-devnet.json
         extraDataConfig: path.join(
-          SERVICES_ROOT,
+          SUBMODULES_ROOT,
           "lido-cli",
           "configs",
           "extra-deployed-local-devnet.json"

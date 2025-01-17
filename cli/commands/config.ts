@@ -11,8 +11,8 @@ export default class DevNetConfig extends Command {
         services: {
             dora: baseConfig.dora.url,
             blockscout: baseConfig.blockscout.url,
-            execution: baseConfig.network.el.url,
-            consensus: baseConfig.network.cl.url,
+            // execution: baseConfig.network.el.url,
+            // consensus: baseConfig.network.cl.url,
         },
         privateKey: baseConfig.wallet.privateKey,
         kurtosis: baseConfig.kurtosis,

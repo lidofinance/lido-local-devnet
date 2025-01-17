@@ -17,8 +17,8 @@ export default class DoraUp extends Command {
     const state = await jsonDb.read();
     const { network } = baseConfig;
 
-    const el = state.network?.binding?.elNodesPrivate?.[0] ?? network.el.url;
-    const cl = state.network?.binding?.clNodesPrivate?.[0] ?? network.el.url;
+    const el = state.network?.binding?.elNodesPrivate?.[0];
+    const cl = state.network?.binding?.clNodesPrivate?.[0];
     const name = state.network?.binding?.name ?? network.name;
 
     configTemplateYaml.beaconapi.endpoints = [

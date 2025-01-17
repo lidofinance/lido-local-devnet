@@ -2,7 +2,7 @@ import { Command } from "@oclif/core";
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import path from "path";
 import fs from "fs/promises";
-// onchain/csm/artifacts/latest/deploy-local-devnet.json
+// submodules/csm/artifacts/latest/deploy-local-devnet.json
 export class CSMUpdateState extends Command {
   static description =
     "Reads the network state file for csm and updates the JSON database accordingly.";
