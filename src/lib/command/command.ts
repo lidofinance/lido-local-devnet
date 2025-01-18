@@ -1,21 +1,9 @@
-import { Command as BaseCommand, Flags, Interfaces } from "@oclif/core";
+import { Command as BaseCommand, Flags } from "@oclif/core";
 import { ZodError } from "zod";
 
+import { DevNetContext } from "./context.js";
 import { DevNetRuntimeEnvironment } from "./runtime-env.js";
-
-export type ExtractFlags<T extends typeof BaseCommand> =
-  Interfaces.InferredFlags<(typeof DevNetCommand)["baseFlags"] & T["flags"]>;
-
-type ExtractArgs<T extends typeof BaseCommand> = Interfaces.InferredArgs<
-  T["args"]
->;
-
-export type DevNetContext<T extends typeof BaseCommand> = {
-  // args: ExtractArgs<T>;
-  dre: DevNetRuntimeEnvironment;
-  flags: ExtractFlags<T>;
-  runCommand: (id: string, argv?: string[]) => Promise<void>;
-};
+import { ExtractFlags } from "./types.js";
 
 export function formatZodErrors(error: ZodError): string {
   return error.errors
@@ -38,13 +26,20 @@ export class DevNetCommand extends BaseCommand {
     }),
   };
 
-  protected args!: ExtractArgs<typeof this.ctor>;
-  protected dre!: DevNetRuntimeEnvironment;
-  protected flags!: ExtractFlags<typeof this.ctor>;
+  protected ctx!: DevNetContext<typeof this.ctor>;
+
+  public static async exec<F extends typeof DevNetCommand>(
+    this: F,
+    dre: DevNetRuntimeEnvironment,
+    flags: Omit<ExtractFlags<F>, "network">,
+  ): Promise<void> {
+    const flagsWithNetwork = {...flags, network: dre.name}
+    await this.handler(new DevNetContext({ dre, flags: flagsWithNetwork }));
+  }
 
   public static handler(
     _ctx: DevNetContext<typeof DevNetCommand>,
-  ): Promise<void> {
+  ): Promise<any> {
     throw new Error("Static handler must be implemented in a derived class.");
   }
 
@@ -58,31 +53,24 @@ export class DevNetCommand extends BaseCommand {
 
   public async init(): Promise<void> {
     await super.init();
-    const { args, flags } = await this.parse({
+    const { flags } = await this.parse({
       args: this.ctor.args,
       baseFlags: (this.ctor as typeof DevNetCommand).baseFlags,
       flags: this.ctor.flags,
       strict: this.ctor.strict,
     });
 
-    this.flags = flags as ExtractFlags<typeof this.ctor>;
-    this.args = args as ExtractArgs<typeof this.ctor>;
+    const dre = await DevNetRuntimeEnvironment.getNew(flags.network);
 
-    const { network } = this.flags;
-
-    this.dre = await DevNetRuntimeEnvironment.getNew(network);
+    this.ctx = new DevNetContext({
+      dre,
+      flags,
+    });
   }
 
   public async run(): Promise<void> {
-    const ctx: DevNetContext<typeof this.ctor> = {
-      // args: this.args,
-      dre: this.dre,
-      flags: this.flags,
-      runCommand: this.config.runCommand.bind(this.config), // Прямая передача runCommand
-    };
-
     const ctor = this.constructor as typeof DevNetCommand;
-    await ctor.handler(ctx);
+    await ctor.handler(this.ctx);
   }
 }
 

@@ -1,9 +1,10 @@
 import { DevNetCommand } from "../lib/command/command.js";
+import { DevNetContext } from "../lib/command/context.js";
 
-export default class PrintWallet extends DevNetCommand<typeof PrintWallet> {
+export default class PrintWallet extends DevNetCommand {
   static description = "Print current network wallet";
 
-  async run() {
-    this.logJson(await this.dre.state.getWallet());
+  static async handler({ dre }: DevNetContext<typeof PrintWallet>) {
+    console.log(await dre.state.getWallet());
   }
 }

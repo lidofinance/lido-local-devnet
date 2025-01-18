@@ -6,7 +6,7 @@ import { State } from "../../config/state.js";
 
 export const loadUserConfig = async () => YAML.parse(await readFile(USER_CONFIG_PATH, "utf-8"));
 
-let cachedDRE: DevNetRuntimeEnvironment;
+// let cachedDRE: DevNetRuntimeEnvironment;
 
 export class DevNetRuntimeEnvironment {
   name: string;
@@ -17,7 +17,9 @@ export class DevNetRuntimeEnvironment {
   }
 
   static async getNew(network: string) {
-    if (cachedDRE) return cachedDRE;
+    console.log('HIT')
+    // TODO: make network based cache
+    // if (cachedDRE) return cachedDRE;
 
     const userConfig = await loadUserConfig().catch(() =>
       console.log("User config not found, use empty object")
@@ -26,8 +28,8 @@ export class DevNetRuntimeEnvironment {
     const networkConfig =
       userConfig?.networks?.find((net: any) => net?.name === network) ?? {};
 
-    cachedDRE = new DevNetRuntimeEnvironment(network, networkConfig);
+    return new DevNetRuntimeEnvironment(network, networkConfig);
 
-    return cachedDRE;
+    // return cachedDRE;
   }
 }
