@@ -30,10 +30,18 @@ export const CSMConfigSchema = z.object({
   lidoLocator: z.string(),
 });
 
+export const WalletSchema = z
+  .array(z.object({ publicKey: z.string(), privateKey: z.string() }))
+  .min(20, { message: "Wallet must have at least 20 items" });
+
+export const WalletPrivateKey = z.string();
+
 const ConfigSchema = z.object({
   chain: ChainConfigSchema.partial().optional(),
   lido: LidoConfigSchema.partial().optional(),
   csm: CSMConfigSchema.partial().optional(),
+  wallet: WalletSchema.optional(),
+  walletPrivateKey: WalletPrivateKey.optional(),
 });
 
 type ChainConfig = z.infer<typeof ChainConfigSchema>;

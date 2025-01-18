@@ -7,7 +7,7 @@ export const loadUserConfig = async () => {
   return YAML.parse(await readFile(USER_CONFIG_PATH, "utf-8"));
 };
 
-export class Network {
+export class DevNetRuntimeEnvironment {
   name: string;
   state: State;
   constructor(network: string, rawConfig: unknown) {
@@ -23,6 +23,6 @@ export class Network {
     const networkConfig =
       userConfig?.networks?.find((net: any) => net?.name === network) ?? {};
 
-    return new Network(network, networkConfig);
+    return new DevNetRuntimeEnvironment(network, networkConfig);
   }
 }

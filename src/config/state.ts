@@ -7,12 +7,14 @@ import {
   CSMConfigSchema,
   Config,
   ConfigValidator,
+  WalletSchema,
 } from "./schemas.js";
 import {
   ARTIFACTS_PATH,
   STATE_FILE,
   PARSED_CONSENSUS_GENESIS_FILE,
 } from "./constants.js";
+import { sharedWallet } from "./shared-wallet.js";
 
 /**
  * The State class is responsible for managing and retrieving configuration data from both a user-provided config object
@@ -105,6 +107,11 @@ export class State {
       CSMConfigSchema,
       reader
     );
+  }
+
+  async getWallet() {
+    const wallet = this.config.wallet ?? sharedWallet;
+    return WalletSchema.parseAsync(wallet);
   }
 
   async updateChain(jsonData: unknown) {
