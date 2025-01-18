@@ -5,7 +5,8 @@
   "scripts": {
     "submodule": "git submodule update --init --remote --recursive",
     "postinstall": "yarn submodule",
-    "build": "rm -rf dist && tsc -b"
+    "build": "rm -rf dist && tsc -b",
+    "lint": "eslint . --ext .ts && tsc --noEmit"
   },
   "dependencies": {
     "@oclif/core": "^4.0.37",
@@ -15,9 +16,17 @@
     "execa": "^9.5.2",
     "kurtosis-sdk": "^1.4.3",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2",
+    "typescript": "^5",
     "yaml": "^2.6.1",
     "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "eslint": "^8",
+    "eslint-config-oclif": "^5",
+    "eslint-config-oclif-typescript": "^3",
+    "eslint-config-prettier": "^9",
+    "eslint-plugin-prettier": "^5.2.2",
+    "prettier": "^3.4.2"
   },
   "oclif": {
     "bin": "./bin/run.js",
@@ -45,5 +54,8 @@
   },
   "bin": {
     "devnet": "./bin/run.js"
-  }
+  },
+  "engines": {
+    "node": ">=20"
+}
 }
