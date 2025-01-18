@@ -1,5 +1,6 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
+
 import { baseConfig } from "../../config/index.js";
 
 export default class AddBrownieAccount extends Command {
@@ -9,7 +10,7 @@ export default class AddBrownieAccount extends Command {
 
     await this.config.runCommand("voting:install")
 
-    const { privateKey, address } = baseConfig.wallet;
+    const { address, privateKey } = baseConfig.wallet;
 
     this.log("====================================");
     this.log("💡 Starting the process to add a new Brownie account...");
@@ -28,8 +29,8 @@ export default class AddBrownieAccount extends Command {
         "poetry",
         ["run", "brownie", "accounts", "new", address],
         {
-          stdio: "inherit",
           cwd: baseConfig.voting.paths.root,
+          stdio: "inherit",
         }
       );
 

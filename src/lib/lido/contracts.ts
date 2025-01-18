@@ -1,7 +1,8 @@
-import { ethers, JsonRpcProvider } from "ethers";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import { JsonRpcProvider, ethers } from "ethers";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { jsonDb } from "../../config/index.js";
 
 // Define the directory path of the current file
@@ -26,6 +27,15 @@ class ContractInstance {
     this.addressSelector = addressSelector;
   }
 
+  // Retrieve the contract instance
+  get instance(): ethers.Contract {
+    if (!this.contract) {
+        throw new Error("Contract not initialized. Call initContract first.");
+      }
+
+      return this.contract;
+  }
+
   // Initialize the contract with an address and a provider
   public async initContract() {
     const state = await jsonDb.getReader();
@@ -35,20 +45,12 @@ class ContractInstance {
 
     const locator = state.getOrError("lidoCore.lidoLocator.proxy.address");
     const locatorContract = new ethers.Contract(locator, LOCATOR_ABI, provider);
-    if (!this.addressSelector) {
-      this.contract = locatorContract;
-    } else {
+    if (this.addressSelector) {
       const destAddress = await locatorContract[this.addressSelector]();
       this.contract = new ethers.Contract(destAddress, this.abi, provider);
+    } else {
+      this.contract = locatorContract;
     }
-  }
-
-  // Retrieve the contract instance
-  get instance(): ethers.Contract {
-    if (!this.contract) {
-        throw new Error("Contract not initialized. Call initContract first.");
-      }
-      return this.contract;
   }
 }
 

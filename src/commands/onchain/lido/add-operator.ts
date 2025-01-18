@@ -1,5 +1,6 @@
 // ./run.sh nor add-operator -n <NAME> -a <ADDRESS>
 import { Command, Flags } from "@oclif/core";
+
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import { runLidoCLI } from "../../../lib/lido-cli/index.js";
 import { waitEL } from "../../../lib/network/index.js";

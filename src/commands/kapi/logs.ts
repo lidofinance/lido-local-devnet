@@ -1,5 +1,6 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
+
 import { baseConfig } from "../../config/index.js";
 
 export default class KapiLogs extends Command {
@@ -10,8 +11,8 @@ export default class KapiLogs extends Command {
       "docker",
       ["compose", "-f", "docker-compose.devnet.yml", "logs", "-f"],
       {
-        stdio: "inherit",
         cwd: baseConfig.kapi.paths.repository,
+        stdio: "inherit",
         //   cwd: baseConfig.kapi.paths.root,
       }
     );

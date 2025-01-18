@@ -1,5 +1,6 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
+
 import { baseConfig, jsonDb } from "../../config/index.js";
 
 export default class BlockscoutDown extends Command {
@@ -16,13 +17,13 @@ export default class BlockscoutDown extends Command {
       const name = state.network?.binding?.name ?? network.name;
 
       await execa("docker", ["compose", "-f", "geth.yml", "down", "-v"], {
-        stdio: "inherit",
         cwd: baseConfig.blockscout.paths.root,
         env: {
           BLOCKSCOUT_RPC_URL: rpc,
           BLOCKSCOUT_WS_RPC_URL: grpc,
           DOCKER_NETWORK_NAME: `kt-${name}`,
         },
+        stdio: "inherit",
       });
       this.log("Blockscout stopped successfully.");
     } catch (error: any) {

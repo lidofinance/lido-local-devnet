@@ -15,6 +15,4 @@ export const getGitBranchHash = async (directory: string): Promise<string> => {
   }
 };
 
-export const getShortGitBranchHash = async (directory: string) => {
-  return (await getGitBranchHash(directory)).substring(0, 7);
-};
+export const getShortGitBranchHash = async (directory: string) => (await getGitBranchHash(directory)).slice(0, 7);

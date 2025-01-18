@@ -16,12 +16,12 @@ export function displayUrlTable(
   console.log("-".repeat(maxLengthName + 50)); // Assuming URL won't be longer than 50 characters for simplicity
 
   // Print each row
-  data.forEach((item) => {
+  for (const item of data) {
     console.log(
       item.name +
         " ".repeat(maxLengthName - item.name.length) +
         " | " +
         item.url
     );
-  });
+  }
 }

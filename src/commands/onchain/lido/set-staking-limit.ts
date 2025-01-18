@@ -1,5 +1,6 @@
 // ./run.sh nor set-limit -o <OPERATOR_ID> -l <LIMIT>
 import { Command, Flags } from "@oclif/core";
+
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import { runLidoCLI } from "../../../lib/lido-cli/index.js";
 import { waitEL } from "../../../lib/network/index.js";
@@ -11,12 +12,12 @@ const {
 export default class LidoSetStakingLimit extends Command {
   static description = "Increases the staking limit for a node operator in the Lido protocol.";
   static flags = {
-    operatorId: Flags.integer({
-      description: "Operator id.",
-      required: true
-    }),
     limit: Flags.integer({
       description: "Staking limit.",
+      required: true
+    }),
+    operatorId: Flags.integer({
+      description: "Operator id.",
       required: true
     }),
   };

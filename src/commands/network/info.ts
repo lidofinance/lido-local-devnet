@@ -1,7 +1,8 @@
 import { Command } from "@oclif/core";
-import { kurtosisApi } from "../../lib/kurtosis/index.js";
-import { displayUrlTable } from "../../lib/console/index.js";
+
 import { baseConfig } from "../../config/index.js";
+import { displayUrlTable } from "../../lib/console/index.js";
+import { kurtosisApi } from "../../lib/kurtosis/index.js";
 
 export default class KurtosisGetInfo extends Command {
   static description =

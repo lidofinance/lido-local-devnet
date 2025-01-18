@@ -1,12 +1,17 @@
 import { Command } from "@oclif/core";
-import fs from "node:fs/promises";
-import { baseConfig } from "../../config/index.js";
-import { execa } from "execa";
-import path from "node:path";
 import { CommandError } from "@oclif/core/interfaces";
+import { execa } from "execa";
+import fs from "node:fs/promises";
+import path from "node:path";
+
+import { baseConfig } from "../../config/index.js";
 
 export default class DownloadKurtosisArtifacts extends Command {
   static description = "Downloads the genesis data for EL and CL nodes from the Kurtosis enclave.";
+
+  protected catch(err: CommandError): Promise<any> {
+    this.error("Genesis data download error.", err);
+  }
 
   async run() {
     this.log("Downloading EL and CL nodes genesis data...");
@@ -44,9 +49,5 @@ export default class DownloadKurtosisArtifacts extends Command {
     // );
     // validator-key-generation-cl-validator-keystore
     this.log("Genesis data downloaded successfully.");
-  }
-
-  protected catch(err: CommandError): Promise<any> {
-    this.error("Genesis data download error.", err);
   }
 }

@@ -1,24 +1,21 @@
 import { Command } from "@oclif/core";
-import { baseConfig, jsonDb } from "../../config/index.js";
-import fs from "fs/promises";
-import path from "path";
-import YAML from "yaml";
-import assert from "assert";
 import { execa } from "execa";
 
-interface Config {
-  AGENT: string;
-  VOTING: string;
-  TOKEN_MANAGER: string;
-  ORACLE_REPORT_SANITY_CHECKER: string;
-  ACCOUNTING_ORACLE: string;
-  VALIDATORS_EXIT_BUS_ORACLE: string;
-  CSM_ADDRESS: string;
-  CS_FEE_ORACLE_ADDRESS: string;
-  CS_VERIFIER_ADDRESS: string;
-  CS_VERIFIER_ADDRESS_OLD: string;
-  CHAIN_NETWORK_NAME: string;
-}
+import { baseConfig } from "../../config/index.js";
+
+// interface Config {
+//   ACCOUNTING_ORACLE: string;
+//   AGENT: string;
+//   CHAIN_NETWORK_NAME: string;
+//   CS_FEE_ORACLE_ADDRESS: string;
+//   CS_VERIFIER_ADDRESS: string;
+//   CS_VERIFIER_ADDRESS_OLD: string;
+//   CSM_ADDRESS: string;
+//   ORACLE_REPORT_SANITY_CHECKER: string;
+//   TOKEN_MANAGER: string;
+//   VALIDATORS_EXIT_BUS_ORACLE: string;
+//   VOTING: string;
+// }
 
 export default class EnactPectraVoting extends Command {
   static description = "Prepare pectra voting";
@@ -42,10 +39,10 @@ export default class EnactPectraVoting extends Command {
       ],
       {
         cwd,
-        stdio: "inherit",
         env: {
           DEPLOYER: baseConfig.wallet.address,
         },
+        stdio: "inherit",
       }
     );
 

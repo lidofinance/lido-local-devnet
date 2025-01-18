@@ -1,4 +1,5 @@
 import { Command } from "@oclif/core";
+
 import { validatorsState } from "../../config/index.js";
 import { makeDeposit } from "../../lib/deposit/index.js";
 

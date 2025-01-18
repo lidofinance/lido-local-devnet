@@ -1,5 +1,6 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
+
 import { baseConfig } from "../../config/index.js";
 
 export default class OracleDown extends Command {
@@ -13,8 +14,8 @@ export default class OracleDown extends Command {
         "docker",
         ["compose", "-f", "docker-compose.devnet.yml", "down", "-v"],
         {
-          stdio: "inherit",
           cwd: baseConfig.oracle.paths.repository,
+          stdio: "inherit",
           // cwd: baseConfig.kapi.paths.root,
         }
       );

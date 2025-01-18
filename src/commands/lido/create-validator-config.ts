@@ -1,4 +1,5 @@
 import { Command } from "@oclif/core";
+
 import { getLidoWC } from "../../lib/lido/index.js";
 
 export default class DevNetConfig extends Command {

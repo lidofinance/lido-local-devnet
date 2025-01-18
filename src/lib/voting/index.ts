@@ -1,4 +1,4 @@
-import { ethers, JsonRpcProvider } from "ethers";
+import { JsonRpcProvider, ethers } from "ethers";
 
 const abi = [
   "event StartVote(uint256 indexed voteId, address indexed creator, string metadata)",
@@ -32,6 +32,7 @@ export async function processVotes(
     if (!("args" in event && event.args)) {
       continue;
     }
+
     const { voteId } = event.args;
 
     try {

@@ -1,5 +1,6 @@
 // services/lido-cli/programs/omnibus-scripts/devnet-csm-start.ts
 import { Command } from "@oclif/core";
+
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import {
   DevNetLidoCliBaseEnv,
@@ -8,8 +9,8 @@ import {
 import { waitEL } from "../../../lib/network/index.js";
 //  script devnet-csm-start
 const {
-  activateCSM,
   activate,
+  activateCSM,
   paths: { root },
 } = baseConfig.services.lidoCLI;
 
@@ -46,8 +47,8 @@ export default class ActivateCSM extends Command {
     //     "CSVerifier": "0xF4446F82B3616e50Bb892f8eefCBe805947e627d",
     // env
     const env: CSMActivateENV = {
-      CS_MODULE_ADDRESS: CSModule,
       CS_ACCOUNTING_ADDRESS: CSAccounting,
+      CS_MODULE_ADDRESS: CSModule,
       CS_ORACLE_HASH_CONSENSUS_ADDRESS: HashConsensus,
       CS_ORACLE_INITIAL_EPOCH: "60",
     };

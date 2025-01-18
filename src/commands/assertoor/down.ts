@@ -1,5 +1,6 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
+
 import { baseConfig } from "../../config/index.js";
 
 export default class AssertoorDown extends Command {
@@ -13,8 +14,8 @@ export default class AssertoorDown extends Command {
         "docker",
         ["compose", "-f", "docker-compose.yml", "down", "-v"],
         {
-          stdio: "inherit",
           cwd: baseConfig.assertoor.paths.root,
+          stdio: "inherit",
         }
       );
       this.log("Assertoor stopped successfully.");

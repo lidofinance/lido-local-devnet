@@ -1,5 +1,5 @@
 import { HDNodeWallet, Mnemonic } from "ethers";
-import { randomBytes } from "crypto";
+import { randomBytes } from "node:crypto";
 
 type GeneratedWallet = {
   privateKey: string;
@@ -14,7 +14,7 @@ type GeneratedWallet = {
  */
 export function generateKeysFromMnemonic(
   mnemonic: string,
-  count: number = 1
+  count: number,
 ): GeneratedWallet {
   // Validate the mnemonic
   if (!Mnemonic.isValidMnemonic(mnemonic)) {
@@ -41,20 +41,20 @@ export function generateKeysFromMnemonic(
  * @returns An object containing the mnemonic and an array of keys (private keys and addresses).
  */
 export function generateMnemonicAndKeys(count: number = 1): {
-  mnemonic: string;
   keys: { privateKey: string; publicKey: string }[];
+  mnemonic: string;
 } {
   const entropy = randomBytes(16); // Generates 16 bytes of entropy for a 12-word mnemonic
   const mnemonic = Mnemonic.entropyToPhrase(entropy);
   const keys = generateKeysFromMnemonic(mnemonic, count);
-  return { mnemonic, keys };
+  return { keys, mnemonic };
 }
 
 let generatedWallet: GeneratedWallet;
 
 export const generateKeysFromMnemonicOnce = (
   mnemonic: string,
-  count: number
+  count: number,
 ) => {
   if (generatedWallet) return generatedWallet;
 

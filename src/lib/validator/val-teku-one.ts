@@ -1,32 +1,33 @@
-import fs from "fs/promises";
-import { DepositData } from "./interfaces.js";
-import path from "path";
 import { getAddress } from "ethers";
+import fs from "node:fs/promises";
+import path from "node:path";
+
+import { DepositData } from "./interfaces.js";
 
 export async function generateDockerComposeOneService(
   outDir: string,
   {
-    keysDir,
     clPrivateUrl,
-    dockerNetwork,
+    configDir,
     dockerImage,
+    dockerNetwork,
     graffiti,
-    valGroups,
-    configDir
+    // keysDir,
+    valGroups
   }: {
-    keysDir: string;
-    configDir: string;
     clPrivateUrl: string;
-    dockerNetwork: string;
+    configDir: string;
     dockerImage: string;
+    dockerNetwork: string;
     graffiti: string;
+    keysDir: string;
     valGroups: Record<string, DepositData[]>;
   }
 ) {
   let dockerComposeContent = `version: '3.9'\nservices:\n`;
 
-  Object.entries(valGroups).forEach(([groupName, validators]) => {
-    let keysCommand = validators
+  for (const [groupName, validators] of Object.entries(valGroups)) {
+    const keysCommand = validators
       .map(
         (val) =>
           `--validator-keys=/validator_keys/${val.pubkey.replace(
@@ -53,7 +54,7 @@ export async function generateDockerComposeOneService(
       )}
       --validators-graffiti=${graffiti}
     restart: unless-stopped\n`;
-  });
+  }
 
   dockerComposeContent += `
 networks:
@@ -65,6 +66,6 @@ networks:
   await fs.writeFile(
     path.join(outDir, `docker-compose.yaml`),
     dockerComposeContent,
-    "utf-8"
+    "utf8"
   );
 }

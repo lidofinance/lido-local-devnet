@@ -1,6 +1,6 @@
 import { Command } from "@oclif/core";
+
 import { baseConfig, jsonDb } from "../../../config/index.js";
-import { sendTransactionWithRetry } from "../../../lib/index.js";
 import { setupDevNet } from "../../../lib/lido-cli/index.js";
 import { waitEL } from "../../../lib/network/index.js";
 
@@ -26,7 +26,7 @@ export default class ActivateLidoProtocol extends Command {
 
     this.log("Execution node is ready.");
 
-    const { oracles, councils, env } = baseConfig.services.lidoCLI.activate;
+    const { councils, env, oracles } = baseConfig.services.lidoCLI.activate;
     const deployEnv = {
       ...env,
       EL_API_PROVIDER: rpc,
@@ -36,11 +36,11 @@ export default class ActivateLidoProtocol extends Command {
 
     await setupDevNet(
       {
-        oraclesMembers: oracles.map(({ publicKey }) => publicKey),
-        oraclesQuorum: oracles.length,
-        oraclesInitialEpoch: 60,
         dsmGuardians: councils.map(({ publicKey }) => publicKey),
         dsmQuorum: councils.length,
+        oraclesInitialEpoch: 60,
+        oraclesMembers: oracles.map(({ publicKey }) => publicKey),
+        oraclesQuorum: oracles.length,
         rolesBeneficiary: baseConfig.sharedWallet[0].publicKey,
       },
       baseConfig.services.lidoCLI.paths.root,

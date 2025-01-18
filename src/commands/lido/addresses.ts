@@ -1,11 +1,11 @@
 import { Command } from "@oclif/core";
-import { baseConfig } from "../../config/index.js";
+
 import {
   getCSMModuleAddress,
   getCuratedModuleAddress,
   getLidoLocatorAddress,
+  // getLidoWC,
   getStakingRouterAddress,
-  getLidoWC,
 } from "../../lib/lido/index.js";
 
 
@@ -19,13 +19,13 @@ export default class GetAddresses extends Command {
     const stakingRouter = await getStakingRouterAddress();
     const curatedModule = await getCuratedModuleAddress();
     const csmModule = await getCSMModuleAddress();
-    const lidoWC = await getLidoWC();
+    // const lidoWC = await getLidoWC();
 
     console.table({
-      locator,
-      stakingRouter,
+      csmModule,
       curatedModule,
-      csmModule
+      locator,
+      stakingRouter
     });
   }
 }

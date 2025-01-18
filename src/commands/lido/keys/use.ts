@@ -1,12 +1,13 @@
 import { Command, Flags } from "@oclif/core";
+import fs from "node:fs/promises";
+import path from "node:path";
+
 import { baseConfig, validatorsState } from "../../../config/index.js";
 import { getLidoWCDepositForm } from "../../../lib/lido/index.js";
-import fs from "fs/promises";
-import path from "path";
 
 interface ValidatorData {
-  withdrawal_credentials: string;
   used: boolean;
+  withdrawal_credentials: string;
 }
 
 export default class DevNetConfig extends Command {
@@ -62,7 +63,7 @@ export default class DevNetConfig extends Command {
     );
 
     // Mark keys as used
-    lidoKeys.forEach((k) => (k.used = true));
+    for (const k of lidoKeys) (k.used = true);
     await validatorsState.write(currentState);
 
     this.log(`Keys written to ${filePath}`);

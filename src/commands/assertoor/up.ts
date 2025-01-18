@@ -1,13 +1,14 @@
 import {Command} from "@oclif/core";
 import {execa} from "execa";
+import fs from "node:fs/promises";
+
 import {baseConfig, jsonDb} from "../../config/index.js";
-import fs from "fs/promises";
 
 interface ENV {
   CHAIN_ID: string;
-  EXECUTION_CLIENT_URI: string;
   CONSENSUS_CLIENT_URI: string;
   DOCKER_NETWORK_NAME: string;
+  EXECUTION_CLIENT_URI: string;
 }
 
 export default class AssertoorUp extends Command {
@@ -24,10 +25,10 @@ export default class AssertoorUp extends Command {
     const env: ENV = {
       CHAIN_ID: "32382",
 
-      EXECUTION_CLIENT_URI: el,
       CONSENSUS_CLIENT_URI: cl,
-
       DOCKER_NETWORK_NAME: `kt-${name}`,
+
+      EXECUTION_CLIENT_URI: el,
     };
 
     const envPath = `${baseConfig.assertoor.paths.root}/.env`;
@@ -41,8 +42,8 @@ export default class AssertoorUp extends Command {
         "docker",
         ["compose", "-f", "docker-compose.yml", "up", "--build", "-d"],
         {
-          stdio: "inherit",
           cwd: baseConfig.assertoor.paths.root,
+          stdio: "inherit",
         }
       );
       this.log("Assertoor started successfully.");

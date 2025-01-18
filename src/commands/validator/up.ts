@@ -1,10 +1,11 @@
-import * as fs from "fs";
-import { parse } from "yaml";
 import { Command } from "@oclif/core";
 import { execa } from "execa";
-import { baseConfig, jsonDb, validatorsState } from "../../config/index.js";
-import { fetchActiveValidators } from "../../lib/validator/index.js";
-import path from "path";
+import * as fs from "node:fs";
+import path from "node:path";
+import { parse } from "yaml";
+
+import { baseConfig } from "../../config/index.js";
+
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));

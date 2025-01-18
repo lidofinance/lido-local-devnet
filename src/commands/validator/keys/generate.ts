@@ -1,13 +1,14 @@
 import { Command, Flags } from "@oclif/core";
+import { copyFile } from "node:fs/promises";
+import path from "node:path";
+
 import {
   baseConfig,
   parsedConsensusGenesis,
   validatorsState,
 } from "../../../config/index.js";
-import { runDepositCli } from "../../../lib/docker-runner/index.js";
 import { manageKeystores } from "../../../lib/deposit/keystore-manager.js";
-import { copyFile } from "fs/promises";
-import path from "path";
+import { runDepositCli } from "../../../lib/docker-runner/index.js";
 
 export default class GenerateDevNetKeys extends Command {
   static description =
@@ -26,10 +27,10 @@ export default class GenerateDevNetKeys extends Command {
     console.log(baseConfig.sharedWallet[3].publicKey, customWC);
     const state = await parsedConsensusGenesis.getReader();
     const devnetSetting = {
-      network_name: baseConfig.network.name,
-      genesis_validator_root: (
+      genesisValidatorRoot: (
         state.getOrError("genesis_validators_root") as string
       ).replace("0x", ""),
+      networkName: baseConfig.network.name,
     };
 
     const currentState = await validatorsState.read();
@@ -58,7 +59,7 @@ export default class GenerateDevNetKeys extends Command {
       {
         env: {
           GENESIS_FORK_VERSION: "10000038", // Using hardcoded value as per initial code
-          GENESIS_VALIDATORS_ROOT: devnetSetting.genesis_validator_root,
+          GENESIS_VALIDATORS_ROOT: devnetSetting.genesisValidatorRoot,
         },
       }
     );

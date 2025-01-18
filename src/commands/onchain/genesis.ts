@@ -1,6 +1,7 @@
 import { Command } from "@oclif/core";
-import { getGenesisTime } from "../../lib/index.js";
+
 import { baseConfig } from "../../config/index.js";
+import { getGenesisTime } from "../../lib/index.js";
 
 export default class ExtractGenesisTime extends Command {
   static description = "Extract genesis time from the genesis.json file";

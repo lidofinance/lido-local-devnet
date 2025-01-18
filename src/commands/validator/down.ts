@@ -1,5 +1,6 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
+
 import { baseConfig } from "../../config/index.js";
 import { deleteLockFiles } from "../../lib/deposit/keystore-manager.js";
 

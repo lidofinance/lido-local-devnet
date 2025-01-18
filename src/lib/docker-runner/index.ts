@@ -1,16 +1,17 @@
 import { execa } from "execa";
+import assert from "node:assert";
+
 import { baseConfig } from "../../config/index.js";
 import { getShortGitBranchHash } from "../git/index.js";
-import assert from "node:assert";
 
 const { dockerRunner } = baseConfig;
 
 type ExecOpts = {
-  env?: Record<string, string | number>;
   cwd?: string;
+  env?: Record<string, number | string>;
 };
 
-function formatDockerEnvVars(env?: Record<string, string | number>): string[] {
+function formatDockerEnvVars(env?: Record<string, number | string>): string[] {
   return Object.entries(env ?? {})
     .filter(([_, value]) => value !== undefined)
     .flatMap(([key, value]) => ["-e", `${key}=${String(value)}`]);
@@ -54,7 +55,7 @@ export async function buildAndRunCommandInDocker(
     "run",
     "--rm",
 
-    ...volumes.map((vol) => ['-v', vol]).flat(),
+    ...volumes.flatMap((vol) => ['-v', vol]),
     ...formatDockerEnvVars(opts?.env),
     "-e",
     `UID=${uid}`,
@@ -70,7 +71,7 @@ export async function buildAndRunCommandInDocker(
       "run",
       "--rm",
 
-      ...volumes.map((vol) => ['-v', vol]).flat(),
+      ...volumes.flatMap((vol) => ['-v', vol]),
       ...formatDockerEnvVars(opts?.env),
       "-e",
       `UID=${uid}`,

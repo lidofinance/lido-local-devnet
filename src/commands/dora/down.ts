@@ -1,5 +1,6 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
+
 import { baseConfig } from "../../config/index.js";
 
 export default class DoraDown extends Command {
@@ -9,8 +10,8 @@ export default class DoraDown extends Command {
     this.log("Stopping Dora...");
     try {
       await execa("docker", ["compose", "down", "-v"], {
-        stdio: "inherit",
         cwd: baseConfig.dora.paths.root,
+        stdio: "inherit",
       });
       this.log("Dora stopped successfully.");
     } catch (error: any) {

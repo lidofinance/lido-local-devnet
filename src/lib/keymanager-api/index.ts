@@ -1,7 +1,7 @@
 import { KEY_MANAGER_API_TOKEN } from "./constant.js";
 interface KeystoreInfo {
-  validating_pubkey: string;
   readonly: boolean;
+  validating_pubkey: string;
 }
 
 interface KeystoresResponse {
@@ -17,10 +17,10 @@ export const fetchValidatorGraffiti = async (
 ) => {
   const url = `${apiUrl}/eth/v1/validator/${validatorPublicKey}/graffiti`;
   const response = await fetch(url, {
-    method: "GET",
     headers: {
       Authorization: `Bearer ${KEY_MANAGER_API_TOKEN}`,
     },
+    method: "GET",
   });
   const data: GraffitiResponse = await response.json();
   return data;
@@ -29,10 +29,10 @@ export const fetchValidatorGraffiti = async (
 export const fetchKeystores = async (apiUrl: string) => {
   const url = `${apiUrl}/eth/v1/keystores`;
   const response = await fetch(url, {
-    method: "GET",
     headers: {
       Authorization: `Bearer ${KEY_MANAGER_API_TOKEN}`,
     },
+    method: "GET",
   });
   const data: KeystoresResponse = await response.json();
   return data;

@@ -5,26 +5,26 @@ export const runLidoCLI = async (args: string[], cwd: string, env: any) => {
   const baseArgs = ["ts-node", "index", "--non-interactive"];
 
   return await execa(command, [...baseArgs, ...args], {
-    stdio: "inherit",
     cwd,
     env,
+    stdio: "inherit",
   });
 };
 
 type DevNetSetupParams = {
-  oraclesMembers: string[];
-  oraclesQuorum: number;
-  oraclesInitialEpoch: number;
   dsmGuardians: string[];
   dsmQuorum: number;
+  oraclesInitialEpoch: number;
+  oraclesMembers: string[];
+  oraclesQuorum: number;
   rolesBeneficiary: string;
 };
 
 export type DevNetLidoCliBaseEnv = {
   DEPLOYED: string;
+  EL_API_PROVIDER: string;
   EL_CHAIN_ID: string;
   EL_NETWORK_NAME: string;
-  EL_API_PROVIDER: string;
   PRIVATE_KEY: string;
 };
 

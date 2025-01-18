@@ -1,16 +1,25 @@
-import { promises as fs } from "fs";
-import { dirname } from "path";
+import { promises as fs } from "node:fs";
+import { dirname } from "node:path";
 
 interface DataStructure {
   [key: string]: any;
 }
 
-type Path = string | (string | number)[];
+type Path = (number | string)[] | string;
 export class JsonDb {
   private filePath: string;
 
   constructor(filePath: string) {
     this.filePath = filePath;
+  }
+
+  async clean(): Promise<void> {
+    await this.write({});
+  }
+
+  async getReader() {
+    const state = await this.read();
+    return new JsonDbReader(state);
   }
 
   async read(): Promise<DataStructure> {
@@ -21,20 +30,11 @@ export class JsonDb {
       if ((error as NodeJS.ErrnoException).code === "ENOENT") {
         console.log("File not found, returning empty object.");
         return {};
-      } else {
-        throw error;
       }
+ 
+        throw error;
+      
     }
-  }
-
-  async getReader() {
-    const state = await this.read();
-    return new JsonDbReader(state);
-  }
-
-  async write(data: DataStructure): Promise<void> {
-    await fs.mkdir(dirname(this.filePath), { recursive: true });
-    await fs.writeFile(this.filePath, JSON.stringify(data, null, 2), "utf8");
   }
 
   async update(value: any): Promise<void> {
@@ -42,8 +42,9 @@ export class JsonDb {
     await this.write({ ...data, ...value });
   }
 
-  async clean(): Promise<void> {
-    await this.write({});
+  async write(data: DataStructure): Promise<void> {
+    await fs.mkdir(dirname(this.filePath), { recursive: true });
+    await fs.writeFile(this.filePath, JSON.stringify(data, null, 2), "utf8");
   }
 }
 
@@ -52,6 +53,13 @@ class JsonDbReader<T> {
   constructor(state: T) {
     this.state = state;
   }
+
+  public get(path: Path): any {
+    try {
+      return this.getOrError(path);
+    } catch {}
+  }
+
   public getOrError(path: Path): any {
     const keys = typeof path === "string" ? path.split(".") : path;
     let result: any = this.state;
@@ -64,18 +72,14 @@ class JsonDbReader<T> {
       ) {
         throw new Error(`Property not found: ${keys.join(".")}`);
       }
+
       result = result[key];
     }
 
     if (result === undefined) {
       throw new Error(`Property not found: ${keys.join(".")}`);
     }
-    return result;
-  }
 
-  public get(path: Path): any {
-    try {
-      return this.getOrError(path);
-    } catch (_) {}
+    return result;
   }
 }

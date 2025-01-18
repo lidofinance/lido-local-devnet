@@ -1,23 +1,24 @@
 import { Command } from "@oclif/core";
-import { baseConfig, jsonDb } from "../../config/index.js";
-import fs from "fs/promises";
-import path from "path";
-import YAML from "yaml";
-import assert from "assert";
 import { execa } from "execa";
+import assert from "node:assert";
+import fs from "node:fs/promises";
+import path from "node:path";
+import * as YAML from "yaml";
+
+import { baseConfig, jsonDb } from "../../config/index.js";
 
 interface Config {
-  AGENT: string;
-  VOTING: string;
-  TOKEN_MANAGER: string;
-  ORACLE_REPORT_SANITY_CHECKER: string;
   ACCOUNTING_ORACLE: string;
-  VALIDATORS_EXIT_BUS_ORACLE: string;
-  CSM_ADDRESS: string;
+  AGENT: string;
+  CHAIN_NETWORK_NAME: string;
   CS_FEE_ORACLE_ADDRESS: string;
   CS_VERIFIER_ADDRESS: string;
   CS_VERIFIER_ADDRESS_OLD: string;
-  CHAIN_NETWORK_NAME: string;
+  CSM_ADDRESS: string;
+  ORACLE_REPORT_SANITY_CHECKER: string;
+  TOKEN_MANAGER: string;
+  VALIDATORS_EXIT_BUS_ORACLE: string;
+  VOTING: string;
 }
 
 export default class PreparePectraVoting extends Command {
@@ -48,18 +49,18 @@ export default class PreparePectraVoting extends Command {
     const newCSVerifier = state.getOrError("electraVerifier.CSVerifier");
 
     const config: Config = {
-      AGENT: agent,
-      VOTING: voting,
-      TOKEN_MANAGER: tokenManager,
-      ORACLE_REPORT_SANITY_CHECKER: sanityChecker,
       ACCOUNTING_ORACLE: accountingOracle,
-      VALIDATORS_EXIT_BUS_ORACLE: validatorExitBus,
-      CSM_ADDRESS: csm,
+      AGENT: agent,
+      // didnt find there to fix "Unexpected name of net. Should be one of: dict_keys(['mainnet', 'goerli', 'holesky', 'sepolia'])"
+      CHAIN_NETWORK_NAME: "mainnet",
       CS_FEE_ORACLE_ADDRESS: csFeeOracleAddress,
       CS_VERIFIER_ADDRESS: newCSVerifier,
       CS_VERIFIER_ADDRESS_OLD: csVerifier,
-      // didnt find there to fix "Unexpected name of net. Should be one of: dict_keys(['mainnet', 'goerli', 'holesky', 'sepolia'])"
-      CHAIN_NETWORK_NAME: "mainnet",
+      CSM_ADDRESS: csm,
+      ORACLE_REPORT_SANITY_CHECKER: sanityChecker,
+      TOKEN_MANAGER: tokenManager,
+      VALIDATORS_EXIT_BUS_ORACLE: validatorExitBus,
+      VOTING: voting,
     };
 
     const envPath = `${baseConfig.voting.paths.root}/configs/config_devnet4.py`;
@@ -70,7 +71,7 @@ export default class PreparePectraVoting extends Command {
 
     const networkPath = path.join(baseConfig.voting.paths.root, "network-config.yaml");
     const configTemplateYaml = YAML.parse(
-      await fs.readFile(networkPath, "utf-8")
+      await fs.readFile(networkPath, "utf8")
     );
     assert(
       Array.isArray(configTemplateYaml.development),
@@ -83,8 +84,11 @@ export default class PreparePectraVoting extends Command {
     assert(devnet4Config, "Devnet4 configuration not found");
 
     assert(typeof rpc === "string" && rpc.includes(":"), "Invalid RPC format");
-    const port = parseInt(rpc.split(":").slice(-1)[0], 10);
-    assert(!isNaN(port), "Failed to parse port");
+    const parsedPort = rpc.split(":").at(-1)
+    assert(parsedPort, "Invalid Port format");
+
+    const port = Number.parseInt(parsedPort, 10);
+    assert(!Number.isNaN(port), "Failed to parse port");
 
     devnet4Config.cmd_settings.port = port;
 

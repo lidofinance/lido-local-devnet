@@ -1,4 +1,5 @@
-import { ethers, JsonRpcProvider, parseEther } from "ethers";
+import { JsonRpcProvider, ethers, parseEther } from "ethers";
+
 import { baseConfig, jsonDb } from "../../config/index.js";
 
 const validatorWallet = baseConfig.sharedWallet[3];
@@ -14,7 +15,7 @@ const getConfig = async () => {
     wallet
   );
 
-  return { wallet, depositContract };
+  return { depositContract, wallet };
 };
 
 const depositContractAddress = "0x4242424242424242424242424242424242424242";
@@ -104,6 +105,4 @@ export async function makeDeposit(
   console.log("Transaction was confirmed in block:", receipt.blockNumber);
 }
 
-const toBytesLike = (str: string) => {
-  return `0x${str}`;
-};
+const toBytesLike = (str: string) => `0x${str}`;

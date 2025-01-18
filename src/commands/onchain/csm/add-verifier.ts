@@ -1,12 +1,14 @@
 import { Command, Flags } from "@oclif/core";
 import { execa } from "execa";
+import fs from "node:fs/promises";
+
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import { waitEL } from "../../../lib/network/index.js";
-import fs from "fs/promises";
 
 export default class DeployCSVerifier extends Command {
   static description =
     "Deploys the CSVerifier smart contract using configured deployment scripts.";
+
   static flags = {
     verify: Flags.boolean({
       char: "v",
@@ -33,24 +35,24 @@ export default class DeployCSVerifier extends Command {
     await waitEL(rpc);
 
     const deployEnv = {
-      // Infrastructure
-      RPC_URL: rpc,
-      DEPLOYER_PRIVATE_KEY: csmDefaultEnv.DEPLOYER_PRIVATE_KEY,
-      DEPLOY_CONFIG: csmDefaultEnv.DEPLOY_CONFIG,
-      UPGRADE_CONFIG: csmDefaultEnv.UPGRADE_CONFIG,
-      CHAIN: csmDefaultEnv.CHAIN,
       ARTIFACTS_DIR: csmDefaultEnv.ARTIFACTS_DIR,
-
-      VERIFIER_URL: csmDefaultEnv.VERIFIER_URL,
-      DEVNET_CHAIN_ID: csmDefaultEnv.DEVNET_CHAIN_ID,
-      VERIFIER_API_KEY: csmDefaultEnv.VERIFIER_API_KEY,
-
+      CHAIN: csmDefaultEnv.CHAIN,
+      CSM_MODULE: state.getOrError("csm.CSModule"),
       CSM_WITHDRAWAL_VAULT: state.getOrError(
         "lidoCore.withdrawalVault.proxy.address"
       ),
-      CSM_MODULE: state.getOrError("csm.CSModule"),
+      DEPLOY_CONFIG: csmDefaultEnv.DEPLOY_CONFIG,
+      DEPLOYER_PRIVATE_KEY: csmDefaultEnv.DEPLOYER_PRIVATE_KEY,
+
+      DEVNET_CHAIN_ID: csmDefaultEnv.DEVNET_CHAIN_ID,
+      DEVNET_ELECTRA_EPOCH: String(baseConfig.network.ELECTRA_FORK_EPOCH),
       DEVNET_SLOTS_PER_EPOCH: String(baseConfig.kurtosis.slotsPerEpoch),
-      DEVNET_ELECTRA_EPOCH: String(baseConfig.network.ELECTRA_FORK_EPOCH)
+
+      // Infrastructure
+      RPC_URL: rpc,
+      UPGRADE_CONFIG: csmDefaultEnv.UPGRADE_CONFIG,
+      VERIFIER_API_KEY: csmDefaultEnv.VERIFIER_API_KEY,
+      VERIFIER_URL: csmDefaultEnv.VERIFIER_URL
     };
 
     this.logJson(deployEnv);
@@ -59,8 +61,8 @@ export default class DeployCSVerifier extends Command {
     // forge script ./script/DeployCSVerifierElectra.s.sol:DeployCSVerifier[Holesky|Mainnet|DevNet]
     await execa("just", ["clean"], {
       cwd: commandRoot,
-      stdio: "inherit",
       env: deployEnv,
+      stdio: "inherit",
     });
 
     await this.config.runCommand("onchain:csm:install");
@@ -87,11 +89,11 @@ export default class DeployCSVerifier extends Command {
 
     await execa("forge", args, {
       cwd: commandRoot,
-      stdio: "inherit",
       env: deployEnv,
+      stdio: "inherit",
     });
 
-    const deployedVerifier = baseConfig.onchain.lido.csm.paths.deployedVerifier;
+    const {deployedVerifier} = baseConfig.onchain.lido.csm.paths;
     const fileContent = await fs.readFile(deployedVerifier, "utf8");
     const jsonData = JSON.parse(fileContent);
 

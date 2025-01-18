@@ -1,5 +1,6 @@
 // ./run.sh devnet replace-dsm-with-eoa 0x8943545177806ED17B9F23F0a21ee5948eCaa776
 import { Command } from "@oclif/core";
+
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import { runLidoCLI } from "../../../lib/lido-cli/index.js";
 import { waitEL } from "../../../lib/network/index.js";

@@ -1,6 +1,7 @@
 import { Command } from "@oclif/core";
-import { mustVote } from "../../lib/voting/index.js";
+
 import { baseConfig, jsonDb } from "../../config/index.js";
+import { mustVote } from "../../lib/voting/index.js";
 
 export default class ValidatorLogs extends Command {
   static description = "Automatic vote and enact open votes";

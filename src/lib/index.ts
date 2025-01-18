@@ -1,11 +1,11 @@
-import { existsSync, readFileSync } from "fs";
 import {
-  ethers,
   JsonRpcProvider,
   TransactionReceipt,
+  ethers,
   parseEther,
 } from "ethers";
-import assert from "assert";
+import assert from "node:assert";
+import { existsSync, readFileSync } from "node:fs";
 
 export const getGenesisTime = (genesisPath: string) => {
   if (!existsSync(genesisPath)) {
@@ -14,25 +14,26 @@ export const getGenesisTime = (genesisPath: string) => {
 
   const jsonContent = readFileSync(genesisPath, "utf-8");
   const jsonObject = JSON.parse(jsonContent);
-  const timestamp = jsonObject.timestamp;
+  const {timestamp} = jsonObject;
   if (!timestamp) {
     throw new Error("The 'timestamp' property was not found or is empty.");
   }
+
   return timestamp.toString();
 };
 
 interface TransactionDetails {
-  providerUrl: string;
-  privateKey: string;
-  toAddress: string;
   amount: string;
+  privateKey: string;
+  providerUrl: string;
   timeout?: number;
+  toAddress: string;
 }
 
 export const calcEpoch = async (providerUrl: string, genesis: number) => {
   const provider = new JsonRpcProvider(providerUrl);
   const SECONDS_PER_SLOT = 12;
-  const timestamp = (await provider.getBlock("latest"))!.timestamp;
+  const {timestamp} = ((await provider.getBlock("latest"))!);
   console.log(
     "(timestamp - genesis) / SECONDS_PER_SLOT",
     genesis,
@@ -45,10 +46,10 @@ export const calcEpoch = async (providerUrl: string, genesis: number) => {
 };
 
 export const sendTransactionWithRetry = async ({
-  providerUrl,
-  privateKey,
-  toAddress,
   amount,
+  privateKey,
+  providerUrl,
+  toAddress,
 }: // timeout = 180000,
 TransactionDetails): Promise<TransactionReceipt | undefined> => {
   const provider = new JsonRpcProvider(providerUrl);
@@ -75,11 +76,12 @@ TransactionDetails): Promise<TransactionReceipt | undefined> => {
         );
         await new Promise((resolve) => setTimeout(resolve, 5000));
         return attemptToSendTransaction();
-      } else {
+      }
+ 
         console.error("Error sending transaction:", error);
         await new Promise((resolve) => setTimeout(resolve, 5000));
         return attemptToSendTransaction();
-      }
+      
     }
   };
 

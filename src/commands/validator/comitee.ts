@@ -19,10 +19,11 @@ export class FetchCommittees extends Command {
         `HTTP error fetching latest slot: status = ${latestSlotResponse.status}`
       );
     }
+
     const latestSlotData = await latestSlotResponse.json();
     const latestSlot = latestSlotData.data.header.message.slot;
 
-    let validatorIds = new Set<string>();
+    const validatorIds = new Set<string>();
     for (let slot = 0; slot <= latestSlot; slot++) {
       const endpoint = `${beaconNodeUrl}/eth/v1/beacon/states/${slot}/committees`;
       const response = await fetch(endpoint);
@@ -41,8 +42,8 @@ export class FetchCommittees extends Command {
     }
 
     // Convert Set to Array and print unique validator IDs
-    const uniqueValidatorIds = Array.from(validatorIds).map((a) =>
-      parseInt(a, 10)
+    const uniqueValidatorIds = [...validatorIds].map((a) =>
+      Number.parseInt(a, 10)
     );
     uniqueValidatorIds.sort((a, b) => a - b);
 
@@ -51,7 +52,7 @@ export class FetchCommittees extends Command {
     
 
     const minId = uniqueValidatorIds[0];
-    const maxId = uniqueValidatorIds[uniqueValidatorIds.length - 1];
+    const maxId = uniqueValidatorIds.at(-1)!;
     const completeRange = Array.from(
       { length: maxId - minId + 1 },
       (_, i) => i + minId

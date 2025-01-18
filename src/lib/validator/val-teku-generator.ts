@@ -1,23 +1,24 @@
-import fs from "fs/promises";
+import fs from "node:fs/promises";
+import path from "node:path";
+
 import { Validator } from "./interfaces.js";
-import path from "path";
 
 export async function generateDockerCompose(
   outDir: string,
   {
-    validatorsInfo,
-    keysDir,
     clPrivateUrl,
-    dockerNetwork,
     dockerImage,
+    dockerNetwork,
+    keysDir,
     validatorFeeRecipient,
+    validatorsInfo,
   }: {
-    validatorsInfo: Validator[];
-    keysDir: string;
     clPrivateUrl: string;
-    dockerNetwork: string;
     dockerImage: string;
+    dockerNetwork: string;
+    keysDir: string;
     validatorFeeRecipient: string;
+    validatorsInfo: Validator[];
   }
 ) {
   let dockerComposeContent = `version: '3.9'\nservices:\n`;
@@ -60,6 +61,6 @@ networks:
   await fs.writeFile(
     path.join(outDir, `docker-compose.yaml`),
     dockerComposeContent,
-    "utf-8"
+    "utf8"
   );
 }

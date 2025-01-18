@@ -1,7 +1,7 @@
 import { Command } from "@oclif/core";
+import fs from "node:fs/promises";
+
 import { baseConfig, jsonDb } from "../../../config/index.js";
-import path from "path";
-import fs from "fs/promises";
 // submodules/csm/artifacts/latest/deploy-local-devnet.json
 export class CSMUpdateState extends Command {
   static description =
@@ -31,11 +31,11 @@ export class CSMUpdateState extends Command {
         earlyAdoption: { address: reader.getOrError("csm.CSEarlyAdoption") },
         feeDistributor: { address: reader.getOrError("csm.CSFeeDistributor") },
         feeOracle: { address: reader.getOrError("csm.CSFeeOracle") },
-        module: { address: reader.getOrError("csm.CSModule") },
-        verifier: { address: reader.getOrError("csm.CSVerifier") },
         gateSeal: { address: reader.getOrError("csm.GateSeal") },
         hashConsensus: { address: reader.getOrError("csm.HashConsensus") },
         lidoLocator: { address: reader.getOrError("csm.LidoLocator") },
+        module: { address: reader.getOrError("csm.CSModule") },
+        verifier: { address: reader.getOrError("csm.CSVerifier") },
       },
     };
 

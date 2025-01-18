@@ -1,5 +1,6 @@
-import { promises as fs } from "fs";
-import * as path from "path";
+import { promises as fs } from "node:fs";
+import * as path from "node:path";
+
 import { validatorsState } from "../../config/index.js";
 
 // Function to create a directory if it does not exist
@@ -24,6 +25,7 @@ async function processFiles(
       );
       keystores[pubkey] = data;
     }
+
     if (file.startsWith("deposit_data")) {
       depositData = await processDepositData(
         file,
@@ -36,8 +38,8 @@ async function processFiles(
   const currentState = await validatorsState.read();
 
   const updated = {
-    keystores: { ...(currentState?.keystores ?? {}), ...keystores },
     depositData: [...(currentState?.depositData ?? []), ...depositData],
+    keystores: { ...(currentState?.keystores), ...keystores },
   };
 
   await validatorsState.write(updated);

@@ -1,5 +1,6 @@
 import { Command } from "@oclif/core";
-import { baseConfig, jsonDb } from "../../config/index.js";
+
+import { baseConfig } from "../../config/index.js";
 import { kurtosisApi } from "../../lib/kurtosis/index.js";
 
 export default class KurtosisUp extends Command {
@@ -7,7 +8,7 @@ export default class KurtosisUp extends Command {
 
   async run() {
     this.log("Running Ethereum package in Kurtosis...");
-    const name = baseConfig.network.name;
+    const {name} = baseConfig.network;
     const output = await kurtosisApi.runPackage(
       name,
       "github.com/ethpandaops/ethereum-package",
@@ -17,7 +18,7 @@ export default class KurtosisUp extends Command {
     if (
       output.executionError ||
       output.interpretationError ||
-      output.validationErrors.length
+      output.validationErrors.length > 0
     ) {
       this.warn("An error occurred while starting the package.");
       this.logJson(output);

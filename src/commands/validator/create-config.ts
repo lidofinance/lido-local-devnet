@@ -1,12 +1,12 @@
 import { Command, Flags } from "@oclif/core";
+import { assert } from "node:console";
+
 import { baseConfig, jsonDb, validatorsState } from "../../config/index.js";
 import {
-  fetchActiveValidators,
   groupByWithdrawalCredentials,
 } from "../../lib/validator/index.js";
-import { generateDockerComposeOneService } from "../../lib/validator/val-teku-one.js";
-import { assert } from "console";
 import { DepositData } from "../../lib/validator/interfaces.js";
+import { generateDockerComposeOneService } from "../../lib/validator/val-teku-one.js";
 // import {
 //   fetchKeystores,
 //   fetchValidatorGraffiti,
@@ -22,6 +22,7 @@ export default class CreateValidatorConfig extends Command {
       description: "Custom withdrawal credentials (optional)",
     }),
   };
+
   async run() {
     const { flags } = await this.parse(CreateValidatorConfig);
     // define WC array (lido and local, for tests)
@@ -45,6 +46,7 @@ export default class CreateValidatorConfig extends Command {
     if (!depositData) {
       this.error("Deposit data not found in validator/state.json file");
     }
+
     // const state = await jsonDb.read();
     const reader = await jsonDb.getReader()
     const clPrivateUrl = reader.getOrError('network.binding.clNodesPrivate.0')
@@ -58,7 +60,7 @@ export default class CreateValidatorConfig extends Command {
       targetWCs.includes(`0x${v.withdrawal_credentials}`)
     );
 
-    if (!targetValidators.length) {
+    if (targetValidators.length === 0) {
       this.error("No validators found, make sure the deposit has been made ");
     }
     // const validatorsApi = state.network?.binding?.validatorsApi?.[0];
@@ -77,14 +79,14 @@ export default class CreateValidatorConfig extends Command {
     const valGroups = groupByWithdrawalCredentials(targetValidators);
 
     await generateDockerComposeOneService(configDir, {
-      keysDir: baseConfig.artifacts.paths.validatorDocker,
-      configDir: baseConfig.artifacts.paths.validator,
       clPrivateUrl,
+      configDir: baseConfig.artifacts.paths.validator,
       dockerImage: VC_IMAGE,
       dockerNetwork: `kt-${name}`,
-      // TODO: enable use_separate_vs in kurtosis and test setup
       // graffiti: graffiti.data.graffiti,
       graffiti: "1-geth-teku",
+      // TODO: enable use_separate_vs in kurtosis and test setup
+      keysDir: baseConfig.artifacts.paths.validatorDocker,
       valGroups,
     });
   }

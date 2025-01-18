@@ -1,15 +1,16 @@
 import { Command } from "@oclif/core";
+import fs from "node:fs/promises";
+import path from "node:path";
+
 import { baseConfig, jsonDb } from "../../../config/index.js";
-import path from "path";
-import fs from "fs/promises";
 
 interface LidoCliConfig {
-  pk: string;
-  deployed: string;
-  chainId: string | number;
-  networkName: string;
-  el: string;
+  chainId: number | string;
   cl: string;
+  deployed: string;
+  el: string;
+  networkName: string;
+  pk: string;
 }
 
 const lidoCliTpl = (c: LidoCliConfig) =>
@@ -60,12 +61,12 @@ export class LidoCoreUpdateState extends Command {
     await fs.writeFile(
       path.join(lidoCLI.paths.root, ".env"),
       lidoCliTpl({
-        pk: lidoCLI.activate.env.PRIVATE_KEY,
+        chainId: lidoCLI.activate.env.EL_CHAIN_ID,
+        cl,
         deployed: lidoCLI.activate.env.DEPLOYED,
         el,
-        cl,
-        chainId: lidoCLI.activate.env.EL_CHAIN_ID,
         networkName: lidoCLI.activate.env.EL_NETWORK_NAME,
+        pk: lidoCLI.activate.env.PRIVATE_KEY,
       }),
       "utf-8"
     );

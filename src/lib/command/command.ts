@@ -1,5 +1,6 @@
 import { Command as BaseCommand, Flags, Interfaces } from "@oclif/core";
 import { ZodError } from "zod";
+
 import { DevNetRuntimeEnvironment } from "./runtime-env.js";
 
 export type DevNetFlags<T extends typeof BaseCommand> =
@@ -8,7 +9,7 @@ export type DevNetArgs<T extends typeof BaseCommand> = Interfaces.InferredArgs<
   T["args"]
 >;
 
-export { Flags };
+
 
 export function formatZodErrors(error: ZodError): string {
   return error.errors
@@ -31,23 +32,32 @@ export abstract class DevNetCommand<
   // define flags that can be inherited by any command that extends BaseCommand
   static baseFlags = {
     network: Flags.string({
+      default: "my-devnet",
       description: "Name of the network",
       required: false,
-      default: "my-devnet",
     }),
   };
 
-  protected flags!: DevNetFlags<T>;
   protected args!: DevNetArgs<T>;
   protected dre!: DevNetRuntimeEnvironment;
+  protected flags!: DevNetFlags<T>;
+
+  protected async catch(err: { exitCode?: number } & Error): Promise<any> {
+    // TODO: add structure name to error
+    if (err instanceof ZodError) {
+      this.error("\n" + formatZodErrors(err));
+    }
+
+    return super.catch(err);
+  }
 
   public async init(): Promise<void> {
     await super.init();
     const { args, flags } = await this.parse({
-      flags: this.ctor.flags,
-      baseFlags: (super.ctor as typeof DevNetCommand).baseFlags,
       // enableJsonFlag: this.ctor.enableJsonFlag,
       args: this.ctor.args,
+      baseFlags: (super.ctor as typeof DevNetCommand).baseFlags,
+      flags: this.ctor.flags,
       strict: this.ctor.strict,
     });
 
@@ -58,12 +68,6 @@ export abstract class DevNetCommand<
 
     this.dre = await DevNetRuntimeEnvironment.getNew(network);
   }
-
-  protected async catch(err: Error & { exitCode?: number }): Promise<any> {
-    // TODO: add structure name to error
-    if (err instanceof ZodError) {
-      this.error("\n" + formatZodErrors(err));
-    }
-    return super.catch(err);
-  }
 }
+
+export {Flags} from "@oclif/core";

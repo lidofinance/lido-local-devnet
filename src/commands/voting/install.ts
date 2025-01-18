@@ -1,5 +1,6 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
+
 import { baseConfig } from "../../config/index.js";
 
 export default class ValidatorLogs extends Command {
@@ -26,8 +27,8 @@ export default class ValidatorLogs extends Command {
     if (!installedVersions.includes(requiredPythonVersion)) {
       this.log(`Python ${requiredPythonVersion} not found. Installing...`);
       await execa("pyenv", ["install", requiredPythonVersion], {
-        stdio: "inherit",
         cwd,
+        stdio: "inherit",
       }).catch(() =>
         this.error(
           `Failed to install Python ${requiredPythonVersion} using pyenv.`

@@ -1,5 +1,6 @@
 // ./run.sh nor add-keys-from-file <OPERATOR_ID> generated-keys/my_awesome_operator.json
 import { Command, Flags } from "@oclif/core";
+
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import { runLidoCLI } from "../../../lib/lido-cli/index.js";
 import { waitEL } from "../../../lib/network/index.js";
@@ -11,12 +12,12 @@ const {
 export default class LidoAddKeys extends Command {
   static description = "Adds validator keys for an existing node operator to the Lido protocol.";
   static flags = {
-    name: Flags.string({
-      description: "Operator name.",
-      required: true
-    }),
     id: Flags.integer({
       description: "Operator id.",
+      required: true
+    }),
+    name: Flags.string({
+      description: "Operator name.",
       required: true
     }),
   };

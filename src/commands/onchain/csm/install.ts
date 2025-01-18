@@ -1,5 +1,6 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
+
 import { baseConfig } from "../../../config/index.js";
 
 export class LidoCoreInstall extends Command {
@@ -16,8 +17,8 @@ export class LidoCoreInstall extends Command {
 
     await execa("just", ["deps"], {
       cwd: commandRoot,
-      stdio: "inherit",
       env: { CHAIN: csmConfig.env.CHAIN },
+      stdio: "inherit",
     });
 
     this.log(

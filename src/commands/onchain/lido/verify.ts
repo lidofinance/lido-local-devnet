@@ -1,5 +1,6 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
+
 import { baseConfig, jsonDb } from "../../../config/index.js";
 
 export default class VerifyCore extends Command {
@@ -23,8 +24,8 @@ export default class VerifyCore extends Command {
       ["-c", "yarn verify:deployed --network $NETWORK || true"],
       {
         cwd: paths.root,
-        stdio: "inherit",
         env: { ...env, RPC_URL: rpc },
+        stdio: "inherit",
       }
     );
     this.log("Verification completed.");

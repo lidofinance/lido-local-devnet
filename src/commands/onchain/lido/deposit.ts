@@ -3,6 +3,7 @@
 // ./run.sh lido deposit <DEPOSITS> <MODULE_ID>
 
 import { Command, Flags } from "@oclif/core";
+
 import { baseConfig, jsonDb } from "../../../config/index.js";
 import { runLidoCLI } from "../../../lib/lido-cli/index.js";
 import { waitEL } from "../../../lib/network/index.js";
@@ -14,13 +15,13 @@ const {
 export default class LidoDeposit extends Command {
   static description = "Handles deposits to the Lido protocol.";
   static flags = {
+    deposits: Flags.integer({
+      default: 30,
+      description: "Number of deposits.",
+    }),
     id: Flags.integer({
       description: "Module ID.",
       required: true,
-    }),
-    deposits: Flags.integer({
-      description: "Number of deposits.",
-      default: 30,
     }),
   };
 

@@ -1,8 +1,9 @@
 import { Command } from "@oclif/core";
-import fs from "fs/promises";
 import { execa } from "execa";
+import fs from "node:fs/promises";
+import * as YAML from "yaml";
+
 import { baseConfig, jsonDb } from "../../config/index.js";
-import YAML from "yaml";
 
 export default class DoraUp extends Command {
   static description = "Start Dora";
@@ -11,7 +12,7 @@ export default class DoraUp extends Command {
     this.log("Starting Dora...");
     const { config, configTemplate } = baseConfig.dora.paths;
     const configTemplateYaml = YAML.parse(
-      await fs.readFile(configTemplate, "utf-8")
+      await fs.readFile(configTemplate, "utf8")
     );
 
     const state = await jsonDb.read();
@@ -38,9 +39,9 @@ export default class DoraUp extends Command {
     await fs.writeFile(config, YAML.stringify(configTemplateYaml), "utf-8");
     try {
       await execa("docker", ["compose", "up", "-d"], {
-        stdio: "inherit",
         cwd: baseConfig.dora.paths.root,
         env: { DOCKER_NETWORK_NAME: `kt-${name}` },
+        stdio: "inherit",
       });
       this.log("Dora started successfully.");
     } catch (error: any) {

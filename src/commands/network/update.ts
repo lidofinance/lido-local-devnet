@@ -1,4 +1,5 @@
 import { Command } from "@oclif/core";
+
 import { baseConfig, jsonDb } from "../../config/index.js";
 import { kurtosisApi } from "../../lib/kurtosis/index.js";
 
@@ -8,7 +9,7 @@ export default class KurtosisUpdate extends Command {
 
   async run() {
     this.log("Updating network configuration using Ethereum package in Kurtosis...");
-    const name = baseConfig.network.name;
+    const {name} = baseConfig.network;
 
     const info = await kurtosisApi.getEnclaveInfo(name);
 
@@ -18,21 +19,21 @@ export default class KurtosisUpdate extends Command {
     const validators = info.filter((n) => n.name.startsWith("vc"));
 
     const binding = {
-      elNodes: elNodes.map((n) => n.url),
-      elNodesGrpc: elNodes.map((n) => n.wsUrl),
-      elNodesPrivate: elNodes.map((n) => n.privateUrl),
-      elNodesGrpcPrivate: elNodes.map((n) => n.privateWsUrl),
       clNodes: clNodes.map((n) => n.url),
       clNodesPrivate: clNodes.map((n) => n.privateUrl),
+      elNodes: elNodes.map((n) => n.url),
+      elNodesGrpc: elNodes.map((n) => n.wsUrl),
+      elNodesGrpcPrivate: elNodes.map((n) => n.privateWsUrl),
+      elNodesPrivate: elNodes.map((n) => n.privateUrl),
       validatorsApi: validators.map((n) => n.url),
       validatorsApiPrivate: validators.map((n) => n.privateUrl),
     };
 
     await jsonDb.update({
       network: {
-        name,
         binding,
         kurtosis: { services: info },
+        name,
       },
     });
 

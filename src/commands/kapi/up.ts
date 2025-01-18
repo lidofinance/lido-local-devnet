@@ -1,5 +1,7 @@
 import { Command } from "@oclif/core";
 import { execa } from "execa";
+import fs from "node:fs/promises";
+
 import { baseConfig, jsonDb } from "../../config/index.js";
 import {
   getCSMModuleAddress,
@@ -7,33 +9,32 @@ import {
   getLidoLocatorAddress,
   getStakingRouterAddress,
 } from "../../lib/lido/index.js";
-import fs from "fs/promises";
 
-interface ENV {
-  CHAIN_ID: string;
-  PROVIDERS_URLS: string;
+// interface ENV {
+//   CHAIN_ID: string;
+//   CSM_MODULE_DEVNET_ADDRESS: string;
 
-  PORT: string;
-  LOG_LEVEL: string;
-  LOG_FORMAT: string;
+//   CURATED_MODULE_DEVNET_ADDRESS: string;
+//   DB_HOST: string;
+//   DB_NAME: string;
 
-  VALIDATOR_REGISTRY_ENABLE: string;
+//   DB_PASSWORD: string;
 
-  DB_NAME: string;
-  DB_PORT: string;
-  DB_HOST: string;
-  DB_USER: string;
-  DB_PASSWORD: string;
+//   DB_PORT: string;
+//   DB_USER: string;
+//   LIDO_LOCATOR_DEVNET_ADDRESS: string;
+//   LOG_FORMAT: string;
+//   LOG_LEVEL: string;
 
-  PROVIDER_JSON_RPC_MAX_BATCH_SIZE: string;
-  PROVIDER_BATCH_AGGREGATION_WAIT_MS: string;
-  PROVIDER_CONCURRENT_REQUESTS: string;
-  LIDO_LOCATOR_DEVNET_ADDRESS: string;
-  MIKRO_ORM_DISABLE_FOREIGN_KEYS: string;
-  CURATED_MODULE_DEVNET_ADDRESS: string;
-  CSM_MODULE_DEVNET_ADDRESS: string;
-  STAKING_ROUTER_DEVNET_ADDRESS: string;
-}
+//   MIKRO_ORM_DISABLE_FOREIGN_KEYS: string;
+//   PORT: string;
+//   PROVIDER_BATCH_AGGREGATION_WAIT_MS: string;
+//   PROVIDER_CONCURRENT_REQUESTS: string;
+//   PROVIDER_JSON_RPC_MAX_BATCH_SIZE: string;
+//   PROVIDERS_URLS: string;
+//   STAKING_ROUTER_DEVNET_ADDRESS: string;
+//   VALIDATOR_REGISTRY_ENABLE: string;
+// }
 
 export default class KapiUp extends Command {
   static description = "Start Kapi";
@@ -52,25 +53,25 @@ export default class KapiUp extends Command {
 
     const env = {
       CHAIN_ID: "32382",
-      PROVIDERS_URLS: el,
-      PORT: "9030",
-      LOG_LEVEL: "debug",
-      LOG_FORMAT: "simple",
-      VALIDATOR_REGISTRY_ENABLE: "false",
-      DB_NAME: "node_operator_keys_service_db",
-      DB_PORT: "5432",
+      CSM_MODULE_DEVNET_ADDRESS: csmModule,
+      CURATED_MODULE_DEVNET_ADDRESS: curatedModule,
       DB_HOST: "127.0.0.1",
-      DB_USER: "postgres",
+      DB_NAME: "node_operator_keys_service_db",
       DB_PASSWORD: "postgres",
-      PROVIDER_JSON_RPC_MAX_BATCH_SIZE: "100",
+      DB_PORT: "5432",
+      DB_USER: "postgres",
+      DOCKER_NETWORK_NAME: `kt-${name}`,
+      LIDO_LOCATOR_DEVNET_ADDRESS: locator,
+      LOG_FORMAT: "simple",
+      LOG_LEVEL: "debug",
+      MIKRO_ORM_DISABLE_FOREIGN_KEYS: "false",
+      PORT: "9030",
       PROVIDER_BATCH_AGGREGATION_WAIT_MS: "10",
       PROVIDER_CONCURRENT_REQUESTS: "1",
-      LIDO_LOCATOR_DEVNET_ADDRESS: locator,
-      MIKRO_ORM_DISABLE_FOREIGN_KEYS: "false",
-      DOCKER_NETWORK_NAME: `kt-${name}`,
-      CURATED_MODULE_DEVNET_ADDRESS: curatedModule,
-      CSM_MODULE_DEVNET_ADDRESS: csmModule,
+      PROVIDER_JSON_RPC_MAX_BATCH_SIZE: "100",
+      PROVIDERS_URLS: el,
       STAKING_ROUTER_DEVNET_ADDRESS: stakingRouter,
+      VALIDATOR_REGISTRY_ENABLE: "false",
     };
 
     const envPath = `${baseConfig.kapi.paths.repository}/.env`;
@@ -84,8 +85,8 @@ export default class KapiUp extends Command {
         "docker",
         ["compose", "-f", "docker-compose.devnet.yml", "up", "--build", "-d"],
         {
-          stdio: "inherit",
           cwd: baseConfig.kapi.paths.repository,
+          stdio: "inherit",
         }
       );
       this.log("Kapi started successfully.");

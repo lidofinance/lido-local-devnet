@@ -5,13 +5,13 @@ export default class DevNetUp extends Command {
     "Starts a local development network (DevNet) from scratch, ensuring full setup and deployment of all components.";
 
   static flags = {
-    verify: Flags.boolean({
-      char: "v",
-      description: "Enables verification of smart contracts during deployment.",
-    }),
     full: Flags.boolean({
       description:
         "Deploys all smart contracts, not just initializes the network.",
+    }),
+    verify: Flags.boolean({
+      char: "v",
+      description: "Enables verification of smart contracts during deployment.",
     }),
   };
 
@@ -38,6 +38,7 @@ export default class DevNetUp extends Command {
           args.push("--verify");
           this.log("Smart contract verification is enabled.");
         }
+
         // Deploy specific smart contracts with optional verification
         this.log("Deploy Lido Core contracts.");
         await this.config.runCommand("onchain:lido:deploy", args);
