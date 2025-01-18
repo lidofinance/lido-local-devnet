@@ -3,13 +3,19 @@ import { ZodError } from "zod";
 
 import { DevNetRuntimeEnvironment } from "./runtime-env.js";
 
-export type DevNetFlags<T extends typeof BaseCommand> =
+export type ExtractFlags<T extends typeof BaseCommand> =
   Interfaces.InferredFlags<(typeof DevNetCommand)["baseFlags"] & T["flags"]>;
-export type DevNetArgs<T extends typeof BaseCommand> = Interfaces.InferredArgs<
+
+type ExtractArgs<T extends typeof BaseCommand> = Interfaces.InferredArgs<
   T["args"]
 >;
 
-
+export type DevNetContext<T extends typeof BaseCommand> = {
+  // args: ExtractArgs<T>;
+  dre: DevNetRuntimeEnvironment;
+  flags: ExtractFlags<T>;
+  runCommand: (id: string, argv?: string[]) => Promise<void>;
+};
 
 export function formatZodErrors(error: ZodError): string {
   return error.errors
@@ -18,18 +24,12 @@ export function formatZodErrors(error: ZodError): string {
         `❌ Error in ${err.path.join(".")}: ${err.message}` +
         (err.code === "invalid_type" && err.expected
           ? ` (expected: ${err.expected})`
-          : "")
+          : ""),
     )
     .join("\n");
 }
 
-export abstract class DevNetCommand<
-  T extends typeof BaseCommand
-> extends BaseCommand {
-  // add the --json flag
-  // static enableJsonFlag = true
-
-  // define flags that can be inherited by any command that extends BaseCommand
+export class DevNetCommand extends BaseCommand {
   static baseFlags = {
     network: Flags.string({
       default: "my-devnet",
@@ -38,12 +38,17 @@ export abstract class DevNetCommand<
     }),
   };
 
-  protected args!: DevNetArgs<T>;
+  protected args!: ExtractArgs<typeof this.ctor>;
   protected dre!: DevNetRuntimeEnvironment;
-  protected flags!: DevNetFlags<T>;
+  protected flags!: ExtractFlags<typeof this.ctor>;
+
+  public static handler(
+    _ctx: DevNetContext<typeof DevNetCommand>,
+  ): Promise<void> {
+    throw new Error("Static handler must be implemented in a derived class.");
+  }
 
   protected async catch(err: { exitCode?: number } & Error): Promise<any> {
-    // TODO: add structure name to error
     if (err instanceof ZodError) {
       this.error("\n" + formatZodErrors(err));
     }
@@ -54,20 +59,31 @@ export abstract class DevNetCommand<
   public async init(): Promise<void> {
     await super.init();
     const { args, flags } = await this.parse({
-      // enableJsonFlag: this.ctor.enableJsonFlag,
       args: this.ctor.args,
-      baseFlags: (super.ctor as typeof DevNetCommand).baseFlags,
+      baseFlags: (this.ctor as typeof DevNetCommand).baseFlags,
       flags: this.ctor.flags,
       strict: this.ctor.strict,
     });
 
-    this.flags = flags as DevNetFlags<T>;
-    this.args = args as DevNetArgs<T>;
+    this.flags = flags as ExtractFlags<typeof this.ctor>;
+    this.args = args as ExtractArgs<typeof this.ctor>;
 
     const { network } = this.flags;
 
     this.dre = await DevNetRuntimeEnvironment.getNew(network);
   }
+
+  public async run(): Promise<void> {
+    const ctx: DevNetContext<typeof this.ctor> = {
+      // args: this.args,
+      dre: this.dre,
+      flags: this.flags,
+      runCommand: this.config.runCommand.bind(this.config), // Прямая передача runCommand
+    };
+
+    const ctor = this.constructor as typeof DevNetCommand;
+    await ctor.handler(ctx);
+  }
 }
 
-export {Flags} from "@oclif/core";
+export { Flags } from "@oclif/core";
