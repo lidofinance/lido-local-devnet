@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "submodule": "git submodule update --init --remote --recursive",
-    "postinstall": "yarn submodule"
+    "postinstall": "yarn submodule",
+    "build": "rm -rf dist && tsc -b"
   },
   "dependencies": {
     "@oclif/core": "^4.0.37",
@@ -20,7 +21,7 @@
   },
   "oclif": {
     "bin": "./bin/run.js",
-    "commands": "./cli/commands",
+    "commands": "./dist/commands",
     "dirname": "devnet",
     "topicSeparator": " ",
     "topics": {
