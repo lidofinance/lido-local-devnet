@@ -1,7 +1,6 @@
 import { Command as BaseCommand, Flags, Interfaces } from "@oclif/core";
-import { State } from "../../config/state.js";
 import { ZodError } from "zod";
-import { loadUserConfig } from "../../config/user-config.js";
+import { Network } from "./network.js";
 
 export type DevNetFlags<T extends typeof BaseCommand> =
   Interfaces.InferredFlags<(typeof DevNetCommand)["baseFlags"] & T["flags"]>;
@@ -40,7 +39,7 @@ export abstract class DevNetCommand<
 
   protected flags!: DevNetFlags<T>;
   protected args!: DevNetArgs<T>;
-  protected state!: State;
+  protected network!: Network;
 
   public async init(): Promise<void> {
     await super.init();
@@ -56,14 +55,8 @@ export abstract class DevNetCommand<
     this.args = args as DevNetArgs<T>;
 
     const { network } = this.flags;
-    // parse user config
-    const userConfig = await loadUserConfig();
 
-    const networkConfig =
-      userConfig?.networks?.find((net: any) => net?.name === network) ?? {};
-
-    // init state
-    this.state = new State(network, networkConfig);
+    this.network = await Network.getNew(network);
   }
 
   protected async catch(err: Error & { exitCode?: number }): Promise<any> {

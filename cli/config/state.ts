@@ -107,14 +107,6 @@ export class State {
     );
   }
 
-  // async getGenesisValidatorsRoot(): Promise<string> {
-  //   const reader = await this.parsedConsensusGenesisState.getReader();
-  //   return (
-  //     this.config.chain?.genesisValidatorsRoot ??
-  //     reader.getOrError("genesis_validators_root")
-  //   );
-  // }
-
   async updateChain(jsonData: unknown) {
     await this.appState.update({ chain: jsonData });
   }
