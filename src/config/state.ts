@@ -13,8 +13,10 @@ import {
   ARTIFACTS_PATH,
   STATE_FILE,
   PARSED_CONSENSUS_GENESIS_FILE,
+  WALLET_KEYS_COUNT,
 } from "./constants.js";
 import { sharedWallet } from "./shared-wallet.js";
+import { generateKeysFromMnemonicOnce } from "../lib/wallet/index.js";
 
 /**
  * The State class is responsible for managing and retrieving configuration data from both a user-provided config object
@@ -110,8 +112,16 @@ export class State {
   }
 
   async getWallet() {
-    const wallet = this.config.wallet ?? sharedWallet;
-    return WalletSchema.parseAsync(wallet);
+    let wallet = this.config.wallet;
+
+    if (!wallet && this.config.walletMnemonic) {
+      wallet = generateKeysFromMnemonicOnce(
+        this.config.walletMnemonic,
+        WALLET_KEYS_COUNT
+      );
+    }
+
+    return WalletSchema.parseAsync(wallet ?? sharedWallet);
   }
 
   async updateChain(jsonData: unknown) {
