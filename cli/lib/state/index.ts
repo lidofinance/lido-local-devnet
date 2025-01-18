@@ -72,4 +72,10 @@ class JsonDbReader<T> {
     }
     return result;
   }
+
+  public get(path: Path): any {
+    try {
+      return this.getOrError(path);
+    } catch (_) {}
+  }
 }

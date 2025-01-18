@@ -1,9 +1,10 @@
 import { JsonDb } from "../lib/state/index.js";
 import path from "path";
+import { z, ZodSchema } from "zod";
 import {
-  ChainConfig,
-  LidoConfig,
-  CSMConfig,
+  ChainConfigSchema,
+  LidoConfigSchema,
+  CSMConfigSchema,
   Config,
   ConfigValidator,
 } from "./schemas.js";
@@ -18,9 +19,9 @@ import {
  * and a JSON database. It supports three primary configuration groups: chain, lido, and csm, each with their own mappings.
  *
  * - The constructor validates the raw config using Zod schemas and initializes JSON database readers.
- * - The `getProperties` method handles retrieval of configuration values, prioritizing user config over database values.
+ * - The `getProperties` method handles retrieval of configuration values, prioritizing user config over database values,
+ *   and validates the final result using Zod schemas.
  * - Each group (chain, lido, csm) has a dedicated method to retrieve its corresponding configuration.
- * - If a group is missing in the user config, it falls back to database values.
  *
  * This class ensures type safety and flexibility by leveraging Zod schemas for validation and TypeScript for strong typing.
  */
@@ -40,20 +41,22 @@ export class State {
   private async getProperties<T extends Record<string, any>>(
     keys: { [K in keyof T]: string },
     group: keyof Config,
-    dbReader: { getOrError: (key: string) => any }
+    schema: ZodSchema<T>,
+    dbReader: { get: (key: string) => any }
   ): Promise<T> {
     const result: Partial<T> = {};
     const groupConfig = this.config[group] || {};
     for (const key in keys) {
       const dbPath = keys[key];
-      result[key] = (groupConfig as any)[key] ?? dbReader.getOrError(dbPath);
+      result[key] = (groupConfig as any)[key] ?? dbReader.get(dbPath);
     }
-    return result as T;
+
+    return schema.parse(result); // Validate the result using the provided schema
   }
 
-  async getChain(): Promise<ChainConfig | undefined> {
+  async getChain(): Promise<z.infer<typeof ChainConfigSchema>> {
     const reader = await this.appState.getReader();
-    return this.getProperties<ChainConfig>(
+    return this.getProperties(
       {
         elPrivate: "chain.binding.elNodesPrivate.0",
         clPrivate: "chain.binding.clNodesPrivate.0",
@@ -61,13 +64,14 @@ export class State {
         clPublic: "network.binding.clNodes.0",
       },
       "chain",
+      ChainConfigSchema,
       reader
     );
   }
 
-  async getLido(): Promise<LidoConfig | undefined> {
+  async getLido(): Promise<z.infer<typeof LidoConfigSchema>> {
     const reader = await this.appState.getReader();
-    return this.getProperties<LidoConfig>(
+    return this.getProperties(
       {
         agent: "lidoCore.app:aragon-agent.proxy.address",
         voting: "lidoCore.app:aragon-voting.proxy.address",
@@ -78,13 +82,14 @@ export class State {
         locator: "lidoCore.lidoLocator.proxy.address",
       },
       "lido",
+      LidoConfigSchema,
       reader
     );
   }
 
-  async getCSM(): Promise<CSMConfig | undefined> {
+  async getCSM(): Promise<z.infer<typeof CSMConfigSchema>> {
     const reader = await this.appState.getReader();
-    return this.getProperties<CSMConfig>(
+    return this.getProperties(
       {
         accounting: "csm.CSAccounting",
         earlyAdoption: "csm.CSEarlyAdoption",
@@ -97,15 +102,28 @@ export class State {
         lidoLocator: "csm.LidoLocator",
       },
       "csm",
+      CSMConfigSchema,
       reader
     );
   }
 
-  async getGenesisValidatorsRoot(): Promise<string> {
-    const reader = await this.parsedConsensusGenesisState.getReader();
-    return (
-      this.config.chain?.genesisValidatorsRoot ??
-      reader.getOrError("genesis_validators_root")
-    );
+  // async getGenesisValidatorsRoot(): Promise<string> {
+  //   const reader = await this.parsedConsensusGenesisState.getReader();
+  //   return (
+  //     this.config.chain?.genesisValidatorsRoot ??
+  //     reader.getOrError("genesis_validators_root")
+  //   );
+  // }
+
+  async updateChain(jsonData: unknown) {
+    await this.appState.update({ chain: jsonData });
+  }
+
+  async updateLido(jsonData: unknown) {
+    await this.appState.update({ lidoCore: jsonData });
+  }
+
+  async updateCSM(jsonData: unknown) {
+    await this.appState.update({ csm: jsonData });
   }
 }
