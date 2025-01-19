@@ -40,7 +40,7 @@ export class DevNetCommand extends BaseCommand {
     params: Omit<ExtractFlags<F>, "network">,
   ): Promise<void> {
     // TODO: pass json param
-    const paramsWithNetwork = { ...params, network: dre.name };
+    const paramsWithNetwork = { ...params, network: dre.network.name };
     await this.handler(new DevNetContext({ dre, params: paramsWithNetwork }));
   }
 
