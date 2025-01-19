@@ -43,24 +43,29 @@ export const createRPC = async (
 
     // TODO: remove
     if (!originalParams) return;
-    console.log("originalParams", commandID, originalParams);
+
     const commandURL = commandID.replaceAll(":", "/");
 
-    const schemaProperties = (Object.values(originalParams) as any).reduce(
-      (acc: any, param: any) => {
-        acc[param.key ?? param.name] = {
+    const paramsWithKey = (Object.entries(originalParams) as any).reduce(
+      (acc: any, [key, param]: any[]) => {
+        acc[key] = {
+          ...param,
+          key,
+        };
+        return acc;
+      },
+      {},
+    );
+
+    const schemaProperties = (Object.entries(paramsWithKey) as any).reduce(
+      (acc: any, [key, param]: any[]) => {
+        acc[key] = {
           type: param.paramParserType || "string", // Укажите дефолтный тип, если `paramParserType` отсутствует
           description: param.summary || "No description provided",
         };
         return acc;
       },
       {},
-    );
-    console.log(
-      (Object.values(originalParams) as any)
-        .filter((p: any) => p.required)
-        .map((p: any) => p.key ?? p.name)
-        .filter(Boolean),
     );
 
     fastify.post(
@@ -76,9 +81,9 @@ export const createRPC = async (
               input: {
                 type: "object",
                 properties: schemaProperties,
-                required: (Object.values(originalParams) as any)
+                required: Object.values(paramsWithKey)
                   .filter((p: any) => p.required)
-                  .map((p: any) => p.key ?? p.name)
+                  .map((p: any) => p.key)
                   .filter(Boolean),
               },
             },

@@ -26,7 +26,7 @@ export default class DevNetConfig extends DevNetCommand {
     const classes = (await Promise.all(
       classesLoader,
     )) as (typeof DevNetCommand)[];
-
+    
     const isomorphic = classes.filter((cl) => cl.isIsomorphicCommand);
 
     const ctx = this.ctx as unknown as DevNetContext<typeof DevNetConfig>;
