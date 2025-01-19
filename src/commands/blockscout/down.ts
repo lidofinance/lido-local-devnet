@@ -22,6 +22,7 @@ export const BlockscoutDown = command.cli({
         },
         stdio: "inherit",
       });
+      
       logger("Blockscout stopped successfully.");
     } catch (error: any) {
       logger(`Failed to stop Blockscout: ${error.message}`);

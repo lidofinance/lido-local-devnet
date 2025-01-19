@@ -23,8 +23,8 @@ services:
       - devnet
     ports:
       - target: 80
-        published: 3080
+        published: 0
       - target: 8080
-        published: 8080
+        published: 0
       # - target: 8081
       #   published: 8781

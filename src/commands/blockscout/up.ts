@@ -1,6 +1,7 @@
 import { execa } from "execa";
 
 import { command } from "../../lib/command/command.js";
+import { getPublicPortAndService } from "../../lib/docker/index.js";
 
 export const BlockscoutUp = command.cli({
   description: "Start Blockscout",
@@ -22,7 +23,27 @@ export const BlockscoutUp = command.cli({
         },
         stdio: "inherit",
       });
-      logger("Blockscout started successfully.");
+
+      const info = await getPublicPortAndService(80, "kt-" + network.name);
+      const publicUrl = `localhost:${info.publicPort}`;
+
+      await execa(
+        "docker",
+        ["compose", "-f", "geth.yml", "up", "-d", "frontend"],
+        {
+          cwd: blockScoutConfig.root,
+          env: {
+            BLOCKSCOUT_RPC_URL: elPrivate,
+            BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
+            NEXT_PUBLIC_API_HOST: publicUrl,
+            NEXT_PUBLIC_APP_HOST: publicUrl,
+            DOCKER_NETWORK_NAME: `kt-${network.name}`,
+          },
+          stdio: "inherit",
+        },
+      );
+
+      logger(`Blockscout started successfully on URL: http://${publicUrl}`);
     } catch (error: any) {
       logger(`Failed to start Blockscout: ${error.message}`);
       throw error;

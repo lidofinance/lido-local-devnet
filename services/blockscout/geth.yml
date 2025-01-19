@@ -57,14 +57,13 @@ services:
     extends:
       file: ./services/sig-provider.yml
       service: sig-provider
-
   frontend:
-    depends_on:
-      - backend
     extends:
       file: ./services/frontend.yml
       service: frontend
-
+    environment:
+      NEXT_PUBLIC_API_HOST: ${NEXT_PUBLIC_API_HOST}
+      NEXT_PUBLIC_APP_HOST: ${NEXT_PUBLIC_API_HOST}
   stats-db-init:
     extends:
       file: ./services/stats.yml
@@ -97,7 +96,6 @@ services:
   proxy:
     depends_on:
       - backend
-      - frontend
       - stats
     extends:
       file: ./services/nginx.yml
