@@ -9,11 +9,14 @@
     "lint": "eslint . --ext .ts && tsc --noEmit"
   },
   "dependencies": {
+    "@fastify/swagger": "^9.4.2",
+    "@fastify/swagger-ui": "^5.2.1",
     "@oclif/core": "^4.0.37",
     "@oclif/plugin-help": "^6.2.19",
     "@types/node": "^22.10.5",
     "ethers": "^6.13.4",
     "execa": "^9.5.2",
+    "fastify": "^5.2.1",
     "kurtosis-sdk": "^1.4.3",
     "ts-node": "^10.9.2",
     "typescript": "^5",
@@ -57,5 +60,5 @@
   },
   "engines": {
     "node": ">=20"
-}
+  }
 }

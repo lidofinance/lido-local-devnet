@@ -14,8 +14,8 @@
         "unicorn/text-encoding-identifier-case": "off",
         "unicorn/consistent-destructuring": "off",
         "max-params":"off",
-        "unicorn/no-array-for-each": "off"
-        
+        "unicorn/no-array-for-each": "off",
+        "perfectionist/sort-objects": "off"
       },
     },
   ],
