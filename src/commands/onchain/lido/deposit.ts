@@ -2,62 +2,59 @@
 // ./run.sh lido submit <AMOUNT>
 // ./run.sh lido deposit <DEPOSITS> <MODULE_ID>
 
-import { Command, Flags } from "@oclif/core";
-
-import { baseConfig, jsonDb } from "../../../config/index.js";
+import { command } from "../../../lib/command/command.js";
+import { Params } from "../../../lib/command/index.js";
 import { runLidoCLI } from "../../../lib/lido-cli/index.js";
 import { waitEL } from "../../../lib/network/index.js";
+import { LidoCoreInstall } from "./install.js";
 
-const {
-  paths: { root },
-} = baseConfig.services.lidoCLI;
-
-export default class LidoDeposit extends Command {
-  static description = "Handles deposits to the Lido protocol.";
-  static flags = {
-    deposits: Flags.integer({
-      default: 30,
+export const LidoDeposit = command.cli({
+  description: "Handles deposits to the Lido protocol.",
+  params: {
+    deposits: Params.integer({
       description: "Number of deposits.",
+      default: 30,
     }),
-    id: Flags.integer({
+    id: Params.integer({
       description: "Module ID.",
       required: true,
     }),
-  };
+  },
+  async handler({ logger, params, dre }) {
+    const { state, artifacts } = dre;
+    const { lidoCLI } = artifacts.services;
 
-  async run() {
-    const { flags } = await this.parse(LidoDeposit);
-
-    this.log("Starting the deposit process for the Lido protocol...");
+    logger("Starting the deposit process for the Lido protocol...");
 
     // Ensure all necessary dependencies are installed before execution
-    this.log("Checking and installing required dependencies...");
-    await this.config.runCommand("onchain:lido:install");
-    this.log("Dependencies installed successfully.");
+    logger("Checking and installing required dependencies...");
+    await LidoCoreInstall.exec(dre, {});
+    logger("Dependencies installed successfully.");
 
     // Retrieve the RPC endpoint for the execution layer node
-    const state = await jsonDb.getReader();
-    const rpc = state.getOrError("network.binding.elNodes.0");
+    const { elPublic } = await state.getChain();
 
-    this.log(`Verifying readiness of the execution layer node at ${rpc}...`);
-    await waitEL(rpc);
-    this.log("Execution layer node is operational.");
+    logger(`Verifying readiness of the execution layer node at ${elPublic}...`);
+    await waitEL(elPublic);
+    logger("Execution layer node is operational.");
 
     // Execute the Lido CLI commands for deposit
-    this.log("Fetching depositable Ether information...");
-    await runLidoCLI(["lido", "depositable-ether"], root, {});
+    logger("Fetching depositable Ether information...");
+    await runLidoCLI(["lido", "depositable-ether"], lidoCLI.root, {});
 
-    this.log("Submitting Ether to the protocol...");
-    // TODO: get amount from flags or calc
-    await runLidoCLI(["lido", "submit", "1000"], root, {});
+    logger("Submitting Ether to the protocol...");
+    // TODO: Fetch the amount dynamically if required
+    await runLidoCLI(["lido", "submit", "1000"], lidoCLI.root, {});
 
-    this.log(`Depositing ${flags.deposits} deposits to module ID ${flags.id}...`);
+    logger(
+      `Depositing ${params.deposits} deposits to module ID ${params.id}...`,
+    );
     await runLidoCLI(
-      ["lido", "deposit", String(flags.deposits), String(flags.id)],
-      root,
-      {}
+      ["lido", "deposit", String(params.deposits), String(params.id)],
+      lidoCLI.root,
+      {},
     );
 
-    this.log("Deposit process completed successfully.");
-  }
-}
+    logger("✅ Deposit process completed successfully.");
+  },
+});

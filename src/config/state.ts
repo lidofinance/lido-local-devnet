@@ -133,6 +133,23 @@ export class State {
     );
   }
 
+  async getNamedWallet() {
+    const [deployer, oracle1, oracle2, oracle3, council1, council2, council3] =
+      await this.getWallet();
+
+    return {
+      deployer,
+      oracle1,
+      oracle2,
+      oracle3,
+      oracles: [oracle1, oracle2, oracle3],
+      council1,
+      council2,
+      council3,
+      councils: [council1, council2, council3],
+    };
+  }
+
   async getParsedConsensusGenesisState(): Promise<
     z.infer<typeof ParsedConsensusGenesisStateSchema>
   > {
@@ -140,6 +157,7 @@ export class State {
     return this.getProperties(
       {
         genesisValidatorsRoot: "genesis_validators_root",
+        genesisTime: "genesis_time",
       },
       "parsedConsensusGenesisState",
       ParsedConsensusGenesisStateSchema,

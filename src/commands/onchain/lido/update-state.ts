@@ -1,77 +1,70 @@
-import { Command } from "@oclif/core";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { baseConfig, jsonDb } from "../../../config/index.js";
+import { command } from "../../../lib/command/command.js";
 
-interface LidoCliConfig {
-  chainId: number | string;
-  cl: string;
-  deployed: string;
-  el: string;
-  networkName: string;
-  pk: string;
-}
+export const LidoCoreUpdateState = command.cli({
+  description:
+    "Reads the network state file for lido-core and updates the JSON database accordingly.",
+  params: {},
+  async handler({ logger, dre }) {
+    const { state, artifacts } = dre;
+    const { lidoCore } = artifacts.services;
 
-const lidoCliTpl = (c: LidoCliConfig) =>
-  `
+    const { deployer } = await state.getNamedWallet();
+    const { elPublic, clPublic } = await state.getChain();
+
+    logger("Reading network state file...");
+
+    const deployedNetworkPath = path.join(
+      lidoCore.root,
+      `deployed-local-devnet.json`,
+    );
+
+    // const { elPublic, clPublic } = await state.getChain();
+
+    // Read and parse the network state file
+    const fileContent = await fs.readFile(deployedNetworkPath, "utf8");
+    const jsonData = JSON.parse(fileContent);
+
+    // Update the JSON database with the new state
+    await state.updateLido(jsonData);
+
+    const { lidoCLI } = artifacts.services;
+
+    //     // Save the state to the lido-cli folder
+    logger("Saving state to the lido-cli configuration...");
+    await fs.writeFile(
+      path.join(lidoCLI.root, "deployed-local-devnet.json"),
+      fileContent,
+      "utf-8",
+    );
+
+    const lidoCliEnvContent = `
 # Private key for account
-PRIVATE_KEY=${c.pk}
+PRIVATE_KEY=${deployer.privateKey}
 
 # Contract addresses
-DEPLOYED=${c.deployed}
+DEPLOYED=deployed-local-devnet.json
 
 # Execution Layer API provider
-EL_CHAIN_ID=${c.chainId}
-EL_NETWORK_NAME=${c.networkName}
-EL_API_PROVIDER=${c.el}
+EL_CHAIN_ID=32382
+EL_NETWORK_NAME=local-devnet
+EL_API_PROVIDER=${elPublic}
 
 # Consensus Layer API provider
-CL_API_PROVIDER=${c.cl}
+CL_API_PROVIDER=${clPublic}
 
 # TODO
 KEYS_API_PROVIDER=https://keys-api.testnet.fi
-`;
+    `.trim();
 
-export class LidoCoreUpdateState extends Command {
-  static description =
-    "Reads the network state file for lido-core and updates the JSON database accordingly.";
-
-  async run() {
-    this.log("Reading network state file...");
-    const { env, paths } = baseConfig.onchain.lido.core;
-    const deployedNetworkPath = path.join(paths.root, env.NETWORK_STATE_FILE);
-
-    const state = await jsonDb.getReader();
-    const el: string = state.getOrError("network.binding.elNodes.0");
-    const cl: string = state.getOrError("network.binding.clNodes.0");
-
-    const fileContent = await fs.readFile(deployedNetworkPath, "utf8");
-    const jsonData = JSON.parse(fileContent);
-    await jsonDb.update({ lidoCore: jsonData });
-
-    const { lidoCLI } = baseConfig.services;
-    // save state to lido-cli folder
     await fs.writeFile(
-      path.join(lidoCLI.paths.configs, lidoCLI.activate.env.DEPLOYED),
-      fileContent,
-      "utf-8"
+      path.join(lidoCLI.root, ".env"),
+      lidoCliEnvContent,
+      "utf-8",
     );
-    // create .env
-    await fs.writeFile(
-      path.join(lidoCLI.paths.root, ".env"),
-      lidoCliTpl({
-        chainId: lidoCLI.activate.env.EL_CHAIN_ID,
-        cl,
-        deployed: lidoCLI.activate.env.DEPLOYED,
-        el,
-        networkName: lidoCLI.activate.env.EL_NETWORK_NAME,
-        pk: lidoCLI.activate.env.PRIVATE_KEY,
-      }),
-      "utf-8"
-    );
-    this.log(
-      "Network state has been successfully updated in the JSON database."
-    );
-  }
-}
+
+    logger("✅ Network state has been successfully updated.");
+  },
+});

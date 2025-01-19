@@ -1,33 +1,44 @@
-import { Command } from "@oclif/core";
 import { execa } from "execa";
 
-import { baseConfig, jsonDb } from "../../../config/index.js";
+import { command } from "../../../lib/command/command.js";
+import { LidoCoreInstall } from "./install.js";
 
-export default class VerifyCore extends Command {
-  static description = "Verify deployed lido-core contracts";
+export const LidoCoreVerify = command.cli({
+  description: "Verify deployed lido-core contracts",
+  params: {},
+  async handler({ logger, dre }) {
+    const { state, artifacts } = dre;
+    const { lidoCore } = artifacts.services;
 
-  async run() {
-    await this.config.runCommand("onchain:lido:install");
+    logger("Installing dependencies for lido-core...");
+    await LidoCoreInstall.exec(dre, {});
 
-    const { env, paths } = baseConfig.onchain.lido.core;
-    const state = await jsonDb.read();
+    const { elPublic } = await state.getChain();
+    const { deployer } = await state.getNamedWallet();
 
-    const rpc = state.network?.binding?.elNodes?.[0];
-
-    if (!rpc) {
-      this.error("RPC_URL not found in deployed state");
-    }
-
-    this.log("Verifying deployed contracts...");
+    logger("Verifying deployed contracts...");
     await execa(
       "bash",
       ["-c", "yarn verify:deployed --network $NETWORK || true"],
       {
-        cwd: paths.root,
-        env: { ...env, RPC_URL: rpc },
+        cwd: lidoCore.root,
+        env: {
+          DEPLOYER: deployer.publicKey,
+          DEPOSIT_CONTRACT: "0x4242424242424242424242424242424242424242",
+          GAS_MAX_FEE: "100",
+          GAS_PRIORITY_FEE: "1",
+          LOCAL_DEVNET_PK: deployer.privateKey,
+          NETWORK: "local-devnet",
+          NETWORK_STATE_DEFAULTS_FILE:
+            "scripts/scratch/deployed-testnet-defaults.json",
+          NETWORK_STATE_FILE: `deployed-local-devnet.json`,
+          RPC_URL: elPublic,
+          // TODO: add blockscout urls and chainid
+        },
         stdio: "inherit",
-      }
+      },
     );
-    this.log("Verification completed.");
-  }
-}
+
+    logger("✅ Verification completed.");
+  },
+});

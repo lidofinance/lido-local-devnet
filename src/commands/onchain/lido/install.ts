@@ -1,43 +1,44 @@
-import { Command } from "@oclif/core";
 import { execa } from "execa";
 
-import { baseConfig } from "../../../config/index.js";
+import { command } from "../../../lib/command/command.js";
 
-export class LidoCoreInstall extends Command {
-  static description = "Install dependencies in the lido-core directory";
+export const LidoCoreInstall = command.cli({
+  description: "Install dependencies in the lido-core and lido-cli directories",
+  params: {},
+  async handler({ logger, dre }) {
+    const { artifacts } = dre;
+    const { lidoCore } = artifacts.services;
 
-  async run() {
-    this.log();
-    this.log(
-      `Initiating 'yarn install' in the lido-core directory at ${baseConfig.onchain.lido.core.paths.root}...`
+    logger();
+    logger(
+      `Initiating 'yarn install' in the lido-core directory at ${lidoCore.root}...`,
     );
 
     await execa("bash", ["-c", "corepack enable && yarn"], {
-      cwd: baseConfig.onchain.lido.core.paths.root,
+      cwd: lidoCore.root,
       stdio: "inherit",
     });
 
-    this.log(
-      "Dependencies installation completed successfully in the lido-core directory."
+    logger(
+      "Dependencies installation completed successfully in the lido-core directory.",
     );
 
-    this.log();
-    this.log("---------------------------------------------------");
-    this.log();
+    logger();
+    logger("---------------------------------------------------");
+    logger();
 
-    // Ensure that the directory log for the lido-cli installation is also specific and clear
-    this.log(
-      `Initiating 'yarn install' in the lido-cli directory at ${baseConfig.services.lidoCLI.paths.root}...`
+    logger(
+      `Initiating 'yarn install' in the lido-cli directory at ${lidoCore.root}...`,
     );
 
     await execa("bash", ["-c", "yarn"], {
-      cwd: baseConfig.services.lidoCLI.paths.root,
+      cwd: lidoCore.root,
       stdio: "inherit",
     });
 
-    this.log(
-      "Dependencies installation completed successfully in the lido-cli directory."
+    logger(
+      "Dependencies installation completed successfully in the lido-cli directory.",
     );
-    this.log();
-  }
-}
+    logger();
+  },
+});

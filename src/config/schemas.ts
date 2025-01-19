@@ -19,6 +19,7 @@ export const ChainConfigSchema = z.object({
 
 export const ParsedConsensusGenesisStateSchema = z.object({
   genesisValidatorsRoot: z.string(),
+  genesisTime: z.string()
 });
 
 export const LidoConfigSchema = z.object({

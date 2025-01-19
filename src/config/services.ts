@@ -12,4 +12,13 @@ export const devNetServices = {
     config: "services/blockscout",
     name: "blockscout" as const
   },
+  lidoCore: {
+    repository: "submodules/lido-core",
+    name: "lidoCore" as const
+  },
+  lidoCLI: {
+    repository: "submodules/lido-cli",
+    name: "lidoCLI" as const
+  }
 };
+
