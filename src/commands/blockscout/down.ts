@@ -1,6 +1,5 @@
 import { execa } from "execa";
 
-import { services } from "../../config/services.js";
 import { command } from "../../lib/command/command.js";
 
 export const BlockscoutDown = command.cli({
@@ -8,22 +7,27 @@ export const BlockscoutDown = command.cli({
   params: {},
   async handler({ logger, dre }) {
     logger("Stopping Blockscout...");
-    const { state, network } = dre;
 
-    // const blockScoutConfig = await state.getBlockScout();
+    const { state, network, artifacts } = dre;
+
     const { elPrivate, grpcPrivate } = await state.getChain();
 
     try {
-      await execa("docker", ["compose", "-f", "geth.yml", "down", "-v"], {
-        cwd: services.blockscout.root,
-        env: {
-          BLOCKSCOUT_RPC_URL: elPrivate,
-          BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
-          DOCKER_NETWORK_NAME: `kt-${network.name}`,
+      await execa(
+        "docker",
+        ["compose", "-p", network.name, "-f", "geth.yml", "down", "-v"],
+        {
+          cwd: artifacts.services.blockscout.root,
+          env: {
+            BLOCKSCOUT_RPC_URL: elPrivate,
+            BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
+            DOCKER_NETWORK_NAME: `kt-${network.name}`,
+            COMPOSE_PROJECT_NAME: `blockscout-${network.name}`,
+          },
+          stdio: "inherit",
         },
-        stdio: "inherit",
-      });
-      
+      );
+
       logger("Blockscout stopped successfully.");
 
       await state.updateBlockScout({});

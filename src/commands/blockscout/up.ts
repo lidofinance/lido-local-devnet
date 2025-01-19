@@ -1,6 +1,5 @@
 import { execa } from "execa";
 
-import { services } from "../../config/services.js";
 import { command } from "../../lib/command/command.js";
 import { getPublicPortAndService } from "../../lib/docker/index.js";
 
@@ -9,18 +8,19 @@ export const BlockscoutUp = command.cli({
   params: {},
   async handler({ logger, dre }) {
     logger("Starting Blockscout...");
-    const { state, network } = dre;
 
-    // const blockScoutConfig = await state.getBlockScout();
+    const { state, network, artifacts } = dre;
+
     const { elPrivate, grpcPrivate } = await state.getChain();
 
     try {
       await execa("docker", ["compose", "-f", "geth.yml", "up", "-d"], {
-        cwd: services.blockscout.root,
+        cwd: artifacts.services.blockscout.root,
         env: {
           BLOCKSCOUT_RPC_URL: elPrivate,
           BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
           DOCKER_NETWORK_NAME: `kt-${network.name}`,
+          COMPOSE_PROJECT_NAME: `blockscout-${network.name}`,
         },
         stdio: "inherit",
       });
@@ -33,13 +33,14 @@ export const BlockscoutUp = command.cli({
         "docker",
         ["compose", "-f", "geth.yml", "up", "-d", "frontend"],
         {
-          cwd: services.blockscout.root,
+          cwd: artifacts.services.blockscout.root,
           env: {
             BLOCKSCOUT_RPC_URL: elPrivate,
             BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
             NEXT_PUBLIC_API_HOST: apiHost,
             NEXT_PUBLIC_APP_HOST: apiHost,
             DOCKER_NETWORK_NAME: `kt-${network.name}`,
+            COMPOSE_PROJECT_NAME: `blockscout-${network.name}`,
           },
           stdio: "inherit",
         },
