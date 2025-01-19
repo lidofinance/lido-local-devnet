@@ -15,6 +15,7 @@ import {
   Config,
   ConfigValidator,
   LidoConfigSchema,
+  ParsedConsensusGenesisStateSchema,
   WalletSchema,
 } from "./schemas.js";
 import { sharedWallet } from "./shared-wallet.js";
@@ -92,6 +93,18 @@ export class State {
       },
       "lido",
       LidoConfigSchema,
+      reader
+    );
+  }
+
+  async getParsedConsensusGenesisState(): Promise<z.infer<typeof ParsedConsensusGenesisStateSchema>> {
+    const reader = await this.parsedConsensusGenesisState.getReader();
+    return this.getProperties(
+      {
+        genesisValidatorsRoot: "genesis_validators_root",
+      },
+      "parsedConsensusGenesisState",
+      ParsedConsensusGenesisStateSchema,
       reader
     );
   }

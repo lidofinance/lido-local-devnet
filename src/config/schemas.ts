@@ -5,7 +5,10 @@ export const ChainConfigSchema = z.object({
   clPublic: z.string().url(),
   elPrivate: z.string().url(),
   elPublic: z.string().url(),
-  // genesisValidatorsRoot: z.string(),
+});
+
+export const ParsedConsensusGenesisStateSchema = z.object({
+  genesisValidatorsRoot: z.string(),
 });
 
 export const LidoConfigSchema = z.object({
@@ -42,6 +45,8 @@ const ConfigSchema = z.object({
   lido: LidoConfigSchema.partial().optional(),
   wallet: WalletSchema.optional(),
   walletMnemonic: WalletMnemonic.optional(),
+  parsedConsensusGenesisState:
+    ParsedConsensusGenesisStateSchema.partial().optional(),
 });
 
 type ChainConfig = z.infer<typeof ChainConfigSchema>;
