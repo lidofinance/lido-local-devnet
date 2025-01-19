@@ -5,13 +5,12 @@ networks:
     name: ${DOCKER_NETWORK_NAME}
     external: true
   blockscout:
-    name: blockscout
+    name: blockscout-${DOCKER_NETWORK_NAME}
     external: true
 
 services:
   proxy:
     image: nginx
-    container_name: proxy
     restart: unless-stopped
     volumes:
       - "../proxy:/etc/nginx/templates"

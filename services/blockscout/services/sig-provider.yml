@@ -5,7 +5,7 @@ networks:
     name: ${DOCKER_NETWORK_NAME}
     external: true
   blockscout:
-    name: blockscout
+    name: blockscout-${DOCKER_NETWORK_NAME}
     external: true
 
 services:
@@ -16,4 +16,3 @@ services:
     restart: always
     networks:
       - blockscout
-    container_name: 'sig-provider'

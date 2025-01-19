@@ -5,7 +5,7 @@ networks:
     name: ${DOCKER_NETWORK_NAME}
     external: true
   blockscout:
-    name: blockscout
+    name: blockscout-${DOCKER_NETWORK_NAME}
     driver: bridge
 
 services:
@@ -24,7 +24,7 @@ services:
       file: ./services/smart-contract-verifier.yml
       service: smart-contract-verifier
     ports:
-      - 8082:8050
+      - 0:8050
   db:
     depends_on:
       db-init:

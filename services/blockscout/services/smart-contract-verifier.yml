@@ -5,7 +5,7 @@ networks:
     name: ${DOCKER_NETWORK_NAME}
     external: true
   blockscout:
-    name: blockscout
+    name: blockscout-${DOCKER_NETWORK_NAME}
     external: true
 
 services:
@@ -14,7 +14,6 @@ services:
     pull_policy: always
     platform: linux/amd64
     restart: always
-    container_name: 'smart-contract-verifier'
     networks:
       - blockscout
     env_file:

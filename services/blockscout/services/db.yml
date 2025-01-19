@@ -5,7 +5,7 @@ networks:
     name: ${DOCKER_NETWORK_NAME}
     external: true
   blockscout:
-    name: blockscout
+    name: blockscout-${DOCKER_NETWORK_NAME}
     external: true
 
 services:
@@ -24,7 +24,6 @@ services:
     user: 2000:2000
     shm_size: 256m
     restart: always
-    container_name: 'db'
     command: postgres -c 'max_connections=200' -c 'client_connection_check_interval=60000'
     environment:
         POSTGRES_DB: 'blockscout'
@@ -32,7 +31,7 @@ services:
         POSTGRES_PASSWORD: 'ceWb1MeLBEeOIfk65gU8EjF8'
     ports:
       - target: 5432
-        published: 7432
+        published: 0
     networks:
       - blockscout
     volumes:

@@ -19,7 +19,7 @@ services:
       file: ./services/smart-contract-verifier.yml
       service: smart-contract-verifier
     ports:
-      - 8082:8050
+      - 0:8050
 
   stats-db-init:
     extends:

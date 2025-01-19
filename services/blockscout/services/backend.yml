@@ -5,7 +5,7 @@ networks:
     name: ${DOCKER_NETWORK_NAME}
     external: true
   blockscout:
-    name: blockscout
+    name: blockscout-${DOCKER_NETWORK_NAME}
     external: true
 
 services:
@@ -14,7 +14,6 @@ services:
     pull_policy: always
     restart: always
     stop_grace_period: 5m
-    container_name: 'backend'
     command: sh -c "bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
     env_file:
       -  ../envs/common-blockscout.env
