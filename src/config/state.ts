@@ -1,10 +1,13 @@
+import { readFile } from "node:fs/promises";
 import path from "node:path";
+import * as YAML from "yaml";
 import { ZodSchema, z } from "zod";
 
 import { JsonDb } from "../lib/state/index.js";
 import { generateKeysFromMnemonicOnce } from "../lib/wallet/index.js";
 import {
   ARTIFACTS_PATH,
+  KURTOSIS_ROOT,
   PARSED_CONSENSUS_GENESIS_FILE,
   STATE_FILE,
   WALLET_KEYS_COUNT,
@@ -14,6 +17,7 @@ import {
   ChainConfigSchema,
   Config,
   ConfigValidator,
+  KurtosisSchema,
   LidoConfigSchema,
   ParsedConsensusGenesisStateSchema,
   WalletSchema,
@@ -40,7 +44,7 @@ export class State {
     this.config = ConfigValidator.validate(rawConfig);
     this.appState = new JsonDb(path.join(ARTIFACTS_PATH, network, STATE_FILE));
     this.parsedConsensusGenesisState = new JsonDb(
-      path.join(ARTIFACTS_PATH, network, PARSED_CONSENSUS_GENESIS_FILE)
+      path.join(ARTIFACTS_PATH, network, PARSED_CONSENSUS_GENESIS_FILE),
     );
   }
 
@@ -57,7 +61,7 @@ export class State {
       },
       "chain",
       ChainConfigSchema,
-      reader
+      reader,
     );
   }
 
@@ -77,8 +81,20 @@ export class State {
       },
       "csm",
       CSMConfigSchema,
-      reader
+      reader,
     );
+  }
+
+  async getKurtosis() {
+    const { kurtosis } = this.config;
+    const loadConfig = await KurtosisSchema.parseAsync(kurtosis);
+
+    return {
+      config: YAML.parse(
+        await readFile(path.join(KURTOSIS_ROOT, `${loadConfig.preset}.yml`), "utf-8"),
+      ),
+      loadConfig,
+    };
   }
 
   async getLido(): Promise<z.infer<typeof LidoConfigSchema>> {
@@ -95,11 +111,13 @@ export class State {
       },
       "lido",
       LidoConfigSchema,
-      reader
+      reader,
     );
   }
 
-  async getParsedConsensusGenesisState(): Promise<z.infer<typeof ParsedConsensusGenesisStateSchema>> {
+  async getParsedConsensusGenesisState(): Promise<
+    z.infer<typeof ParsedConsensusGenesisStateSchema>
+  > {
     const reader = await this.parsedConsensusGenesisState.getReader();
     return this.getProperties(
       {
@@ -107,17 +125,17 @@ export class State {
       },
       "parsedConsensusGenesisState",
       ParsedConsensusGenesisStateSchema,
-      reader
+      reader,
     );
   }
 
   async getWallet() {
-    let {wallet} = this.config;
+    let { wallet } = this.config;
 
     if (!wallet && this.config.walletMnemonic) {
       wallet = generateKeysFromMnemonicOnce(
         this.config.walletMnemonic,
-        WALLET_KEYS_COUNT
+        WALLET_KEYS_COUNT,
       );
     }
 
@@ -140,7 +158,7 @@ export class State {
     keys: { [K in keyof T]: string },
     group: keyof Config,
     schema: ZodSchema<T>,
-    dbReader: { get: (key: string) => any }
+    dbReader: { get: (key: string) => any },
   ): Promise<T> {
     const result: Partial<T> = {};
     const groupConfig = this.config[group] || {};

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { KURTOSIS_DEFAULT_PRESET } from "./constants.js";
+
 export const ChainConfigSchema = z.object({
   clPrivate: z.string().url(),
   clPublic: z.string().url(),
@@ -39,6 +41,10 @@ export const WalletSchema = z
   .array(z.object({ privateKey: z.string(), publicKey: z.string() }))
   .min(20, { message: "Wallet must have at least 20 items" });
 
+export const KurtosisSchema = z
+  .object({ preset: z.string() })
+  .default({ preset: KURTOSIS_DEFAULT_PRESET });
+
 export const WalletMnemonic = z.string();
 
 const ConfigSchema = z.object({
@@ -49,6 +55,7 @@ const ConfigSchema = z.object({
   walletMnemonic: WalletMnemonic.optional(),
   parsedConsensusGenesisState:
     ParsedConsensusGenesisStateSchema.partial().optional(),
+  kurtosis: KurtosisSchema.optional(),
 });
 
 type ChainConfig = z.infer<typeof ChainConfigSchema>;

@@ -1,18 +1,21 @@
-import { Command } from "@oclif/core";
-
-import { baseConfig } from "../../config/index.js";
+import {  command } from "../../lib/command/command.js";
 import { kurtosisApi } from "../../lib/kurtosis/index.js";
 
-export default class KurtosisUp extends Command {
-  static description = "Runs a specific Ethereum package in Kurtosis and updates local JSON database with the network information.";
+export const KurtosisUp = command.isomorphic({
+  description:
+    "Runs a specific Ethereum package in Kurtosis and updates local JSON database with the network information.",
+  params: {},
+  async handler({ logger, dre }) {
+    logger("Running Ethereum package in Kurtosis...");
+    const { name } = dre.network;
+    const { state } = dre;
 
-  async run() {
-    this.log("Running Ethereum package in Kurtosis...");
-    const {name} = baseConfig.network;
+    const { config } = await state.getKurtosis();
+
     const output = await kurtosisApi.runPackage(
       name,
       "github.com/ethpandaops/ethereum-package",
-      baseConfig.kurtosis.config
+      config,
     );
 
     if (
@@ -20,13 +23,11 @@ export default class KurtosisUp extends Command {
       output.interpretationError ||
       output.validationErrors.length > 0
     ) {
-      this.warn("An error occurred while starting the package.");
-      this.logJson(output);
-      this.error("Error happened while running network")
+      logger("An error occurred while starting the package.");
+      logger(output);
+      throw new Error("Error happened while running network");
     } else {
-      this.log("Package started successfully.");
+      logger("Package started successfully.");
     }
-
-    await this.config.runCommand("network:update")
-  }
-}
+  },
+});

@@ -2,6 +2,7 @@ import { Command as BaseCommand } from "@oclif/core";
 import { FlagInput } from "@oclif/core/interfaces";
 import { ZodError } from "zod";
 
+import { DEFAULT_NETWORK_NAME } from "../../config/constants.js";
 import { CustomDevNetContext, DevNetContext } from "./context.js";
 import { Params } from "./index.js";
 import { DevNetRuntimeEnvironment } from "./runtime-env.js";
@@ -22,7 +23,7 @@ export function formatZodErrors(error: ZodError): string {
 export class DevNetCommand extends BaseCommand {
   static baseFlags = {
     network: Params.string({
-      default: "my-devnet",
+      default: DEFAULT_NETWORK_NAME,
       description: "Name of the network",
       required: false,
     }),
