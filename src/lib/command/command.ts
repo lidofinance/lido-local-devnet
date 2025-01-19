@@ -1,11 +1,11 @@
-import { Command as BaseCommand, Flags } from "@oclif/core";
+import { Command as BaseCommand } from "@oclif/core";
+import { FlagInput } from "@oclif/core/interfaces";
 import { ZodError } from "zod";
 
 import { CustomDevNetContext, DevNetContext } from "./context.js";
+import { Params } from "./index.js";
 import { DevNetRuntimeEnvironment } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
-import { CustomOptions, FlagInput, OptionFlag } from "@oclif/core/interfaces";
-import { Params } from "./index.js";
 
 export function formatZodErrors(error: ZodError): string {
   return error.errors
@@ -20,10 +20,6 @@ export function formatZodErrors(error: ZodError): string {
 }
 
 export class DevNetCommand extends BaseCommand {
-  static originalParams: FlagInput
-
-  static isIsomorphicCommand: boolean = true
-
   static baseFlags = {
     network: Params.string({
       default: "my-devnet",
@@ -31,6 +27,10 @@ export class DevNetCommand extends BaseCommand {
       required: false,
     }),
   };
+
+  static isIsomorphicCommand: boolean = true;
+
+  static originalParams: FlagInput;
 
   protected ctx!: DevNetContext<typeof this.ctor>;
 
@@ -82,22 +82,22 @@ export class DevNetCommand extends BaseCommand {
 }
 type CommandOptions<F extends Record<string, any>> = {
   description: string;
-  params: F;
   handler: (ctx: CustomDevNetContext<F, typeof DevNetCommand>) => Promise<void>;
+  params: F;
 };
 
-export function command<F extends Record<string, any>>(
-  options: CommandOptions<F>,
-) {
+function isomorphic<F extends Record<string, any>>(options: CommandOptions<F>) {
   class WrappedCommand extends DevNetCommand {
     static description = options.description;
 
-    static originalParams = {
+    static flags = {
       ...DevNetCommand.baseFlags,
       ...options.params,
     };
 
-    static flags = {
+    static isIsomorphicCommand: boolean = true;
+
+    static originalParams = {
       ...DevNetCommand.baseFlags,
       ...options.params,
     };
@@ -109,3 +109,45 @@ export function command<F extends Record<string, any>>(
 
   return WrappedCommand;
 }
+
+function cli<F extends Record<string, any>>(options: CommandOptions<F>) {
+  class WrappedCommand extends DevNetCommand {
+    static description = options.description;
+
+    static flags = {
+      ...DevNetCommand.baseFlags,
+      ...options.params,
+    };
+
+    static isIsomorphicCommand: boolean = false;
+
+    static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {
+      await options.handler(ctx);
+    }
+  }
+
+  return WrappedCommand;
+}
+
+function hidden<F extends Record<string, any>>(options: CommandOptions<F>) {
+  class WrappedCommand extends DevNetCommand {
+    static description = options.description;
+
+    static flags = {
+      ...DevNetCommand.baseFlags,
+      ...options.params,
+    };
+
+    static hidden = true;
+
+    static isIsomorphicCommand: boolean = false;
+
+    static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {
+      await options.handler(ctx);
+    }
+  }
+
+  return WrappedCommand;
+}
+
+export const command = { cli, hidden, isomorphic };

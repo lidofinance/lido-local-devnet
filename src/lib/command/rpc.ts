@@ -1,6 +1,7 @@
+// eslint-disable-next-line import/no-named-as-default
 import fastifySwaggerUi from "@fastify/swagger-ui";
-
 import { Command } from "@oclif/core";
+
 import { DevNetCommand } from "./command.js";
 import { DevNetContext } from "./context.js";
 
@@ -59,7 +60,7 @@ export const createRPC = async (
       (Object.values(originalParams) as any)
         .filter((p: any) => p.required)
         .map((p: any) => p.key ?? p.name)
-        .filter((p: any) => !!p),
+        .filter(Boolean),
     );
 
     fastify.post(
@@ -78,7 +79,7 @@ export const createRPC = async (
                 required: (Object.values(originalParams) as any)
                   .filter((p: any) => p.required)
                   .map((p: any) => p.key ?? p.name)
-                  .filter((p: any) => !!p),
+                  .filter(Boolean),
               },
             },
             required: ["input"],

@@ -24,5 +24,5 @@ export class DevNetContext<T extends typeof BaseCommand> {
 
 export type CustomDevNetContext<F extends Record<string, any>, T extends typeof BaseCommand> = {
   dre: DevNetRuntimeEnvironment;
-  params: Interfaces.InferredFlags<F &(T)["baseFlags"]>;
+  params: Interfaces.InferredFlags<(T)["baseFlags"] &F>;
 };

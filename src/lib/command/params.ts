@@ -5,7 +5,7 @@ import { z } from "zod";
 function wrapWithAdditionalFields<T extends (...args: any[]) => any>(
   originalFunction: T,
   additionalFields: Record<string, any>,
-): (...funcArgs: Parameters<T>) => ReturnType<T> & Record<string, any> {
+): (...funcArgs: Parameters<T>) => Record<string, any> & ReturnType<T> {
   return (...args: Parameters<T>) => {
     const result = originalFunction(...args);
     return {
@@ -16,13 +16,13 @@ function wrapWithAdditionalFields<T extends (...args: any[]) => any>(
 }
 
 type ParamsParseOps = {
+  allowNo: boolean;
   char?: "n";
+  key: string;
+  paramParserType: keyof typeof ParamSchemas;
   required: boolean;
   summary: string;
-  allowNo: boolean;
   type: "string";
-  paramParserType: keyof typeof ParamSchemas;
-  key: string;
 };
 
 // const booleanParamSchema = z.boolean();
