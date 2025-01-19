@@ -1,33 +1,31 @@
-import { Command } from "@oclif/core";
 import { execa } from "execa";
 
-import { baseConfig, jsonDb } from "../../config/index.js";
+import { command } from "../../lib/command/command.js";
 
-export default class BlockscoutDown extends Command {
-  static description = "Stop Blockscout";
+export const BlockscoutDown = command.cli({
+  description: "Down Blockscout",
+  params: {},
+  async handler({ logger, dre }) {
+    logger("Stopping Blockscout...");
+    const { state, network } = dre;
 
-  async run() {
-    this.log("Stopping Blockscout...");
+    const blockScoutConfig = await state.getBlockScout();
+    const { elPrivate, grpcPrivate } = await state.getChain();
+
     try {
-      const state = await jsonDb.read();
-      const { network } = baseConfig;
-
-      const rpc = state.network?.binding?.elNodesPrivate?.[0];
-      const grpc = state.network?.binding?.elNodesGrpcPrivate?.[0];
-      const name = state.network?.binding?.name ?? network.name;
-
       await execa("docker", ["compose", "-f", "geth.yml", "down", "-v"], {
-        cwd: baseConfig.blockscout.paths.root,
+        cwd: blockScoutConfig.root,
         env: {
-          BLOCKSCOUT_RPC_URL: rpc,
-          BLOCKSCOUT_WS_RPC_URL: grpc,
-          DOCKER_NETWORK_NAME: `kt-${name}`,
+          BLOCKSCOUT_RPC_URL: elPrivate,
+          BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
+          DOCKER_NETWORK_NAME: `kt-${network.name}`,
         },
         stdio: "inherit",
       });
-      this.log("Blockscout stopped successfully.");
+      logger("Blockscout stopped successfully.");
     } catch (error: any) {
-      this.error(`Failed to stop Blockscout: ${error.message}`);
+      logger(`Failed to stop Blockscout: ${error.message}`);
+      throw error;
     }
-  }
-}
+  },
+});

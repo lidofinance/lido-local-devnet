@@ -21,6 +21,7 @@ import {
   ParsedConsensusGenesisStateSchema,
   WalletSchema,
 } from "./schemas.js";
+import { services } from "./services.js";
 import { sharedWallet } from "./shared-wallet.js";
 
 /**
@@ -45,6 +46,12 @@ export class State {
     this.parsedConsensusGenesisState = new JsonDb(
       path.join(artifactsRoot, PARSED_CONSENSUS_GENESIS_FILE),
     );
+  }
+
+  async getBlockScout() {
+    const baseConfig = services.blockscout;
+
+    return baseConfig;
   }
 
   async getChain(): Promise<z.infer<typeof ChainConfigSchema>> {
@@ -90,7 +97,10 @@ export class State {
 
     return {
       config: YAML.parse(
-        await readFile(path.join(KURTOSIS_ROOT, `${loadConfig.preset}.yml`), "utf-8"),
+        await readFile(
+          path.join(KURTOSIS_ROOT, `${loadConfig.preset}.yml`),
+          "utf-8",
+        ),
       ),
       loadConfig,
     };

@@ -1,5 +1,7 @@
 import {  command } from "../../lib/command/command.js";
 import { kurtosisApi } from "../../lib/kurtosis/index.js";
+import { DownloadKurtosisArtifacts } from "./artifacts.js";
+import { KurtosisUpdate } from "./update.js";
 
 export const KurtosisUp = command.isomorphic({
   description:
@@ -29,5 +31,8 @@ export const KurtosisUp = command.isomorphic({
     } else {
       logger("Package started successfully.");
     }
+
+    await KurtosisUpdate.exec(dre, {})
+    await DownloadKurtosisArtifacts.exec(dre, {})
   },
 });

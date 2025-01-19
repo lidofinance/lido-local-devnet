@@ -1,24 +1,24 @@
-import { Command } from "@oclif/core";
+import { command } from "../../lib/command/command.js";
+import { BlockscoutDown } from "./down.js";
+import { BlockscoutUp } from "./up.js";
 
-export default class RestartNodes extends Command {
-  static description = "Restart CL + EL nodes from scratch";
-
-  async run() {
-    this.log("Restarting the blockscout...");
+export const RestartNodes = command.isomorphic({
+  description: "Restart CL + EL nodes from scratch",
+  params: {},
+  async handler({ logger, dre }) {
+    logger("Restarting the blockscout...");
 
     try {
-      await this.config.runCommand("blockscout:down");
-      this.log("blockscout successfully stopped.");
+      await BlockscoutDown.exec(dre, {});
+      logger("blockscout successfully stopped.");
 
-      await this.config.runCommand("blockscout:clean");
-      this.log("blockscout data cleared.");
+      await BlockscoutUp.exec(dre, {});
+      logger("blockscout successfully started.");
 
-      await this.config.runCommand("blockscout:up");
-      this.log("blockscout successfully started.");
-
-      this.log("✅ blockscout restart completed successfully!");
-    } catch (error: any) {
-      this.error(`❌ blockscout restart failed: ${error.message}`);
+      logger("✅ blockscout restart completed successfully!");
+    } catch (error:any) {
+      logger(`❌ blockscout restart failed: ${error.message}`);
+      throw error;
     }
-  }
-}
+  },
+});
