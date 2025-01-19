@@ -41,7 +41,7 @@ export const VOTING_SCRIPTS_PATH = path.join(SUBMODULES_ROOT, "scripts");
 
 // dynamic
 
-export const ARTIFACTS_PATH = path.join(process.cwd(), "artifacts");
+export const ARTIFACTS_ROOT = path.join(process.cwd(), "artifacts");
 
 export const STATE_FILE = "state.json";
 export const PARSED_CONSENSUS_GENESIS_FILE =

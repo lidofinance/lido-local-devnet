@@ -1,15 +1,15 @@
-import { Command } from "@oclif/core";
-
-import { baseConfig, jsonDb } from "../../config/index.js";
+import { command } from "../../lib/command/command.js";
 import { kurtosisApi } from "../../lib/kurtosis/index.js";
 
-export default class KurtosisUpdate extends Command {
-  static description =
-    "Updates the network configuration using a specific Ethereum package in Kurtosis and stores the configuration in the local JSON database.";
+export const KurtosisUpdate = command.isomorphic({
+  description:
+    "Updates the network configuration using a specific Ethereum package in Kurtosis and stores the configuration in the local JSON database.",
+  params: {},
+  async handler({ logger, dre }) {
+    logger("Updating network configuration using Ethereum package in Kurtosis...");
 
-  async run() {
-    this.log("Updating network configuration using Ethereum package in Kurtosis...");
-    const {name} = baseConfig.network;
+    const { name } = dre.network;
+    const { state } = dre;
 
     const info = await kurtosisApi.getEnclaveInfo(name);
 
@@ -29,14 +29,13 @@ export default class KurtosisUpdate extends Command {
       validatorsApiPrivate: validators.map((n) => n.privateUrl),
     };
 
-    await jsonDb.update({
-      network: {
-        binding,
-        kurtosis: { services: info },
-        name,
-      },
+    await state.updateChain({
+      binding,
+      kurtosis: { services: info },
+      // TODO: move this record to artifacts init (create empty state with name)
+      name,
     });
 
-    this.log("Network configuration updated successfully and stored in the local JSON database.");
-  }
-}
+    logger("Network configuration updated successfully and stored in the local JSON database.");
+  },
+});

@@ -1,19 +1,20 @@
-import { Command } from "@oclif/core";
 import { execa } from "execa";
 
-import { jsonDb } from "../../config/index.js";
+import { command } from "../../lib/command/command.js";
 
-export class StartAnvil extends Command {
-  static description =
-    "Start Anvil in fork mode connected to a specified Ethereum node";
+export const StartAnvil = command.cli({
+  description:
+    "Start Anvil in fork mode connected to a specified Ethereum node",
+  params: {},
+  async handler({ logger, dre }) {
+    const { state } = dre;
 
-  public async run(): Promise<void> {
-    const state = await jsonDb.read();
+    const { elPublic } = await state.getChain();
 
-    const rpc = state.network?.binding?.elNodes?.[0];
+    logger(`Starting Anvil forking from: ${elPublic}...`);
 
-    this.log(`Starting Anvil forking from: ${rpc}...`);
-
-    await execa("anvil", ["--steps-tracing", "--fork-url", rpc], { stdio: "inherit" });
-  }
-}
+    await execa("anvil", ["--steps-tracing", "--fork-url", elPublic], {
+      stdio: "inherit",
+    });
+  },
+});

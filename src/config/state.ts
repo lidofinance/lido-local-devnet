@@ -6,7 +6,6 @@ import { ZodSchema, z } from "zod";
 import { JsonDb } from "../lib/state/index.js";
 import { generateKeysFromMnemonicOnce } from "../lib/wallet/index.js";
 import {
-  ARTIFACTS_PATH,
   KURTOSIS_ROOT,
   PARSED_CONSENSUS_GENESIS_FILE,
   STATE_FILE,
@@ -40,11 +39,11 @@ export class State {
   private config: Config;
   private parsedConsensusGenesisState: JsonDb;
 
-  constructor(network: string, rawConfig: unknown) {
+  constructor(rawConfig: unknown, artifactsRoot: string) {
     this.config = ConfigValidator.validate(rawConfig);
-    this.appState = new JsonDb(path.join(ARTIFACTS_PATH, network, STATE_FILE));
+    this.appState = new JsonDb(path.join(artifactsRoot, STATE_FILE));
     this.parsedConsensusGenesisState = new JsonDb(
-      path.join(ARTIFACTS_PATH, network, PARSED_CONSENSUS_GENESIS_FILE),
+      path.join(artifactsRoot, PARSED_CONSENSUS_GENESIS_FILE),
     );
   }
 
@@ -53,11 +52,11 @@ export class State {
     return this.getProperties(
       {
         clPrivate: "chain.binding.clNodesPrivate.0",
-        clPublic: "network.binding.clNodes.0",
+        clPublic: "chain.binding.clNodes.0",
         elPrivate: "chain.binding.elNodesPrivate.0",
-        elPublic: "network.binding.elNodes.0",
-        grpcPublic: "network.binding.elNodesGrpc.0",
-        grpcPrivate: "network.binding.elNodesGrpcPrivate.0",
+        elPublic: "chain.binding.elNodes.0",
+        grpcPublic: "chain.binding.elNodesGrpc.0",
+        grpcPrivate: "chain.binding.elNodesGrpcPrivate.0",
       },
       "chain",
       ChainConfigSchema,

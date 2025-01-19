@@ -1,7 +1,8 @@
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, rm } from "node:fs/promises";
+import path from "node:path";
 import * as YAML from "yaml";
 
-import { USER_CONFIG_PATH } from "../../config/constants.js";
+import { ARTIFACTS_ROOT, USER_CONFIG_PATH } from "../../config/constants.js";
 import { State } from "../../config/state.js";
 
 export const loadUserConfig = async () =>
@@ -14,13 +15,38 @@ class Network {
   }
 }
 
+class Artifacts {
+  root: string;
+  constructor(network: string) {
+    this.root = path.join(ARTIFACTS_ROOT, network);
+  }
+
+  static async getNew(network: string) {
+    const artifacts = new Artifacts(network);
+
+    await artifacts.createRootDir();
+
+    return artifacts;
+  }
+
+  public async clean() {
+    await rm(this.root, { force: true, recursive: true });
+  }
+
+  private async createRootDir() {
+    await mkdir(this.root, { recursive: true });
+  }
+}
+
 export class DevNetRuntimeEnvironment {
+  artifacts: Artifacts;
   network: Network;
   state: State;
 
-  constructor(network: string, rawConfig: unknown) {
-    this.state = new State(network, rawConfig);
+  constructor(network: string, rawConfig: unknown, artifacts: Artifacts) {
+    this.state = new State(rawConfig, artifacts.root);
     this.network = new Network(network);
+    this.artifacts = artifacts;
   }
 
   static async getNew(network: string) {
@@ -31,6 +57,8 @@ export class DevNetRuntimeEnvironment {
     const networkConfig =
       userConfig?.networks?.find((net: any) => net?.name === network) ?? {};
 
-    return new DevNetRuntimeEnvironment(network, networkConfig);
+    const artifacts = await Artifacts.getNew(network);
+
+    return new DevNetRuntimeEnvironment(network, networkConfig, artifacts);
   }
 }

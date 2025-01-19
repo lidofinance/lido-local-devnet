@@ -1,19 +1,17 @@
-import { Command } from "@oclif/core";
-import fs from "node:fs/promises";
-
-import { baseConfig, jsonDb } from "../../config/index.js";
+import { command } from "../../lib/command/command.js";
 import { kurtosisApi } from "../../lib/kurtosis/index.js";
 
-export default class KurtosisCleanUp extends Command {
-  static description = "Destroys the Kurtosis enclave, cleans the JSON database, and removes network artifacts.";
+export const KurtosisCleanUp = command.isomorphic({
+  description:
+    "Destroys the Kurtosis enclave, cleans the JSON database, and removes network artifacts.",
+  params: {},
+  async handler({ logger, dre }) {
+    logger("Destroying Kurtosis enclave...");
 
-  async run() {
-    this.log("Destroying Kurtosis enclave...");
-    await kurtosisApi.destroyEnclave(baseConfig.network.name);
-    this.log("Cleaning JSON database...");
-    await jsonDb.clean();
-    this.log("Removing network artifacts...");
-    await fs.rm(baseConfig.artifacts.paths.root, { force: true, recursive: true });
-    this.log("Cleanup completed successfully.");
-  }
-}
+    await kurtosisApi.destroyEnclave(dre.network.name);
+
+    logger("Removing network artifacts...");
+    await dre.artifacts.clean();
+    logger("Cleanup completed successfully.");
+  },
+});
