@@ -17,6 +17,8 @@ function arrayToObject<T extends typeof DevNetCommand>(
 export default class DevNetConfig extends DevNetCommand {
   static description = "Print public DevNet config";
 
+  static isIsomorphicCommand: boolean = false;
+
   public async run(): Promise<void> {
     // TODO: read load source
     const classesLoader = this.config.commands.map(async (cmd) => cmd.load());
