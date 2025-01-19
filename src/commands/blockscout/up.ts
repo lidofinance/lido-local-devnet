@@ -1,5 +1,6 @@
 import { execa } from "execa";
 
+import { services } from "../../config/services.js";
 import { command } from "../../lib/command/command.js";
 import { getPublicPortAndService } from "../../lib/docker/index.js";
 
@@ -10,12 +11,12 @@ export const BlockscoutUp = command.cli({
     logger("Starting Blockscout...");
     const { state, network } = dre;
 
-    const blockScoutConfig = await state.getBlockScout();
+    // const blockScoutConfig = await state.getBlockScout();
     const { elPrivate, grpcPrivate } = await state.getChain();
 
     try {
       await execa("docker", ["compose", "-f", "geth.yml", "up", "-d"], {
-        cwd: blockScoutConfig.root,
+        cwd: services.blockscout.root,
         env: {
           BLOCKSCOUT_RPC_URL: elPrivate,
           BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
@@ -25,25 +26,28 @@ export const BlockscoutUp = command.cli({
       });
 
       const info = await getPublicPortAndService(80, "kt-" + network.name);
-      const publicUrl = `localhost:${info.publicPort}`;
+      const apiHost = `localhost:${info.publicPort}`;
+      const publicUrl = `http://${apiHost}`;
 
       await execa(
         "docker",
         ["compose", "-f", "geth.yml", "up", "-d", "frontend"],
         {
-          cwd: blockScoutConfig.root,
+          cwd: services.blockscout.root,
           env: {
             BLOCKSCOUT_RPC_URL: elPrivate,
             BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
-            NEXT_PUBLIC_API_HOST: publicUrl,
-            NEXT_PUBLIC_APP_HOST: publicUrl,
+            NEXT_PUBLIC_API_HOST: apiHost,
+            NEXT_PUBLIC_APP_HOST: apiHost,
             DOCKER_NETWORK_NAME: `kt-${network.name}`,
           },
           stdio: "inherit",
         },
       );
 
-      logger(`Blockscout started successfully on URL: http://${publicUrl}`);
+      logger(`Blockscout started successfully on URL: ${publicUrl}`);
+
+      await state.updateBlockScout({ url: publicUrl, api: `${publicUrl}/api` });
     } catch (error: any) {
       logger(`Failed to start Blockscout: ${error.message}`);
       throw error;

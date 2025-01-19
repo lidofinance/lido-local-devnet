@@ -2,6 +2,12 @@ import { z } from "zod";
 
 import { KURTOSIS_DEFAULT_PRESET } from "./constants.js";
 
+export const BlockScoutSchema = z.object({
+  url: z.string().url(),
+  // http://localhost:3080/api
+  api: z.string().url()
+})
+
 export const ChainConfigSchema = z.object({
   clPrivate: z.string().url(),
   clPublic: z.string().url(),
@@ -56,6 +62,7 @@ const ConfigSchema = z.object({
   parsedConsensusGenesisState:
     ParsedConsensusGenesisStateSchema.partial().optional(),
   kurtosis: KurtosisSchema.optional(),
+  blockscout: BlockScoutSchema.optional()
 });
 
 type ChainConfig = z.infer<typeof ChainConfigSchema>;

@@ -1,5 +1,6 @@
 import { execa } from "execa";
 
+import { services } from "../../config/services.js";
 import { command } from "../../lib/command/command.js";
 
 export const BlockscoutDown = command.cli({
@@ -9,12 +10,12 @@ export const BlockscoutDown = command.cli({
     logger("Stopping Blockscout...");
     const { state, network } = dre;
 
-    const blockScoutConfig = await state.getBlockScout();
+    // const blockScoutConfig = await state.getBlockScout();
     const { elPrivate, grpcPrivate } = await state.getChain();
 
     try {
       await execa("docker", ["compose", "-f", "geth.yml", "down", "-v"], {
-        cwd: blockScoutConfig.root,
+        cwd: services.blockscout.root,
         env: {
           BLOCKSCOUT_RPC_URL: elPrivate,
           BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
@@ -24,6 +25,8 @@ export const BlockscoutDown = command.cli({
       });
       
       logger("Blockscout stopped successfully.");
+
+      await state.updateBlockScout({});
     } catch (error: any) {
       logger(`Failed to stop Blockscout: ${error.message}`);
       throw error;

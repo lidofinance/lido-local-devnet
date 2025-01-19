@@ -12,6 +12,7 @@ import {
   WALLET_KEYS_COUNT,
 } from "./constants.js";
 import {
+  BlockScoutSchema,
   CSMConfigSchema,
   ChainConfigSchema,
   Config,
@@ -21,7 +22,6 @@ import {
   ParsedConsensusGenesisStateSchema,
   WalletSchema,
 } from "./schemas.js";
-import { services } from "./services.js";
 import { sharedWallet } from "./shared-wallet.js";
 
 /**
@@ -48,10 +48,19 @@ export class State {
     );
   }
 
-  async getBlockScout() {
-    const baseConfig = services.blockscout;
+  async getBlockScout(): Promise<z.infer<typeof BlockScoutSchema>> {
+    // const baseConfig = services.blockscout;
 
-    return baseConfig;
+    const reader = await this.appState.getReader();
+    return this.getProperties(
+      {
+        url: "blockscout.url",
+        api: "blockscout.api",
+      },
+      "blockscout",
+      BlockScoutSchema,
+      reader,
+    );
   }
 
   async getChain(): Promise<z.infer<typeof ChainConfigSchema>> {
@@ -149,6 +158,10 @@ export class State {
     }
 
     return WalletSchema.parseAsync(wallet ?? sharedWallet);
+  }
+
+  async updateBlockScout(jsonData: unknown) {
+    await this.appState.update({ blockscout: jsonData });
   }
 
   async updateChain(jsonData: unknown) {
