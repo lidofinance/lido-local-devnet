@@ -1,11 +1,15 @@
-export type ServiceConfig = {
-  root: string;
-};
+// type ServiceConfig = {
+//   config?: string;
+//   repository?: string;
+// };
 
-//  type ServiceConfigs = Record<string, ServiceConfig>
+// type ServiceConfigs<T extends Record<string, ServiceConfig>> = {
+//   [K in keyof T]: T[K];
+// };
 
-export const services = {
+export const devNetServices = {
   blockscout: {
-    root: "services/blockscout",
+    config: "services/blockscout",
+    name: "blockscout" as const
   },
 };
