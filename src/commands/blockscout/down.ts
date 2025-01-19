@@ -13,20 +13,16 @@ export const BlockscoutDown = command.cli({
     const { elPrivate, grpcPrivate } = await state.getChain();
 
     try {
-      await execa(
-        "docker",
-        ["compose", "-p", network.name, "-f", "geth.yml", "down", "-v"],
-        {
-          cwd: artifacts.services.blockscout.root,
-          env: {
-            BLOCKSCOUT_RPC_URL: elPrivate,
-            BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
-            DOCKER_NETWORK_NAME: `kt-${network.name}`,
-            COMPOSE_PROJECT_NAME: `blockscout-${network.name}`,
-          },
-          stdio: "inherit",
+      await execa("docker", ["compose", "-f", "geth.yml", "down", "-v"], {
+        cwd: artifacts.services.blockscout.root,
+        env: {
+          BLOCKSCOUT_RPC_URL: elPrivate,
+          BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
+          DOCKER_NETWORK_NAME: `kt-${network.name}`,
+          COMPOSE_PROJECT_NAME: `blockscout-${network.name}`,
         },
-      );
+        stdio: "inherit",
+      });
 
       logger("Blockscout stopped successfully.");
 
