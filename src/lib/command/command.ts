@@ -4,6 +4,8 @@ import { ZodError } from "zod";
 import { CustomDevNetContext, DevNetContext } from "./context.js";
 import { DevNetRuntimeEnvironment } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
+import { CustomOptions, FlagInput, OptionFlag } from "@oclif/core/interfaces";
+import { Params } from "./index.js";
 
 export function formatZodErrors(error: ZodError): string {
   return error.errors
@@ -18,8 +20,12 @@ export function formatZodErrors(error: ZodError): string {
 }
 
 export class DevNetCommand extends BaseCommand {
+  static originalParams: FlagInput
+
+  static isIsomorphicCommand: boolean = true
+
   static baseFlags = {
-    network: Flags.string({
+    network: Params.string({
       default: "my-devnet",
       description: "Name of the network",
       required: false,
@@ -31,10 +37,11 @@ export class DevNetCommand extends BaseCommand {
   public static async exec<F extends typeof DevNetCommand>(
     this: F,
     dre: DevNetRuntimeEnvironment,
-    flags: Omit<ExtractFlags<F>, "network">,
+    params: Omit<ExtractFlags<F>, "network">,
   ): Promise<void> {
-    const flagsWithNetwork = { ...flags, network: dre.name };
-    await this.handler(new DevNetContext({ dre, flags: flagsWithNetwork }));
+    // TODO: pass json param
+    const paramsWithNetwork = { ...params, network: dre.name };
+    await this.handler(new DevNetContext({ dre, params: paramsWithNetwork }));
   }
 
   public static handler(
@@ -53,18 +60,18 @@ export class DevNetCommand extends BaseCommand {
 
   public async init(): Promise<void> {
     await super.init();
-    const { flags } = await this.parse({
+    const { flags: params } = await this.parse({
       args: this.ctor.args,
       baseFlags: (this.ctor as typeof DevNetCommand).baseFlags,
       flags: this.ctor.flags,
       strict: this.ctor.strict,
     });
 
-    const dre = await DevNetRuntimeEnvironment.getNew(flags.network);
+    const dre = await DevNetRuntimeEnvironment.getNew(params.network);
 
     this.ctx = new DevNetContext({
       dre,
-      flags,
+      params,
     });
   }
 
@@ -75,7 +82,7 @@ export class DevNetCommand extends BaseCommand {
 }
 type CommandOptions<F extends Record<string, any>> = {
   description: string;
-  flags: F;
+  params: F;
   handler: (ctx: CustomDevNetContext<F, typeof DevNetCommand>) => Promise<void>;
 };
 
@@ -85,14 +92,14 @@ export function command<F extends Record<string, any>>(
   class WrappedCommand extends DevNetCommand {
     static description = options.description;
 
-    static __devnet_container = {
+    static originalParams = {
       ...DevNetCommand.baseFlags,
-      ...options.flags,
+      ...options.params,
     };
 
     static flags = {
       ...DevNetCommand.baseFlags,
-      ...options.flags,
+      ...options.params,
     };
 
     static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {

@@ -6,17 +6,17 @@ import { ExtractFlags } from "./types.js";
 export class DevNetContext<T extends typeof BaseCommand> {
   // public args: ExtractArgs<T>;
   public dre: DevNetRuntimeEnvironment;
-  public flags: ExtractFlags<T>;
+  public params: ExtractFlags<T>;
   // public runCommand: (id: string, argv?: string[]) => Promise<void>;
 
   constructor(options: {
     // args: ExtractArgs<T>;
     dre: DevNetRuntimeEnvironment;
-    flags: ExtractFlags<T>;
+    params: ExtractFlags<T>;
     // runCommand: (id: string, argv?: string[]) => Promise<void>;
   }) {
     // this.args = options.args;
-    this.flags = options.flags;
+    this.params = options.params;
     this.dre = options.dre;
     // this.runCommand = options.runCommand;
   }
@@ -24,5 +24,5 @@ export class DevNetContext<T extends typeof BaseCommand> {
 
 export type CustomDevNetContext<F extends Record<string, any>, T extends typeof BaseCommand> = {
   dre: DevNetRuntimeEnvironment;
-  flags: Interfaces.InferredFlags<F &(T)["baseFlags"]>;
+  params: Interfaces.InferredFlags<F &(T)["baseFlags"]>;
 };
