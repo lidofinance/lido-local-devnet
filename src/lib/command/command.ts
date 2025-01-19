@@ -81,7 +81,7 @@ type CommandOptions<F extends Record<string, any>> = {
 
 export function command<F extends Record<string, any>>(
   options: CommandOptions<F>,
-): typeof DevNetCommand & { flags: F } {
+) {
   class WrappedCommand extends DevNetCommand {
     static description = options.description;
 
@@ -100,5 +100,5 @@ export function command<F extends Record<string, any>>(
     }
   }
 
-  return WrappedCommand as typeof DevNetCommand & { flags: F };
+  return WrappedCommand;
 }
