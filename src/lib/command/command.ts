@@ -1,7 +1,7 @@
 import { Command as BaseCommand, Flags } from "@oclif/core";
 import { ZodError } from "zod";
 
-import { DevNetContext } from "./context.js";
+import { CustomDevNetContext, DevNetContext } from "./context.js";
 import { DevNetRuntimeEnvironment } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
 
@@ -33,7 +33,7 @@ export class DevNetCommand extends BaseCommand {
     dre: DevNetRuntimeEnvironment,
     flags: Omit<ExtractFlags<F>, "network">,
   ): Promise<void> {
-    const flagsWithNetwork = {...flags, network: dre.name}
+    const flagsWithNetwork = { ...flags, network: dre.name };
     await this.handler(new DevNetContext({ dre, flags: flagsWithNetwork }));
   }
 
@@ -73,5 +73,32 @@ export class DevNetCommand extends BaseCommand {
     await ctor.handler(this.ctx);
   }
 }
+type CommandOptions<F extends Record<string, any>> = {
+  description: string;
+  flags: F;
+  handler: (ctx: CustomDevNetContext<F, typeof DevNetCommand>) => Promise<void>;
+};
 
-export { Flags } from "@oclif/core";
+export function command<F extends Record<string, any>>(
+  options: CommandOptions<F>,
+): typeof DevNetCommand & { flags: F } {
+  class WrappedCommand extends DevNetCommand {
+    static description = options.description;
+
+    static __devnet_container = {
+      ...DevNetCommand.baseFlags,
+      ...options.flags,
+    };
+
+    static flags = {
+      ...DevNetCommand.baseFlags,
+      ...options.flags,
+    };
+
+    static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {
+      await options.handler(ctx);
+    }
+  }
+
+  return WrappedCommand as typeof DevNetCommand & { flags: F };
+}

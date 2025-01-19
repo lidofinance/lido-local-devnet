@@ -1,4 +1,4 @@
-import { Command as BaseCommand } from "@oclif/core";
+import { Command as BaseCommand, Interfaces } from "@oclif/core";
 
 import { DevNetRuntimeEnvironment } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
@@ -21,3 +21,8 @@ export class DevNetContext<T extends typeof BaseCommand> {
     // this.runCommand = options.runCommand;
   }
 }
+
+export type CustomDevNetContext<F extends Record<string, any>, T extends typeof BaseCommand> = {
+  dre: DevNetRuntimeEnvironment;
+  flags: Interfaces.InferredFlags<F &(T)["baseFlags"]>;
+};
