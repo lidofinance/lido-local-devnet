@@ -5,6 +5,8 @@ export const ChainConfigSchema = z.object({
   clPublic: z.string().url(),
   elPrivate: z.string().url(),
   elPublic: z.string().url(),
+  grpcPublic: z.string().url(),
+  grpcPrivate: z.string().url(),
 });
 
 export const ParsedConsensusGenesisStateSchema = z.object({

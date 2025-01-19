@@ -52,6 +52,8 @@ export class State {
         clPublic: "network.binding.clNodes.0",
         elPrivate: "chain.binding.elNodesPrivate.0",
         elPublic: "network.binding.elNodes.0",
+        grpcPublic: "network.binding.elNodesGrpc.0",
+        grpcPrivate: "network.binding.elNodesGrpcPrivate.0",
       },
       "chain",
       ChainConfigSchema,
