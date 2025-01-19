@@ -60,7 +60,7 @@ export const createRPC = async (
     const schemaProperties = (Object.entries(paramsWithKey) as any).reduce(
       (acc: any, [key, param]: any[]) => {
         acc[key] = {
-          type: param.paramParserType || "string", // Укажите дефолтный тип, если `paramParserType` отсутствует
+          type: param.paramParserType || "string",
           description: param.summary || "No description provided",
         };
         return acc;

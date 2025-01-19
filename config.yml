@@ -1,0 +1,51 @@
+networks:
+  - name: devnet4
+    chain:
+      elPrivate: "http://localhost:8545"
+      clPrivate: "http://localhost:5052"
+      elPublic: "http://localhost:8546"
+      clPublic: "http://localhost:5053"
+    lido:
+      agent: "0xAgentAddress"
+      voting: "0xVotingAddress"
+      tokenManager: "0xTokenManagerAddress"
+      sanityChecker: "0xSanityCheckerAddress"
+      accountingOracle: "0xAccountingOracleAddress"
+      validatorExitBus: "0xValidatorExitBusAddress"
+      locator: "0xLocatorAddress"
+    csm:
+      accounting: "0xAccountingAddress"
+      earlyAdoption: true
+      feeDistributor: 100
+      feeOracle: "0xFeeOracleAddress"
+      module: "0xModuleAddress"
+      verifier: "0xVerifierAddress"
+      gateSeal: "0xGateSealAddress"
+      hashConsensus: "0xHashConsensusAddress"
+      lidoLocator: "0xLidoLocatorAddress"
+    walletMnemonic: test test test test test test test test test test test junk
+
+  - name: testnet1
+    chain:
+      elPrivate: "http://testnet1:8545"
+      clPrivate: "http://testnet1:5052"
+      elPublic: "http://testnet1:8546"
+      clPublic: "http://testnet1:5053"
+    lido:
+      agent: "0xTestnetAgentAddress"
+      voting: "0xTestnetVotingAddress"
+      tokenManager: "0xTestnetTokenManagerAddress"
+      sanityChecker: "0xTestnetSanityCheckerAddress"
+      accountingOracle: "0xTestnetAccountingOracleAddress"
+      validatorExitBus: "0xTestnetValidatorExitBusAddress"
+      locator: "0xTestnetLocatorAddress"
+    csm:
+      accounting: "0xTestnetAccountingAddress"
+      earlyAdoption: false
+      feeDistributor: 200
+      feeOracle: "0xTestnetFeeOracleAddress"
+      module: "0xTestnetModuleAddress"
+      verifier: "0xTestnetVerifierAddress"
+      gateSeal: "0xTestnetGateSealAddress"
+      hashConsensus: "0xTestnetHashConsensusAddress"
+      lidoLocator: "0xTestnetLidoLocatorAddress"
