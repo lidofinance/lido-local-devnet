@@ -27,7 +27,7 @@ export default class EnactPectraVoting extends Command {
     await this.config.runCommand("voting:install");
 
     const cwd = baseConfig.voting.paths.root;
-    // brownie run scripts/pectra_upgrade.py --network=devnet4
+    // brownie run scripts/before_pectra_upgrade.py --network=devnet4
 
     await this.config.runCommand("voting:prepare-pectra");
 
@@ -37,7 +37,7 @@ export default class EnactPectraVoting extends Command {
         "run",
         "brownie",
         "run",
-        "scripts/pectra_upgrade.py",
+        "scripts/before_pectra_upgrade.py",
         "--network=devnet4",
       ],
       {
