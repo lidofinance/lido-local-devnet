@@ -48,8 +48,8 @@ export default class OracleUp extends Command {
       LIDO_LOCATOR_ADDRESS: locator,
       CSM_MODULE_ADDRESS: csmModule,
 
-      MEMBER_PRIV_KEY_1: baseConfig.sharedWallet[10]['privateKey'],
-      MEMBER_PRIV_KEY_2: baseConfig.sharedWallet[11]['privateKey'],
+      MEMBER_PRIV_KEY_1: baseConfig.oracle.wallet[0].privateKey,
+      MEMBER_PRIV_KEY_2: baseConfig.oracle.wallet[1].privateKey,
       PINATA_JWT: '',
       GW3_ACCESS_KEY: process.env.CSM_ORACLE_GW3_ACCESS_KEY ?? '',
       GW3_SECRET_KEY: process.env.CSM_ORACLE_GW3_SECRET_KEY ?? '',

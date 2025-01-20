@@ -21,6 +21,7 @@ export default class KurtosisUp extends Command {
     ) {
       this.warn("An error occurred while starting the package.");
       this.logJson(output);
+      this.error("Error happened while running network")
     } else {
       this.log("Package started successfully.");
     }

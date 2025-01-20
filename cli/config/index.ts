@@ -19,20 +19,41 @@ const KURTOSIS_ROOT = path.join(process.cwd(), "devnet-kurtosis");
 const KURTOSIS_CONFIG_PATH = path.join(KURTOSIS_ROOT, "/configs/devnet4.yml");
 const KURTOSIS_CONFIG = YAML.parse(readFileSync(KURTOSIS_CONFIG_PATH, "utf-8"));
 const KURTOSIS_PRESET = KURTOSIS_CONFIG?.network_params?.preset;
+const ELECTRA_FORK_EPOCH = KURTOSIS_CONFIG?.network_params
+  ?.electra_fork_epoch as number;
+// const ELECTRA_FORK_EPOCH = 0;
 
-const VALIDATOR_COMPOSE_DIR = path.join(process.cwd(), "devnet-dc", "validator-teku");
+const VALIDATOR_COMPOSE_DIR = path.join(
+  process.cwd(),
+  "devnet-dc",
+  "validator-teku"
+);
 
 assert(
   KURTOSIS_PRESET !== undefined,
   "Please install preset in Kurtosis config (network_params.preset = mainnet|minimal)"
 );
+
+assert(
+  ELECTRA_FORK_EPOCH !== undefined,
+  "Please install electra_fork_epoch in Kurtosis config"
+);
+
 const KURTOSIS_IS_MINIMAL_MODE = KURTOSIS_PRESET === "minimal";
 const SLOTS_PER_EPOCH = KURTOSIS_IS_MINIMAL_MODE ? 8 : 32;
 
 const DORA_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "dora");
 const KAPI_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "kapi");
-const ORACLE_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "oracle");
-const ASSERTOOR_ROOT = path.join(process.cwd(), NETWORK_BOOTSTRAP_VERSION, "assertoor");
+const ORACLE_ROOT = path.join(
+  process.cwd(),
+  NETWORK_BOOTSTRAP_VERSION,
+  "oracle"
+);
+const ASSERTOOR_ROOT = path.join(
+  process.cwd(),
+  NETWORK_BOOTSTRAP_VERSION,
+  "assertoor"
+);
 
 const BLOCKSCOUT_ROOT = path.join(
   process.cwd(),
@@ -43,14 +64,17 @@ const ONCHAIN_ROOT = path.join(process.cwd(), "onchain");
 const CSM_ROOT = path.join(ONCHAIN_ROOT, "csm");
 const OFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
 const DEPOSIT_CLI_ROOT = path.join(OFCHAIN_ROOT, "staking-deposit-cli");
-const SHARED_WALLET_ADDRESS = "0x123463a4b065722e99115d6c222f267d9cabb524";
-const SHARED_PK =
-  "0x2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622";
+
 const EL_URL = "http://localhost:8545";
 const CL_URL = "http://localhost:3500";
 
 const ARTIFACTS_PATH = path.join(process.cwd(), "artifacts");
 const STATE_DB_PATH = path.join(ARTIFACTS_PATH, "state.json");
+
+const LIDO_ORACLES = [sharedWallet[10], sharedWallet[11], sharedWallet[12]];
+
+const OFFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
+const SCRIPTS_PATH = path.join(OFFCHAIN_ROOT, "scripts");
 
 export const jsonDb = new JsonDb(STATE_DB_PATH);
 export const parsedConsensusGenesis = new JsonDb(
@@ -63,7 +87,12 @@ export const validatorsState = new JsonDb(
 export const baseConfig = {
   validator: {
     paths: {
-      docker: VALIDATOR_COMPOSE_DIR
+      docker: VALIDATOR_COMPOSE_DIR,
+    },
+  },
+  voting: {
+    paths: {
+      root: SCRIPTS_PATH
     }
   },
   artifacts: {
@@ -73,6 +102,11 @@ export const baseConfig = {
       genesis: path.join(ARTIFACTS_PATH, "network", "genesis.json"),
       clConfig: path.join(ARTIFACTS_PATH, "network", "config.yaml"),
       validator: path.join(ARTIFACTS_PATH, "validator"),
+      validatorDocker: path.join(
+        ARTIFACTS_PATH,
+        "validator_docker",
+        "validator_keys"
+      ),
       validatorKeysDump: path.join(ARTIFACTS_PATH, "validator", "dump"),
       validatorGenerated: path.join(ARTIFACTS_PATH, "validator-generated"),
     },
@@ -81,8 +115,8 @@ export const baseConfig = {
     castPath: `${process.env.HOME}/.foundry/bin/cast`,
   },
   wallet: {
-    address: SHARED_WALLET_ADDRESS,
-    sharedPk: SHARED_PK,
+    address: sharedWallet[0].publicKey,
+    privateKey: sharedWallet[0].privateKey,
   },
   kurtosis: {
     paths: {
@@ -104,25 +138,27 @@ export const baseConfig = {
     paths: {
       root: NETWORK_ROOT,
     },
+    ELECTRA_FORK_EPOCH,
   },
   kapi: {
     paths: {
       root: KAPI_ROOT,
-      ofchain: path.join(OFCHAIN_ROOT, 'kapi'),
-      dockerfile: path.join(OFCHAIN_ROOT, 'kapi', "Dockerfile")
-    }
+      ofchain: path.join(OFCHAIN_ROOT, "kapi"),
+      dockerfile: path.join(OFCHAIN_ROOT, "kapi", "Dockerfile"),
+    },
   },
   assertoor: {
     paths: {
       root: ASSERTOOR_ROOT,
-    }
+    },
   },
   oracle: {
     paths: {
       root: ORACLE_ROOT,
-      ofchain: path.join(OFCHAIN_ROOT, 'oracle-v5'),
-      dockerfile: path.join(OFCHAIN_ROOT, 'oracle-v5', "Dockerfile")
-    }
+      ofchain: path.join(OFCHAIN_ROOT, "oracle-v5"),
+      dockerfile: path.join(OFCHAIN_ROOT, "oracle-v5", "Dockerfile"),
+    },
+    wallet: LIDO_ORACLES,
   },
   dora: {
     url: "http://localhost:3070",
@@ -178,10 +214,10 @@ export const baseConfig = {
           EVM_SCRIPT_EXECUTOR_ADDRESS: "",
           // Address of the first administrator, usually a Dev team EOA
           CSM_FIRST_ADMIN_ADDRESS: sharedWallet[0].publicKey,
-          // First oracle member address
-          CSM_ORACLE_1_ADDRESS: sharedWallet[14].publicKey,
-          // Second oracle member address
-          CSM_ORACLE_2_ADDRESS: sharedWallet[15].publicKey,
+          // oracle member addresses
+          CSM_ORACLE_1_ADDRESS: LIDO_ORACLES[0].publicKey,
+          CSM_ORACLE_2_ADDRESS: LIDO_ORACLES[1].publicKey,
+          CSM_ORACLE_3_ADDRESS: LIDO_ORACLES[2].publicKey,
           // Address of the second administrator, usually a Dev team EOA
           CSM_SECOND_ADMIN_ADDRESS: sharedWallet[1].publicKey,
           // Lido's locator address
@@ -201,6 +237,7 @@ export const baseConfig = {
           DEVNET_CHAIN_ID: CHAIN_ID,
           VERIFIER_API_KEY: "local-testnet",
           DEVNET_SLOTS_PER_EPOCH: "8",
+          DEVNET_ELECTRA_EPOCH: "",
         },
       },
     },
@@ -211,6 +248,13 @@ export const baseConfig = {
         root: path.join(OFCHAIN_ROOT, "lido-cli"),
         configs: path.join(OFCHAIN_ROOT, "lido-cli", "configs"),
         activateCSM: path.join(OFCHAIN_ROOT, "lido-cli", "configs"),
+        // ofchain/lido-cli/configs/extra-deployed-local-devnet.json
+        extraDataConfig: path.join(
+          OFCHAIN_ROOT,
+          "lido-cli",
+          "configs",
+          "extra-deployed-local-devnet.json"
+        ),
       },
       activate: {
         env: {
@@ -219,13 +263,14 @@ export const baseConfig = {
           EL_NETWORK_NAME: "local-devnet",
           PRIVATE_KEY: sharedWallet[0].privateKey,
         },
-        oracles: [sharedWallet[10], sharedWallet[11], sharedWallet[12]],
+        oracles: LIDO_ORACLES,
         councils: [sharedWallet[12], sharedWallet[13]],
       },
       activateCSM: {
         CS_MODULE_ADDRESS: "",
         CS_ACCOUNTING_ADDRESS: "",
         CS_ORACLE_HASH_CONSENSUS_ADDRESS: "",
+        CS_ORACLE_INITIAL_EPOCH: "60",
       },
     },
   },

@@ -38,13 +38,86 @@ export default class DevNetUp extends Command {
           args.push("--verify");
           this.log("Smart contract verification is enabled.");
         }
-
         // Deploy specific smart contracts with optional verification
+        this.log("Deploy Lido Core contracts.");
         await this.config.runCommand("onchain:lido:deploy", args);
         this.log("Lido contracts deployed.");
 
+        this.log("Deploy CSM contracts.");
         await this.config.runCommand("onchain:csm:deploy", args);
         this.log("CSM contracts deployed.");
+
+        this.log("Activate Lido Core protocol.");
+        await this.config.runCommand("onchain:lido:activate");
+        this.log("Lido Core protocol activated.");
+
+        this.log("Activate CSM protocol.");
+        await this.config.runCommand("onchain:csm:activate");
+        this.log("CSM protocol activated.");
+
+        this.log("Replaces the DSM with an EOA.");
+        await this.config.runCommand("onchain:lido:replace-dsm");
+
+        const NOR_DEVNET_OPERATOR = "devnet_nor_1";
+        const CSM_DEVNET_OPERATOR = "devnet_csm_1";
+
+        this.log("Generate keys for NOR Module.");
+        await this.config.runCommand("lido:keys:generate");
+        this.log("Allocate keys for NOR Module.");
+        await this.config.runCommand("lido:keys:use", ['--name', NOR_DEVNET_OPERATOR]);
+
+        this.log("Generate keys for NOR Module.");
+        await this.config.runCommand("lido:keys:generate");
+        this.log("Allocate keys for NOR Module.");
+        await this.config.runCommand("lido:keys:use", ['--name', CSM_DEVNET_OPERATOR]);
+
+        this.log("Add NOR operator.");
+        await this.config.runCommand("onchain:lido:add-operator", [
+          "--name",
+          NOR_DEVNET_OPERATOR,
+        ]);
+        this.log(`Operator ${NOR_DEVNET_OPERATOR} added`);
+
+        this.log("Add NOR keys.");
+        await this.config.runCommand("onchain:lido:add-keys", [
+          "--name",
+          NOR_DEVNET_OPERATOR,
+          "--id",
+          "0",
+        ]);
+
+        this.log(`Inc staking limit NOR`)
+        await this.config.runCommand("onchain:lido:set-staking-limit", ["--operatorId", "0", "--limit", "30"])
+        
+        this.log(`Keys for operator ${NOR_DEVNET_OPERATOR} added`);
+
+        this.log("Add CSM operator with keys.");
+        await this.config.runCommand("onchain:csm:add-operator", [
+          "--name",
+          CSM_DEVNET_OPERATOR,
+        ]);
+        this.log(`Keys for operator ${CSM_DEVNET_OPERATOR} added`);
+
+        this.log("Run keys-api service.");
+        await this.config.runCommand("kapi:up");
+
+        this.log("Run keys-api service.");
+        await this.config.runCommand("oracles:up");
+
+        this.log(`Make Deposit to NOR`);
+        await this.config.runCommand("onchain:lido:deposit", ["--id", "1"]);
+
+        // this.log(`Make Deposit to CSM`);
+        await this.config.runCommand("onchain:lido:deposit", ["--id", "3"]);
+
+        this.log(`Generate validator config`);
+        await this.config.runCommand("lido:create-validator-config");
+
+        // this.log(`Run validators`);
+        // await this.config.runCommand("validator:up");
+
+        this.log("Add new CSM Verifier")
+        await this.config.runCommand('onchain:csm:add-verifier', args)
       }
 
       // Display network information

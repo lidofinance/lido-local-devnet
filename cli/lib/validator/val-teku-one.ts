@@ -1,5 +1,5 @@
 import fs from "fs/promises";
-import { Validator } from "./interfaces.js";
+import { DepositData } from "./interfaces.js";
 import path from "path";
 import { getAddress } from "ethers";
 
@@ -12,13 +12,15 @@ export async function generateDockerComposeOneService(
     dockerImage,
     graffiti,
     valGroups,
+    configDir
   }: {
     keysDir: string;
+    configDir: string;
     clPrivateUrl: string;
     dockerNetwork: string;
     dockerImage: string;
     graffiti: string;
-    valGroups: Record<string, Validator[]>;
+    valGroups: Record<string, DepositData[]>;
   }
 ) {
   let dockerComposeContent = `version: '3.9'\nservices:\n`;
@@ -27,7 +29,7 @@ export async function generateDockerComposeOneService(
     let keysCommand = validators
       .map(
         (val) =>
-          `--validator-keys=/validator_keys/${val.validator.pubkey.replace(
+          `--validator-keys=/validator_keys/${val.pubkey.replace(
             "0x",
             ""
           )}.json:/validator_keys/password.txt`
@@ -38,7 +40,7 @@ export async function generateDockerComposeOneService(
   teku_validator_${groupName.slice(-5)}:
     image: ${dockerImage}
     volumes:
-      - ${keysDir}:/validator_keys
+      - ${configDir}:/validator_keys
     networks:
       - devnet
     command: >
@@ -47,7 +49,7 @@ export async function generateDockerComposeOneService(
       ${keysCommand}
       --beacon-node-api-endpoint=${clPrivateUrl}
       --validators-proposer-default-fee-recipient=${getAddress(
-        groupName.replace("0x010000000000000000000000", "0x")
+        groupName.replace("010000000000000000000000", "0x")
       )}
       --validators-graffiti=${graffiti}
     restart: unless-stopped\n`;

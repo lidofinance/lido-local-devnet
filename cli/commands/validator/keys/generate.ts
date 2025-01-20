@@ -45,7 +45,7 @@ export default class GenerateDevNetKeys extends Command {
         "--chain",
         "devnet",
         "--num_validators",
-        "10",
+        "30",
         "--validator_start_index",
         startIndex,
         "--mnemonic",

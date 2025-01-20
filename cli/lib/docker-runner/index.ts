@@ -21,7 +21,7 @@ export async function buildAndRunCommandInDocker(
   imageName: string,
   command: string,
   args: string[],
-  volume: string,
+  volumes: string[],
   opts?: ExecOpts
 ) {
   try {
@@ -50,14 +50,27 @@ export async function buildAndRunCommandInDocker(
     typeof gid === "number",
     "GID is not defined. Ensure you are running this on a Linux/OSX system."
   );
+  console.log([
+    "run",
+    "--rm",
 
+    ...volumes.map((vol) => ['-v', vol]).flat(),
+    ...formatDockerEnvVars(opts?.env),
+    "-e",
+    `UID=${uid}`,
+    "-e",
+    `GID=${gid}`,
+    imageName,
+    command,
+    ...args,
+  ]);
   const result = await execa(
     "docker",
     [
       "run",
       "--rm",
-      "-v",
-      volume,
+
+      ...volumes.map((vol) => ['-v', vol]).flat(),
       ...formatDockerEnvVars(opts?.env),
       "-e",
       `UID=${uid}`,
@@ -86,10 +99,14 @@ export const runDepositCli = async (
   console.log(gitHash, command, args, `deposit-cli:${gitHash}`);
   return buildAndRunCommandInDocker(
     dockerRunner.depositCli.paths.dockerfile,
-    `deposit-cli:${gitHash}`,
+    `deposit-cli:${gitHash}-a2`,
     command,
     args,
-    `${baseConfig.artifacts.paths.validatorGenerated}:/app/validator_keys`,
+    [
+      `${baseConfig.artifacts.paths.validatorGenerated}:/app/validator_keys`,
+      // save the keys with docker user permissions separately to pass them to the docker validator image.
+      `${baseConfig.artifacts.paths.validatorDocker}:/app/validator_keys_docker`,
+    ],
     { ...opts, cwd: dockerRunner.depositCli.paths.root }
   );
 };

@@ -6,10 +6,13 @@ import {
 } from "../../lib/validator/index.js";
 import { generateDockerComposeOneService } from "../../lib/validator/val-teku-one.js";
 import { assert } from "console";
-import {
-  fetchKeystores,
-  fetchValidatorGraffiti,
-} from "../../lib/keymanager-api/index.js";
+import { DepositData } from "../../lib/validator/interfaces.js";
+// import {
+//   fetchKeystores,
+//   fetchValidatorGraffiti,
+// } from "../../lib/keymanager-api/index.js";
+
+
 
 export default class CreateValidatorConfig extends Command {
   static description = "Generation of configuration to run validators";
@@ -38,34 +41,34 @@ export default class CreateValidatorConfig extends Command {
     );
 
     const currentState = await validatorsState.read();
-    const depositData = currentState?.depositData;
+    const depositData = currentState?.depositData as DepositData[];
     if (!depositData) {
       this.error("Deposit data not found in validator/state.json file");
     }
-    const state = await jsonDb.read();
-    const { network } = baseConfig;
+    // const state = await jsonDb.read();
+    const reader = await jsonDb.getReader()
+    const clPrivateUrl = reader.getOrError('network.binding.clNodesPrivate.0')
+    const name = reader.getOrError('network.name')
+    // const cl = state.network?.binding?.clNodes?.[0] ?? network.cl.url;
 
-    const cl = state.network?.binding?.clNodes?.[0] ?? network.cl.url;
-    const clPrivateUrl =
-      state.network?.binding?.clNodesPrivate?.[0] ?? network.cl.url;
-    const name = state.network?.binding?.name ?? network.name;
-
-    const validators = await fetchActiveValidators(cl);
-    const targetValidators = await validators.data.filter((v) =>
-      targetWCs.includes(v.validator.withdrawal_credentials)
+    // const name = state.network?.binding?.name ?? network.name;
+    console.log(depositData, targetWCs)
+    // const validators = await fetchActiveValidators(cl);
+    const targetValidators = await depositData.filter((v) =>
+      targetWCs.includes(`0x${v.withdrawal_credentials}`)
     );
 
     if (!targetValidators.length) {
       this.error("No validators found, make sure the deposit has been made ");
     }
-    const validatorsApi = state.network?.binding?.validatorsApi?.[0];
+    // const validatorsApi = state.network?.binding?.validatorsApi?.[0];
 
-    const keystores = await fetchKeystores(validatorsApi);
+    // const keystores = await fetchKeystores(validatorsApi);
 
-    const graffiti = await fetchValidatorGraffiti(
-      validatorsApi,
-      keystores.data[0].validating_pubkey
-    );
+    // const graffiti = await fetchValidatorGraffiti(
+    //   validatorsApi,
+    //   keystores.data[0].validating_pubkey
+    // );
 
     const configDir = baseConfig.validator.paths.docker;
 
@@ -74,11 +77,14 @@ export default class CreateValidatorConfig extends Command {
     const valGroups = groupByWithdrawalCredentials(targetValidators);
 
     await generateDockerComposeOneService(configDir, {
-      keysDir: baseConfig.artifacts.paths.validator,
+      keysDir: baseConfig.artifacts.paths.validatorDocker,
+      configDir: baseConfig.artifacts.paths.validator,
       clPrivateUrl,
       dockerImage: VC_IMAGE,
       dockerNetwork: `kt-${name}`,
-      graffiti: graffiti.data.graffiti,
+      // TODO: enable use_separate_vs in kurtosis and test setup
+      // graffiti: graffiti.data.graffiti,
+      graffiti: "1-geth-teku",
       valGroups,
     });
   }

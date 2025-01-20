@@ -14,10 +14,11 @@ export default class DevNetConfig extends Command {
             execution: baseConfig.network.el.url,
             consensus: baseConfig.network.cl.url,
         },
-        privateKey: baseConfig.wallet.sharedPk,
+        privateKey: baseConfig.wallet.privateKey,
         kurtosis: baseConfig.kurtosis,
         vcImage: VC_IMAGE,
-        slotsPerEpoch: baseConfig.kurtosis.slotsPerEpoch
+        slotsPerEpoch: baseConfig.kurtosis.slotsPerEpoch,
+        ELECTRA_FORK_EPOCH: baseConfig.network.ELECTRA_FORK_EPOCH
     });
   }
 }

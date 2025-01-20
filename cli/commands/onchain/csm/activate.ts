@@ -1,14 +1,11 @@
 // ofchain/lido-cli/programs/omnibus-scripts/devnet-csm-start.ts
 import { Command } from "@oclif/core";
 import { baseConfig, jsonDb } from "../../../config/index.js";
-import { sendTransactionWithRetry } from "../../../lib/index.js";
 import {
   DevNetLidoCliBaseEnv,
-  setupDevNet,
+  runLidoCLI,
 } from "../../../lib/lido-cli/index.js";
 import { waitEL } from "../../../lib/network/index.js";
-import { execa } from "execa";
-import path from "path";
 //  script devnet-csm-start
 const {
   activateCSM,
@@ -52,6 +49,7 @@ export default class ActivateCSM extends Command {
       CS_MODULE_ADDRESS: CSModule,
       CS_ACCOUNTING_ADDRESS: CSAccounting,
       CS_ORACLE_HASH_CONSENSUS_ADDRESS: HashConsensus,
+      CS_ORACLE_INITIAL_EPOCH: "60",
     };
 
     const baseEnv: DevNetLidoCliBaseEnv = {
@@ -62,14 +60,8 @@ export default class ActivateCSM extends Command {
     this.logJson({ ...env, ...baseEnv });
 
     this.log("Deploying and configuring csm components...");
-    const command = "npx";
-    const args = ["ts-node", "index", "omnibus", "script", "devnetCSMStart"];
-    // cmd
-    await execa(command, args, {
-      cwd: root,
-      stdio: "inherit",
-      env: { ...env, ...baseEnv },
-    });
+
+    await runLidoCLI(["omnibus", "script", "devnetCSMStart"], root, { ...env, ...baseEnv })
 
     this.log("csm activation completed successfully.");
   }

@@ -12,9 +12,7 @@ export default class KurtosisCleanUp extends Command {
     this.log("Cleaning JSON database...");
     await jsonDb.clean();
     this.log("Removing network artifacts...");
-    await fs.rm(baseConfig.artifacts.paths.network, { recursive: true, force: true });
-    await fs.rm(baseConfig.artifacts.paths.validator, { recursive: true, force: true });
-    await fs.rm(baseConfig.artifacts.paths.validatorGenerated, { recursive: true, force: true });
+    await fs.rm(baseConfig.artifacts.paths.root, { recursive: true, force: true });
     this.log("Cleanup completed successfully.");
   }
 }
