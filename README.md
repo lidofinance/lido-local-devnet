@@ -49,7 +49,7 @@ Follow these steps to spin up the DevNet:
    ./bin/run.js up --full --verify
    ```  
 
-5. **Initiate voting to transition the protocol to Pectra**  
+5. **Initiate aragon voting that enables Pectra supporting in the Lido protocol**  
 
    Since the voting scripts use Python and Brownie, install the required dependencies:  
    ```sh
