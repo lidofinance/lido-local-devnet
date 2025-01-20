@@ -1,172 +1,112 @@
-# Lido Local DevNet
+# Lido Local DevNet  
 
 <img src="https://docs.lido.fi/img/logo.svg" height="90px" align="right" width="90px">
 
-Project for launching DevNet with the Lido protocol locally. The project includes launching a new network, launching a block explorer, and deploying Lido smart contracts.
+A project for launching a DevNet with the Lido protocol locally. The project includes starting a new network, launching a block explorer, and deploying Lido smart contracts.
 
-### Requirements
+> [!WARNING]
+> This is an alpha version of the project. Stay tuned for updates.
 
-- **Node** 20+ (https://nodejs.org/)
-- **Docker** 27+ (https://www.docker.com/)
-- **Docker-compose** V2 (https://docs.docker.com/compose/)
-- **Kurtosis** (https://www.kurtosistech.com/)
-- **Foundry tools**: [Get Started with Foundry](https://book.getfoundry.sh/getting-started/installation)
-- **Just**: [Just on GitHub](https://github.com/casey/just)
+---
 
-### Getting Started
+### Requirements  
 
-To spin up the DevNet, simply follow these commands:
+- **Node** 20+ ([Install Node.js](https://nodejs.org/))  
+- **Docker** 27+ ([Install Docker](https://www.docker.com/))  
+- **Docker Compose** V2 ([Install Docker Compose](https://docs.docker.com/compose/))  
+- **Kurtosis** ([Install Kurtosis](https://www.kurtosistech.com/))  
+- **Foundry tools** ([Install Foundry](https://book.getfoundry.sh/getting-started/installation))  
+- **Just** ([Install Just](https://github.com/casey/just))  
 
-1. **Start the Kurtosis instance** - This is necessary for launching Ethereum nodes:
+---
+
+### Getting Started  
+
+Follow these steps to spin up the DevNet:  
+
+1. **Start the Kurtosis instance**  
+   This is required for launching Ethereum nodes:  
    ```sh
    kurtosis engine start
-   ```
+   ```  
 
-2. **Install project dependencies**:
+2. **Install project dependencies**:  
    ```sh
    yarn && yarn submodule
-   ```
+   ```  
 
-3. **Install subdependencies of the project**:
+3. **Install subdependencies of the project**:  
    ```sh
    ./bin/run.js install
-   ```
+   ```  
 
-4. **To launch the environment and immediately deploy the protocol's smart contracts**:
+4. **Launch the environment and deploy Lido smart contracts**:  
    ```sh
    ./bin/run.js up --full
-   ```
-   Or you can use the command with the optional `--verify` flag to deploy smart contracts with verification on the block explorer
+   ```  
+   Optionally, use the `--verify` flag to deploy smart contracts with verification on the block explorer:  
    ```sh
    ./bin/run.js up --full --verify
-   ```
-> ***If you use this command, proceed directly to step 7.***
-5. **Alternatively, you can raise the environment without smart contracts**:
-   ```sh
-   ./bin/run.js up
-   ```
+   ```  
 
-6. **And then deploy the smart contracts separately**:
-   ```sh
-   ./bin/run.js onchain lido deploy
-   ```
-    ```sh
-   ./bin/run.js onchain csm deploy
-   ```
+5. **Initiate voting to transition the protocol to Pectra**  
 
-7. **After deploying the smart contracts, it is necessary to activate the protocol**:
-   - This command will finalize the setup of oracles and DSM and then activate the protocol; this command requires confirmation:
+   Since the voting scripts use Python and Brownie, install the required dependencies:  
    ```sh
-   ./bin/run.js onchain lido activate
-   ```
-8. **After activating and finalizing the main protocol, you can connect the CSM Module**:
-   - Use this command to activate the CSM module:
-   ```sh
-   ./bin/run.js onchain csm activate
-   ```
-9. **Next, you can deploy an additional CSVerifier for testing Pectra**:
-   - Use this command to add a CSVerifier:
-   ```sh
-   ./bin/run.js onchain csm add-verifier
-   ```
-   - You can also execute this command with smart contract verification:
-   ```sh
-   ./bin/run.js onchain csm add-verifier --verify
-   ```
+   ./bin/run.js voting install
+   ```  
+   If you encounter errors, install additional modules as prompted.
 
-10. **Done!** You have launched the network, infrastructure, and protocol locally.
+   Next, add an account. Unfortunately, Brownie cannot fetch account settings automatically, but we provide an easy-to-use console interface for automation. Simply run the following command and enter the private key displayed in the logs:  
+   ```sh
+   ./bin/run.js voting add-account
+   ```  
 
-### Next steps
+   Once the account is set, you can transition the protocol to the Pectra hard fork:  
+   ```sh
+   ./bin/run.js voting enact-pectra
+   ```  
 
-1. **Key Generation**:
-   - To generate keys, enter the following command:
-   ```sh
-   ./bin/run.js lido keys generate
-   ```
-   After this, the keys will be created in the `artifacts/validator` directory.
-   Important! Do not delete files from this directory.
+6. **Launch validators**  
 
-2. **Using the Keys in the Module**:
-   - To use the keys, enter this command:
-   ```sh
-   ./bin/run.js lido keys use --name my_awesome_operator
-   ```
-   Next, navigate to the Lido-CLI directory:
-   ```sh
-   cd ofchain/lido-cli
-   ```
-   Add the module:
-   ```sh
-   ./run.sh nor add-operator -n <NAME> -a <ADDRESS>
-   ```
-   And connect your new keys:
-   `generated-keys/my_awesome_operator.json` — this is the path to the key file, which is automatically generated when you run:
-   ```sh
-   ./bin/run.js lido keys use --name my_awesome_operator
-   ```
-   ```sh
-   ./run.sh nor add-keys-from-file <OPERATOR_ID> generated-keys/my_awesome_operator.json
-   ```
-   If you need to add more keys, you can repeat this process as many times as necessary, with different validators.
-
-3. **Deposit**:
-   - To operate deposits without DSM, enter the following command:
-   ```sh
-   ./run.sh devnet replace-dsm-with-eoa 0x8943545177806ED17B9F23F0a21ee5948eCaa776
-   ```
-   `0x8943545177806ED17B9F23F0a21ee5948eCaa776` — this is the primary address used in all scripts by default.
-   - To complete the deposit process, follow the steps in this guide: https://hackmd.io/@george-avs/HkYfg3GHyx#Increase-Staking-Limit, starting with the `Increase-Staking-Limit` section.
-
-4. **Validator Launch**:
-   - After the deposit, wait approximately 10 minutes.
-   - Once the deposit is completed, enter the following command to create a validator configuration:
-   ```sh
-   ./bin/run.js lido create-validator-config
-   ```
-   This command will create a configuration file at `devnet-dc/validator-teku/docker-compose.yaml`.
-   
-   You can then launch this configuration using the command:
+   After completing the `up` command, launch the validators with:  
    ```sh
    ./bin/run.js validator up
-   ```
-   To stop the validators, use the command:
-   ```sh
-   ./bin/run.js validator down
-   ```
-   To show validators logs, use the command:
+   ```  
+
+   Ensure the validators have started without issues by checking the logs:  
    ```sh
    ./bin/run.js validator logs
-   ```
+   ```  
 
-### Launching Additional Tooling
+   On Linux, you may encounter access issues with the validator keys. To fix this, run:  
+   ```sh
+   chown -R 1000:1000 artifacts/validator
+   ```  
+   This issue will be resolved in a future release.  
 
-#### KAPI
-To launch the service, simply enter the following command:
-```sh
-./bin/run.js kapi up
-```
-To view the logs:
-```sh
-./bin/run.js kapi logs
-```
-To stop the service:
-```sh
-./bin/run.js kapi down
-```
-### To Stop the DevNet
+7. **Done!**  
+   You have successfully launched the network, infrastructure, and protocol locally.  
 
-To stop the DevNet, simply enter the command:
+---
+
+### Stopping the DevNet  
+
+To stop the DevNet, run the following commands:  
 ```sh
-./bin/run.js stop
 ./bin/run.js validator down
-```
-This command will properly delete the state of all services and restart them.
+./bin/run.js kapi down
+./bin/run.js oracles down
+./bin/run.js stop
+```  
+These commands will properly delete the state of all services and restart them.  
 
-### Available Services
+---
 
-To get the current links to the available services, enter the command:
+### Available Services  
+
+To get the current links to available services, run:  
 ```sh
 ./bin/run.js network info
-```
-This command will provide you with the most up-to-date information on the available network services.
-
+```  
+This will provide the most up-to-date information on available network services.  

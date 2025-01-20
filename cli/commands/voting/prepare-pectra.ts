@@ -1,8 +1,10 @@
 import { Command } from "@oclif/core";
-import { execa } from "execa";
-import { jsonDb } from "../../config/index.js";
+import { baseConfig, jsonDb } from "../../config/index.js";
 import fs from "fs/promises";
 import path from "path";
+import YAML from "yaml";
+import assert from "assert";
+import { execa } from "execa";
 
 interface Config {
   AGENT: string;
@@ -18,11 +20,13 @@ interface Config {
   CHAIN_NETWORK_NAME: string;
 }
 
-export default class VotingStart extends Command {
-  static description = "Start pectra voting";
+export default class PreparePectraVoting extends Command {
+  static description = "Prepare pectra voting";
 
   async run() {
     const state = await jsonDb.getReader();
+
+    const rpc = state.getOrError("network.binding.elNodes.0");
 
     const agent = state.getOrError("lidoCore.app:aragon-agent.proxy.address");
     const voting = state.getOrError("lidoCore.app:aragon-voting.proxy.address");
@@ -57,7 +61,7 @@ export default class VotingStart extends Command {
       // didnt find there to fix "Unexpected name of net. Should be one of: dict_keys(['mainnet', 'goerli', 'holesky', 'sepolia'])"
       CHAIN_NETWORK_NAME: "mainnet",
     };
-
+    // TODO: add network to scripts config
     const OFFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
     const SCRIPTS_PATH = path.join(OFFCHAIN_ROOT, "scripts");
 
@@ -66,5 +70,39 @@ export default class VotingStart extends Command {
       .map(([key, value]) => `${key}="${value}"`)
       .join("\n");
     await fs.writeFile(envPath, configContent, "utf-8");
+
+    const networkPath = path.join(SCRIPTS_PATH, "network-config.yaml");
+    const configTemplateYaml = YAML.parse(
+      await fs.readFile(networkPath, "utf-8")
+    );
+    assert(
+      Array.isArray(configTemplateYaml.development),
+      "'development' must be an array"
+    );
+
+    const devnet4Config = configTemplateYaml.development.find(
+      (c: { name: string }) => c.name === "Devnet4"
+    );
+    assert(devnet4Config, "Devnet4 configuration not found");
+
+    assert(typeof rpc === "string" && rpc.includes(":"), "Invalid RPC format");
+    const port = parseInt(rpc.split(":").slice(-1)[0], 10);
+    assert(!isNaN(port), "Failed to parse port");
+
+    devnet4Config.cmd_settings.port = port;
+
+    await fs.writeFile(
+      networkPath,
+      YAML.stringify(configTemplateYaml),
+      "utf-8"
+    );
+
+    const cwd = baseConfig.voting.paths.root;
+
+    await execa(
+      "poetry",
+      ["run", "brownie", "networks", "import", "network-config.yaml", "True"],
+      { cwd, stdio: "inherit" }
+    );
   }
 }
