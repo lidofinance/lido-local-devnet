@@ -110,3 +110,28 @@ To get the current links to available services, run:
 ./bin/run.js network info
 ```  
 This will provide the most up-to-date information on available network services.  
+
+---
+
+### Voluntary Exit Command  
+
+To initiate a voluntary exit for a validator from the protocol, use the following command:  
+```sh
+./bin/run.js validator exit --mtype <MNEMONIC_TYPE> --index <VALIDATOR_INDEX>
+```
+
+#### Flags
+- `--mtype`: *(required)*
+  Specifies the mnemonic type to use.
+  Options:
+  - `genesis` - Use the mnemonic from the genesis configuration.
+  - `generated` - Use a newly generated mnemonic.
+
+- `--index`: *(required)*
+  Specifies the index of the validator to exit.
+
+#### Example Usage
+If you want to exit a validator with index `42` using the `genesis` mnemonic, run:
+```sh
+./bin/run.js validator exit --mtype genesis --index 42
+```
