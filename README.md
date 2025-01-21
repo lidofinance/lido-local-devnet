@@ -67,7 +67,7 @@ Follow these steps to spin up the DevNet:
    ./bin/run.js voting enact-before-pectra
    ```  
 
-   Once the initial stage is complete, finalize the transition by executing the second stage of the voting process:  
+   Once the initial stage is complete, finalize the transition by executing the second stage of the voting process after the Pectra hard fork:  
    ```sh
    ./bin/run.js voting enact-after-pectra
    ```  
