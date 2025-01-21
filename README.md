@@ -62,9 +62,14 @@ Follow these steps to spin up the DevNet:
    ./bin/run.js voting add-account
    ```  
 
-   Once the account is set, you can transition the protocol to the Pectra hard fork:  
+   After adding the account, initiate the first stage of transitioning the protocol to the Pectra hard fork:  
    ```sh
-   ./bin/run.js voting enact-pectra
+   ./bin/run.js voting enact-before-pectra
+   ```  
+
+   Once the initial stage is complete, finalize the transition by executing the second stage of the voting process:  
+   ```sh
+   ./bin/run.js voting enact-after-pectra
    ```  
 
 6. **Launch validators**  
