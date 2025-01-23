@@ -1,4 +1,8 @@
-import {  command } from "../../lib/command/command.js";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import * as YAML from "yaml";
+
+import { command } from "../../command/command.js";
 import { kurtosisApi } from "../../lib/kurtosis/index.js";
 import { DownloadKurtosisArtifacts } from "./artifacts.js";
 import { KurtosisUpdate } from "./update.js";
@@ -10,9 +14,19 @@ export const KurtosisUp = command.isomorphic({
   async handler({ logger, dre }) {
     logger("Running Ethereum package in Kurtosis...");
     const { name } = dre.network;
-    const { state } = dre;
+    const {
+      state,
+      services: { kurtosis },
+    } = dre;
 
-    const { config } = await state.getKurtosis();
+    const { preset } = await state.getKurtosis();
+
+    const config = YAML.parse(
+      await readFile(
+        path.join(kurtosis.artifact.root, `${preset}.yml`),
+        "utf-8",
+      ),
+    );
 
     const output = await kurtosisApi.runPackage(
       name,
@@ -26,13 +40,13 @@ export const KurtosisUp = command.isomorphic({
       output.validationErrors.length > 0
     ) {
       logger("An error occurred while starting the package.");
-      logger(output);
+      logger(JSON.stringify(output));
       throw new Error("Error happened while running network");
     } else {
       logger("Package started successfully.");
     }
 
-    await KurtosisUpdate.exec(dre, {})
-    await DownloadKurtosisArtifacts.exec(dre, {})
+    await KurtosisUpdate.exec(dre, {});
+    await DownloadKurtosisArtifacts.exec(dre, {});
   },
 });

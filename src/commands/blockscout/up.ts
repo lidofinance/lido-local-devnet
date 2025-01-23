@@ -1,6 +1,4 @@
-import { execa } from "execa";
-
-import { command } from "../../lib/command/command.js";
+import { command } from "../../command/command.js";
 import { getPublicPortAndService } from "../../lib/docker/index.js";
 
 export const BlockscoutUp = command.cli({
@@ -9,42 +7,33 @@ export const BlockscoutUp = command.cli({
   async handler({ logger, dre }) {
     logger("Starting Blockscout...");
 
-    const { state, network, artifacts } = dre;
+    const {
+      state,
+      network,
+      services: { blockscout },
+    } = dre;
 
     const { elPrivate, grpcPrivate } = await state.getChain();
 
+    const blockScoutSh = blockscout.sh({
+      env: {
+        BLOCKSCOUT_RPC_URL: elPrivate,
+        BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
+        DOCKER_NETWORK_NAME: `kt-${network.name}`,
+        COMPOSE_PROJECT_NAME: `blockscout-${network.name}`,
+      },
+    });
+
     try {
-      await execa("docker", ["compose", "-f", "geth.yml", "up", "-d"], {
-        cwd: artifacts.services.blockscout.root,
-        env: {
-          BLOCKSCOUT_RPC_URL: elPrivate,
-          BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
-          DOCKER_NETWORK_NAME: `kt-${network.name}`,
-          COMPOSE_PROJECT_NAME: `blockscout-${network.name}`,
-        },
-        stdio: "inherit",
-      });
+      await blockScoutSh`docker compose -f geth.yaml up -d`;
 
       const info = await getPublicPortAndService(80, "kt-" + network.name);
       const apiHost = `localhost:${info.publicPort}`;
       const publicUrl = `http://${apiHost}`;
 
-      await execa(
-        "docker",
-        ["compose", "-f", "geth.yml", "up", "-d", "frontend"],
-        {
-          cwd: artifacts.services.blockscout.root,
-          env: {
-            BLOCKSCOUT_RPC_URL: elPrivate,
-            BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
-            NEXT_PUBLIC_API_HOST: apiHost,
-            NEXT_PUBLIC_APP_HOST: apiHost,
-            DOCKER_NETWORK_NAME: `kt-${network.name}`,
-            COMPOSE_PROJECT_NAME: `blockscout-${network.name}`,
-          },
-          stdio: "inherit",
-        },
-      );
+      await blockScoutSh({
+        env: { NEXT_PUBLIC_API_HOST: apiHost, NEXT_PUBLIC_APP_HOST: apiHost },
+      })`docker compose -f geth.yaml up -d frontend`;
 
       logger(`Blockscout started successfully on URL: ${publicUrl}`);
 

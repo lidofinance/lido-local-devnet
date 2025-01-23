@@ -1,6 +1,6 @@
 import { execa } from "execa";
 
-import { command } from "../../lib/command/command.js";
+import { command } from "../../command/command.js";
 
 export const StartAnvil = command.cli({
   description:

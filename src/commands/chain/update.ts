@@ -1,4 +1,4 @@
-import { command } from "../../lib/command/command.js";
+import { command } from "../../command/command.js";
 import { kurtosisApi } from "../../lib/kurtosis/index.js";
 
 export const KurtosisUpdate = command.isomorphic({

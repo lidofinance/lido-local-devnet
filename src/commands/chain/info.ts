@@ -1,4 +1,4 @@
-import { command } from "../../lib/command/command.js";
+import { command } from "../../command/command.js";
 import { displayUrlTable } from "../../lib/console/index.js";
 import { kurtosisApi } from "../../lib/kurtosis/index.js";
 
