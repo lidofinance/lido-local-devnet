@@ -20,7 +20,7 @@ export class DataBusUpdateState extends Command {
       "utf8"
     );
 
-    jsonDb.update({ dataBus: JSON.parse(rawFileContent) });
+    await jsonDb.update({ dataBus: JSON.parse(rawFileContent) });
 
     this.log("Updating data-bus state finished");
 

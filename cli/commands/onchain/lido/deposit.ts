@@ -22,6 +22,7 @@ export default class LidoDeposit extends Command {
       description: "Number of deposits.",
       default: 30,
     }),
+    dsm: Flags.boolean({ default: false, description: "Use full DSM setup." }),
   };
 
   async run() {
@@ -50,12 +51,16 @@ export default class LidoDeposit extends Command {
     // TODO: get amount from flags or calc
     await runLidoCLI(["lido", "submit", "1000"], root, {});
 
-    this.log(`Depositing ${flags.deposits} deposits to module ID ${flags.id}...`);
-    await runLidoCLI(
-      ["lido", "deposit", String(flags.deposits), String(flags.id)],
-      root,
-      {}
-    );
+    if (!flags.dsm) {
+      this.log(
+        `Depositing ${flags.deposits} deposits to module ID ${flags.id}...`
+      );
+      await runLidoCLI(
+        ["lido", "deposit", String(flags.deposits), String(flags.id)],
+        root,
+        {}
+      );
+    }
 
     this.log("Deposit process completed successfully.");
   }
