@@ -1,12 +1,9 @@
-import { readFile } from "node:fs/promises";
 import path from "node:path";
-import * as YAML from "yaml";
 import { ZodSchema, z } from "zod";
 
 import { JsonDb } from "../lib/state/index.js";
 import { generateKeysFromMnemonicOnce } from "../lib/wallet/index.js";
 import {
-  KURTOSIS_ROOT,
   PARSED_CONSENSUS_GENESIS_FILE,
   STATE_FILE,
   WALLET_KEYS_COUNT,
@@ -40,11 +37,11 @@ export class State {
   private config: Config;
   private parsedConsensusGenesisState: JsonDb;
 
-  constructor(rawConfig: unknown, artifactsRoot: string) {
+  constructor(rawConfig: unknown, chainRoot: string) {
     this.config = ConfigValidator.validate(rawConfig);
-    this.appState = new JsonDb(path.join(artifactsRoot, STATE_FILE));
+    this.appState = new JsonDb(path.join(chainRoot, STATE_FILE));
     this.parsedConsensusGenesisState = new JsonDb(
-      path.join(artifactsRoot, PARSED_CONSENSUS_GENESIS_FILE),
+      path.join(chainRoot, PARSED_CONSENSUS_GENESIS_FILE),
     );
   }
 
@@ -104,15 +101,7 @@ export class State {
     const { kurtosis } = this.config;
     const loadConfig = await KurtosisSchema.parseAsync(kurtosis);
 
-    return {
-      config: YAML.parse(
-        await readFile(
-          path.join(KURTOSIS_ROOT, `${loadConfig.preset}.yml`),
-          "utf-8",
-        ),
-      ),
-      loadConfig,
-    };
+    return loadConfig;
   }
 
   async getLido(): Promise<z.infer<typeof LidoConfigSchema>> {

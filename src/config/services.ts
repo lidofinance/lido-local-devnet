@@ -1,24 +1,21 @@
-// type ServiceConfig = {
-//   config?: string;
-//   repository?: string;
-// };
+import { DevNetServiceConfig } from "../command/user-service.js";
 
-// type ServiceConfigs<T extends Record<string, ServiceConfig>> = {
-//   [K in keyof T]: T[K];
-// };
+export const blockscout = new DevNetServiceConfig({
+  config: "services/blockscout",
+  name: "blockscout" as const,
+});
 
-export const devNetServices = {
-  blockscout: {
-    config: "services/blockscout",
-    name: "blockscout" as const
-  },
-  lidoCore: {
-    repository: "submodules/lido-core",
-    name: "lidoCore" as const
-  },
-  lidoCLI: {
-    repository: "submodules/lido-cli",
-    name: "lidoCLI" as const
-  }
-};
+export const lidoCore = new DevNetServiceConfig({
+  repository: "submodules/lido-core",
+  name: "lidoCore" as const,
+});
 
+export const lidoCLI = new DevNetServiceConfig({
+  repository: "submodules/lido-cli",
+  name: "lidoCLI" as const,
+});
+
+export const kurtosis = new DevNetServiceConfig({
+  config: "services/kurtosis",
+  name: "kurtosis" as const,
+});
