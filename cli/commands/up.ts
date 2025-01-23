@@ -55,8 +55,8 @@ export default class DevNetUp extends Command {
         await this.config.runCommand("onchain:csm:activate");
         this.log("CSM protocol activated.");
 
-        this.log("Replaces the DSM with an EOA.");
-        await this.config.runCommand("onchain:lido:replace-dsm");
+        // this.log("Replaces the DSM with an EOA.");
+        // await this.config.runCommand("onchain:lido:replace-dsm");
 
         const NOR_DEVNET_OPERATOR = "devnet_nor_1";
         const CSM_DEVNET_OPERATOR = "devnet_csm_1";
@@ -101,8 +101,8 @@ export default class DevNetUp extends Command {
         this.log("Run keys-api service.");
         await this.config.runCommand("kapi:up");
 
-        this.log("Run keys-api service.");
-        await this.config.runCommand("oracles:up");
+        // this.log("Run keys-api service.");
+        // await this.config.runCommand("oracles:up");
 
         this.log(`Make Deposit to NOR`);
         await this.config.runCommand("onchain:lido:deposit", ["--id", "1"]);

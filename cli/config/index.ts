@@ -92,8 +92,8 @@ export const baseConfig = {
   },
   voting: {
     paths: {
-      root: SCRIPTS_PATH
-    }
+      root: SCRIPTS_PATH,
+    },
   },
   artifacts: {
     paths: {
@@ -147,6 +147,16 @@ export const baseConfig = {
       dockerfile: path.join(OFCHAIN_ROOT, "kapi", "Dockerfile"),
     },
   },
+  council: {
+    paths: {
+      ofchain: path.join(OFCHAIN_ROOT, "council-daemon"),
+    },
+  },
+  dsmBots: {
+    paths: {
+      ofchain: path.join(OFCHAIN_ROOT, "dsm-bots"),
+    },
+  },
   assertoor: {
     paths: {
       root: ASSERTOOR_ROOT,
@@ -178,6 +188,11 @@ export const baseConfig = {
     },
   },
   onchain: {
+    dataBus: {
+      paths: {
+        root: path.join(ONCHAIN_ROOT, "data-bus"),
+      },
+    },
     lido: {
       core: {
         paths: {
