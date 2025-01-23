@@ -21,6 +21,7 @@
 [submodule "ofchain/scripts"]
 	path = ofchain/scripts
 	url = git@github.com:lidofinance/scripts.git
+	branch = feat/pectra-devnet
 [submodule "ofchain/oracle-master"]
 	path = ofchain/oracle-master
 	url = git@github.com:lidofinance/lido-oracle.git
