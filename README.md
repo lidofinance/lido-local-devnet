@@ -48,6 +48,10 @@ Follow these steps to spin up the DevNet:
    ```sh
    ./bin/run.js up --full --verify
    ```  
+   Optionally, use the `--dsm` flag to deploy use full DSM infrastructure:  
+   ```sh
+   ./bin/run.js up --full --verify --dsm
+   ```  
 
 5. **Initiate aragon voting that enables Pectra supporting in the Lido protocol**  
 
