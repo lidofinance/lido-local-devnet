@@ -1,8 +1,8 @@
+import { command } from "@devnet/command";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import * as YAML from "yaml";
 
-import { command } from "../../command/command.js";
 import { kurtosisApi } from "../../lib/kurtosis/index.js";
 import { DownloadKurtosisArtifacts } from "./artifacts.js";
 import { KurtosisUpdate } from "./update.js";

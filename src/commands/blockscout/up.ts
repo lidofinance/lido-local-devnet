@@ -1,4 +1,5 @@
-import { command } from "../../command/command.js";
+import { command } from "@devnet/command";
+
 import { getPublicPortAndService } from "../../lib/docker/index.js";
 
 export const BlockscoutUp = command.cli({
@@ -25,7 +26,7 @@ export const BlockscoutUp = command.cli({
     });
 
     try {
-      await blockScoutSh`docker compose -f geth.yaml up -d`;
+      await blockScoutSh`docker compose -f ./geth.yml up -d`;
 
       const info = await getPublicPortAndService(80, "kt-" + network.name);
       const apiHost = `localhost:${info.publicPort}`;
@@ -33,7 +34,7 @@ export const BlockscoutUp = command.cli({
 
       await blockScoutSh({
         env: { NEXT_PUBLIC_API_HOST: apiHost, NEXT_PUBLIC_APP_HOST: apiHost },
-      })`docker compose -f geth.yaml up -d frontend`;
+      })`docker compose -f geth.yml up -d frontend`;
 
       logger(`Blockscout started successfully on URL: ${publicUrl}`);
 

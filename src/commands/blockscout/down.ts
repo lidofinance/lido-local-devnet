@@ -1,4 +1,4 @@
-import { command } from "../../command/command.js";
+import { command } from "@devnet/command";
 
 export const BlockscoutDown = command.cli({
   description: "Down Blockscout",
@@ -24,7 +24,7 @@ export const BlockscoutDown = command.cli({
     });
 
     try {
-      await blockScoutSh`docker compose -f geth.yaml down -v`;
+      await blockScoutSh`docker compose -f geth.yml down -v`;
 
       logger("Blockscout stopped successfully.");
 

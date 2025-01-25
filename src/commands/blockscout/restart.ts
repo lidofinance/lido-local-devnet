@@ -1,4 +1,5 @@
-import { command } from "../../command/command.js";
+import { command } from "@devnet/command";
+
 import { BlockscoutDown } from "./down.js";
 import { BlockscoutUp } from "./up.js";
 

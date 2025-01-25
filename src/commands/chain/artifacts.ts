@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { command } from "../../command/command.js";
+import { command } from "@devnet/command";
 
 export const DownloadKurtosisArtifacts = command.cli({
   description:
