@@ -9,8 +9,8 @@ import { DevNetRuntimeEnvironment } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
 export type { Parser } from "@oclif/core";
 
-export * from "@oclif/core";
-
+// export * from "@oclif/core";
+export type InferredFlags<T> = T extends FlagInput<infer F> ? F : unknown;
 export function formatZodErrors(error: ZodError): string {
   return error.errors
     .map(
@@ -84,7 +84,7 @@ type CommandOptions<F extends Record<string, any>> = {
 type FactoryResult<F extends Record<string, any>> = {
   exec(
     dre: DevNetRuntimeEnvironment,
-    params: Omit<Omit<Interfaces.InferredFlags<F>, "network">, "json">,
+    params: InferredFlags<F>,
   ): Promise<void>;
 } & typeof DevNetCommand;
 
@@ -109,7 +109,7 @@ function isomorphic<F extends Record<string, any>>(
     public static async exec<H extends typeof DevNetCommand>(
       this: H,
       dre: DevNetRuntimeEnvironment,
-      params: Omit<Omit<Interfaces.InferredFlags<F>, "network">, "json">,
+      params: InferredFlags<F>,
     ): Promise<void> {
       // TODO: pass json param
       const paramsWithNetwork = {
@@ -149,7 +149,7 @@ function cli<F extends Record<string, any>>(
     public static async exec<H extends typeof DevNetCommand>(
       this: H,
       dre: DevNetRuntimeEnvironment,
-      params: Omit<Omit<Interfaces.InferredFlags<F>, "network">, "json">,
+      params: InferredFlags<F>,
     ): Promise<void> {
       // TODO: pass json param
       const paramsWithNetwork = {
@@ -189,7 +189,7 @@ function hidden<F extends Record<string, any>>(
     public static async exec<H extends typeof DevNetCommand>(
       this: H,
       dre: DevNetRuntimeEnvironment,
-      params: Omit<Omit<Interfaces.InferredFlags<F>, "network">, "json">,
+      params: InferredFlags<F>,
     ): Promise<void> {
       // TODO: pass json param
       const paramsWithNetwork = {
