@@ -1,0 +1,23 @@
+{
+  "extends": ["oclif", "oclif-typescript", "prettier"],
+  "overrides": [
+    {
+      "files": ["src/**/*.ts", "tests/**/*.ts"],
+      "rules": {
+        "no-console": "off",
+        "no-await-in-loop": "off",
+        "no-promise-executor-return": "off",
+        "new-cap": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-return-await": "off",
+        "unicorn/no-array-reduce": "off",
+        "unicorn/text-encoding-identifier-case": "off",
+        "unicorn/consistent-destructuring": "off",
+        "max-params":"off",
+        "unicorn/no-array-for-each": "off",
+        "perfectionist/sort-objects": "off",
+        "n/no-extraneous-import": "off"
+      },
+    },
+  ],
+}

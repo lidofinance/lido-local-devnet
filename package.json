@@ -1,13 +1,19 @@
 {
   "name": "lido-local-devnet",
   "packageManager": "yarn@4.2.2",
+  "private": true,
   "type": "module",
   "scripts": {
     "submodule": "git submodule update --init --remote --recursive",
     "postinstall": "yarn submodule",
+    "build:modules": "yarn workspaces foreach -W run build",
     "build": "rm -rf dist && tsc -b",
     "lint": "eslint . --ext .ts && tsc --noEmit"
   },
+  "workspaces": [
+    "packages/*",
+    "src"
+  ],
   "dependencies": {
     "@fastify/swagger": "^9.4.2",
     "@fastify/swagger-ui": "^5.2.1",
