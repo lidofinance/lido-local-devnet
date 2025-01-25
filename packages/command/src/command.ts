@@ -1,15 +1,13 @@
-import { Command as BaseCommand, Interfaces } from "@oclif/core";
+import { Command as BaseCommand } from "@oclif/core";
 import { FlagInput } from "@oclif/core/interfaces";
 import { ZodError } from "zod";
 
 import { DEFAULT_NETWORK_NAME } from "./constants.js";
 import { CustomDevNetContext, DevNetContext } from "./context.js";
-import { Params } from "./index.js";
+import { string } from "./params.js";
 import { DevNetRuntimeEnvironment } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
-export type { Parser } from "@oclif/core";
 
-// export * from "@oclif/core";
 export type InferredFlags<T> = T extends FlagInput<infer F> ? F : unknown;
 export function formatZodErrors(error: ZodError): string {
   return error.errors
@@ -25,7 +23,7 @@ export function formatZodErrors(error: ZodError): string {
 
 export class DevNetCommand extends BaseCommand {
   static baseFlags = {
-    network: Params.string({
+    network: string({
       default: DEFAULT_NETWORK_NAME,
       description: "Name of the network",
       required: false,
