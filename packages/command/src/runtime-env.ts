@@ -25,7 +25,11 @@ export class DevNetRuntimeEnvironment {
     rawConfig: unknown,
     registry: DevNetServiceRegistry,
   ) {
-    this.state = new State(rawConfig, registry.services.kurtosis.artifact.root);
+    this.state = new State(
+      rawConfig,
+      registry.root,
+      registry.services.kurtosis.artifact.root,
+    );
     this.network = new Network(network);
     this.services = registry.services;
   }

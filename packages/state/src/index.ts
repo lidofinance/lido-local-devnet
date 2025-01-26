@@ -37,9 +37,9 @@ export class State {
   private config: Config;
   private parsedConsensusGenesisState: JsonDb;
 
-  constructor(rawConfig: unknown, chainRoot: string) {
+  constructor(rawConfig: unknown, artifactsRoot: string, chainRoot: string) {
     this.config = ConfigValidator.validate(rawConfig);
-    this.appState = new JsonDb(path.join(chainRoot, STATE_FILE));
+    this.appState = new JsonDb(path.join(artifactsRoot, STATE_FILE));
     this.parsedConsensusGenesisState = new JsonDb(
       path.join(chainRoot, PARSED_CONSENSUS_GENESIS_FILE),
     );
@@ -198,6 +198,6 @@ export class State {
       }
     }
 
-    return schema.parse(result); // Validate the result using the provided schema
+    return schema.parse(result);
   }
 }

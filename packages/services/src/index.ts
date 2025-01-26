@@ -26,8 +26,9 @@ const lidoCore = new DevNetServiceConfig({
 const lidoCLI = new DevNetServiceConfig({
   repository: "submodules/lido-cli",
   name: "lidoCLI" as const,
-  constants: {
-    kek: 123,
+  constants: {},
+  env: {
+    LIDO_CLI_NON_INTERACTIVE: "true",
   },
 });
 
