@@ -30,7 +30,7 @@ export class DevNetServiceRegistry {
     const servicesList = await Promise.all(
       Object.entries(services).map(async ([key]) => [
         key,
-        await DevNetService.getNew(rootDir, key as keyof DevNetServices),
+        await DevNetService.getNew(rootDir, network, key as keyof DevNetServices),
       ]),
     );
 

@@ -2,7 +2,6 @@ import { Command as BaseCommand, Interfaces } from "@oclif/core";
 
 import { DevNetRuntimeEnvironment } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
-
 export class DevNetContext<T extends typeof BaseCommand> {
   // public args: ExtractArgs<T>;
   public dre: DevNetRuntimeEnvironment;
