@@ -1,5 +1,6 @@
 import { Command as BaseCommand } from "@oclif/core";
 import { FlagInput } from "@oclif/core/interfaces";
+import { ExecaError } from "execa";
 import { ZodError } from "zod";
 
 import { DEFAULT_NETWORK_NAME } from "./constants.js";
@@ -42,13 +43,17 @@ export class DevNetCommand extends BaseCommand {
     throw new Error("Static handler must be implemented in a derived class.");
   }
 
-  protected async catch(err: { exitCode?: number } & Error): Promise<any> {
-    if (err instanceof ZodError) {
-      this.error("\n" + formatZodErrors(err));
-    }
+  // protected async catch(err: { exitCode?: number } & Error): Promise<any> {
+  //   if (err instanceof ZodError) {
+  //     this.error("\n" + formatZodErrors(err));
+  //   }
+  //   // TODO: handle execa error
 
-    return super.catch(err);
-  }
+  //   if (err instanceof ExecaError) {
+  //     console.log(err, err.message)
+  //   }
+  //   // return super.catch(err);
+  // }
 
   public async init(): Promise<void> {
     await super.init();
@@ -59,7 +64,10 @@ export class DevNetCommand extends BaseCommand {
       strict: this.ctor.strict,
     });
 
-    const dre = await DevNetRuntimeEnvironment.getNew(params.network);
+    const dre = await DevNetRuntimeEnvironment.getNew(
+      params.network,
+      this.id ?? "anonymous",
+    );
 
     this.ctx = new DevNetContext({
       dre,
@@ -69,7 +77,39 @@ export class DevNetCommand extends BaseCommand {
 
   public async run(): Promise<void> {
     const ctor = this.constructor as typeof DevNetCommand;
-    await ctor.handler(this.ctx);
+    const { logger } = this.ctx.dre;
+    const start = performance.now();
+
+    if (Object.values(this.ctx.params).length > 1) {
+      logger.logHeader(`Run Command with params:`);
+      logger.logJson(this.ctx.params);
+      logger.log(ctor.description);
+    } else {
+      logger.logHeader(`Run Command`);
+      logger.log(ctor.description);
+    }
+
+    logger.log("");
+
+    try {
+      await ctor.handler(this.ctx);
+    } catch (error: unknown) {
+      if (error instanceof ZodError) {
+        return this.error("\n" + formatZodErrors(error));
+      }
+
+      // this error handles by execa wrapper
+      if (error instanceof ExecaError) {
+        return;
+      }
+
+      const err = error as any;
+      logger.error(err.message);
+    } finally {
+      const end = performance.now();
+      logger.log("");
+      logger.logFooter(`Execution time ${Math.floor(end - start)}ms`);
+    }
   }
 }
 
@@ -80,10 +120,7 @@ type CommandOptions<F extends Record<string, any>> = {
 };
 
 type FactoryResult<F extends Record<string, any>> = {
-  exec(
-    dre: DevNetRuntimeEnvironment,
-    params: InferredFlags<F>,
-  ): Promise<void>;
+  exec(dre: DevNetRuntimeEnvironment, params: InferredFlags<F>): Promise<void>;
 } & typeof DevNetCommand;
 
 function isomorphic<F extends Record<string, any>>(
@@ -137,7 +174,6 @@ function cli<F extends Record<string, any>>(
     };
 
     static isIsomorphicCommand: boolean = false;
-
 
     static originalParams = {
       ...DevNetCommand.baseFlags,

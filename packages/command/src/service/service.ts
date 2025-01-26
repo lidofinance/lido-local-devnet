@@ -1,7 +1,13 @@
 import { services } from "@devnet/service";
+import chalk from "chalk";
 import { ExecaMethod, execa } from "execa";
 
-import { applyColor, getCachedColor, transformCMDOutput } from "../ui.js";
+import {
+  applyColor,
+  getCachedColor,
+  getSeparator,
+  transformCMDOutput,
+} from "../ui.js";
 import { DevNetServiceConfig } from "../user-service.js";
 import { ServiceArtifact } from "./service-artifact.js";
 
@@ -63,15 +69,30 @@ export class DevNetService<Name extends keyof DevNetServices> {
 
       verbose(_: any, { ...verboseObject }: any) {
         if (verboseObject.type === "command") {
-          return console.log(
+          console.log(
             applyColor(
               color,
               `\\\\ [${`${network}/${name}`}]: ${verboseObject.escapedCommand}`,
             ),
           );
+
+          return console.log(getSeparator(color, "||"));
         }
 
         if (verboseObject.type === "duration") {
+          // console.log(verboseObject.result.failed);
+          if (verboseObject.result.failed) {
+            // console.log(verboseObject.result)
+            // shortMessage
+            // const errorMessage = verboseObject.result.stderr.replaceAll(getSeparator(color, '||'), '')
+            // console.log(`${getSeparator(color, '||')}${chalk.red(errorMessage)}`)
+            console.log(
+              `${getSeparator(color, "||")} ${chalk.red(verboseObject.result.shortMessage)}`,
+            );
+          }
+
+          console.log(getSeparator(color, "||"));
+
           const ms = Math.floor(verboseObject.result.durationMs);
           return console.log(
             applyColor(
