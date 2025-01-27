@@ -1,29 +1,31 @@
-import { command } from "../../../lib/command/command.js";
-import { setupDevNet } from "../../../lib/lido-cli/index.js";
+import { Params, command } from "@devnet/command";
+
 import { waitEL } from "../../../lib/network/index.js";
 import { LidoCoreInstall } from "./install.js";
 
 export const ActivateLidoProtocol = command.cli({
   description:
     "Activates the lido-core protocol by deploying smart contracts and configuring the environment based on the current network state.",
-  params: {},
-  async handler({ logger, dre }) {
-    const { state, artifacts } = dre;
-    const { lidoCLI } = artifacts.services;
+  params: { check: Params.boolean({ default: true, description: "kek" }) },
+  async handler({ dre, dre: { logger } }) {
+    const {
+      state,
+      services: { lidoCLI },
+    } = dre;
 
-    logger("Initiating the activation of the lido-core protocol...");
+    logger.log("Initiating the activation of the lido-core protocol...");
 
     // Ensures all dependencies are installed before proceeding
-    logger("Ensuring dependencies are installed...");
+    logger.log("Ensuring dependencies are installed...");
     await LidoCoreInstall.exec(dre, {});
-    logger("Dependencies installed successfully.");
+    logger.log("Dependencies installed successfully.");
 
     const { elPublic } = await state.getChain();
     const { deployer, oracles, councils } = await state.getNamedWallet();
 
-    logger(`Ensuring the execution node at ${elPublic} is ready...`);
+    logger.log(`Ensuring the execution node at ${elPublic} is ready...`);
     await waitEL(elPublic);
-    logger("Execution node is ready.");
+    logger.log("Execution node is ready.");
 
     const deployEnv = {
       DEPLOYED: "deployed-local-devnet.json",
@@ -33,21 +35,16 @@ export const ActivateLidoProtocol = command.cli({
       EL_API_PROVIDER: elPublic,
     };
 
-    logger("Deploying and configuring lido-core protocol components...");
+    const activateCoreSh = lidoCLI.sh({ env: deployEnv });
 
-    await setupDevNet(
-      {
-        dsmGuardians: councils.map(({ publicKey }) => publicKey),
-        dsmQuorum: councils.length,
-        oraclesInitialEpoch: 60,
-        oraclesMembers: oracles.map(({ publicKey }) => publicKey),
-        oraclesQuorum: oracles.length - 1,
-        rolesBeneficiary: deployer.publicKey,
-      },
-      lidoCLI.root,
-      deployEnv,
-    );
+    await activateCoreSh`./run.sh devnet setup 
+                          --oracles-members ${oracles.map(({ publicKey }) => publicKey).join(",")}
+                          --oracles-quorum ${oracles.length - 1}
+                          --oracles-initial-epoch 60
+                          --dsm-guardians ${councils.map(({ publicKey }) => publicKey).join(",")}
+                          --dsm-quorum ${councils.length}
+                          --roles-beneficiary ${deployer.publicKey}`;
 
-    logger("✅ Lido-core protocol activation completed successfully.");
+    logger.log("✅ Lido-core protocol activation completed successfully.");
   },
 });

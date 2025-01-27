@@ -1,23 +1,22 @@
+import { command } from "@devnet/command";
 import fs from "node:fs/promises";
 import path from "node:path";
-
-import { command } from "../../../lib/command/command.js";
 
 export const LidoCoreUpdateState = command.cli({
   description:
     "Reads the network state file for lido-core and updates the JSON database accordingly.",
   params: {},
-  async handler({ logger, dre }) {
-    const { state, artifacts } = dre;
-    const { lidoCore } = artifacts.services;
+  async handler({ dre, dre: { logger } }) {
+    const { state, services } = dre;
+    const { lidoCore } = services;
 
     const { deployer } = await state.getNamedWallet();
     const { elPublic, clPublic } = await state.getChain();
 
-    logger("Reading network state file...");
+    logger.log("Reading network state file...");
 
     const deployedNetworkPath = path.join(
-      lidoCore.root,
+      lidoCore.artifact.root,
       `deployed-local-devnet.json`,
     );
 
@@ -30,12 +29,12 @@ export const LidoCoreUpdateState = command.cli({
     // Update the JSON database with the new state
     await state.updateLido(jsonData);
 
-    const { lidoCLI } = artifacts.services;
+    const { lidoCLI } = services;
 
     //     // Save the state to the lido-cli folder
-    logger("Saving state to the lido-cli configuration...");
+    logger.log("Saving state to the lido-cli configuration...");
     await fs.writeFile(
-      path.join(lidoCLI.root, "deployed-local-devnet.json"),
+      path.join(lidoCLI.artifact.root, "configs", "deployed-local-devnet.json"),
       fileContent,
       "utf-8",
     );
@@ -60,11 +59,21 @@ KEYS_API_PROVIDER=https://keys-api.testnet.fi
     `.trim();
 
     await fs.writeFile(
-      path.join(lidoCLI.root, ".env"),
+      path.join(lidoCLI.artifact.root, ".env"),
       lidoCliEnvContent,
       "utf-8",
     );
 
-    logger("✅ Network state has been successfully updated.");
+    await fs.writeFile(
+      path.join(
+        lidoCLI.artifact.root,
+        "configs",
+        "extra-deployed-local-devnet.json",
+      ),
+      JSON.stringify({}),
+      "utf-8",
+    );
+
+    logger.log("✅ Network state has been successfully updated.");
   },
 });

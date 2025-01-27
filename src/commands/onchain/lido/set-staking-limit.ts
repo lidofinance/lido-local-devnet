@@ -1,6 +1,5 @@
-import { command } from "../../../lib/command/command.js";
-import { Params } from "../../../lib/command/index.js";
-import { runLidoCLI } from "../../../lib/lido-cli/index.js";
+import { Params, command } from "@devnet/command";
+
 import { waitEL } from "../../../lib/network/index.js";
 import { LidoCoreInstall } from "./install.js";
 
@@ -17,39 +16,31 @@ export const LidoSetStakingLimit = command.cli({
       required: true,
     }),
   },
-  async handler({ logger, params, dre }) {
-    const { state, artifacts } = dre;
-    const { lidoCLI } = artifacts.services;
+  async handler({ params, dre, dre: { logger } }) {
+    const { state } = dre;
+    const { lidoCLI } = dre.services;
 
-    logger("Starting the process to increase the staking limit...");
+    logger.log("Starting the process to increase the staking limit...");
 
     // Ensure all necessary dependencies are installed before execution
-    logger("Checking and installing required dependencies...");
+    logger.log("Checking and installing required dependencies...");
     await LidoCoreInstall.exec(dre, {});
-    logger("Dependencies installed successfully.");
+    logger.log("Dependencies installed successfully.");
 
     // Retrieve the RPC endpoint for the execution layer node
     const { elPublic } = await state.getChain();
 
-    logger(`Verifying readiness of the execution layer node at ${elPublic}...`);
+    logger.log(
+      `Verifying readiness of the execution layer node at ${elPublic}...`,
+    );
     await waitEL(elPublic);
-    logger("Execution layer node is operational.");
+    logger.log("Execution layer node is operational.");
 
     // Execute the Lido CLI command to increase the staking limit
-    logger("Executing the Lido CLI command to set a new staking limit...");
-    await runLidoCLI(
-      [
-        "nor",
-        "set-limit",
-        "-o",
-        String(params.operatorId),
-        "-l",
-        String(params.limit),
-      ],
-      lidoCLI.root,
-      {},
-    );
+    logger.log("Executing the Lido CLI command to set a new staking limit...");
 
-    logger("✅ Staking limit increased successfully. Process completed.");
+    await lidoCLI.sh`./run.sh nor set-limit -o ${params.operatorId} -l ${params.limit}`;
+
+    logger.log("✅ Staking limit increased successfully. Process completed.");
   },
 });
