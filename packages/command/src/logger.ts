@@ -10,12 +10,17 @@ export class DevNetLogger {
   constructor(network: string, commandName: string) {
     this.network = network;
     this.commandName = commandName;
-    this.color = getColorForText(`${network}/${commandName}`);
+    this.color = DevNetLogger.getColor(network, commandName);
+  }
+
+  static getColor(network: string, commandName: string) {
+    return getColorForText(`${network}/${commandName}`);
   }
 
   public error(msg: string) {
     this.log(chalk.red(msg));
   }
+
 
   public log(msg: unknown) {
     console.log(`${applyColor(this.color, "||")} ${msg}`);
@@ -45,5 +50,9 @@ export class DevNetLogger {
       .map((s) => `${applyColor(this.color, "||")} ${s}`);
 
     strings.forEach((str) => console.log(str));
+  }
+
+  public warn(msg: string) {
+    this.log(chalk.yellow(msg));
   }
 }

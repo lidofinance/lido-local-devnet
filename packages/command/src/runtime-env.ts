@@ -17,10 +17,10 @@ class Network {
 }
 
 export class DevNetRuntimeEnvironment {
-  logger: DevNetLogger;
-  network: Network;
-  services: DevNetServiceRegistry["services"];
-  state: State;
+  public readonly logger: DevNetLogger;
+  public readonly network: Network;
+  public readonly services: DevNetServiceRegistry["services"];
+  public readonly state: State;
 
   constructor(
     network: string,
@@ -47,7 +47,7 @@ export class DevNetRuntimeEnvironment {
     const networkConfig =
       userConfig?.networks?.find((net: any) => net?.name === network) ?? {};
 
-    const services = await DevNetServiceRegistry.getNew(network);
+    const services = await DevNetServiceRegistry.getNew(network, commandName);
 
     return new DevNetRuntimeEnvironment(
       network,

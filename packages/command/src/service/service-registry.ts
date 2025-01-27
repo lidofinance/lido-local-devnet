@@ -23,14 +23,14 @@ export class DevNetServiceRegistry {
     await mkdir(this.getRoot(network), { recursive: true });
   }
 
-  static async getNew(network: string): Promise<DevNetServiceRegistry> {
+  static async getNew(network: string, commandName: string): Promise<DevNetServiceRegistry> {
     await this.createRootDir(network);
     const rootDir = this.getRoot(network);
 
     const servicesList = await Promise.all(
       Object.entries(services).map(async ([key]) => [
         key,
-        await DevNetService.getNew(rootDir, network, key as keyof DevNetServices),
+        await DevNetService.getNew(rootDir, network, commandName, key as keyof DevNetServices),
       ]),
     );
 

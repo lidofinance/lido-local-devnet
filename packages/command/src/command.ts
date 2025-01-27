@@ -5,21 +5,21 @@ import { ZodError } from "zod";
 
 import { DEFAULT_NETWORK_NAME } from "./constants.js";
 import { CustomDevNetContext, DevNetContext } from "./context.js";
+import { DevNetError } from "./error.js";
 import { string } from "./params.js";
 import { DevNetRuntimeEnvironment } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
 
 export type InferredFlags<T> = T extends FlagInput<infer F> ? F : unknown;
-export function formatZodErrors(error: ZodError): string {
-  return error.errors
-    .map(
-      (err) =>
-        `❌ Error in ${err.path.join(".")}: ${err.message}` +
-        (err.code === "invalid_type" && err.expected
-          ? ` (expected: ${err.expected})`
-          : ""),
-    )
-    .join("\n");
+
+export function formatZodErrors(error: ZodError): string[] {
+  return error.errors.map(
+    (err) =>
+      `❌ Error in ${err.path.join(".")}: ${err.message}` +
+      (err.code === "invalid_type" && err.expected
+        ? ` (expected: ${err.expected})`
+        : ""),
+  );
 }
 
 export class DevNetCommand extends BaseCommand {
@@ -63,7 +63,7 @@ export class DevNetCommand extends BaseCommand {
       flags: this.ctor.flags,
       strict: this.ctor.strict,
     });
-
+    // console.log(this.id ?? "anonymous")
     const dre = await DevNetRuntimeEnvironment.getNew(
       params.network,
       this.id ?? "anonymous",
@@ -81,33 +81,50 @@ export class DevNetCommand extends BaseCommand {
     const start = performance.now();
 
     if (Object.values(this.ctx.params).length > 1) {
-      logger.logHeader(`Run Command with params:`);
+      logger.logHeader(`Running the command with parameters:`);
+      // logger.log("");
       logger.logJson(this.ctx.params);
       logger.log(ctor.description);
     } else {
-      logger.logHeader(`Run Command`);
+      logger.logHeader(`Running the command`);
+      // logger.log("");
       logger.log(ctor.description);
     }
-
-    logger.log("");
 
     try {
       await ctor.handler(this.ctx);
     } catch (error: unknown) {
       if (error instanceof ZodError) {
-        return this.error("\n" + formatZodErrors(error));
+        formatZodErrors(error).map((err) => logger.error(err));
+        return;
       }
 
       // this error handles by execa wrapper
       if (error instanceof ExecaError) {
+        return logger.error(
+          "An error occurred while processing a nested shell command, read the logs above",
+        );
+      }
+
+      if (error instanceof DevNetError) {
+        logger.error(
+          "An error occurred during the processing of the main command:",
+        );
+        logger.error(error.message);
         return;
       }
 
       const err = error as any;
+      logger.error(
+        "An error occurred during the processing of the main command:",
+      );
       logger.error(err.message);
+      if (err.stack) {
+        err.stack.split("\n").map((stack: string) => logger.error(stack));
+      }
     } finally {
       const end = performance.now();
-      logger.log("");
+
       logger.logFooter(`Execution time ${Math.floor(end - start)}ms`);
     }
   }

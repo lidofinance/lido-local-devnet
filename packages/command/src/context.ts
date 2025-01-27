@@ -4,7 +4,7 @@ import { DevNetRuntimeEnvironment } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
 export class DevNetContext<T extends typeof BaseCommand> {
   // public args: ExtractArgs<T>;
-  public dre: DevNetRuntimeEnvironment;
+  public readonly dre: DevNetRuntimeEnvironment;
   public params: ExtractFlags<T>;
   // public runCommand: (id: string, argv?: string[]) => Promise<void>;
 
