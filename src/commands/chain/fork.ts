@@ -5,12 +5,12 @@ export const StartAnvil = command.cli({
   description:
     "Start Anvil in fork mode connected to a specified Ethereum node",
   params: {},
-  async handler({ logger, dre }) {
+  async handler({ dre, dre: { logger } }) {
     const { state } = dre;
 
     const { elPublic } = await state.getChain();
 
-    logger(`Starting Anvil forking from: ${elPublic}...`);
+    logger.log(`Starting Anvil forking from: ${elPublic}...`);
 
     await execa("anvil", ["--steps-tracing", "--fork-url", elPublic], {
       stdio: "inherit",

@@ -7,8 +7,8 @@ export const KurtosisGetInfo = command.cli({
   description:
     "Retrieves and displays information about the Kurtosis enclave.",
   params: {},
-  async handler({ logger, dre }) {
-    logger("Retrieving Kurtosis enclave information...");
+  async handler({ dre, dre: { logger } }) {
+    logger.log("Retrieving Kurtosis enclave information...");
     const { name } = dre.network;
     // const { config } = dre;
 

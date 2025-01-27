@@ -6,18 +6,18 @@ export const KurtosisCleanUp = command.isomorphic({
   description:
     "Destroys the Kurtosis enclave, cleans the JSON database, and removes network artifacts.",
   params: {},
-  async handler({ logger, dre }) {
+  async handler({ dre, dre: { logger } }) {
     const {
       services: { kurtosis },
     } = dre;
 
-    logger("Destroying Kurtosis enclave...");
+    logger.log("Destroying Kurtosis enclave...");
 
     await kurtosisApi.destroyEnclave(dre.network.name);
 
-    logger("Removing network artifacts...");
+    logger.log("Removing network artifacts...");
 
     await kurtosis.artifact.clean();
-    logger("Cleanup completed successfully.");
+    logger.log("Cleanup completed successfully.");
   },
 });
