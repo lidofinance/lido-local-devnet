@@ -3,9 +3,7 @@ import { command } from "@devnet/command";
 export const BlockscoutDown = command.cli({
   description: "Down Blockscout",
   params: {},
-  async handler({ logger, dre }) {
-    logger("Stopping Blockscout...");
-
+  async handler({ dre, dre: { logger } }) {
     const {
       state,
       network,
@@ -23,15 +21,10 @@ export const BlockscoutDown = command.cli({
       },
     });
 
-    try {
-      await blockScoutSh`docker compose -f geth.yml down -v`;
+    await blockScoutSh`docker compose -f geth.yml down -v`;
 
-      logger("Blockscout stopped successfully.");
+    logger.log("Blockscout stopped successfully.");
 
-      await state.updateBlockScout({});
-    } catch (error: any) {
-      logger(`Failed to stop Blockscout: ${error.message}`);
-      throw error;
-    }
+    await state.updateBlockScout({});
   },
 });

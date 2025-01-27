@@ -5,9 +5,7 @@ import { getPublicPortAndService } from "../../lib/docker/index.js";
 export const BlockscoutUp = command.cli({
   description: "Start Blockscout",
   params: {},
-  async handler({ logger, dre }) {
-    logger("Starting Blockscout...");
-
+  async handler({ dre, dre: { logger } }) {
     const {
       state,
       network,
@@ -25,23 +23,20 @@ export const BlockscoutUp = command.cli({
       },
     });
 
-    try {
-      await blockScoutSh`docker compose -f ./geth.yml up -d`;
+    await blockScoutSh`docker compose -f ./geth.yml up -d`;
 
-      const info = await getPublicPortAndService(80, "kt-" + network.name);
-      const apiHost = `localhost:${info.publicPort}`;
-      const publicUrl = `http://${apiHost}`;
+    const info = await getPublicPortAndService(80, "kt-" + network.name);
+    const apiHost = `localhost:${info.publicPort}`;
+    const publicUrl = `http://${apiHost}`;
 
-      await blockScoutSh({
-        env: { NEXT_PUBLIC_API_HOST: apiHost, NEXT_PUBLIC_APP_HOST: apiHost },
-      })`docker compose -f geth.yml up -d frontend`;
+    logger.log("Restart the frontend instance to pass the actual public url");
 
-      logger(`Blockscout started successfully on URL: ${publicUrl}`);
+    await blockScoutSh({
+      env: { NEXT_PUBLIC_API_HOST: apiHost, NEXT_PUBLIC_APP_HOST: apiHost },
+    })`docker compose -f geth.yml up -d frontend`;
 
-      await state.updateBlockScout({ url: publicUrl, api: `${publicUrl}/api` });
-    } catch (error: any) {
-      logger(`Failed to start Blockscout: ${error.message}`);
-      throw error;
-    }
+    logger.log(`Blockscout started successfully on URL: ${publicUrl}`);
+
+    await state.updateBlockScout({ url: publicUrl, api: `${publicUrl}/api` });
   },
 });

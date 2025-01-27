@@ -4,22 +4,17 @@ import { BlockscoutDown } from "./down.js";
 import { BlockscoutUp } from "./up.js";
 
 export const RestartNodes = command.isomorphic({
-  description: "Restart CL + EL nodes from scratch",
+  description: "Restart blockscout",
   params: {},
-  async handler({ logger, dre }) {
-    logger("Restarting the blockscout...");
+  async handler({ dre, dre: { logger } }) {
+    logger.log("Restarting the blockscout...");
 
-    try {
-      await BlockscoutDown.exec(dre, {});
-      logger("blockscout successfully stopped.");
+    await BlockscoutDown.exec(dre, {});
+    logger.log("blockscout successfully stopped.");
 
-      await BlockscoutUp.exec(dre, {});
-      logger("blockscout successfully started.");
+    await BlockscoutUp.exec(dre, {});
+    logger.log("blockscout successfully started.");
 
-      logger("✅ blockscout restart completed successfully!");
-    } catch (error:any) {
-      logger(`❌ blockscout restart failed: ${error.message}`);
-      throw error;
-    }
+    logger.log("✅ blockscout restart completed successfully!");
   },
 });
