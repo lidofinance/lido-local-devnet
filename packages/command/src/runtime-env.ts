@@ -27,6 +27,7 @@ export class DevNetRuntimeEnvironment {
     rawConfig: unknown,
     registry: DevNetServiceRegistry,
     commandName: string,
+    logger: DevNetLogger
   ) {
     this.state = new State(
       rawConfig,
@@ -36,10 +37,11 @@ export class DevNetRuntimeEnvironment {
     this.network = new Network(network);
     this.services = registry.services;
 
-    this.logger = new DevNetLogger(network, commandName);
+    this.logger = logger;
   }
 
   static async getNew(network: string, commandName: string) {
+    const logger = new DevNetLogger(network, commandName);
     const userConfig = await loadUserConfig().catch(() =>
       console.log("User config not found, use empty object"),
     );
@@ -47,13 +49,14 @@ export class DevNetRuntimeEnvironment {
     const networkConfig =
       userConfig?.networks?.find((net: any) => net?.name === network) ?? {};
 
-    const services = await DevNetServiceRegistry.getNew(network, commandName);
+    const services = await DevNetServiceRegistry.getNew(network, commandName, logger);
 
     return new DevNetRuntimeEnvironment(
       network,
       networkConfig,
       services,
       commandName,
+      logger
     );
   }
 }

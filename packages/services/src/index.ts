@@ -26,7 +26,12 @@ const lidoCore = new DevNetServiceConfig({
 const lidoCLI = new DevNetServiceConfig({
   repository: "submodules/lido-cli",
   name: "lidoCLI" as const,
-  constants: {},
+  constants: {
+    DEPLOYED_NETWORK_CONFIG_PATH: "configs/deployed-local-devnet.json",
+    DEPLOYED_NETWORK_CONFIG_NAME: "deployed-local-devnet.json",
+    DEPLOYED_NETWORK_CONFIG_EXTRA_PATH: "configs/extra-deployed-local-devnet.json", 
+    ENV_CONFIG_PATH: ".env"
+  },
   env: {
     LIDO_CLI_NON_INTERACTIVE: "true",
   },

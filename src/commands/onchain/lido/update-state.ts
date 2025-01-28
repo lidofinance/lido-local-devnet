@@ -1,42 +1,31 @@
 import { command } from "@devnet/command";
-import fs from "node:fs/promises";
-import path from "node:path";
 
 export const LidoCoreUpdateState = command.cli({
   description:
     "Reads the network state file for lido-core and updates the JSON database accordingly.",
   params: {},
-  async handler({ dre, dre: { logger } }) {
+  async handler({ dre }) {
     const { state, services } = dre;
     const { lidoCore } = services;
 
     const { deployer } = await state.getNamedWallet();
     const { elPublic, clPublic } = await state.getChain();
 
-    logger.log("Reading network state file...");
-
-    const deployedNetworkPath = path.join(
-      lidoCore.artifact.root,
-      `deployed-local-devnet.json`,
+    const jsonData = await lidoCore.readJson(
+      lidoCore.config.constants.NETWORK_STATE_FILE,
     );
 
-    // const { elPublic, clPublic } = await state.getChain();
-
-    // Read and parse the network state file
-    const fileContent = await fs.readFile(deployedNetworkPath, "utf8");
-    const jsonData = JSON.parse(fileContent);
-
-    // Update the JSON database with the new state
     await state.updateLido(jsonData);
 
     const { lidoCLI } = services;
 
-    //     // Save the state to the lido-cli folder
-    logger.log("Saving state to the lido-cli configuration...");
-    await fs.writeFile(
-      path.join(lidoCLI.artifact.root, "configs", "deployed-local-devnet.json"),
-      fileContent,
-      "utf-8",
+    const {
+      config: { constants: lidoCLIConstants },
+    } = lidoCLI;
+
+    await lidoCLI.writeJson(
+      lidoCLIConstants.DEPLOYED_NETWORK_CONFIG_PATH,
+      jsonData,
     );
 
     const lidoCliEnvContent = `
@@ -44,7 +33,7 @@ export const LidoCoreUpdateState = command.cli({
 PRIVATE_KEY=${deployer.privateKey}
 
 # Contract addresses
-DEPLOYED=deployed-local-devnet.json
+DEPLOYED=${lidoCLIConstants.DEPLOYED_NETWORK_CONFIG_NAME}
 
 # Execution Layer API provider
 EL_CHAIN_ID=32382
@@ -58,22 +47,14 @@ CL_API_PROVIDER=${clPublic}
 KEYS_API_PROVIDER=https://keys-api.testnet.fi
     `.trim();
 
-    await fs.writeFile(
-      path.join(lidoCLI.artifact.root, ".env"),
+    await lidoCLI.writeFile(
+      lidoCLIConstants.ENV_CONFIG_PATH,
       lidoCliEnvContent,
-      "utf-8",
     );
 
-    await fs.writeFile(
-      path.join(
-        lidoCLI.artifact.root,
-        "configs",
-        "extra-deployed-local-devnet.json",
-      ),
-      JSON.stringify({}),
-      "utf-8",
+    await lidoCLI.writeJson(
+      lidoCLIConstants.DEPLOYED_NETWORK_CONFIG_EXTRA_PATH,
+      {},
     );
-
-    logger.log("✅ Network state has been successfully updated.");
   },
 });
