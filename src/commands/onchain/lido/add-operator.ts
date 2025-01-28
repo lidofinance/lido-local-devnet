@@ -1,6 +1,5 @@
 import { Params, command } from "@devnet/command";
 
-import { runLidoCLI } from "../../../lib/lido-cli/index.js";
 import { waitEL } from "../../../lib/network/index.js";
 import { LidoCoreInstall } from "./install.js";
 
@@ -35,11 +34,7 @@ export const LidoAddOperator = command.cli({
 
     // Execute the Lido CLI command to add a new node operator
     logger.log("Executing the Lido CLI command to add a new node operator...");
-    await runLidoCLI(
-      ["nor", "add-operator", "-n", params.name, "-a", deployer.publicKey],
-      lidoCLI.artifact.root,
-      {},
-    );
+    await lidoCLI.sh`./run.sh nor add-operator -n ${params.name} -a ${deployer.publicKey}`;
 
     logger.log("✅ New node operator added successfully. Process completed.");
   },
