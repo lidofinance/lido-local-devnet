@@ -4,7 +4,6 @@
 
 import { Params, command } from "@devnet/command";
 
-import { waitEL } from "../../../lib/network/index.js";
 import { LidoCoreInstall } from "./install.js";
 
 export const LidoDeposit = command.cli({
@@ -20,7 +19,7 @@ export const LidoDeposit = command.cli({
     }),
   },
   async handler({ params, dre, dre: { logger } }) {
-    const { state, services } = dre;
+    const { services } = dre;
     const { lidoCLI } = services;
 
     logger.log("Starting the deposit process for the Lido protocol...");
@@ -30,14 +29,7 @@ export const LidoDeposit = command.cli({
     await LidoCoreInstall.exec(dre, {});
     logger.log("Dependencies installed successfully.");
 
-    // Retrieve the RPC endpoint for the execution layer node
-    const { elPublic } = await state.getChain();
-
-    logger.log(
-      `Verifying readiness of the execution layer node at ${elPublic}...`,
-    );
-    await waitEL(elPublic);
-    logger.log("Execution layer node is operational.");
+    await dre.network.waitEL();
 
     // Execute the Lido CLI commands for deposit
     logger.log("Fetching depositable Ether information...");

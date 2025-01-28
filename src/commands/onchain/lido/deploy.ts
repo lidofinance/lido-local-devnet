@@ -1,6 +1,5 @@
 import { Params, command } from "@devnet/command";
 
-import { sendTransactionWithRetry } from "../../../lib/index.js";
 import { LidoCoreInstall } from "./install.js";
 import { LidoCoreUpdateState } from "./update-state.js";
 import { LidoCoreVerify } from "./verify.js";
@@ -41,12 +40,7 @@ export const DeployLidoContracts = command.cli({
     const { deployer } = await state.getNamedWallet();
 
 
-    await sendTransactionWithRetry({
-      amount: "1",
-      privateKey: deployer.privateKey,
-      providerUrl: elPublic,
-      toAddress: "0xf93Ee4Cf8c6c40b329b0c0626F28333c132CF241",
-    });
+    await dre.network.waitEL();
 
     const deployEnv: DeployEnvRequired = {
       DEPLOYER: deployer.publicKey,

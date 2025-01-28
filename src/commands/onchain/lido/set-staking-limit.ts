@@ -1,6 +1,5 @@
 import { Params, command } from "@devnet/command";
 
-import { waitEL } from "../../../lib/network/index.js";
 import { LidoCoreInstall } from "./install.js";
 
 export const LidoSetStakingLimit = command.cli({
@@ -17,7 +16,6 @@ export const LidoSetStakingLimit = command.cli({
     }),
   },
   async handler({ params, dre, dre: { logger } }) {
-    const { state } = dre;
     const { lidoCLI } = dre.services;
 
     logger.log("Starting the process to increase the staking limit...");
@@ -27,14 +25,7 @@ export const LidoSetStakingLimit = command.cli({
     await LidoCoreInstall.exec(dre, {});
     logger.log("Dependencies installed successfully.");
 
-    // Retrieve the RPC endpoint for the execution layer node
-    const { elPublic } = await state.getChain();
-
-    logger.log(
-      `Verifying readiness of the execution layer node at ${elPublic}...`,
-    );
-    await waitEL(elPublic);
-    logger.log("Execution layer node is operational.");
+    await dre.network.waitEL();
 
     // Execute the Lido CLI command to increase the staking limit
     logger.log("Executing the Lido CLI command to set a new staking limit...");

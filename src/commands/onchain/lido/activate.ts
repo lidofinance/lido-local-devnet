@@ -1,12 +1,11 @@
-import { Params, command } from "@devnet/command";
+import { command } from "@devnet/command";
 
-import { waitEL } from "../../../lib/network/index.js";
 import { LidoCoreInstall } from "./install.js";
 
 export const ActivateLidoProtocol = command.cli({
   description:
     "Activates the lido-core protocol by deploying smart contracts and configuring the environment based on the current network state.",
-  params: { check: Params.boolean({ default: true, description: "kek" }) },
+  params: {},
   async handler({ dre, dre: { logger } }) {
     const {
       state,
@@ -15,7 +14,6 @@ export const ActivateLidoProtocol = command.cli({
 
     logger.log("Initiating the activation of the lido-core protocol...");
 
-    // Ensures all dependencies are installed before proceeding
     logger.log("Ensuring dependencies are installed...");
     await LidoCoreInstall.exec(dre, {});
     logger.log("Dependencies installed successfully.");
@@ -23,9 +21,7 @@ export const ActivateLidoProtocol = command.cli({
     const { elPublic } = await state.getChain();
     const { deployer, oracles, councils } = await state.getNamedWallet();
 
-    logger.log(`Ensuring the execution node at ${elPublic} is ready...`);
-    await waitEL(elPublic);
-    logger.log("Execution node is ready.");
+    await dre.network.waitEL();
 
     const deployEnv = {
       DEPLOYED: "deployed-local-devnet.json",
@@ -36,7 +32,7 @@ export const ActivateLidoProtocol = command.cli({
     };
 
     const activateCoreSh = lidoCLI.sh({ env: deployEnv });
-
+    // TODO: calc oracles-initial-epoch (time voting + 1 epoch for core and +50 for CSM)
     await activateCoreSh`./run.sh devnet setup 
                           --oracles-members ${oracles.map(({ publicKey }) => publicKey).join(",")}
                           --oracles-quorum ${oracles.length - 1}
