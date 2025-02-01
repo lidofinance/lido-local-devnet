@@ -10,8 +10,6 @@ import { string } from "./params.js";
 import { DevNetRuntimeEnvironment } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
 
-export type InferredFlags<T> = T extends FlagInput<infer F> ? F : unknown;
-
 export function formatZodErrors(error: ZodError): string[] {
   return error.errors.map(
     (err) =>
@@ -20,6 +18,69 @@ export function formatZodErrors(error: ZodError): string[] {
         ? ` (expected: ${err.expected})`
         : ""),
   );
+}
+
+let depth = 0;
+async function executeCommandWithLogging<T>(
+  fn: () => Promise<T>,
+  context: DevNetContext<any>,
+  description: string,
+): Promise<T | void> {
+  const { logger } = context.dre;
+  if (Object.values(context.params).length > 1) {
+    logger.logHeader(`Running the command with parameters:`);
+    logger.logJson(context.params);
+    logger.log(description);
+  } else {
+    logger.logHeader(`Running the command`);
+    logger.log(description);
+  }
+
+  const start = performance.now();
+  let hasError = false;
+  try {
+    depth += 1;
+    return await fn();
+  } catch (error: unknown) {
+    hasError = true;
+    if (error instanceof ZodError) {
+      formatZodErrors(error).forEach((err) => logger.error(err));
+      return;
+    }
+
+    if (error instanceof ExecaError) {
+      logger.error(
+        "An error occurred while processing a nested shell command, read the logs above",
+      );
+      return;
+    }
+
+    if (error instanceof DevNetError) {
+      logger.error(
+        "An error occurred during the processing of the main command:",
+      );
+      logger.error(error.message);
+      return;
+    }
+
+    const err = error as any;
+    logger.error(
+      "An error occurred during the processing of the main command:",
+    );
+    logger.error(err.message);
+    if (err.stack) {
+      err.stack.split("\n").forEach((line: string) => logger.error(line));
+    }
+  } finally {
+    const end = performance.now();
+    logger.logFooter(`Execution time ${Math.floor(end - start)}ms`);
+    depth -= 1;
+    // This handler was added because of a strange implementation of ethers,
+    // which in case of node inaccessibility causes an error, but leaves a hanging promise,
+    // which does not allow to terminate the process 
+    // eslint-disable-next-line n/no-process-exit, unicorn/no-process-exit
+    if (depth === 0) process.exit(hasError ? 1 : 0);
+  }
 }
 
 export class DevNetCommand extends BaseCommand {
@@ -32,7 +93,6 @@ export class DevNetCommand extends BaseCommand {
   };
 
   static isIsomorphicCommand: boolean = true;
-
   static originalParams: FlagInput;
 
   protected ctx!: DevNetContext<typeof this.ctor>;
@@ -43,18 +103,6 @@ export class DevNetCommand extends BaseCommand {
     throw new Error("Static handler must be implemented in a derived class.");
   }
 
-  // protected async catch(err: { exitCode?: number } & Error): Promise<any> {
-  //   if (err instanceof ZodError) {
-  //     this.error("\n" + formatZodErrors(err));
-  //   }
-  //   // TODO: handle execa error
-
-  //   if (err instanceof ExecaError) {
-  //     console.log(err, err.message)
-  //   }
-  //   // return super.catch(err);
-  // }
-
   public async init(): Promise<void> {
     await super.init();
     const { flags: params } = await this.parse({
@@ -63,12 +111,10 @@ export class DevNetCommand extends BaseCommand {
       flags: this.ctor.flags,
       strict: this.ctor.strict,
     });
-    // console.log(this.id ?? "anonymous")
     const dre = await DevNetRuntimeEnvironment.getNew(
       params.network,
       this.id ?? "anonymous",
     );
-
     this.ctx = new DevNetContext({
       dre,
       params,
@@ -77,58 +123,15 @@ export class DevNetCommand extends BaseCommand {
 
   public async run(): Promise<void> {
     const ctor = this.constructor as typeof DevNetCommand;
-    const { logger } = this.ctx.dre;
-    const start = performance.now();
-
-    if (Object.values(this.ctx.params).length > 1) {
-      logger.logHeader(`Running the command with parameters:`);
-      // logger.log("");
-      logger.logJson(this.ctx.params);
-      logger.log(ctor.description);
-    } else {
-      logger.logHeader(`Running the command`);
-      // logger.log("");
-      logger.log(ctor.description);
-    }
-
-    try {
-      await ctor.handler(this.ctx);
-    } catch (error: unknown) {
-      if (error instanceof ZodError) {
-        formatZodErrors(error).map((err) => logger.error(err));
-        return;
-      }
-
-      // this error handles by execa wrapper
-      if (error instanceof ExecaError) {
-        return logger.error(
-          "An error occurred while processing a nested shell command, read the logs above",
-        );
-      }
-
-      if (error instanceof DevNetError) {
-        logger.error(
-          "An error occurred during the processing of the main command:",
-        );
-        logger.error(error.message);
-        return;
-      }
-
-      const err = error as any;
-      logger.error(
-        "An error occurred during the processing of the main command:",
-      );
-      logger.error(err.message);
-      if (err.stack) {
-        err.stack.split("\n").map((stack: string) => logger.error(stack));
-      }
-    } finally {
-      const end = performance.now();
-
-      logger.logFooter(`Execution time ${Math.floor(end - start)}ms`);
-    }
+    await executeCommandWithLogging(
+      () => ctor.handler(this.ctx),
+      this.ctx,
+      ctor.description!,
+    );
   }
 }
+
+export type InferredFlags<T> = T extends FlagInput<infer F> ? F : unknown;
 
 type CommandOptions<F extends Record<string, any>> = {
   description: string;
@@ -145,14 +148,12 @@ function isomorphic<F extends Record<string, any>>(
 ): FactoryResult<F> {
   class WrappedCommand extends DevNetCommand {
     static description = options.description;
-
     static flags = {
       ...DevNetCommand.baseFlags,
       ...options.params,
     };
 
     static isIsomorphicCommand: boolean = true;
-
     static originalParams = {
       ...DevNetCommand.baseFlags,
       ...options.params,
@@ -163,19 +164,25 @@ function isomorphic<F extends Record<string, any>>(
       dre: DevNetRuntimeEnvironment,
       params: InferredFlags<F>,
     ): Promise<void> {
-      // TODO: pass json param
       const paramsWithNetwork = {
         ...params,
         network: dre.network.name,
       } as unknown as ExtractFlags<H>;
-      await this.handler(new DevNetContext({ dre, params: paramsWithNetwork }));
+      const context = new DevNetContext({
+        dre: dre.clone(this.id),
+        params: paramsWithNetwork,
+      });
+      await executeCommandWithLogging(
+        () => this.handler(context),
+        context,
+        this.description!,
+      );
     }
 
     static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {
       await options.handler(ctx);
     }
   }
-
   return WrappedCommand as FactoryResult<F>;
 }
 
@@ -184,14 +191,12 @@ function cli<F extends Record<string, any>>(
 ): FactoryResult<F> {
   class WrappedCommand extends DevNetCommand {
     static description = options.description;
-
     static flags = {
       ...DevNetCommand.baseFlags,
       ...options.params,
     };
 
     static isIsomorphicCommand: boolean = false;
-
     static originalParams = {
       ...DevNetCommand.baseFlags,
       ...options.params,
@@ -202,19 +207,25 @@ function cli<F extends Record<string, any>>(
       dre: DevNetRuntimeEnvironment,
       params: InferredFlags<F>,
     ): Promise<void> {
-      // TODO: pass json param
       const paramsWithNetwork = {
         ...params,
         network: dre.network.name,
       } as unknown as ExtractFlags<H>;
-      await this.handler(new DevNetContext({ dre, params: paramsWithNetwork }));
+      const context = new DevNetContext({
+        dre: dre.clone(this.id),
+        params: paramsWithNetwork,
+      });
+      await executeCommandWithLogging(
+        () => this.handler(context),
+        context,
+        this.description!,
+      );
     }
 
     static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {
       await options.handler(ctx);
     }
   }
-
   return WrappedCommand as FactoryResult<F>;
 }
 
@@ -223,7 +234,6 @@ function hidden<F extends Record<string, any>>(
 ): FactoryResult<F> {
   class WrappedCommand extends DevNetCommand {
     static description = options.description;
-
     static flags = {
       ...DevNetCommand.baseFlags,
       ...options.params,
@@ -231,7 +241,6 @@ function hidden<F extends Record<string, any>>(
 
     static hidden = true;
     static isIsomorphicCommand: boolean = false;
-
     static originalParams = {
       ...DevNetCommand.baseFlags,
       ...options.params,
@@ -242,19 +251,25 @@ function hidden<F extends Record<string, any>>(
       dre: DevNetRuntimeEnvironment,
       params: InferredFlags<F>,
     ): Promise<void> {
-      // TODO: pass json param
       const paramsWithNetwork = {
         ...params,
         network: dre.network.name,
       } as unknown as ExtractFlags<H>;
-      await this.handler(new DevNetContext({ dre, params: paramsWithNetwork }));
+      const context = new DevNetContext({
+        dre: dre.clone(this.id),
+        params: paramsWithNetwork,
+      });
+      await executeCommandWithLogging(
+        () => this.handler(context),
+        context,
+        this.description!,
+      );
     }
 
     static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {
       await options.handler(ctx);
     }
   }
-
   return WrappedCommand as FactoryResult<F>;
 }
 

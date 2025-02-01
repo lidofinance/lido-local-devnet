@@ -16,6 +16,8 @@ export class DevNetRuntimeEnvironment {
   public readonly services: DevNetServiceRegistry["services"];
   public readonly state: State;
 
+  private readonly registry: DevNetServiceRegistry;
+
   constructor(
     network: string,
     rawConfig: unknown,
@@ -29,6 +31,8 @@ export class DevNetRuntimeEnvironment {
     );
     this.network = new DevNetDRENetwork(network, this.state, logger);
     this.services = registry.services;
+
+    this.registry = registry;
 
     this.logger = logger;
   }
@@ -53,6 +57,16 @@ export class DevNetRuntimeEnvironment {
       networkConfig,
       services,
       logger,
+    );
+  }
+
+  public clone(commandName: string) {
+    const newLogger = new DevNetLogger(this.network.name, commandName);
+    return new DevNetRuntimeEnvironment(
+      this.network.name,
+      this.state,
+      this.registry.clone(commandName, newLogger),
+      newLogger,
     );
   }
 }

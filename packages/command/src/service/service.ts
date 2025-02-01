@@ -65,6 +65,16 @@ export class DevNetService<Name extends keyof DevNetServices> {
     return service;
   }
 
+  public clone(commandName: string, logger: DevNetLogger) {
+    return new DevNetService(
+      this.config.name as Name,
+      this.network,
+      logger,
+      commandName,
+      this.artifact,
+    );
+  }
+
   public async readFile(relativePath: string) {
     const servicePath = this.artifact.root;
     this.logger.log(
@@ -80,7 +90,7 @@ export class DevNetService<Name extends keyof DevNetServices> {
   public async writeFile(relativePath: string, fileContent: string) {
     const servicePath = this.artifact.root;
     this.logger.log(
-      `Writing artifact for service "${this.config.name}" to path: "${relativePath}"`
+      `Writing artifact for service "${this.config.name}" to path: "${relativePath}"`,
     );
     return await writeFile(
       path.join(servicePath, relativePath),

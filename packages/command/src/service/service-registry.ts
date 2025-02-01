@@ -9,6 +9,7 @@ import { DevNetService } from "./service.js";
 type DevNetServices = typeof services;
 
 export class DevNetServiceRegistry {
+  network: string;
   root: string;
   services: { [K in keyof DevNetServices]: DevNetService<K> };
 
@@ -17,6 +18,7 @@ export class DevNetServiceRegistry {
     services: { [K in keyof DevNetServices]: DevNetService<K> },
   ) {
     this.root = path.join(ARTIFACTS_ROOT, network);
+    this.network = network;
     this.services = services;
   }
 
@@ -59,5 +61,15 @@ export class DevNetServiceRegistry {
 
   public async clean() {
     await rm(this.root, { force: true, recursive: true });
+  }
+
+  public clone(commandName: string, logger: DevNetLogger) {
+    const clonedServices = Object.fromEntries(
+      Object.entries(this.services).map(([key, service]) => [
+        key,
+        service.clone(commandName, logger),
+      ])
+    ) as { [K in keyof DevNetServices]: DevNetService<K> };
+    return new DevNetServiceRegistry(this.network, clonedServices);
   }
 }
