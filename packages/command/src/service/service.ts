@@ -87,6 +87,13 @@ export class DevNetService<Name extends keyof DevNetServices> {
     return JSON.parse(await this.readFile(relativePath));
   }
 
+  public async writeENV(relativePath: string, env: Record<string, string>) {
+    const envContent = Object.entries(env)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("\n");
+    return await this.writeFile(relativePath, envContent);
+  }
+
   public async writeFile(relativePath: string, fileContent: string) {
     const servicePath = this.artifact.root;
     this.logger.log(

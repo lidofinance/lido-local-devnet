@@ -28,29 +28,17 @@ export const LidoCoreUpdateState = command.cli({
       jsonData,
     );
 
-    const lidoCliEnvContent = `
-# Private key for account
-PRIVATE_KEY=${deployer.privateKey}
+    const lidoCliEnv = {
+      PRIVATE_KEY: deployer.privateKey,
+      DEPLOYED: lidoCLIConstants.DEPLOYED_NETWORK_CONFIG_NAME,
+      EL_CHAIN_ID: "32382",
+      EL_NETWORK_NAME: "local-devnet",
+      EL_API_PROVIDER: elPublic,
+      CL_API_PROVIDER: clPublic,
+      KEYS_API_PROVIDER: "https://keys-api.testnet.fi",
+    };
 
-# Contract addresses
-DEPLOYED=${lidoCLIConstants.DEPLOYED_NETWORK_CONFIG_NAME}
-
-# Execution Layer API provider
-EL_CHAIN_ID=32382
-EL_NETWORK_NAME=local-devnet
-EL_API_PROVIDER=${elPublic}
-
-# Consensus Layer API provider
-CL_API_PROVIDER=${clPublic}
-
-# TODO
-KEYS_API_PROVIDER=https://keys-api.testnet.fi
-    `.trim();
-
-    await lidoCLI.writeFile(
-      lidoCLIConstants.ENV_CONFIG_PATH,
-      lidoCliEnvContent,
-    );
+    await lidoCLI.writeENV(lidoCLIConstants.ENV_CONFIG_PATH, lidoCliEnv);
 
     await lidoCLI.writeJson(
       lidoCLIConstants.DEPLOYED_NETWORK_CONFIG_EXTRA_PATH,
