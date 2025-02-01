@@ -1,3 +1,4 @@
+import { BeaconClient } from "@devnet/cl-client";
 import { State } from "@devnet/state";
 import {
   AbstractSigner,
@@ -10,16 +11,19 @@ import {
 
 import { assert } from "../assert.js";
 import { DevNetLogger } from "../logger.js";
-
 export class DevNetDRENetwork {
   name: string;
-
   private logger: DevNetLogger;
   private state: State;
   constructor(network: string, state: State, logger: DevNetLogger) {
     this.name = network;
     this.state = state;
     this.logger = logger;
+  }
+
+  public async getCLClient() {
+    const { clPublic } = await this.state.getChain();
+    return new BeaconClient(clPublic);
   }
 
   public async getSigner() {
