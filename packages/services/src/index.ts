@@ -3,6 +3,7 @@ import { DevNetServiceConfig } from "./service.js";
 const blockscout = new DevNetServiceConfig({
   config: "services/blockscout",
   name: "blockscout" as const,
+  exposedPorts: [80],
   constants: {},
 });
 
@@ -29,8 +30,9 @@ const lidoCLI = new DevNetServiceConfig({
   constants: {
     DEPLOYED_NETWORK_CONFIG_PATH: "configs/deployed-local-devnet.json",
     DEPLOYED_NETWORK_CONFIG_NAME: "deployed-local-devnet.json",
-    DEPLOYED_NETWORK_CONFIG_EXTRA_PATH: "configs/extra-deployed-local-devnet.json", 
-    ENV_CONFIG_PATH: ".env"
+    DEPLOYED_NETWORK_CONFIG_EXTRA_PATH:
+      "configs/extra-deployed-local-devnet.json",
+    ENV_CONFIG_PATH: ".env",
   },
   env: {
     LIDO_CLI_NON_INTERACTIVE: "true",
@@ -43,11 +45,27 @@ const kurtosis = new DevNetServiceConfig({
   constants: {},
 });
 
+const csm = new DevNetServiceConfig({
+  repository: "submodules/csm",
+  name: "csm" as const,
+  constants: {
+    DEPLOY_CONFIG: "./artifacts/local-devnet/deploy-local-devnet.json",
+    UPGRADE_CONFIG: "./artifacts/local-devnet/deploy-local-devnet.json",
+    VERIFIER_API_KEY: "local-testnet",
+    ARTIFACTS_DIR: "./artifacts/local-devnet/",
+    DEPLOYED_VERIFIER: "artifacts/latest/deploy-verifier-devnet.json",
+  },
+  env: {
+    CHAIN: "local-devnet",
+  },
+});
+
 export const services = {
   blockscout,
   lidoCore,
   lidoCLI,
   kurtosis,
+  csm,
 };
 
 export { DevNetServiceConfig } from "./service.js";

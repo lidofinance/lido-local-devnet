@@ -5,4 +5,3 @@ export { DevNetError } from "./error.js";
 export * as Params from "./params.js";
 export * from "./rpc.js";
 export * from "./types.js";
-export * from "./user-service.js";

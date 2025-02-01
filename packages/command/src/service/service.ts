@@ -1,9 +1,11 @@
-import { services } from "@devnet/service";
+import { DevNetServiceConfig, services } from "@devnet/service";
 import chalk from "chalk";
 import { ExecaMethod, execa } from "execa";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { assert } from "../assert.js";
+import { PublicPortInfo, getServiceInfo } from "../docker/index.js";
 import { DevNetLogger } from "../logger.js";
 import {
   applyColor,
@@ -11,7 +13,6 @@ import {
   // getSeparator,
   // transformCMDOutput,
 } from "../ui.js";
-import { DevNetServiceConfig } from "../user-service.js";
 import { ServiceArtifact } from "./service-artifact.js";
 
 type DevNetServices = typeof services;
@@ -73,6 +74,25 @@ export class DevNetService<Name extends keyof DevNetServices> {
       commandName,
       this.artifact,
     );
+  }
+
+  public async getExposedPorts(): Promise<PublicPortInfo[]> {
+    const { exposedPorts } = this.config;
+    assert(
+      exposedPorts !== undefined,
+      `It is impossible to get exposedPorts because this service (${this.config.name}) does not have this config.`,
+    );
+
+    const info = await Promise.all(
+      exposedPorts.map(async (port) => getServiceInfo(port, `kt-${this.network}`)),
+    );
+
+    const validInfo = info.filter((item): item is NonNullable<typeof item> => item !== null);
+
+    assert(validInfo.length === info.length, 
+      `No data found for the service (${this.config.name}) in the docker network`);
+
+    return validInfo;
   }
 
   public async readFile(relativePath: string) {

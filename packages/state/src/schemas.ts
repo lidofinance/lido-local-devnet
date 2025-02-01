@@ -30,6 +30,8 @@ export const LidoConfigSchema = z.object({
   tokenManager: z.string(),
   validatorExitBus: z.string(),
   voting: z.string(),
+  treasury: z.string(),
+  withdrawalVault: z.string()
 });
 
 export const CSMConfigSchema = z.object({

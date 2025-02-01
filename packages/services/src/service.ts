@@ -3,6 +3,8 @@ export class DevNetServiceConfig<T = unknown> {
   constants: T;
   env?: Record<string, string>;
 
+  exposedPorts?: number[]
+
   hooks?: {
     build?: string;
     destroy?: string;
@@ -10,6 +12,7 @@ export class DevNetServiceConfig<T = unknown> {
   };
 
   name: string;
+
   repository?: string;
 
   constructor({
@@ -19,10 +22,12 @@ export class DevNetServiceConfig<T = unknown> {
     name,
     repository,
     constants,
+    exposedPorts
   }: {
     config?: string;
     constants: T;
     env?: Record<string, string>;
+    exposedPorts?: number[];
     hooks?: { build?: string; destroy?: string; install?: string };
     name: string;
     repository?: string;
@@ -33,5 +38,6 @@ export class DevNetServiceConfig<T = unknown> {
     this.name = name;
     this.repository = repository;
     this.constants = constants;
+    this.exposedPorts = exposedPorts
   }
 }

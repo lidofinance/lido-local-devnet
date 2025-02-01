@@ -1,8 +1,7 @@
 /* eslint-disable valid-jsdoc */
+import { DevNetServiceConfig } from "@devnet/service";
 import fs, { rm } from "node:fs/promises";
 import path from "node:path";
-
-import { DevNetServiceConfig } from "../user-service.js";
 
 export class ServiceArtifact {
   public config: DevNetServiceConfig;

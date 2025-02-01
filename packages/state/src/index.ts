@@ -115,6 +115,8 @@ export class State {
         tokenManager: "lidoCore.app:aragon-token-manager.proxy.address",
         validatorExitBus: "lidoCore.validatorsExitBusOracle.proxy.address",
         voting: "lidoCore.app:aragon-voting.proxy.address",
+        treasury: "lidoCore.lidoLocator.implementation.constructorArgs.0.treasury",
+        withdrawalVault: "lidoCore.withdrawalVault.proxy.address",
       },
       "lido",
       LidoConfigSchema,
@@ -123,11 +125,12 @@ export class State {
   }
 
   async getNamedWallet() {
-    const [deployer, oracle1, oracle2, oracle3, council1, council2, council3] =
+    const [deployer, secondDeployer, oracle1, oracle2, oracle3, council1, council2, council3] =
       await this.getWallet();
 
     return {
       deployer,
+      secondDeployer,
       oracle1,
       oracle2,
       oracle3,
@@ -177,6 +180,10 @@ export class State {
 
   async updateCSM(jsonData: unknown) {
     await this.appState.update({ csm: jsonData });
+  }
+
+  async updateElectraVerifier(jsonData: unknown) {
+    await this.appState.update({ electraVerifier: jsonData });
   }
 
   async updateLido(jsonData: unknown) {
