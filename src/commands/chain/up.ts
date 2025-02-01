@@ -1,9 +1,5 @@
-import { command, fatal } from "@devnet/command";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import * as YAML from "yaml";
+import { command } from "@devnet/command";
 
-import { kurtosisApi } from "../../lib/kurtosis/index.js";
 import { DownloadKurtosisArtifacts } from "./artifacts.js";
 import { KurtosisUpdate } from "./update.js";
 
@@ -20,31 +16,16 @@ export const KurtosisUp = command.isomorphic({
     } = dre;
 
     const { preset } = await state.getKurtosis();
+    // TODO: modify chainId
+    // const file = await kurtosis.readFile(`${preset}.yml`);
+    const fileName = `${preset}.yml`
+    // const config = YAML.parse(file);
 
-    const config = YAML.parse(
-      await readFile(
-        path.join(kurtosis.artifact.root, `${preset}.yml`),
-        "utf-8",
-      ),
-    );
-
-    const output = await kurtosisApi.runPackage(
-      name,
-      "github.com/ethpandaops/ethereum-package",
-      config,
-    );
-
-    if (
-      output.executionError ||
-      output.interpretationError ||
-      output.validationErrors.length > 0
-    ) {
-      logger.log("An error occurred while starting the package.");
-      logger.logJson(output);
-      fatal("Error happened while running network");
-    } else {
-      logger.log("Package started successfully.");
-    }
+    await kurtosis.sh`kurtosis run
+                        --enclave ${name} 
+                        github.com/ethpandaops/ethereum-package 
+                        --args-file ${fileName}`;
+   
 
     await KurtosisUpdate.exec(dre, {});
     await DownloadKurtosisArtifacts.exec(dre, {});

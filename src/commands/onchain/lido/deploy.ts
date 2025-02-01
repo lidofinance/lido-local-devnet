@@ -28,7 +28,7 @@ export const DeployLidoContracts = command.cli({
     }),
   },
   async handler({ dre, dre: { logger }, params }) {
-    const { state, services } = dre;
+    const { state, services, network } = dre;
     const { lidoCore } = services;
     const { constants } = lidoCore.config;
 
@@ -36,9 +36,13 @@ export const DeployLidoContracts = command.cli({
     await LidoCoreInstall.exec(dre, {});
 
     const { elPublic } = await state.getChain();
-    const { genesisTime } = await state.getParsedConsensusGenesisState();
-    const { deployer } = await state.getNamedWallet();
+    const clClient = await network.getCLClient();
 
+    const {
+      data: { genesis_time },
+    } = await clClient.getGenesis();
+
+    const { deployer } = await state.getNamedWallet();
 
     await dre.network.waitEL();
 
@@ -52,7 +56,7 @@ export const DeployLidoContracts = command.cli({
       NETWORK: constants.NETWORK,
       NETWORK_STATE_DEFAULTS_FILE: constants.NETWORK_STATE_DEFAULTS_FILE,
       NETWORK_STATE_FILE: constants.NETWORK_STATE_FILE,
-      GENESIS_TIME: genesisTime,
+      GENESIS_TIME: genesis_time,
       RPC_URL: elPublic,
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,
     };
