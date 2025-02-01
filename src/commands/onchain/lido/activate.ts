@@ -14,9 +14,7 @@ export const ActivateLidoProtocol = command.cli({
 
     logger.log("Initiating the activation of the lido-core protocol...");
 
-    logger.log("Ensuring dependencies are installed...");
     await LidoCoreInstall.exec(dre, {});
-    logger.log("Dependencies installed successfully.");
 
     const { elPublic } = await state.getChain();
     const { deployer, oracles, councils } = await state.getNamedWallet();
@@ -40,7 +38,5 @@ export const ActivateLidoProtocol = command.cli({
                           --dsm-guardians ${councils.map(({ publicKey }) => publicKey).join(",")}
                           --dsm-quorum ${councils.length}
                           --roles-beneficiary ${deployer.publicKey}`;
-
-    logger.log("✅ Lido-core protocol activation completed successfully.");
   },
 });

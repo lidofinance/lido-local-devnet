@@ -1,104 +1,85 @@
-import { Command, Flags } from "@oclif/core";
-import { execa } from "execa";
-import fs from "node:fs/promises";
+import { Params, command } from "@devnet/command";
 
-import { baseConfig, jsonDb } from "../../../config/index.js";
-import { waitEL } from "../../../lib/network/index.js";
+import { CSMInstall } from "./install.js";
 
-export default class DeployCSVerifier extends Command {
-  static description =
-    "Deploys the CSVerifier smart contract using configured deployment scripts.";
-
-  static flags = {
-    verify: Flags.boolean({
-      char: "v",
+export const DeployCSVerifier = command.cli({
+  description:
+    "Deploys the CSVerifier smart contract using configured deployment scripts.",
+  params: {
+    verify: Params.boolean({
       description: "Verify the smart contract after deployment",
     }),
-  };
+  },
+  async handler({ params, dre, dre: { logger } }) {
+    const { state, services, network } = dre;
+    const { csm } = services;
+    const {
+      config: { constants },
+    } = csm;
 
-  async run() {
-    const { flags } = await this.parse(DeployCSVerifier);
+    await dre.network.waitEL();
 
-    this.log("Initiating the deployment of the CSVerifier smart contract...");
+    const { withdrawalVault } = await state.getLido();
+    const { module: CSMModule } = await state.getCSM();
+    const { elPublic } = await state.getChain();
+    const { deployer } = await state.getNamedWallet();
 
-    const csmConfig = baseConfig.onchain.lido.csm;
-    const commandRoot = csmConfig.paths.root;
-    const csmDefaultEnv = csmConfig.env;
+    const clClient = await network.getCLClient();
 
-    const state = await jsonDb.getReader();
+    const {
+      data: { ELECTRA_FORK_EPOCH, SLOTS_PER_EPOCH },
+    } = await clClient.getConfig();
 
-    const rpc = state.getOrError("network.binding.elNodes.0");
-    // const rpc = "http://localhost:8545";
+    const blockscoutConfig = await state.getBlockScout();
 
-    this.log(`Waiting for the Execution Layer node at ${rpc} to be ready...`);
-
-    await waitEL(rpc);
-
-    const deployEnv = {
-      ARTIFACTS_DIR: csmDefaultEnv.ARTIFACTS_DIR,
-      CHAIN: csmDefaultEnv.CHAIN,
-      CSM_MODULE: state.getOrError("csm.CSModule"),
-      CSM_WITHDRAWAL_VAULT: state.getOrError(
-        "lidoCore.withdrawalVault.proxy.address"
-      ),
-      DEPLOY_CONFIG: csmDefaultEnv.DEPLOY_CONFIG,
-      DEPLOYER_PRIVATE_KEY: csmDefaultEnv.DEPLOYER_PRIVATE_KEY,
-
-      DEVNET_CHAIN_ID: csmDefaultEnv.DEVNET_CHAIN_ID,
-      DEVNET_ELECTRA_EPOCH: String(baseConfig.network.ELECTRA_FORK_EPOCH),
-      DEVNET_SLOTS_PER_EPOCH: String(baseConfig.kurtosis.slotsPerEpoch),
+    const env = {
+      ARTIFACTS_DIR: constants.ARTIFACTS_DIR,
+      CSM_MODULE: CSMModule,
+      CSM_WITHDRAWAL_VAULT: withdrawalVault,
+      DEPLOY_CONFIG: constants.DEPLOY_CONFIG,
+      DEPLOYER_PRIVATE_KEY: deployer.privateKey,
+      DEVNET_CHAIN_ID: "32382",
+      DEVNET_ELECTRA_EPOCH: ELECTRA_FORK_EPOCH,
+      DEVNET_SLOTS_PER_EPOCH: SLOTS_PER_EPOCH,
 
       // Infrastructure
-      RPC_URL: rpc,
-      UPGRADE_CONFIG: csmDefaultEnv.UPGRADE_CONFIG,
-      VERIFIER_API_KEY: csmDefaultEnv.VERIFIER_API_KEY,
-      VERIFIER_URL: csmDefaultEnv.VERIFIER_URL
+      RPC_URL: elPublic,
+      UPGRADE_CONFIG: constants.UPGRADE_CONFIG,
+      VERIFIER_API_KEY: constants.VERIFIER_API_KEY,
+      VERIFIER_URL: blockscoutConfig.api,
     };
 
-    this.logJson(deployEnv);
+    logger.logJson(env);
 
-    this.log("Executing CSVerifier deployment scripts...");
-    // forge script ./script/DeployCSVerifierElectra.s.sol:DeployCSVerifier[Holesky|Mainnet|DevNet]
-    await execa("just", ["clean"], {
-      cwd: commandRoot,
-      env: deployEnv,
-      stdio: "inherit",
-    });
+    await csm.sh({ env })`just clean`;
 
-    await this.config.runCommand("onchain:csm:install");
+    await CSMInstall.exec(dre, {});
 
     const args = [
       "script",
       "./script/DeployCSVerifierElectra.s.sol:DeployCSVerifierDevNet",
       "--broadcast",
       "--rpc-url",
-      rpc,
+      elPublic,
     ];
-    if (flags.verify)
+    if (params.verify) {
       args.push(
         "--verify",
         "--verifier",
         "custom",
         "--chain",
-        csmDefaultEnv.DEVNET_CHAIN_ID,
+        "32382",
         "--verifier-url",
-        csmDefaultEnv.VERIFIER_URL,
+        VERIFIER_URL,
         "--verifier-api-key",
-        csmDefaultEnv.VERIFIER_API_KEY
+        constants.VERIFIER_API_KEY,
       );
+    }
 
-    await execa("forge", args, {
-      cwd: commandRoot,
-      env: deployEnv,
-      stdio: "inherit",
-    });
+    await csm.sh({ env })`forge ${args}`;
 
-    const {deployedVerifier} = baseConfig.onchain.lido.csm.paths;
-    const fileContent = await fs.readFile(deployedVerifier, "utf8");
-    const jsonData = JSON.parse(fileContent);
+    const fileContent = await csm.readJson(constants.DEPLOYED_VERIFIER);
 
-    await jsonDb.update({ electraVerifier: jsonData });
-
-    this.log("CSVerifier smart contract deployment completed successfully.");
-  }
-}
+    await state.updateElectraVerifier(fileContent);
+  },
+});

@@ -1,53 +1,42 @@
-import { Command } from "@oclif/core";
-import fs from "node:fs/promises";
+import { command } from "@devnet/command";
 
-import { baseConfig, jsonDb } from "../../../config/index.js";
-// submodules/csm/artifacts/latest/deploy-local-devnet.json
-export class CSMUpdateState extends Command {
-  static description =
-    "Reads the network state file for csm and updates the JSON database accordingly.";
+export const CSMUpdateState = command.cli({
+  description:
+    "Reads the network state file for csm and updates the JSON database accordingly.",
+  params: {},
+  async handler({ dre }) {
+    const { state, services } = dre;
+    const { csm } = services;
 
-  async run() {
-    this.log("Reading network state file...");
+    const jsonData = await csm.readJson(csm.config.constants.DEPLOY_CONFIG);
 
-    const deployedNetworkPath = baseConfig.onchain.lido.csm.paths.deployed;
-    const fileContent = await fs.readFile(deployedNetworkPath, "utf8");
-    const jsonData = JSON.parse(fileContent);
+    await state.updateCSM(jsonData);
 
-    await jsonDb.update({ csm: jsonData });
-    const reader = await jsonDb.getReader();
+    const csmState = await state.getCSM();
 
-    const { lidoCLI } = baseConfig.services;
-    // // save state to lido-cli folder
-    // await fs.writeFile(
-    //   path.join(lidoCLI.paths.configs, lidoCLI.activate.env.DEPLOYED),
-    //   fileContent,
-    //   "utf-8"
-    // );
+    const { lidoCLI } = services;
+
+    const {
+      config: { constants: lidoCLIConstants },
+    } = lidoCLI;
 
     const lidoCliExtraDevnetConfig = {
       csm: {
-        accounting: { address: reader.getOrError("csm.CSAccounting") },
-        earlyAdoption: { address: reader.getOrError("csm.CSEarlyAdoption") },
-        feeDistributor: { address: reader.getOrError("csm.CSFeeDistributor") },
-        feeOracle: { address: reader.getOrError("csm.CSFeeOracle") },
-        gateSeal: { address: reader.getOrError("csm.GateSeal") },
-        hashConsensus: { address: reader.getOrError("csm.HashConsensus") },
-        lidoLocator: { address: reader.getOrError("csm.LidoLocator") },
-        module: { address: reader.getOrError("csm.CSModule") },
-        verifier: { address: reader.getOrError("csm.CSVerifier") },
+        accounting: { address: csmState.accounting },
+        earlyAdoption: { address: csmState.earlyAdoption },
+        feeDistributor: { address: csmState.feeDistributor },
+        feeOracle: { address: csmState.feeOracle },
+        gateSeal: { address: csmState.gateSeal },
+        hashConsensus: { address: csmState.hashConsensus },
+        lidoLocator: { address: csmState.lidoLocator },
+        module: { address: csmState.module },
+        verifier: { address: csmState.verifier },
       },
     };
 
-    // save state to lido-cli folder extra file
-    await fs.writeFile(
-      lidoCLI.paths.extraDataConfig,
-      JSON.stringify(lidoCliExtraDevnetConfig, null, 2),
-      "utf-8"
+    await lidoCLI.writeJson(
+      lidoCLIConstants.DEPLOYED_NETWORK_CONFIG_EXTRA_PATH,
+      lidoCliExtraDevnetConfig,
     );
-
-    this.log(
-      "Network state has been successfully updated in the JSON database."
-    );
-  }
-}
+  },
+});

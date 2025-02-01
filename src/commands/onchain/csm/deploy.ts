@@ -1,116 +1,107 @@
-import { Command, Flags } from "@oclif/core";
-import { execa } from "execa";
+import { Params, command } from "@devnet/command";
 
-import { baseConfig, jsonDb } from "../../../config/index.js";
-import {
-  getGenesisTime,
-} from "../../../lib/index.js";
-import { waitEL } from "../../../lib/network/index.js";
+import { CSMInstall } from "./install.js";
+import { CSMUpdateState } from "./update-state.js";
 
-type CSMENVConfig = typeof baseConfig.onchain.lido.csm.env;
+type CSMENVConfig = {
+  ARTIFACTS_DIR: string;
+  // CHAIN: string;
+  CSM_ARAGON_AGENT_ADDRESS: string;
+  CSM_FIRST_ADMIN_ADDRESS: string;
+  CSM_LOCATOR_ADDRESS: string;
+  CSM_LOCATOR_TREASURY_ADDRESS: string;
+  CSM_ORACLE_1_ADDRESS: string;
+  CSM_ORACLE_2_ADDRESS: string;
+  CSM_ORACLE_3_ADDRESS: string;
+  CSM_SECOND_ADMIN_ADDRESS: string;
+  DEPLOY_CONFIG: string;
+  DEPLOYER_PRIVATE_KEY: string;
+  DEVNET_CHAIN_ID: string;
+  DEVNET_ELECTRA_EPOCH: string;
+  DEVNET_GENESIS_TIME: string;
+  DEVNET_SLOTS_PER_EPOCH: string;
+  EVM_SCRIPT_EXECUTOR_ADDRESS: string;
+  RPC_URL: string;
+  UPGRADE_CONFIG: string;
+  VERIFIER_API_KEY: string;
+  VERIFIER_URL: string;
+};
 
-export default class DeployLidoContracts extends Command {
-  static description =
-    "Deploys csm smart contracts using configured deployment scripts.";
-
-  static flags = {
-    verify: Flags.boolean({
-      char: "v",
+export const DeployLidoContracts = command.cli({
+  description:
+    "Deploys CSM smart contracts using configured deployment scripts.",
+  params: {
+    verify: Params.boolean({
       description: "Verify smart contracts",
     }),
-  };
+  },
+  async handler({ params, dre, dre: { logger } }) {
+    const { state, services, network } = dre;
+    const { csm } = services;
+    const {
+      config: { constants },
+    } = csm;
 
-  async run() {
-    const { flags } = await this.parse(DeployLidoContracts);
+    await dre.network.waitEL();
 
-    this.log("Initiating the deployment of csm smart contracts...");
+    const { agent, locator, treasury } = await state.getLido();
+    const { elPublic } = await state.getChain();
+    const { deployer, secondDeployer, oracle1, oracle2, oracle3 } =
+      await state.getNamedWallet();
 
-    const csmConfig = baseConfig.onchain.lido.csm;
-    const commandRoot = csmConfig.paths.root;
-    const csmDefaultEnv = csmConfig.env;
+    const clClient = await network.getCLClient();
 
-    const state = await jsonDb.getReader();
+    const {
+      data: { genesis_time },
+    } = await clClient.getGenesis();
 
-    const rpc = state.getOrError("network.binding.elNodes.0");
-    // const rpc = "http://localhost:8545";
+    const {
+      data: { ELECTRA_FORK_EPOCH, SLOTS_PER_EPOCH },
+    } = await clClient.getConfig();
 
-    this.log(`Waiting for the execution node at ${rpc} to be ready...`);
+    const blockscoutConfig = await state.getBlockScout();
 
-    await waitEL(rpc);
+    const env: CSMENVConfig = {
+      ARTIFACTS_DIR: constants.ARTIFACTS_DIR,
+      CSM_ARAGON_AGENT_ADDRESS: agent,
+      CSM_FIRST_ADMIN_ADDRESS: deployer.publicKey,
+      CSM_LOCATOR_ADDRESS: locator,
+      CSM_LOCATOR_TREASURY_ADDRESS: treasury,
 
-    const deployEnv: CSMENVConfig = {
-      ARTIFACTS_DIR: csmDefaultEnv.ARTIFACTS_DIR,
-      CHAIN: csmDefaultEnv.CHAIN,
-      // Address of the Aragon agent
-      CSM_ARAGON_AGENT_ADDRESS: state.getOrError(
-        "lidoCore.app:aragon-agent.proxy.address"
-      ),
-      // Address of the first administrator, usually a Dev team EOA
-      CSM_FIRST_ADMIN_ADDRESS: csmDefaultEnv.CSM_FIRST_ADMIN_ADDRESS,
-      // Lido's locator address
-      CSM_LOCATOR_ADDRESS: state.getOrError(
-        "lidoCore.lidoLocator.proxy.address"
-      ),
-      // Address of the treasury associated with the locator
-      CSM_LOCATOR_TREASURY_ADDRESS: state.getOrError(
-        "lidoCore.lidoLocator.implementation.constructorArgs.0.treasury"
-      ),
-      // smart contract params
-      // oracle member addresses
-      CSM_ORACLE_1_ADDRESS: csmDefaultEnv.CSM_ORACLE_1_ADDRESS,
-      CSM_ORACLE_2_ADDRESS: csmDefaultEnv.CSM_ORACLE_2_ADDRESS,
-      CSM_ORACLE_3_ADDRESS: csmDefaultEnv.CSM_ORACLE_3_ADDRESS,
-      // Address of the second administrator, usually a Dev team EOA
-      CSM_SECOND_ADMIN_ADDRESS: csmDefaultEnv.CSM_SECOND_ADMIN_ADDRESS,
-      DEPLOY_CONFIG: csmDefaultEnv.DEPLOY_CONFIG,
-      DEPLOYER_PRIVATE_KEY: csmDefaultEnv.DEPLOYER_PRIVATE_KEY,
-      DEVNET_CHAIN_ID: csmDefaultEnv.DEVNET_CHAIN_ID,
-      DEVNET_ELECTRA_EPOCH: String(baseConfig.network.ELECTRA_FORK_EPOCH),
-      // genesis time from local network genesis.json file
-      DEVNET_GENESIS_TIME: getGenesisTime(baseConfig.artifacts.paths.genesis),
-      DEVNET_SLOTS_PER_EPOCH: String(baseConfig.kurtosis.slotsPerEpoch),
-      // Address of the EVM script executor
-      EVM_SCRIPT_EXECUTOR_ADDRESS: state.getOrError(
-        "lidoCore.app:aragon-agent.proxy.address"
-      ),
+      CSM_ORACLE_1_ADDRESS: oracle1.publicKey,
+      CSM_ORACLE_2_ADDRESS: oracle2.publicKey,
+      CSM_ORACLE_3_ADDRESS: oracle3.publicKey,
 
-      // infra
-      RPC_URL: rpc,
-      UPGRADE_CONFIG: csmDefaultEnv.UPGRADE_CONFIG,
-      VERIFIER_API_KEY: csmDefaultEnv.VERIFIER_API_KEY,
-      VERIFIER_URL: csmDefaultEnv.VERIFIER_URL
+      CSM_SECOND_ADMIN_ADDRESS: secondDeployer.publicKey,
+      DEPLOY_CONFIG: constants.DEPLOY_CONFIG,
+      DEPLOYER_PRIVATE_KEY: deployer.privateKey,
+      DEVNET_CHAIN_ID: "32382",
+
+      DEVNET_ELECTRA_EPOCH: ELECTRA_FORK_EPOCH,
+      DEVNET_GENESIS_TIME: genesis_time,
+      DEVNET_SLOTS_PER_EPOCH: SLOTS_PER_EPOCH,
+      EVM_SCRIPT_EXECUTOR_ADDRESS: agent,
+      RPC_URL: elPublic,
+      UPGRADE_CONFIG: constants.UPGRADE_CONFIG,
+      VERIFIER_API_KEY: constants.VERIFIER_API_KEY,
+
+      VERIFIER_URL: blockscoutConfig.api,
     };
 
-    this.logJson(deployEnv);
+    logger.logJson(env);
 
-    this.log("Executing deployment scripts...");
+    const csmSh = csm.sh({ env });
+    await csmSh`just clean`;
 
-    await execa("just", ["clean"], {
-      cwd: commandRoot,
-      env: deployEnv,
-      stdio: "inherit",
-    });
-
-    await this.config.runCommand("onchain:csm:install");
+    await CSMInstall.exec(dre, {});
 
     const args = ["deploy-local-devnet"];
-    if (flags.verify)
-      args.push(
-        "--verify",
-        " --verifier",
-        "custom",
-        "--chain",
-        csmDefaultEnv.DEVNET_CHAIN_ID
-      );
+    if (params.verify) {
+      args.push("--verify", "--verifier", "custom", "--chain", "32382");
+    }
 
-    await execa("just", args, {
-      cwd: commandRoot,
-      env: deployEnv,
-      stdio: "inherit",
-    });
+    await csmSh`just ${args}`;
 
-    await this.config.runCommand("onchain:csm:update-state");
-
-    this.log("Deployment of smart contracts completed successfully.");
-  }
-}
+    await CSMUpdateState.exec(dre, {});
+  },
+});
