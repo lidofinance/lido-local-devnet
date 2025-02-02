@@ -1,7 +1,5 @@
 import { Params, command } from "@devnet/command";
 
-import { LidoCoreInstall } from "./install.js";
-
 export const LidoAddKeys = command.cli({
   description: "Adds validator keys for an existing node operator to the Lido protocol.",
   params: {
@@ -19,11 +17,6 @@ export const LidoAddKeys = command.cli({
     const { lidoCLI } = services;
 
     logger.log("Starting the process to add validator keys for the node operator...");
-
-    // Ensure all necessary dependencies are installed before execution
-    logger.log("Checking and installing required dependencies...");
-    await LidoCoreInstall.exec(dre, {});
-    logger.log("Dependencies installed successfully.");
 
     await dre.network.waitEL()
 

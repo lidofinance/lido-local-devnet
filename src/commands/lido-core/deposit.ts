@@ -4,8 +4,6 @@
 
 import { Params, command } from "@devnet/command";
 
-import { LidoCoreInstall } from "./install.js";
-
 export const LidoDeposit = command.cli({
   description: "Handles deposits to the Lido protocol.",
   params: {
@@ -23,11 +21,6 @@ export const LidoDeposit = command.cli({
     const { lidoCLI } = services;
 
     logger.log("Starting the deposit process for the Lido protocol...");
-
-    // Ensure all necessary dependencies are installed before execution
-    logger.log("Checking and installing required dependencies...");
-    await LidoCoreInstall.exec(dre, {});
-    logger.log("Dependencies installed successfully.");
 
     await dre.network.waitEL();
 

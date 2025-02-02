@@ -1,7 +1,5 @@
 import { command } from "@devnet/command";
 
-import { LidoCoreInstall } from "./install.js";
-
 type DeployEnvRequired = {
   DEPLOYER: string;
   DEPOSIT_CONTRACT: string;
@@ -23,9 +21,6 @@ export const LidoCoreVerify = command.cli({
     const { state, services } = dre;
     const { lidoCore } = services;
     const { constants } = lidoCore.config;
-
-    logger.log("Installing dependencies for lido-core...");
-    await LidoCoreInstall.exec(dre, {});
 
     const { elPublic } = await state.getChain();
     const { deployer } = await state.getNamedWallet();

@@ -1,20 +1,14 @@
 import { command } from "@devnet/command";
 
-import { LidoCoreInstall } from "./install.js";
-
 export const ActivateLidoProtocol = command.cli({
   description:
     "Activates the lido-core protocol by deploying smart contracts and configuring the environment based on the current network state.",
   params: {},
-  async handler({ dre, dre: { logger } }) {
+  async handler({ dre }) {
     const {
       state,
       services: { lidoCLI },
     } = dre;
-
-    logger.log("Initiating the activation of the lido-core protocol...");
-
-    await LidoCoreInstall.exec(dre, {});
 
     const { elPublic } = await state.getChain();
     const { deployer, oracles, councils } = await state.getNamedWallet();

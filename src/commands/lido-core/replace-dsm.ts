@@ -1,7 +1,5 @@
 import { command } from "@devnet/command";
 
-import { LidoCoreInstall } from "./install.js";
-
 export const ReplaceDSM = command.cli({
   description: "Replaces the DSM with an EOA.",
   params: {},
@@ -10,10 +8,6 @@ export const ReplaceDSM = command.cli({
     const { lidoCLI } = services;
 
     logger.log("Starting the process to replace DSM with EOA...");
-
-    logger.log("Checking and installing required dependencies...");
-    await LidoCoreInstall.exec(dre, {});
-    logger.log("Dependencies installed successfully.");
 
     const { deployer } = await state.getNamedWallet();
 

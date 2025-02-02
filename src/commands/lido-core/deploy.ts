@@ -1,6 +1,5 @@
 import { Params, command } from "@devnet/command";
 
-import { LidoCoreInstall } from "./install.js";
 import { LidoCoreUpdateState } from "./update-state.js";
 import { LidoCoreVerify } from "./verify.js";
 
@@ -33,9 +32,6 @@ export const DeployLidoContracts = command.cli({
     const { lidoCore } = services;
     const { constants } = lidoCore.config;
 
-    logger.log("Initiating the deployment of lido-core smart contracts...");
-    await LidoCoreInstall.exec(dre, {});
-
     const { elPublic } = await state.getChain();
     const clClient = await network.getCLClient();
 
@@ -64,11 +60,11 @@ export const DeployLidoContracts = command.cli({
 
     await lidoCore.sh({ env: deployEnv })`bash -c scripts/dao-deploy.sh`;
 
-    await LidoCoreUpdateState.exec(dre, {});
+    await dre.runCommand(LidoCoreUpdateState, {});
 
     if (params.verify) {
       logger.log("Verifying smart contracts...");
-      await LidoCoreVerify.exec(dre, {});
+      await dre.runCommand(LidoCoreVerify, {});
     }
 
     logger.log("✅ Deployment of smart contracts completed successfully.");
