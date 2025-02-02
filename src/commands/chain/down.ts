@@ -12,8 +12,11 @@ export const KurtosisCleanUp = command.isomorphic({
     } = dre;
 
     logger.log("Destroying Kurtosis enclave...");
-
-    await kurtosisApi.destroyEnclave(dre.network.name);
+    // eslint-disable-next-line no-warning-comments
+    // TODO: check if enclave still exists
+    await kurtosisApi
+      .destroyEnclave(dre.network.name)
+      .catch((error) => logger.error(error));
 
     logger.log("Removing network artifacts...");
 

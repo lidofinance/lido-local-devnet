@@ -53,7 +53,7 @@ export const DeployCSVerifier = command.cli({
 
     await csm.sh({ env })`just clean`;
 
-    await CSMInstall.exec(dre, {});
+    await dre.runCommand(CSMInstall, {});
 
     const args = [
       "script",

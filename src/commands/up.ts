@@ -3,11 +3,11 @@ import { Params, command } from "@devnet/command";
 import { BlockscoutUp } from "./blockscout/up.js";
 import { KurtosisGetInfo } from "./chain/info.js";
 import { KurtosisUp } from "./chain/up.js";
-import { ActivateCSM } from "./onchain/csm/activate.js";
-import { DeployCSMContracts } from "./onchain/csm/deploy.js";
-import { ActivateLidoProtocol } from "./onchain/lido/activate.js";
-import { DeployLidoContracts } from "./onchain/lido/deploy.js";
-import { ReplaceDSM } from "./onchain/lido/replace-dsm.js";
+import { ActivateCSM } from "./csm/activate.js";
+import { DeployCSMContracts } from "./csm/deploy.js";
+import { ActivateLidoProtocol } from "./lido-core/activate.js";
+import { DeployLidoContracts } from "./lido-core/deploy.js";
+import { ReplaceDSM } from "./lido-core/replace-dsm.js";
 
 export const DevNetUp = command.cli({
   description:
@@ -22,33 +22,31 @@ export const DevNetUp = command.cli({
     }),
   },
   async handler({ params, dre, dre: { logger } }) {
-    // Start basic network infrastructure
-    await KurtosisUp.exec(dre, {});
+    await dre.runCommand(KurtosisUp, {});
     logger.log("Network initialized.");
 
-    // Launch auxiliary services like BlockScout for block exploration
-    await BlockscoutUp.exec(dre, {});
+    await dre.runCommand(BlockscoutUp, {});
     logger.log("BlockScout launched for transaction visualization.");
 
     if (params.full) {
       logger.log("Deploy Lido Core contracts.");
-      await DeployLidoContracts.exec(dre, { verify: params.verify });
+      await dre.runCommand(DeployLidoContracts, { verify: params.verify });
       logger.log("Lido contracts deployed.");
 
       logger.log("Deploy CSM contracts.");
-      await DeployCSMContracts.exec(dre, { verify: params.verify });
+      await dre.runCommand(DeployCSMContracts, { verify: params.verify });
       logger.log("CSM contracts deployed.");
 
       logger.log("Activate Lido Core protocol.");
-      await ActivateLidoProtocol.exec(dre, {});
+      await dre.runCommand(ActivateLidoProtocol, {});
       logger.log("Lido Core protocol activated.");
 
       logger.log("Activate CSM protocol.");
-      await ActivateCSM.exec(dre, {});
+      await dre.runCommand(ActivateCSM, {});
       logger.log("CSM protocol activated.");
 
       logger.log("Replaces the DSM with an EOA.");
-      await ReplaceDSM.exec(dre, {});
+      await dre.runCommand(ReplaceDSM, {});
 
       // const NOR_DEVNET_OPERATOR = "devnet_nor_1";
       // const CSM_DEVNET_OPERATOR = "devnet_csm_1";
@@ -105,6 +103,6 @@ export const DevNetUp = command.cli({
     }
 
     // Display network information
-    await KurtosisGetInfo.exec(dre, {});
+    await dre.runCommand(KurtosisGetInfo, {});
   },
 });

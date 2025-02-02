@@ -18,16 +18,15 @@ export const KurtosisUp = command.isomorphic({
     const { preset } = await state.getKurtosis();
     // TODO: modify chainId
     // const file = await kurtosis.readFile(`${preset}.yml`);
-    const fileName = `${preset}.yml`
+    const fileName = `${preset}.yml`;
     // const config = YAML.parse(file);
 
     await kurtosis.sh`kurtosis run
                         --enclave ${name} 
                         github.com/ethpandaops/ethereum-package 
                         --args-file ${fileName}`;
-   
 
-    await KurtosisUpdate.exec(dre, {});
-    await DownloadKurtosisArtifacts.exec(dre, {});
+    await dre.runCommand(KurtosisUpdate, {});
+    await dre.runCommand(DownloadKurtosisArtifacts, {});
   },
 });

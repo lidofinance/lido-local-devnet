@@ -9,8 +9,8 @@ export const DevNetStop = command.cli({
   async handler({ dre, dre: { logger } }) {
     logger.log("Stopping DevNet...");
 
-    await BlockscoutDown.exec(dre, {});
-    await KurtosisCleanUp.exec(dre, {});
+    await dre.runCommand(BlockscoutDown, {});
+    await dre.runCommand(KurtosisCleanUp, {});
 
     logger.log("DevNet stopped successfully.");
   },
