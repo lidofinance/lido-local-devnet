@@ -23,8 +23,7 @@ services:
     extends:
       file: ./services/smart-contract-verifier.yml
       service: smart-contract-verifier
-    ports:
-      - 0:8050
+
   db:
     depends_on:
       db-init:
