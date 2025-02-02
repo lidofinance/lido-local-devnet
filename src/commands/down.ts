@@ -1,15 +1,17 @@
-import { Command } from "@oclif/core";
+import { command } from "@devnet/command";
 
-export default class DevNetStop extends Command {
-  static description = "Stop full DevNet";
+import { BlockscoutDown } from "./blockscout/down.js";
+import { KurtosisCleanUp } from "./chain/down.js";
 
-  async run() {
-    this.log("Stopping DevNet...");
-    try {
-      await this.config.runCommand("blockscout:down");
-      await this.config.runCommand("network:down");
-    } catch (error: any) {
-      this.error(`Failed to stop DevNet: ${error.message}`);
-    }
-  }
-}
+export const DevNetStop = command.cli({
+  description: "Stop full DevNet",
+  params: {},
+  async handler({ dre, dre: { logger } }) {
+    logger.log("Stopping DevNet...");
+
+    await BlockscoutDown.exec(dre, {});
+    await KurtosisCleanUp.exec(dre, {});
+
+    logger.log("DevNet stopped successfully.");
+  },
+});

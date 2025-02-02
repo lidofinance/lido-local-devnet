@@ -36,8 +36,8 @@ export const LidoConfigSchema = z.object({
 
 export const CSMConfigSchema = z.object({
   accounting: z.string(),
-  earlyAdoption: z.boolean(),
-  feeDistributor: z.number(),
+  earlyAdoption: z.string(),
+  feeDistributor: z.string(),
   feeOracle: z.string(),
   gateSeal: z.string(),
   hashConsensus: z.string(),

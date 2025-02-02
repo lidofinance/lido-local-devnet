@@ -22,6 +22,9 @@ const lidoCore = new DevNetServiceConfig({
     NETWORK_STATE_FILE: `deployed-local-devnet.json`,
     SLOTS_PER_EPOCH: "32",
   },
+  hooks: {
+    install: "lido-core:install"
+  }
 });
 
 const lidoCLI = new DevNetServiceConfig({
@@ -37,6 +40,9 @@ const lidoCLI = new DevNetServiceConfig({
   env: {
     LIDO_CLI_NON_INTERACTIVE: "true",
   },
+  hooks: {
+    install: "lido-cli:install"
+  }
 });
 
 const kurtosis = new DevNetServiceConfig({
@@ -49,15 +55,18 @@ const csm = new DevNetServiceConfig({
   repository: "submodules/csm",
   name: "csm" as const,
   constants: {
-    DEPLOY_CONFIG: "./artifacts/local-devnet/deploy-local-devnet.json",
-    UPGRADE_CONFIG: "./artifacts/local-devnet/deploy-local-devnet.json",
+    DEPLOY_CONFIG: "artifacts/latest/deploy-local-devnet.json",
+    UPGRADE_CONFIG: "artifacts/latest/deploy-local-devnet.json",
     VERIFIER_API_KEY: "local-testnet",
-    ARTIFACTS_DIR: "./artifacts/local-devnet/",
+    ARTIFACTS_DIR: "artifacts/latest/",
     DEPLOYED_VERIFIER: "artifacts/latest/deploy-verifier-devnet.json",
   },
   env: {
     CHAIN: "local-devnet",
   },
+  hooks: {
+    install: "csm:install"
+  }
 });
 
 export const services = {

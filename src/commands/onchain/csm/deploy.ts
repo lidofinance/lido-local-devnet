@@ -27,7 +27,7 @@ type CSMENVConfig = {
   VERIFIER_URL: string;
 };
 
-export const DeployLidoContracts = command.cli({
+export const DeployCSMContracts = command.cli({
   description:
     "Deploys CSM smart contracts using configured deployment scripts.",
   params: {

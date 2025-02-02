@@ -3,16 +3,31 @@ import { DevNetServiceConfig } from "@devnet/service";
 import fs, { rm } from "node:fs/promises";
 import path from "node:path";
 
+import { DevNetLogger } from "../logger.js";
+
 export class ServiceArtifact {
   public config: DevNetServiceConfig;
+  public emittedCommands: string[] = [];
   public root: string;
-  constructor(artifactsRoot: string, service: DevNetServiceConfig) {
+
+  private logger: DevNetLogger;
+  constructor(
+    artifactsRoot: string,
+    service: DevNetServiceConfig,
+    logger: DevNetLogger,
+  ) {
     this.root = path.join(artifactsRoot, service.name);
     this.config = service;
+    this.logger = logger;
   }
 
-  static async getNew(artifactsRoot: string, service: DevNetServiceConfig) {
-    const artifact = new ServiceArtifact(artifactsRoot, service);
+  static async getNew(
+    artifactsRoot: string,
+    service: DevNetServiceConfig,
+    logger: DevNetLogger,
+  ) {
+    const artifact = new ServiceArtifact(artifactsRoot, service, logger);
+
     if (service.repository) {
       await artifact.copyFilesFrom(service.repository);
     }
@@ -43,6 +58,9 @@ export class ServiceArtifact {
         return;
       }
 
+      if (this.config.hooks?.install)
+        this.emittedCommands.push(this.config.hooks?.install);
+
       // Ensure the destination folder exists
       await fs.mkdir(this.root, { recursive: true });
 
@@ -64,9 +82,9 @@ export class ServiceArtifact {
         }),
       );
 
-      console.log(`Files copied successfully to "${this.root}".`);
+      this.logger.log(`Files copied successfully to "${this.root}".`);
     } catch (error: any) {
-      console.error(`Error copying files: ${error.message}`);
+      this.logger.error(`Error copying files: ${error.message}`);
       throw error;
     }
   }

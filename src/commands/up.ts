@@ -1,127 +1,110 @@
-import { Command, Flags } from "@oclif/core";
+import { Params, command } from "@devnet/command";
 
-export default class DevNetUp extends Command {
-  static description =
-    "Starts a local development network (DevNet) from scratch, ensuring full setup and deployment of all components.";
+import { BlockscoutUp } from "./blockscout/up.js";
+import { KurtosisGetInfo } from "./chain/info.js";
+import { KurtosisUp } from "./chain/up.js";
+import { ActivateCSM } from "./onchain/csm/activate.js";
+import { DeployCSMContracts } from "./onchain/csm/deploy.js";
+import { ActivateLidoProtocol } from "./onchain/lido/activate.js";
+import { DeployLidoContracts } from "./onchain/lido/deploy.js";
+import { ReplaceDSM } from "./onchain/lido/replace-dsm.js";
 
-  static flags = {
-    full: Flags.boolean({
+export const DevNetUp = command.cli({
+  description:
+    "Starts a local development network (DevNet) from scratch, ensuring full setup and deployment of all components.",
+  params: {
+    full: Params.boolean({
       description:
         "Deploys all smart contracts, not just initializes the network.",
     }),
-    verify: Flags.boolean({
-      char: "v",
+    verify: Params.boolean({
       description: "Enables verification of smart contracts during deployment.",
     }),
-  };
+  },
+  async handler({ params, dre, dre: { logger } }) {
+    // Start basic network infrastructure
+    await KurtosisUp.exec(dre, {});
+    logger.log("Network initialized.");
 
-  async run() {
-    const { flags } = await this.parse(DevNetUp);
-    this.log("Starting DevNet...");
+    // Launch auxiliary services like BlockScout for block exploration
+    await BlockscoutUp.exec(dre, {});
+    logger.log("BlockScout launched for transaction visualization.");
 
-    try {
-      // Start basic network infrastructure
-      await this.config.runCommand("network:up");
-      this.log("Network initialized.");
+    if (params.full) {
+      logger.log("Deploy Lido Core contracts.");
+      await DeployLidoContracts.exec(dre, { verify: params.verify });
+      logger.log("Lido contracts deployed.");
 
-      // Deploy artifacts necessary for the network
-      await this.config.runCommand("network:artifacts");
-      this.log("Artifacts deployed.");
+      logger.log("Deploy CSM contracts.");
+      await DeployCSMContracts.exec(dre, { verify: params.verify });
+      logger.log("CSM contracts deployed.");
 
-      // Launch auxiliary services like BlockScout for block exploration
-      await this.config.runCommand("blockscout:up");
-      this.log("BlockScout launched for transaction visualization.");
+      logger.log("Activate Lido Core protocol.");
+      await ActivateLidoProtocol.exec(dre, {});
+      logger.log("Lido Core protocol activated.");
 
-      if (flags.full) {
-        const args = [];
-        if (flags.verify) {
-          args.push("--verify");
-          this.log("Smart contract verification is enabled.");
-        }
+      logger.log("Activate CSM protocol.");
+      await ActivateCSM.exec(dre, {});
+      logger.log("CSM protocol activated.");
 
-        // Deploy specific smart contracts with optional verification
-        this.log("Deploy Lido Core contracts.");
-        await this.config.runCommand("onchain:lido:deploy", args);
-        this.log("Lido contracts deployed.");
+      logger.log("Replaces the DSM with an EOA.");
+      await ReplaceDSM.exec(dre, {});
 
-        this.log("Deploy CSM contracts.");
-        await this.config.runCommand("onchain:csm:deploy", args);
-        this.log("CSM contracts deployed.");
+      // const NOR_DEVNET_OPERATOR = "devnet_nor_1";
+      // const CSM_DEVNET_OPERATOR = "devnet_csm_1";
 
-        this.log("Activate Lido Core protocol.");
-        await this.config.runCommand("onchain:lido:activate");
-        this.log("Lido Core protocol activated.");
+      // logger.log("Generate keys for NOR Module.");
+      // await dre.runCommand("lido:keys:generate");
+      // logger.log("Allocate keys for NOR Module.");
+      // await dre.runCommand("lido:keys:use", ["--name", NOR_DEVNET_OPERATOR]);
 
-        this.log("Activate CSM protocol.");
-        await this.config.runCommand("onchain:csm:activate");
-        this.log("CSM protocol activated.");
+      // logger.log("Generate keys for CSM Module.");
+      // await dre.runCommand("lido:keys:generate");
+      // logger.log("Allocate keys for CSM Module.");
+      // await dre.runCommand("lido:keys:use", ["--name", CSM_DEVNET_OPERATOR]);
 
-        this.log("Replaces the DSM with an EOA.");
-        await this.config.runCommand("onchain:lido:replace-dsm");
+      // logger.log("Add NOR operator.");
+      // await dre.runCommand("onchain:lido:add-operator", [
+      //   "--name",
+      //   NOR_DEVNET_OPERATOR,
+      // ]);
+      // logger.log(`Operator ${NOR_DEVNET_OPERATOR} added`);
 
-        const NOR_DEVNET_OPERATOR = "devnet_nor_1";
-        const CSM_DEVNET_OPERATOR = "devnet_csm_1";
+      // logger.log(`Increase staking limit for NOR`);
+      // await dre.runCommand("onchain:lido:set-staking-limit", [
+      //   "--operatorId",
+      //   "0",
+      //   "--limit",
+      //   "30",
+      // ]);
 
-        this.log("Generate keys for NOR Module.");
-        await this.config.runCommand("lido:keys:generate");
-        this.log("Allocate keys for NOR Module.");
-        await this.config.runCommand("lido:keys:use", ['--name', NOR_DEVNET_OPERATOR]);
+      // logger.log("Add NOR keys.");
+      // await dre.runCommand("onchain:lido:add-keys", [
+      //   "--name",
+      //   NOR_DEVNET_OPERATOR,
+      //   "--id",
+      //   "0",
+      // ]);
+      // logger.log(`Keys for operator ${NOR_DEVNET_OPERATOR} added`);
 
-        this.log("Generate keys for NOR Module.");
-        await this.config.runCommand("lido:keys:generate");
-        this.log("Allocate keys for NOR Module.");
-        await this.config.runCommand("lido:keys:use", ['--name', CSM_DEVNET_OPERATOR]);
+      // logger.log("Add CSM operator with keys.");
+      // await dre.runCommand("onchain:csm:add-operator", [
+      //   "--name",
+      //   CSM_DEVNET_OPERATOR,
+      // ]);
+      // logger.log(`Keys for operator ${CSM_DEVNET_OPERATOR} added`);
 
-        this.log("Add NOR operator.");
-        await this.config.runCommand("onchain:lido:add-operator", [
-          "--name",
-          NOR_DEVNET_OPERATOR,
-        ]);
-        this.log(`Operator ${NOR_DEVNET_OPERATOR} added`);
+      // logger.log(`Make deposit to NOR`);
+      // await dre.runCommand("onchain:lido:deposit", ["--id", "1"]);
 
-        this.log(`Inc staking limit NOR`)
-        await this.config.runCommand("onchain:lido:set-staking-limit", ["--operatorId", "0", "--limit", "30"])
+      // logger.log(`Make deposit to CSM`);
+      // await dre.runCommand("onchain:lido:deposit", ["--id", "3"]);
 
-        this.log("Add NOR keys.");
-        await this.config.runCommand("onchain:lido:add-keys", [
-          "--name",
-          NOR_DEVNET_OPERATOR,
-          "--id",
-          "0",
-        ]);
-        this.log(`Keys for operator ${NOR_DEVNET_OPERATOR} added`);
-
-        this.log("Add CSM operator with keys.");
-        await this.config.runCommand("onchain:csm:add-operator", [
-          "--name",
-          CSM_DEVNET_OPERATOR,
-        ]);
-        this.log(`Keys for operator ${CSM_DEVNET_OPERATOR} added`);
-
-        // this.log("Run keys-api service.");
-        // await this.config.runCommand("kapi:up");
-
-        this.log(`Make Deposit to NOR`);
-        await this.config.runCommand("onchain:lido:deposit", ["--id", "1"]);
-
-        // this.log(`Make Deposit to CSM`);
-        await this.config.runCommand("onchain:lido:deposit", ["--id", "3"]);
-
-        // this.log(`Generate validator config`);
-        // await this.config.runCommand("lido:create-validator-config");
-
-        // this.log(`Run validators`);
-        // await this.config.runCommand("validator:up");
-
-        this.log("Add new CSM Verifier")
-        await this.config.runCommand('onchain:csm:add-verifier', args)
-      }
-
-      // Display network information
-      await this.config.runCommand("network:info");
-      this.log("Network info displayed.");
-    } catch (error: any) {
-      this.error(`Failed to start DevNet: ${error.message}`);
+      // logger.log("Add new CSM Verifier");
+      // await dre.runCommand("onchain:csm:add-verifier", args);
     }
-  }
-}
+
+    // Display network information
+    await KurtosisGetInfo.exec(dre, {});
+  },
+});

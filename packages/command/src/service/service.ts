@@ -54,7 +54,7 @@ export class DevNetService<Name extends keyof DevNetServices> {
     commandName: string,
     name: Name,
   ): Promise<DevNetService<Name>> {
-    const artifact = await ServiceArtifact.getNew(rootPath, services[name]);
+    const artifact = await ServiceArtifact.getNew(rootPath, services[name], logger);
     const service = new DevNetService(
       name,
       network,

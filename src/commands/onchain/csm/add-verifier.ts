@@ -70,7 +70,7 @@ export const DeployCSVerifier = command.cli({
         "--chain",
         "32382",
         "--verifier-url",
-        VERIFIER_URL,
+        blockscoutConfig.api,
         "--verifier-api-key",
         constants.VERIFIER_API_KEY,
       );

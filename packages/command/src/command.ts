@@ -37,12 +37,13 @@ async function executeCommandWithLogging<T>(
   }
 
   const start = performance.now();
-  let hasError = false;
+  let lastError = null;
   try {
     depth += 1;
     return await fn();
   } catch (error: unknown) {
-    hasError = true;
+    lastError = error;
+
     if (error instanceof ZodError) {
       formatZodErrors(error).forEach((err) => logger.error(err));
       return;
@@ -77,9 +78,11 @@ async function executeCommandWithLogging<T>(
     depth -= 1;
     // This handler was added because of a strange implementation of ethers,
     // which in case of node inaccessibility causes an error, but leaves a hanging promise,
-    // which does not allow to terminate the process 
+    // which does not allow to terminate the process
     // eslint-disable-next-line n/no-process-exit, unicorn/no-process-exit
-    if (depth === 0) process.exit(hasError ? 1 : 0);
+    if (depth === 0) process.exit(lastError ? 1 : 0);
+    // eslint-disable-next-line no-unsafe-finally
+    if (lastError) throw lastError;
   }
 }
 
@@ -114,6 +117,7 @@ export class DevNetCommand extends BaseCommand {
     const dre = await DevNetRuntimeEnvironment.getNew(
       params.network,
       this.id ?? "anonymous",
+      this.config,
     );
     this.ctx = new DevNetContext({
       dre,
@@ -124,7 +128,10 @@ export class DevNetCommand extends BaseCommand {
   public async run(): Promise<void> {
     const ctor = this.constructor as typeof DevNetCommand;
     await executeCommandWithLogging(
-      () => ctor.handler(this.ctx),
+      async () => {
+        await this.ctx.dre.runHooks();
+        await ctor.handler(this.ctx);
+      },
       this.ctx,
       ctor.description!,
     );
@@ -139,9 +146,9 @@ type CommandOptions<F extends Record<string, any>> = {
   params: F;
 };
 
-type FactoryResult<F extends Record<string, any>> = {
+export type FactoryResult<F extends Record<string, any>> = {
   exec(dre: DevNetRuntimeEnvironment, params: InferredFlags<F>): Promise<void>;
-} & typeof DevNetCommand;
+} & { _internalParams: InferredFlags<F> } & typeof DevNetCommand;
 
 function isomorphic<F extends Record<string, any>>(
   options: CommandOptions<F>,
@@ -158,6 +165,8 @@ function isomorphic<F extends Record<string, any>>(
       ...DevNetCommand.baseFlags,
       ...options.params,
     };
+
+    static _internalParams = options.params as InferredFlags<F>;
 
     public static async exec<H extends typeof DevNetCommand>(
       this: H,
@@ -197,11 +206,13 @@ function cli<F extends Record<string, any>>(
     };
 
     static isIsomorphicCommand: boolean = false;
+
     static originalParams = {
       ...DevNetCommand.baseFlags,
       ...options.params,
     };
 
+    static _internalParams = options.params as InferredFlags<F>;
     public static async exec<H extends typeof DevNetCommand>(
       this: H,
       dre: DevNetRuntimeEnvironment,
@@ -245,6 +256,8 @@ function hidden<F extends Record<string, any>>(
       ...DevNetCommand.baseFlags,
       ...options.params,
     };
+
+    static _internalParams = options.params as InferredFlags<F>;
 
     public static async exec<H extends typeof DevNetCommand>(
       this: H,
