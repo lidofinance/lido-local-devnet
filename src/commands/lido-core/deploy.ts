@@ -25,6 +25,7 @@ export const DeployLidoContracts = command.cli({
     verify: Params.boolean({
       description: "Verify smart contracts",
       default: false,
+      required: true
     }),
   },
   async handler({ dre, dre: { logger }, params }) {

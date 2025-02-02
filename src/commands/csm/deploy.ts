@@ -93,7 +93,7 @@ export const DeployCSMContracts = command.cli({
     const csmSh = csm.sh({ env });
     await csmSh`just clean`;
 
-    await CSMInstall.exec(dre, {});
+    await dre.runCommand(CSMInstall, {});
 
     const args = ["deploy-local-devnet"];
     if (params.verify) {
@@ -102,6 +102,6 @@ export const DeployCSMContracts = command.cli({
 
     await csmSh`just ${args}`;
 
-    await CSMUpdateState.exec(dre, {});
+    await dre.runCommand(CSMUpdateState, {});
   },
 });

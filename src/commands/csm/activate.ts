@@ -2,8 +2,6 @@
 
 import { command } from "@devnet/command";
 
-import { LidoCoreInstall } from "../lido/install.js";
-
 type CSMActivateENV = {
   CS_ACCOUNTING_ADDRESS: string;
   CS_MODULE_ADDRESS: string;
@@ -18,7 +16,6 @@ export const ActivateCSM = command.cli({
   params: {},
   async handler({ dre, dre: { logger } }) {
     const { lidoCLI } = dre.services;
-    await LidoCoreInstall.exec(dre, {});
 
     const { elPublic } = await dre.state.getChain();
     const csmState = await dre.state.getCSM();

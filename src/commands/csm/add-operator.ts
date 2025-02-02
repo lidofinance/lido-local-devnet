@@ -1,7 +1,5 @@
 import { Params, command } from "@devnet/command";
 
-import { LidoCoreInstall } from "../lido/install.js";
-
 
 export const LidoAddCSMOperatorWithKeys = command.cli({
   description:
@@ -15,8 +13,6 @@ export const LidoAddCSMOperatorWithKeys = command.cli({
   async handler({ params, dre }) {
     const { services } = dre;
     const { lidoCLI } = services;
-
-    await LidoCoreInstall.exec(dre, {});
 
     await dre.network.waitEL();
 
