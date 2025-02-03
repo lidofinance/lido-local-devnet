@@ -12,8 +12,6 @@ import { DepositData } from "../../lib/validator/interfaces.js";
 //   fetchValidatorGraffiti,
 // } from "../../lib/keymanager-api/index.js";
 
-
-
 export default class CreateValidatorConfig extends Command {
   static description = "Generation of configuration to run validators";
   static flags = {
@@ -34,7 +32,7 @@ export default class CreateValidatorConfig extends Command {
     }
 
     const VC_IMAGE =
-      baseConfig.kurtosis.config.participants[0]?.cl_image;
+      baseConfig.kurtosis.config.participants_matrix.cl?.[0]?.cl_image;
     assert(
       VC_IMAGE !== undefined,
       "CL_IMAGE is not declared, check the path in the Kurtosis config (config.participants[0]?.cl_image)"
@@ -46,13 +44,13 @@ export default class CreateValidatorConfig extends Command {
       this.error("Deposit data not found in validator/state.json file");
     }
     // const state = await jsonDb.read();
-    const reader = await jsonDb.getReader()
-    const clPrivateUrl = reader.getOrError('network.binding.clNodesPrivate.0')
-    const name = reader.getOrError('network.name')
+    const reader = await jsonDb.getReader();
+    const clPrivateUrl = reader.getOrError("network.binding.clNodesPrivate.0");
+    const name = reader.getOrError("network.name");
     // const cl = state.network?.binding?.clNodes?.[0] ?? network.cl.url;
 
     // const name = state.network?.binding?.name ?? network.name;
-    console.log(depositData, targetWCs)
+    console.log(depositData, targetWCs);
     // const validators = await fetchActiveValidators(cl);
     const targetValidators = await depositData.filter((v) =>
       targetWCs.includes(`0x${v.withdrawal_credentials}`)

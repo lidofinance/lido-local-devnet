@@ -37,7 +37,7 @@ export default class ActivateLidoProtocol extends Command {
     await setupDevNet(
       {
         oraclesMembers: oracles.map(({ publicKey }) => publicKey),
-        oraclesQuorum: oracles.length,
+        oraclesQuorum: oracles.length - 1,
         oraclesInitialEpoch: 60,
         dsmGuardians: councils.map(({ publicKey }) => publicKey),
         dsmQuorum: councils.length,
