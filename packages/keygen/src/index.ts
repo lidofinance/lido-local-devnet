@@ -89,6 +89,8 @@ const computeRoot = async (
   },
   forkVersion: Uint8Array,
 ) => {
+  // An empty ZERO_HASH is used for deposits
+  // https://github.com/ethereum/staking-deposit-cli/blob/948d3fc358fdae54ff47dd8045206276b0b6b914/staking_deposit/utils/ssz.py#L70
   const domain = computeDomain(DOMAIN_DEPOSIT, forkVersion, ZERO_HASH);
 
   const signingRoot = computeSigningRoot(
