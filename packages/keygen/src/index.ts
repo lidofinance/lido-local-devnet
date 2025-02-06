@@ -3,7 +3,11 @@ import {
   deriveEth2ValidatorKeys,
   deriveKeyFromMnemonic,
 } from "@chainsafe/bls-keygen";
-import { IKeystore, create } from "@chainsafe/bls-keystore";
+import {
+  IKeystore,
+  create,
+  defaultScryptModule,
+} from "@chainsafe/bls-keystore";
 import { SecretKey } from "@chainsafe/blst";
 import {
   ByteVectorType,
@@ -116,18 +120,50 @@ export type DepositDataResult = {
 }[];
 
 export async function generateDepositData(
-  mnemonic: string,
-  password: string,
-  numValidators: number,
-  amount: number,
-  forkVersionString: string,
-  wcAddress: string,
-) {
-  const forkVersion = Version.fromJson(forkVersionString);
-  const masterSK = await deriveKeyFromMnemonic(mnemonic);
+  keyOptions: { mnemonic: string; password: string },
+  validatorOptions: {
+    amount: number;
+    forkVersionString: string;
+    generateFrom: number;
+    numValidators: number;
+    wcAddress: string;
+  },
+): Promise<DepositDataResult> {
+  if (!keyOptions.mnemonic || typeof keyOptions.mnemonic !== "string") {
+    throw new Error("Invalid mnemonic");
+  }
+
+  if (!keyOptions.password || typeof keyOptions.password !== "string") {
+    throw new Error("Invalid password");
+  }
+
+  if (
+    !Number.isInteger(validatorOptions.numValidators) ||
+    validatorOptions.numValidators <= 0
+  ) {
+    throw new Error("numValidators must be a positive number");
+  }
+
+  if (
+    !Number.isInteger(validatorOptions.generateFrom) ||
+    validatorOptions.generateFrom < 0
+  ) {
+    throw new Error("generateFrom must be a non-negative number");
+  }
+
+  if (!/^0x[\dA-Fa-f]{40}$/.test(validatorOptions.wcAddress)) {
+    throw new Error("Invalid withdrawal credentials format");
+  }
+
+  const forkVersion = Version.fromJson(validatorOptions.forkVersionString);
+  const masterSK = await deriveKeyFromMnemonic(keyOptions.mnemonic);
   const results: DepositDataResult = [];
 
-  for (let index = 0; index < numValidators; index++) {
+  for (
+    let index = validatorOptions.generateFrom;
+    index < validatorOptions.generateFrom + validatorOptions.numValidators;
+    index++
+  ) {
     const { signing } = deriveEth2ValidatorKeys(masterSK, index);
 
     const secretKey = SecretKey.fromBytes(signing);
@@ -136,19 +172,19 @@ export async function generateDepositData(
     const withdrawalCredentials = Uint8Array.from([
       0x01,
       ...new Uint8Array(11),
-      ...Uint8Array.from(Buffer.from(wcAddress.slice(2), "hex")),
+      ...Uint8Array.from(
+        Buffer.from(validatorOptions.wcAddress.slice(2), "hex"),
+      ),
     ]);
 
     const depositMessage = {
       pubkey: publicKey.toBytes(),
       withdrawalCredentials,
-      amount,
+      amount: validatorOptions.amount,
     };
 
     const depositMessageRoot = DepositMessage.hashTreeRoot(depositMessage);
-
     const signingRoot = await computeRoot(depositMessage, forkVersion);
-
     const signature = secretKey.sign(signingRoot);
 
     const depositData = {
@@ -159,11 +195,12 @@ export async function generateDepositData(
     const depositDataRoot = DepositData.hashTreeRoot(depositData);
 
     const keystore = await create(
-      password,
+      keyOptions.password,
       secretKey.toBytes(),
       publicKey.toBytes(),
       `m/12381/3600/${index}/0/0`,
-      // "Validator Keystore"
+      "",
+      defaultScryptModule(),
     );
 
     results.push({
