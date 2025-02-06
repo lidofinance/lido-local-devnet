@@ -7,7 +7,9 @@ export const KurtosisUpdate = command.isomorphic({
     "Updates the network configuration using a specific Ethereum package in Kurtosis and stores the configuration in the local JSON database.",
   params: {},
   async handler({ dre, dre: { logger } }) {
-    logger.log("Updating network configuration using Ethereum package in Kurtosis...");
+    logger.log(
+      "Updating network configuration using Ethereum package in Kurtosis...",
+    );
 
     const { name } = dre.network;
     const { state } = dre;
@@ -28,6 +30,7 @@ export const KurtosisUpdate = command.isomorphic({
       elNodesPrivate: elNodes.map((n) => n.privateUrl),
       validatorsApi: validators.map((n) => n.url),
       validatorsApiPrivate: validators.map((n) => n.privateUrl),
+      validatorsUIDs: validators.map((n) => n.uid),
     };
 
     await state.updateChain({
@@ -37,6 +40,8 @@ export const KurtosisUpdate = command.isomorphic({
       name,
     });
 
-    logger.log("Network configuration updated successfully and stored in the local JSON database.");
+    logger.log(
+      "Network configuration updated successfully and stored in the local JSON database.",
+    );
   },
 });
