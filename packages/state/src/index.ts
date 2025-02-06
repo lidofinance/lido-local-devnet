@@ -1,9 +1,11 @@
+import { DepositData, DepositDataResult, Keystores } from "@devnet/keygen";
 import path from "node:path";
 import { ZodSchema, z } from "zod";
 
 import {
   PARSED_CONSENSUS_GENESIS_FILE,
   STATE_FILE,
+  VALIDATORS_STATE,
   WALLET_KEYS_COUNT,
 } from "./constants.js";
 import { JsonDb } from "./json-db/index.js";
@@ -36,6 +38,7 @@ export class State {
   private appState: JsonDb;
   private config: Config;
   private parsedConsensusGenesisState: JsonDb;
+  private validators: JsonDb;
 
   constructor(rawConfig: unknown, artifactsRoot: string, chainRoot: string) {
     this.config = ConfigValidator.validate(rawConfig);
@@ -43,6 +46,7 @@ export class State {
     this.parsedConsensusGenesisState = new JsonDb(
       path.join(chainRoot, PARSED_CONSENSUS_GENESIS_FILE),
     );
+    this.validators = new JsonDb(path.join(chainRoot, VALIDATORS_STATE));
   }
 
   async getBlockScout(): Promise<z.infer<typeof BlockScoutSchema>> {
@@ -97,6 +101,16 @@ export class State {
     );
   }
 
+  async getDepositData(): Promise<DepositData[] | undefined> {
+    const currentState = await this.validators.read();
+   return currentState?.depositData as DepositData[]
+  }
+
+  async getKeystores(): Promise<Keystores[] | undefined> {
+    const currentState = await this.validators.read();
+   return currentState?.keystores as Keystores[]
+  }
+
   async getKurtosis() {
     const { kurtosis } = this.config;
     const loadConfig = await KurtosisSchema.parseAsync(kurtosis);
@@ -115,7 +129,8 @@ export class State {
         tokenManager: "lidoCore.app:aragon-token-manager.proxy.address",
         validatorExitBus: "lidoCore.validatorsExitBusOracle.proxy.address",
         voting: "lidoCore.app:aragon-voting.proxy.address",
-        treasury: "lidoCore.lidoLocator.implementation.constructorArgs.0.treasury",
+        treasury:
+          "lidoCore.lidoLocator.implementation.constructorArgs.0.treasury",
         withdrawalVault: "lidoCore.withdrawalVault.proxy.address",
       },
       "lido",
@@ -125,8 +140,16 @@ export class State {
   }
 
   async getNamedWallet() {
-    const [deployer, secondDeployer, oracle1, oracle2, oracle3, council1, council2, council3] =
-      await this.getWallet();
+    const [
+      deployer,
+      secondDeployer,
+      oracle1,
+      oracle2,
+      oracle3,
+      council1,
+      council2,
+      council3,
+    ] = await this.getWallet();
 
     return {
       deployer,
@@ -188,6 +211,23 @@ export class State {
 
   async updateLido(jsonData: unknown) {
     await this.appState.update({ lidoCore: jsonData });
+  }
+
+  async updateValidatorsData(newData: DepositDataResult) {
+    const currentState = await this.validators.read();
+  
+    const updated = {
+      depositData: [
+        ...(currentState?.depositData ?? []),
+        ...newData.map((entry) => entry.depositData),
+      ],
+      keystores: [
+        ...(currentState?.keystores ?? []),
+        ...newData.map((entry) => entry.keystore),
+      ],
+    };
+  
+    await this.validators.update(updated);
   }
 
   private async getProperties<T extends Record<string, any>>(

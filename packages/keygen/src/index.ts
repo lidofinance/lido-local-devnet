@@ -106,17 +106,21 @@ const computeRoot = async (
   return signingRoot;
 };
 
+export type DepositData = {
+  amount: number;
+  deposit_data_root: string;
+  deposit_message_root: string;
+  fork_version: string;
+  pubkey: string;
+  signature: string;
+  withdrawal_credentials: string;
+};
+
+export type Keystores = IKeystore;
+
 export type DepositDataResult = {
-  depositData: {
-    amount: number;
-    deposit_data_root: string;
-    deposit_message_root: string;
-    fork_version: string;
-    pubkey: string;
-    signature: string;
-    withdrawal_credentials: string;
-  };
-  keystore: IKeystore;
+  depositData: DepositData;
+  keystore: Keystores;
 }[];
 
 export async function generateDepositData(
