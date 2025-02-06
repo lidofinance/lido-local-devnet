@@ -4,6 +4,7 @@ participants:
     el_extra_params: [--gcmode=archive]
     cl_type: teku
     cl_image: ethpandaops/teku:master-cc94afc
+    use_separate_vc: true
     # only for mac with M4
     # cl_extra_env_vars: { "JAVA_TOOL_OPTIONS": "-XX:UseSVE=0" }
     count: 1
