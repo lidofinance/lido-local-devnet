@@ -74,6 +74,9 @@ export class State {
         elPublic: "chain.binding.elNodes.0",
         grpcPublic: "chain.binding.elNodesGrpc.0",
         grpcPrivate: "chain.binding.elNodesGrpcPrivate.0",
+        validatorsApi: "chain.binding.validatorsApi.0",
+        validatorsApiPrivate: "chain.binding.validatorsApiPrivate.0",
+        validatorsUIDs: "chain.binding.validatorsUIDs"
       },
       "chain",
       ChainConfigSchema,

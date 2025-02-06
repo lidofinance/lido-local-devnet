@@ -24,7 +24,7 @@ interface ImportResponse {
 
 export const fetchValidatorGraffiti = async (
   apiUrl: string,
-  validatorPublicKey: string
+  validatorPublicKey: string,
 ) => {
   const url = `${apiUrl}/eth/v1/validator/${validatorPublicKey}/graffiti`;
   const response = await fetch(url, {
@@ -63,15 +63,15 @@ export const exportSlashingProtection = async (apiUrl: string) => {
 
 export const importKeystores = async (
   apiUrl: string,
-  keystores: string[],
+  keystores: any[],
   passwords: string[],
-  slashingProtection: string
+  // slashingProtection: string,
 ) => {
   const url = `${apiUrl}/eth/v1/keystores`;
   const body = JSON.stringify({
     keystores,
     passwords,
-    slashing_protection: slashingProtection,
+    // slashing_protection: slashingProtection,
   });
 
   const response = await fetch(url, {

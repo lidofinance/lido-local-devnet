@@ -5,7 +5,11 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { assert } from "../assert.js";
-import { PublicPortInfo, getServiceInfo } from "../docker/index.js";
+import {
+  PublicPortInfo,
+  getServiceInfo,
+  getServiceInfoByLabel,
+} from "../docker/index.js";
 import { DevNetLogger } from "../logger.js";
 import {
   applyColor,
@@ -54,7 +58,11 @@ export class DevNetService<Name extends keyof DevNetServices> {
     commandName: string,
     name: Name,
   ): Promise<DevNetService<Name>> {
-    const artifact = await ServiceArtifact.getNew(rootPath, services[name], logger);
+    const artifact = await ServiceArtifact.getNew(
+      rootPath,
+      services[name],
+      logger,
+    );
     const service = new DevNetService(
       name,
       network,
@@ -76,6 +84,17 @@ export class DevNetService<Name extends keyof DevNetServices> {
     );
   }
 
+  public async getDockerServiceInfoByLabel(labelKey: string, label: string) {
+    const info = await getServiceInfoByLabel(labelKey, label);
+
+    assert(
+      info !== null,
+      `No data found for the service (${this.config.name}) in the docker network`,
+    );
+
+    return info;
+  }
+
   public async getExposedPorts(): Promise<PublicPortInfo[]> {
     const { exposedPorts } = this.config;
     assert(
@@ -84,13 +103,19 @@ export class DevNetService<Name extends keyof DevNetServices> {
     );
 
     const info = await Promise.all(
-      exposedPorts.map(async (port) => getServiceInfo(port, `kt-${this.network}`)),
+      exposedPorts.map(async (port) =>
+        getServiceInfo(port, `kt-${this.network}`),
+      ),
     );
 
-    const validInfo = info.filter((item): item is NonNullable<typeof item> => item !== null);
+    const validInfo = info.filter(
+      (item): item is NonNullable<typeof item> => item !== null,
+    );
 
-    assert(validInfo.length === info.length, 
-      `No data found for the service (${this.config.name}) in the docker network`);
+    assert(
+      validInfo.length === info.length,
+      `No data found for the service (${this.config.name}) in the docker network`,
+    );
 
     return validInfo;
   }

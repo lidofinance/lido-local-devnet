@@ -15,6 +15,9 @@ export const ChainConfigSchema = z.object({
   elPublic: z.string().url(),
   grpcPublic: z.string().url(),
   grpcPrivate: z.string().url(),
+  validatorsApi: z.string().url(),
+  validatorsApiPrivate: z.string().url(),
+  validatorsUIDs: z.array(z.string()),
 });
 
 export const ParsedConsensusGenesisStateSchema = z.object({

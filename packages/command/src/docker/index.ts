@@ -34,7 +34,6 @@ export async function getPublicPortsAndServices(
 
       // Add public ports
       for (const port of container.Ports) {
-        // eslint-disable-next-line max-depth
         if (port.PublicPort) {
           containerInfo.ports.push({
             privatePort: port.PrivatePort,
@@ -68,6 +67,7 @@ export async function getPublicPortsAndServices(
 }
 
 export interface PublicPortInfo {
+  id: string;
   privatePort: number;
   publicPort: number;
   serviceName: string;
@@ -102,10 +102,25 @@ export async function getServiceInfo(
           publicPort: mappedPort.PublicPort, // Return the public port if found
           serviceName: container.Names[0].replace("/", ""), // Get the service name
           privatePort: mappedPort.PrivatePort,
+          id: containerDetails.Id,
         };
       }
     }
   }
 
   return null;
+}
+
+export async function getServiceInfoByLabel(labelKey: string, label: string) {
+  // Get the list of containers
+  const containers = await docker.listContainers();
+  const result = containers.find((c) => c.Labels[labelKey] === label);
+  // containers.forEach(ss => console.log(ss.Labels))
+
+  if (!result) return null;
+
+  return {
+    serviceName: result.Names[0].replace("/", ""), // Get the service name
+    id: result.Id,
+  };
 }
