@@ -1,14 +1,19 @@
-import { Command } from "@oclif/core";
+import { command } from "@devnet/command";
 
-import { getLidoWCShort } from "../../../lib/lido/index.js";
+import { GenerateDevNetKeys } from "../../validator/keys/generate.js";
 
-export default class DevNetConfig extends Command {
-  static description = "Create deposit keys for Lido validators in the DevNet configuration";
+export const GenerateLidoDevNetKeys = command.cli({
+  description:
+    "Create deposit keys for Lido validators in the DevNet configuration.",
+  params: {},
+  async handler({ dre, dre: { logger } }) {
+    const { withdrawalVault } = await dre.state.getLido();
+    const shortWC = withdrawalVault.toLowerCase();
 
-  async run() {
-    const shortWC = await getLidoWCShort();
+    logger.log(`Generation of keys for deposits in Lido with WC: ${shortWC}`);
 
-    await this.config.runCommand("validator:keys:generate", ["--wc", shortWC]);
-    this.log(`Generation of keys for deposits in Lido with WC: ${shortWC}`);
-  }
-}
+    await dre.runCommand(GenerateDevNetKeys, {
+      wc: shortWC,
+    });
+  },
+});

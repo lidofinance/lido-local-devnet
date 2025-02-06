@@ -6,7 +6,7 @@
   "scripts": {
     "submodule": "git submodule update --init --remote --recursive",
     "postinstall": "yarn submodule",
-    "build:modules": "yarn workspaces foreach -W run build",
+    "build:modules": "yarn workspaces foreach -A run build",
     "build": "rm -rf dist && tsc -b",
     "lint": "eslint . --ext .ts && tsc --noEmit"
   },
