@@ -90,7 +90,7 @@ export const DevNetUp = command.cli({
       logger.log(`Make deposit to NOR`);
       await dre.runCommand(LidoDeposit, { id: 1, deposits: 30 });
 
-      logger.log(`Make deposit to NOR`);
+      logger.log(`Make deposit to CSM`);
       await dre.runCommand(LidoDeposit, { id: 3, deposits: 30 });
 
       logger.log(`Adding keys to the validator`)
@@ -100,7 +100,6 @@ export const DevNetUp = command.cli({
       await dre.runCommand(DeployCSVerifier, { verify: params.verify });
     }
 
-    // Display network information
     await dre.runCommand(KurtosisGetInfo, {});
   },
 });

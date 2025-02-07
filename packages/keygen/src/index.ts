@@ -108,9 +108,11 @@ const computeRoot = async (
 
 export type DepositData = {
   amount: number;
+  deposit_cli_version: string;
   deposit_data_root: string;
   deposit_message_root: string;
   fork_version: string;
+  network_name: string;
   pubkey: string;
   signature: string;
   withdrawal_credentials: string;
@@ -129,6 +131,7 @@ export async function generateDepositData(
     amount: number;
     forkVersionString: string;
     generateFrom: number;
+    networkName?: string;
     numValidators: number;
     wcAddress: string;
   },
@@ -219,6 +222,8 @@ export async function generateDepositData(
         deposit_message_root: Buffer.from(depositMessageRoot).toString("hex"),
         deposit_data_root: Buffer.from(depositDataRoot).toString("hex"),
         fork_version: Buffer.from(forkVersion).toString("hex"),
+        network_name: validatorOptions.networkName ?? "devnet",
+        deposit_cli_version: "2.8.0"
       },
     });
   }

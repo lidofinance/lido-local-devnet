@@ -1,5 +1,4 @@
 import { DepositData, DepositDataResult, Keystores } from "@devnet/keygen";
-import { assert } from "node:console";
 import path from "node:path";
 import { ZodSchema, z } from "zod";
 
@@ -119,36 +118,14 @@ export class State {
     );
   }
 
-  async getDepositData<M extends boolean = true>(
-    must: M = true as M,
-  ): Promise<
-    M extends true
-      ? ({ used?: boolean } & DepositData)[]
-      : ({ used?: boolean } & DepositData)[] | undefined
-  > {
+  async getDepositData() {
     const currentState = await this.validators.read();
-
-    if (must) {
-      assert(
-        currentState?.depositData !== undefined,
-        "Deposit data in not defined make sure that you have generated keys and depositData earlier",
-      );
-    }
 
     return currentState?.depositData as ({ used?: boolean } & DepositData)[];
   }
 
-  async getKeystores<M extends boolean = true>(
-    must: M = true as M,
-  ): Promise<M extends true ? Keystores[] : Keystores[] | undefined> {
+  async getKeystores() {
     const currentState = await this.validators.read();
-
-    if (must) {
-      assert(
-        currentState?.keystores !== undefined,
-        "Deposit data in not defined make sure that you have generated keys and depositData earlier",
-      );
-    }
 
     return currentState?.keystores as Keystores[];
   }
