@@ -5,7 +5,8 @@ type DeployEnvRequired = {
   DEPOSIT_CONTRACT: string;
   GAS_MAX_FEE: string;
   GAS_PRIORITY_FEE: string;
-  GENESIS_TIME: string;
+  LOCAL_DENVET_EXPLORER_API_URL: string;
+  LOCAL_DENVET_EXPLORER_URL: string;
   LOCAL_DEVNET_PK: string;
   NETWORK: string;
   NETWORK_STATE_DEFAULTS_FILE: string;
@@ -24,8 +25,8 @@ export const LidoCoreVerify = command.cli({
 
     const { elPublic } = await state.getChain();
     const { deployer } = await state.getNamedWallet();
-    // TODO: get from CL
-    const { genesisTime } = await state.getParsedConsensusGenesisState();
+    const blockscoutState = await state.getBlockScout();
+
 
     logger.log("Verifying deployed contracts...");
 
@@ -39,14 +40,15 @@ export const LidoCoreVerify = command.cli({
       NETWORK: constants.NETWORK,
       NETWORK_STATE_DEFAULTS_FILE: constants.NETWORK_STATE_DEFAULTS_FILE,
       NETWORK_STATE_FILE: constants.NETWORK_STATE_FILE,
-      GENESIS_TIME: genesisTime,
       RPC_URL: elPublic,
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,
+      LOCAL_DENVET_EXPLORER_API_URL: blockscoutState.api,
+      LOCAL_DENVET_EXPLORER_URL: blockscoutState.url,
     };
 
     await lidoCore.sh({
       env: deployEnv,
-    })`bash -c yarn verify:deployed --network $NETWORK || true`;
+    })`yarn verify:deployed --network $NETWORK || true`;
 
     logger.log("✅ Verification completed.");
   },
