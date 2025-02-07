@@ -1,1 +1,1 @@
-{"root":["./src/constants.ts","./src/index.ts","./src/schemas.ts","./src/shared-wallet.ts","./src/json-db/index.ts","./src/wallet/index.ts"],"version":"5.7.3"}
+{"root":["./src/constants.ts","./src/index.ts","./src/schemas.ts","./src/shared-wallet.ts","./src/sss.ts","./src/json-db/index.ts","./src/wallet/index.ts"],"version":"5.7.3"}

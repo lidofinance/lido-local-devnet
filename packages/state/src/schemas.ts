@@ -5,8 +5,8 @@ import { KURTOSIS_DEFAULT_PRESET } from "./constants.js";
 export const BlockScoutSchema = z.object({
   url: z.string().url(),
   // http://localhost:3080/api
-  api: z.string().url()
-})
+  api: z.string().url(),
+});
 
 export const ChainConfigSchema = z.object({
   clPrivate: z.string().url(),
@@ -22,7 +22,7 @@ export const ChainConfigSchema = z.object({
 
 export const ParsedConsensusGenesisStateSchema = z.object({
   genesisValidatorsRoot: z.string(),
-  genesisTime: z.string()
+  genesisTime: z.string(),
 });
 
 export const LidoConfigSchema = z.object({
@@ -34,7 +34,7 @@ export const LidoConfigSchema = z.object({
   validatorExitBus: z.string(),
   voting: z.string(),
   treasury: z.string(),
-  withdrawalVault: z.string()
+  withdrawalVault: z.string(),
 });
 
 export const CSMConfigSchema = z.object({
@@ -68,18 +68,21 @@ const ConfigSchema = z.object({
   parsedConsensusGenesisState:
     ParsedConsensusGenesisStateSchema.partial().optional(),
   kurtosis: KurtosisSchema.optional(),
-  blockscout: BlockScoutSchema.optional()
+  blockscout: BlockScoutSchema.optional(),
 });
 
-type ChainConfig = z.infer<typeof ChainConfigSchema>;
-type LidoConfig = z.infer<typeof LidoConfigSchema>;
-type CSMConfig = z.infer<typeof CSMConfigSchema>;
-type Config = z.infer<typeof ConfigSchema>;
+export type BlockScoutConfig = z.infer<typeof BlockScoutSchema>;
+export type ChainConfig = z.infer<typeof ChainConfigSchema>;
+export type LidoConfig = z.infer<typeof LidoConfigSchema>;
+export type ParsedConsensusGenesisState = z.infer<typeof ParsedConsensusGenesisStateSchema>;
+export type CSMConfig = z.infer<typeof CSMConfigSchema>;
+export type WalletConfig = z.infer<typeof WalletSchema>;
+export type KurtosisConfig = z.infer<typeof KurtosisSchema>;
+
+export type Config = z.infer<typeof ConfigSchema>;
 
 export const ConfigValidator = {
   validate(config: unknown): Config {
     return ConfigSchema.parse(config);
   },
 };
-
-export { CSMConfig, ChainConfig, Config, LidoConfig };

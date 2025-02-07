@@ -10,13 +10,18 @@ import {
 } from "./constants.js";
 import { JsonDb } from "./json-db/index.js";
 import {
+  BlockScoutConfig,
   BlockScoutSchema,
+  CSMConfig,
   CSMConfigSchema,
+  ChainConfig,
   ChainConfigSchema,
   Config,
   ConfigValidator,
   KurtosisSchema,
+  LidoConfig,
   LidoConfigSchema,
+  ParsedConsensusGenesisState,
   ParsedConsensusGenesisStateSchema,
   WalletSchema,
 } from "./schemas.js";
@@ -49,7 +54,9 @@ export class State {
     this.validators = new JsonDb(path.join(chainRoot, VALIDATORS_STATE));
   }
 
-  async getBlockScout(): Promise<z.infer<typeof BlockScoutSchema>> {
+  async getBlockScout<M extends boolean = true>(
+    must: M = true as M,
+  ): Promise<M extends true ? BlockScoutConfig : Partial<BlockScoutConfig>> {
     // const baseConfig = services.blockscout;
 
     const reader = await this.appState.getReader();
@@ -61,10 +68,13 @@ export class State {
       "blockscout",
       BlockScoutSchema,
       reader,
+      must,
     );
   }
 
-  async getChain(): Promise<z.infer<typeof ChainConfigSchema>> {
+  async getChain<M extends boolean = true>(
+    must: M = true as M,
+  ): Promise<M extends true ? ChainConfig : Partial<ChainConfig>> {
     const reader = await this.appState.getReader();
     return this.getProperties(
       {
@@ -76,15 +86,18 @@ export class State {
         grpcPrivate: "chain.binding.elNodesGrpcPrivate.0",
         validatorsApi: "chain.binding.validatorsApi.0",
         validatorsApiPrivate: "chain.binding.validatorsApiPrivate.0",
-        validatorsUIDs: "chain.binding.validatorsUIDs"
+        validatorsUIDs: "chain.binding.validatorsUIDs",
       },
       "chain",
       ChainConfigSchema,
       reader,
+      must,
     );
   }
 
-  async getCSM(): Promise<z.infer<typeof CSMConfigSchema>> {
+  async getCSM<M extends boolean = true>(
+    must: M = true as M,
+  ): Promise<M extends true ? CSMConfig : Partial<CSMConfig>> {
     const reader = await this.appState.getReader();
     return this.getProperties(
       {
@@ -101,17 +114,18 @@ export class State {
       "csm",
       CSMConfigSchema,
       reader,
+      must,
     );
   }
 
   async getDepositData(): Promise<DepositData[] | undefined> {
     const currentState = await this.validators.read();
-   return currentState?.depositData as DepositData[]
+    return currentState?.depositData as DepositData[];
   }
 
   async getKeystores(): Promise<Keystores[] | undefined> {
     const currentState = await this.validators.read();
-   return currentState?.keystores as Keystores[]
+    return currentState?.keystores as Keystores[];
   }
 
   async getKurtosis() {
@@ -121,7 +135,9 @@ export class State {
     return loadConfig;
   }
 
-  async getLido(): Promise<z.infer<typeof LidoConfigSchema>> {
+  async getLido<M extends boolean = true>(
+    must: M = true as M,
+  ): Promise<M extends true ? LidoConfig : Partial<LidoConfig>> {
     const reader = await this.appState.getReader();
     return this.getProperties(
       {
@@ -139,6 +155,7 @@ export class State {
       "lido",
       LidoConfigSchema,
       reader,
+      must,
     );
   }
 
@@ -168,8 +185,12 @@ export class State {
     };
   }
 
-  async getParsedConsensusGenesisState(): Promise<
-    z.infer<typeof ParsedConsensusGenesisStateSchema>
+  async getParsedConsensusGenesisState<M extends boolean = true>(
+    must: M = true as M,
+  ): Promise<
+    M extends true
+      ? ParsedConsensusGenesisState
+      : Partial<ParsedConsensusGenesisState>
   > {
     const reader = await this.parsedConsensusGenesisState.getReader();
     return this.getProperties(
@@ -180,6 +201,7 @@ export class State {
       "parsedConsensusGenesisState",
       ParsedConsensusGenesisStateSchema,
       reader,
+      must,
     );
   }
 
@@ -218,7 +240,7 @@ export class State {
 
   async updateValidatorsData(newData: DepositDataResult) {
     const currentState = await this.validators.read();
-  
+
     const updated = {
       depositData: [
         ...(currentState?.depositData ?? []),
@@ -229,18 +251,20 @@ export class State {
         ...newData.map((entry) => entry.keystore),
       ],
     };
-  
+
     await this.validators.update(updated);
   }
 
-  private async getProperties<T extends Record<string, any>>(
+  private async getProperties<T extends Record<string, any>, M extends boolean>(
     keys: { [K in keyof T]: string },
     group: keyof Config,
     schema: ZodSchema<T>,
     dbReader: { get: (key: string) => any },
-  ): Promise<T> {
+    must: M,
+  ): Promise<M extends true ? T : Partial<T>> {
     const result: Partial<T> = {};
     const groupConfig = this.config[group] || {};
+
     for (const key in keys) {
       if (Object.hasOwn(keys, key)) {
         const dbPath = keys[key];
@@ -248,6 +272,23 @@ export class State {
       }
     }
 
-    return schema.parse(result);
+    const parsed = schema.safeParse(result);
+
+    if (!parsed.success) {
+      if (must) {
+        throw parsed.error;
+      }
+
+      if (schema instanceof z.ZodObject) {
+        const partialParsed = schema.partial().safeParse(result);
+        return (
+          partialParsed.success ? partialParsed.data : {}
+        ) as M extends true ? T : Partial<T>;
+      }
+
+      return {} as M extends true ? T : Partial<T>;
+    }
+
+    return parsed.data;
   }
 }
