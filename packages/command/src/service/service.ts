@@ -1,7 +1,7 @@
 import { DevNetServiceConfig, services } from "@devnet/service";
 import chalk from "chalk";
 import { ExecaMethod, execa } from "execa";
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { assert } from "../assert.js";
@@ -118,6 +118,17 @@ export class DevNetService<Name extends keyof DevNetServices> {
     );
 
     return validInfo;
+  }
+
+  public async mkdirp(relativePath: string) {
+    const servicePath = this.artifact.root;
+    const fullPath = path.join(servicePath, relativePath);
+  
+    this.logger.log(
+      `Creating directory: "${fullPath}" for service "${this.config.name}"`
+    );
+  
+    return await mkdir(fullPath, { recursive: true });
   }
 
   public async readFile(relativePath: string) {
