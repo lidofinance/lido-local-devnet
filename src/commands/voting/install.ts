@@ -1,71 +1,75 @@
-import { Command } from "@oclif/core";
-import { execa } from "execa";
+import { DevNetError, command } from "@devnet/command";
 
-import { baseConfig } from "../../config/index.js";
-
-export default class ValidatorLogs extends Command {
-  static description = "Install voting scripts deps";
-
-  async run() {
+export const VotingInstall = command.cli({
+  description: "Install voting scripts dependencies",
+  params: {},
+  async handler({
+    dre: {
+      logger,
+      services: { voting },
+    },
+  }) {
     const requiredPythonVersion = "3.10.0";
-    const cwd = baseConfig.voting.paths.root;
 
-    await execa("pyenv", ["--version"], { cwd, stdio: "inherit" }).catch(() =>
-      this.error(
-        "Pyenv is not installed or not in PATH. Install it from https://github.com/pyenv/pyenv"
-      )
-    );
-
-    const installedVersions = await execa("pyenv", ["versions", "--bare"], {
-      cwd,
-    })
-      .then((result) => result.stdout.split("\n").map((v) => v.trim()))
-      .catch(() =>
-        this.error("Failed to list installed Python versions using pyenv.")
-      );
-
-    if (!installedVersions.includes(requiredPythonVersion)) {
-      this.log(`Python ${requiredPythonVersion} not found. Installing...`);
-      await execa("pyenv", ["install", requiredPythonVersion], {
-        cwd,
-        stdio: "inherit",
-      }).catch(() =>
-        this.error(
-          `Failed to install Python ${requiredPythonVersion} using pyenv.`
-        )
+    try {
+      await voting.sh`pyenv --version`;
+    } catch {
+      throw new DevNetError(
+        "Pyenv is not installed or not in PATH. Install it from https://github.com/pyenv/pyenv",
       );
     }
 
-    await execa("pyenv", ["local", requiredPythonVersion], {
-      cwd: baseConfig.voting.paths.root,
-      stdio: "inherit",
-    }).catch(() =>
-      this.error(
-        `Failed to set Python ${requiredPythonVersion} as the local version.`
-      )
-    );
+    let installedVersions: string[];
+    try {
+      const result = await voting.sh({
+        stdout: ["pipe"],
+      })`pyenv versions --bare`;
+      installedVersions = result.stdout.split("\n").map((v) => v.trim());
+    } catch {
+      throw new DevNetError(
+        "Failed to list installed Python versions using pyenv.",
+      );
+    }
 
-    // Check and install Poetry
-    await execa("python3", ["-m", "pip", "install", "--user", "poetry"], {
-      cwd: baseConfig.voting.paths.root,
-      stdio: "inherit",
-    }).catch(() =>
-      this.error(
-        "Failed to install Poetry. Ensure pip is available in the Python environment."
-      )
-    );
+    if (!installedVersions.includes(requiredPythonVersion)) {
+      logger.log(`Python ${requiredPythonVersion} not found. Installing...`);
+      try {
+        await voting.sh`pyenv install ${requiredPythonVersion}`;
+      } catch {
+        throw new DevNetError(
+          `Failed to install Python ${requiredPythonVersion} using pyenv.`,
+        );
+      }
+    }
 
-    await execa("python3", ["-m", "poetry", "install"], {
-      cwd: baseConfig.voting.paths.root,
-      stdio: "inherit",
-    }).catch(() => this.error("Failed to install dependencies using Poetry."));
+    try {
+      await voting.sh`pyenv local ${requiredPythonVersion}`;
+    } catch {
+      throw new DevNetError(
+        `Failed to set Python ${requiredPythonVersion} as the local version.`,
+      );
+    }
 
-    await execa("yarn", {
-      cwd: baseConfig.voting.paths.root,
-      stdio: "inherit",
-    }).catch(() => this.error("Failed to install dependencies using Yarn."));
+    try {
+      await voting.sh`python3 -m pip install --user poetry`;
+    } catch {
+      throw new DevNetError(
+        "Failed to install Poetry. Ensure pip is available in the Python environment.",
+      );
+    }
 
+    try {
+      await voting.sh`python3 -m poetry install`;
+    } catch {
+      throw new DevNetError("Failed to install dependencies using Poetry.");
+    }
 
-    this.log("Dependencies installed successfully.");
-  }
-}
+    try {
+      await voting.sh`yarn`;
+    } catch {
+      throw new DevNetError("Failed to install dependencies using Yarn.");
+    }
+
+    logger.log("Dependencies installed successfully.");
+  },
+});

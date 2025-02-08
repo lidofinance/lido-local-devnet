@@ -1,44 +1,44 @@
-import { Command } from "@oclif/core";
-import { execa } from "execa";
+import { command } from "@devnet/command";
 
-import { baseConfig } from "../../config/index.js";
+import { VotingInstall } from "./install.js";
 
-export default class AddBrownieAccount extends Command {
-  static description = "Add a new account to Brownie in silent mode";
+export const AddBrownieAccount = command.cli({
+  description: "Add a new account to Brownie in silent mode",
+  params: {},
+  async handler({
+    dre,
+    dre: {
+      logger,
+      state,
+      services: { voting },
+    },
+  }) {
+    await dre.runCommand(VotingInstall, {});
 
-  async run() {
+    const { deployer } = await state.getNamedWallet();
 
-    await this.config.runCommand("voting:install")
+    logger.log("====================================");
+    logger.log("💡 Starting the process to add a new Brownie account...");
+    logger.log(`📌 Account Name (alias): ${deployer.publicKey}`);
+    logger.log(
+      "🔑 IMPORTANT: You will need to enter the private key manually.",
+    );
+    logger.log("🔒 Follow the instructions carefully:");
+    logger.log("  1. When prompted, copy and paste the following private key:");
+    logger.log(`     Private Key: ${deployer.privateKey}`);
+    logger.log("  2. After that, you will be asked to set a password.");
+    logger.log(
+      "     ➡️  For testing or development purposes, it is recommended to use an **empty password**.",
+    );
+    logger.log("  3. Confirm the password by pressing Enter again.");
+    logger.log("====================================");
 
-    const { address, privateKey } = baseConfig.wallet;
+    await voting.sh`poetry run brownie accounts new ${deployer.publicKey}`;
 
-    this.log("====================================");
-    this.log("💡 Starting the process to add a new Brownie account...");
-    this.log(`📌 Account Name (alias): ${address}`);
-    this.log("🔑 IMPORTANT: You will need to enter the private key manually.");
-    this.log("🔒 Follow the instructions carefully:");
-    this.log("  1. When prompted, copy and paste the following private key:");
-    this.log(`     Private Key: ${privateKey}`);
-    this.log("  2. After that, you will be asked to set a password.");
-    this.log("     ➡️  For testing or development purposes, it is recommended to use an **empty password**.");
-    this.log("  3. Confirm the password by pressing Enter again.");
-    this.log("====================================");
-
-    try {
-      await execa(
-        "poetry",
-        ["run", "brownie", "accounts", "new", address],
-        {
-          cwd: baseConfig.voting.paths.root,
-          stdio: "inherit",
-        }
-      );
-
-      this.log("✅ Account addition completed successfully!");
-      this.log(`🎉 Account '${address}' has been added to Brownie.`);
-      this.log("====================================");
-    } catch (error:any) {
-      this.error(`❌ Failed to add account: ${error.message}`);
-    }
-  }
-}
+    logger.log("✅ Account addition completed successfully!");
+    logger.log(
+      `🎉 Account '${deployer.privateKey}' has been added to Brownie.`,
+    );
+    logger.log("====================================");
+  },
+});

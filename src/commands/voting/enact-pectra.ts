@@ -1,51 +1,29 @@
-import { Command } from "@oclif/core";
-import { execa } from "execa";
+import { command } from "@devnet/command";
 
-import { baseConfig } from "../../config/index.js";
+import { VotingAutoVote } from "./auto-vote.js";
+import { VotingInstall } from "./install.js";
+import { PreparePectraVoting } from "./prepare-pectra.js";
 
-// interface Config {
-//   ACCOUNTING_ORACLE: string;
-//   AGENT: string;
-//   CHAIN_NETWORK_NAME: string;
-//   CS_FEE_ORACLE_ADDRESS: string;
-//   CS_VERIFIER_ADDRESS: string;
-//   CS_VERIFIER_ADDRESS_OLD: string;
-//   CSM_ADDRESS: string;
-//   ORACLE_REPORT_SANITY_CHECKER: string;
-//   TOKEN_MANAGER: string;
-//   VALIDATORS_EXIT_BUS_ORACLE: string;
-//   VOTING: string;
-// }
+export const EnactPectraVoting = command.cli({
+  description: "Prepare pectra voting",
+  params: {},
+  async handler({
+    dre,
+    dre: {
+      state,
+      services: { voting },
+    },
+  }) {
+    await dre.runCommand(VotingInstall, {});
+    await dre.runCommand(PreparePectraVoting, {});
+    const { deployer } = await state.getNamedWallet();
 
-export default class EnactPectraVoting extends Command {
-  static description = "Prepare pectra voting";
+    await voting.sh({
+      env: {
+        DEPLOYER: deployer.publicKey,
+      },
+    });
 
-  async run() {
-    await this.config.runCommand("voting:install");
-
-    const cwd = baseConfig.voting.paths.root;
-    // brownie run scripts/pectra_upgrade.py --network=devnet4
-
-    await this.config.runCommand("voting:prepare-pectra");
-
-    await execa(
-      "poetry",
-      [
-        "run",
-        "brownie",
-        "run",
-        "scripts/pectra_upgrade.py",
-        "--network=devnet4",
-      ],
-      {
-        cwd,
-        env: {
-          DEPLOYER: baseConfig.wallet.address,
-        },
-        stdio: "inherit",
-      }
-    );
-
-    await this.config.runCommand("voting:auto-vote");
-  }
-}
+    await dre.runCommand(VotingAutoVote, {});
+  },
+});

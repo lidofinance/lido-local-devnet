@@ -1,54 +1,29 @@
-import {Command} from "@oclif/core";
-import {execa} from "execa";
-import fs from "node:fs/promises";
+import { command } from "@devnet/command";
 
-import {baseConfig, jsonDb} from "../../config/index.js";
+export const AssertoorUp = command.cli({
+  description: "Start Assertoor",
+  params: {},
+  async handler({
+    dre: {
+      logger,
+      services: { assertoor },
+      state,
+      network,
+    },
+  }) {
+    const { elPrivate, clPrivate } = await state.getChain();
 
-interface ENV {
-  CHAIN_ID: string;
-  CONSENSUS_CLIENT_URI: string;
-  DOCKER_NETWORK_NAME: string;
-  EXECUTION_CLIENT_URI: string;
-}
-
-export default class AssertoorUp extends Command {
-  static description = "Start Assertoor";
-
-  async run() {
-    this.log("Starting Assertoor...");
-
-    const state = await jsonDb.getReader();
-    const el: string = state.getOrError("network.binding.elNodesPrivate.0");
-    const cl: string = state.getOrError("network.binding.clNodesPrivate.0");
-    const name: string = state.getOrError("network.name");
-
-    const env: ENV = {
+    const env = {
       CHAIN_ID: "32382",
-
-      CONSENSUS_CLIENT_URI: cl,
-      DOCKER_NETWORK_NAME: `kt-${name}`,
-
-      EXECUTION_CLIENT_URI: el,
+      CONSENSUS_CLIENT_URI: clPrivate,
+      DOCKER_NETWORK_NAME: `kt-${network.name}`,
+      EXECUTION_CLIENT_URI: elPrivate,
     };
 
-    const envPath = `${baseConfig.assertoor.paths.root}/.env`;
-    const envContent = Object.entries(env)
-      .map(([key, value]) => `${key}=${value}`)
-      .join("\n");
-    await fs.writeFile(envPath, envContent, "utf-8");
+    await assertoor.writeENV("./.env", env);
 
-    try {
-      await execa(
-        "docker",
-        ["compose", "-f", "docker-compose.yml", "up", "--build", "-d"],
-        {
-          cwd: baseConfig.assertoor.paths.root,
-          stdio: "inherit",
-        }
-      );
-      this.log("Assertoor started successfully.");
-    } catch (error: any) {
-      this.error(`Failed to start Assertoor: ${error.message}`);
-    }
-  }
-}
+    await assertoor.sh`docker compose -f docker-compose.yml up --build -d`;
+
+    logger.log("Assertoor started successfully.");
+  },
+});
