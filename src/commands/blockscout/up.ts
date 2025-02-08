@@ -10,12 +10,12 @@ export const BlockscoutUp = command.cli({
       services: { blockscout },
     } = dre;
 
-    const { elPrivate, grpcPrivate } = await state.getChain();
+    const { elPrivate, elWsPrivate } = await state.getChain();
 
     const blockScoutSh = blockscout.sh({
       env: {
         BLOCKSCOUT_RPC_URL: elPrivate,
-        BLOCKSCOUT_WS_RPC_URL: grpcPrivate,
+        BLOCKSCOUT_WS_RPC_URL: elWsPrivate,
         DOCKER_NETWORK_NAME: `kt-${network.name}`,
         COMPOSE_PROJECT_NAME: `blockscout-${network.name}`,
       },

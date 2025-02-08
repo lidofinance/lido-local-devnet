@@ -87,7 +87,10 @@ export class DevNetService<Name extends keyof DevNetServices> {
 
   public async getDockerInfo() {
     const { labels } = this.config;
-    return await getContainersByServiceLabels(labels, `kt-${this.network}`);
+    return (await getContainersByServiceLabels)<DevNetServices[Name]["labels"]>(
+      labels,
+      `kt-${this.network}`,
+    );
   }
 
   public async getDockerServiceInfoByLabel(labelKey: string, label: string) {

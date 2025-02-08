@@ -15,7 +15,7 @@ export const ValidatorAdd = command.cli({
       services: { kurtosis },
     },
   }) {
-    const { validatorsApi, validatorsUIDs } = await dre.state.getChain();
+    const { validatorsApi } = await dre.state.getChain();
     const keystoresResponse = await keyManager.fetchKeystores(validatorsApi);
 
     const existingPubKeys = new Set(
@@ -25,8 +25,8 @@ export const ValidatorAdd = command.cli({
     const keystore = await state.getKeystores();
     assert(keystore !== undefined, "Keystore data not found");
 
-    const actualKeystores = keystore.filter((k) =>
-      !existingPubKeys.has(k.pubkey),
+    const actualKeystores = keystore.filter(
+      (k) => !existingPubKeys.has(k.pubkey),
     );
 
     if (actualKeystores.length === 0) {
@@ -46,9 +46,11 @@ export const ValidatorAdd = command.cli({
 
     logger.logJson(res);
 
-    const [validatorUID] = validatorsUIDs;
-    const { id: validatorServiceDockerId } =
-      await kurtosis.getDockerServiceInfoByLabel("service_uuid", validatorUID);
+    const {
+      vc: [firstValidator],
+    } = await kurtosis.getDockerInfo();
+
+    const { id: validatorServiceDockerId } = firstValidator;
 
     await kurtosis.sh`docker restart ${validatorServiceDockerId}`;
 

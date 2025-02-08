@@ -1,21 +1,15 @@
-import { Params, command } from "../lib/command/index.js";
-import nested from "./nested.js";
+import { command } from "@devnet/command";
 
-export const ConfigCommand = command.isomorphic({
+export const ConfigCommand = command.cli({
   description: "Print public DevNet config",
-  params: {
-    someStrangeName: Params.string({
-      char: "n",
-      required: true,
-      summary: "Name to print.",
-    }),
-  },
-  async handler({ params, dre }): Promise<void> {
-    console.log("DRE initialized:", dre);
-    const name = params.someStrangeName;
-    console.log("someStrangeName111", name, params.json);
-    await nested.exec(dre, {
-      someNestedFlag: false,
-    });
+  params: {},
+  async handler({ dre: { state, logger } }) {
+    logger.log("");
+    const chainServices = Object.entries(await state.getChain()).filter(
+      ([k]) => !k.endsWith("Private"),
+    );
+    logger.log("Chain services:");
+    logger.log("");
+    logger.table(["Service", "URL"], chainServices);
   },
 });

@@ -5,10 +5,12 @@ export interface ContainerInfo {
   id: string;
   ip: string;
   name: string;
-  privatePort?: number;
-  privateUrl?: string;
-  publicPort?: number;
-  publicUrl?: string;
+  ports: {
+    privatePort?: number;
+    privateUrl?: string;
+    publicPort?: number;
+    publicUrl?: string;
+  }[];
 }
 
 export async function getContainersByServiceLabels<
@@ -39,26 +41,22 @@ export async function getContainersByServiceLabels<
         const ip =
           containerDetails.NetworkSettings.Networks[networkName].IPAddress;
 
-        const mappedPort = container.Ports.find((port) => port.PublicPort);
-
-        const publicPort = mappedPort?.PublicPort;
-        const privatePort = mappedPort?.PrivatePort;
-
-        const publicUrl = publicPort
-          ? `http://localhost:${publicPort}`
-          : undefined;
-        const privateUrl = privatePort
-          ? `http://${ip}:${privatePort}`
-          : undefined;
+        const ports = container.Ports.map((port) => ({
+          publicPort: port.PublicPort,
+          privatePort: port.PrivatePort,
+          publicUrl: port.PublicPort
+            ? `http://localhost:${port.PublicPort}`
+            : undefined,
+          privateUrl: port.PrivatePort
+            ? `http://${ip}:${port.PrivatePort}`
+            : undefined,
+        }));
 
         matchingContainers.push({
           id: containerDetails.Id,
           name: container.Names[0].replace("/", ""),
           ip,
-          publicPort,
-          privatePort,
-          publicUrl,
-          privateUrl,
+          ports,
         });
       }
     }
