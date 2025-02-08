@@ -49,7 +49,7 @@ services:
       - CSM_MODULE_DEVNET_ADDRESS=${CSM_MODULE_DEVNET_ADDRESS}
       - STAKING_ROUTER_DEVNET_ADDRESS=${STAKING_ROUTER_DEVNET_ADDRESS}
     ports:
-      - '${PORT}:${PORT}'
+      - '0:${PORT}'
     depends_on:
       - db
 

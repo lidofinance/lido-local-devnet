@@ -55,6 +55,7 @@ const kapi = new DevNetServiceConfig({
   repository: "submodules/kapi",
   config: "services/kapi",
   name: "kapi" as const,
+  exposedPorts: [9030],
   constants: {
     DB_HOST: "127.0.0.1",
     DB_NAME: "node_operator_keys_service_db",
