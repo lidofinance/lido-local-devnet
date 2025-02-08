@@ -73,6 +73,13 @@ const kapi = new DevNetServiceConfig({
   },
 });
 
+const oracle = new DevNetServiceConfig({
+  repository: "submodules/oracle-v5",
+  config: "services/oracle-v5",
+  name: "oracle" as const,
+  constants: {},
+});
+
 const csm = new DevNetServiceConfig({
   repository: "submodules/csm",
   name: "csm" as const,
@@ -98,6 +105,7 @@ export const services = {
   kurtosis,
   csm,
   kapi,
+  oracle,
 };
 
 export { DevNetServiceConfig } from "./service.js";
