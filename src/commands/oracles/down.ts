@@ -1,27 +1,13 @@
-import { Command } from "@oclif/core";
-import { execa } from "execa";
+import { command } from "@devnet/command";
 
-import { baseConfig } from "../../config/index.js";
-
-export default class OracleDown extends Command {
-  static description = "Stop Oracle(s)";
-
-  async run() {
-    this.log("Stopping Oracle(s)...");
-
-    try {
-      await execa(
-        "docker",
-        ["compose", "-f", "docker-compose.devnet.yml", "down", "-v"],
-        {
-          cwd: baseConfig.oracle.paths.repository,
-          stdio: "inherit",
-          // cwd: baseConfig.kapi.paths.root,
-        }
-      );
-      this.log("Oracle(s) stopped successfully.");
-    } catch (error: any) {
-      this.error(`Failed to stop Oracle(s): ${error.message}`);
-    }
-  }
-}
+export const OracleDown = command.cli({
+  description: "Stop Oracle(s)",
+  params: {},
+  async handler({
+    dre: {
+      services: { oracle },
+    },
+  }) {
+    await oracle.sh`docker compose -f docker-compose.devnet.yml down -v`;
+  },
+});
