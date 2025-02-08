@@ -5,6 +5,7 @@ import { WALLET_KEYS_COUNT } from "./constants.js";
 import {
   BlockScoutSchema,
   CSMConfigSchema,
+  CSMNewVerifierSchema,
   ChainConfigSchema,
   KurtosisSchema,
   LidoConfigSchema,
@@ -124,6 +125,17 @@ export class State extends BaseState {
       council3,
       councils: [council1, council2, council3],
     };
+  }
+
+  async getNewVerifier<M extends boolean = true>(must: M = true as M) {
+    return this.getProperties(
+      {
+        CSVerifier: "electraVerifier.CSVerifier",
+      },
+      "csm",
+      CSMNewVerifierSchema,
+      must,
+    );
   }
 
   async getParsedConsensusGenesisState<M extends boolean = true>(

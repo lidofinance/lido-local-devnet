@@ -50,6 +50,10 @@ export const CSMConfigSchema = z.object({
   verifier: z.string(),
 });
 
+export const CSMNewVerifierSchema = z.object({
+  CSVerifier: z.string(),
+});
+
 export const WalletSchema = z
   .array(z.object({ privateKey: z.string(), publicKey: z.string() }))
   .min(20, { message: "Wallet must have at least 20 items" });
@@ -75,7 +79,9 @@ const ConfigSchema = z.object({
 export type BlockScoutConfig = z.infer<typeof BlockScoutSchema>;
 export type ChainConfig = z.infer<typeof ChainConfigSchema>;
 export type LidoConfig = z.infer<typeof LidoConfigSchema>;
-export type ParsedConsensusGenesisState = z.infer<typeof ParsedConsensusGenesisStateSchema>;
+export type ParsedConsensusGenesisState = z.infer<
+  typeof ParsedConsensusGenesisStateSchema
+>;
 export type CSMConfig = z.infer<typeof CSMConfigSchema>;
 export type WalletConfig = z.infer<typeof WalletSchema>;
 export type KurtosisConfig = z.infer<typeof KurtosisSchema>;

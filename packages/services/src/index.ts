@@ -60,6 +60,20 @@ const kurtosis = new DevNetServiceConfig({
   },
 });
 
+const voting = new DevNetServiceConfig({
+  config: "submodules/scripts",
+  name: "voting" as const,
+  constants: {},
+  labels: {},
+});
+
+const assertoor = new DevNetServiceConfig({
+  config: "services/assertoor",
+  name: "assertoor" as const,
+  constants: {},
+  labels: {},
+});
+
 const kapi = new DevNetServiceConfig({
   repository: "submodules/kapi",
   config: "services/kapi",
@@ -118,6 +132,8 @@ export const services = {
   csm,
   kapi,
   oracle,
+  voting,
+  assertoor,
 };
 
 export { DevNetServiceConfig } from "./service.js";
