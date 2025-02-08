@@ -1,81 +1,29 @@
 import { DepositData, DepositDataResult, Keystores } from "@devnet/keygen";
-import path from "node:path";
-import { ZodSchema, z } from "zod";
 
+import { BaseState } from "./base-state.js";
+import { WALLET_KEYS_COUNT } from "./constants.js";
 import {
-  PARSED_CONSENSUS_GENESIS_FILE,
-  STATE_FILE,
-  VALIDATORS_STATE,
-  WALLET_KEYS_COUNT,
-} from "./constants.js";
-import { JsonDb } from "./json-db/index.js";
-import {
-  BlockScoutConfig,
   BlockScoutSchema,
-  CSMConfig,
   CSMConfigSchema,
-  ChainConfig,
   ChainConfigSchema,
-  Config,
-  ConfigValidator,
-  KurtosisSchema,
-  LidoConfig,
   LidoConfigSchema,
-  ParsedConsensusGenesisState,
   ParsedConsensusGenesisStateSchema,
   WalletSchema,
 } from "./schemas.js";
 import { sharedWallet } from "./shared-wallet.js";
 import { generateKeysFromMnemonicOnce } from "./wallet/index.js";
 
-/**
- * The State class is responsible for managing and retrieving configuration data from both a user-provided config object
- * and a JSON database. It supports three primary configuration groups: chain, lido, and csm, each with their own mappings.
- *
- * - The constructor validates the raw config using Zod schemas and initializes JSON database readers.
- * - The `getProperties` method handles retrieval of configuration values, prioritizing user config over database values,
- *   and validates the final result using Zod schemas.
- * - Each group (chain, lido, csm) has a dedicated method to retrieve its corresponding configuration.
- *
- * This class ensures type safety and flexibility by leveraging Zod schemas for validation and TypeScript for strong typing.
- */
-export class State {
-  private appState: JsonDb;
-  private config: Config;
-  private parsedConsensusGenesisState: JsonDb;
-  private validators: JsonDb;
-
-  constructor(rawConfig: unknown, artifactsRoot: string, chainRoot: string) {
-    this.config = ConfigValidator.validate(rawConfig);
-    this.appState = new JsonDb(path.join(artifactsRoot, STATE_FILE));
-    this.parsedConsensusGenesisState = new JsonDb(
-      path.join(chainRoot, PARSED_CONSENSUS_GENESIS_FILE),
-    );
-    this.validators = new JsonDb(path.join(chainRoot, VALIDATORS_STATE));
-  }
-
-  async getBlockScout<M extends boolean = true>(
-    must: M = true as M,
-  ): Promise<M extends true ? BlockScoutConfig : Partial<BlockScoutConfig>> {
-    // const baseConfig = services.blockscout;
-
-    const reader = await this.appState.getReader();
+export class State extends BaseState {
+  async getBlockScout<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
-      {
-        url: "blockscout.url",
-        api: "blockscout.api",
-      },
+      { url: "blockscout.url", api: "blockscout.api" },
       "blockscout",
       BlockScoutSchema,
-      reader,
       must,
     );
   }
 
-  async getChain<M extends boolean = true>(
-    must: M = true as M,
-  ): Promise<M extends true ? ChainConfig : Partial<ChainConfig>> {
-    const reader = await this.appState.getReader();
+  async getChain<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
       {
         clPrivate: "chain.binding.clNodesPrivate.0",
@@ -90,15 +38,11 @@ export class State {
       },
       "chain",
       ChainConfigSchema,
-      reader,
       must,
     );
   }
 
-  async getCSM<M extends boolean = true>(
-    must: M = true as M,
-  ): Promise<M extends true ? CSMConfig : Partial<CSMConfig>> {
-    const reader = await this.appState.getReader();
+  async getCSM<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
       {
         accounting: "csm.CSAccounting",
@@ -113,34 +57,21 @@ export class State {
       },
       "csm",
       CSMConfigSchema,
-      reader,
       must,
     );
   }
 
   async getDepositData() {
     const currentState = await this.validators.read();
-
     return currentState?.depositData as ({ used?: boolean } & DepositData)[];
   }
 
   async getKeystores() {
     const currentState = await this.validators.read();
-
     return currentState?.keystores as Keystores[];
   }
 
-  async getKurtosis() {
-    const { kurtosis } = this.config;
-    const loadConfig = await KurtosisSchema.parseAsync(kurtosis);
-
-    return loadConfig;
-  }
-
-  async getLido<M extends boolean = true>(
-    must: M = true as M,
-  ): Promise<M extends true ? LidoConfig : Partial<LidoConfig>> {
-    const reader = await this.appState.getReader();
+  async getLido<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
       {
         accountingOracle: "lidoCore.accountingOracle.proxy.address",
@@ -156,45 +87,13 @@ export class State {
       },
       "lido",
       LidoConfigSchema,
-      reader,
       must,
     );
   }
 
-  async getNamedWallet() {
-    const [
-      deployer,
-      secondDeployer,
-      oracle1,
-      oracle2,
-      oracle3,
-      council1,
-      council2,
-      council3,
-    ] = await this.getWallet();
-
-    return {
-      deployer,
-      secondDeployer,
-      oracle1,
-      oracle2,
-      oracle3,
-      oracles: [oracle1, oracle2, oracle3],
-      council1,
-      council2,
-      council3,
-      councils: [council1, council2, council3],
-    };
-  }
-
   async getParsedConsensusGenesisState<M extends boolean = true>(
     must: M = true as M,
-  ): Promise<
-    M extends true
-      ? ParsedConsensusGenesisState
-      : Partial<ParsedConsensusGenesisState>
-  > {
-    const reader = await this.parsedConsensusGenesisState.getReader();
+  ) {
     return this.getProperties(
       {
         genesisValidatorsRoot: "genesis_validators_root",
@@ -202,14 +101,12 @@ export class State {
       },
       "parsedConsensusGenesisState",
       ParsedConsensusGenesisStateSchema,
-      reader,
       must,
     );
   }
 
   async getWallet() {
     let { wallet } = this.config;
-
     if (!wallet && this.config.walletMnemonic) {
       wallet = generateKeysFromMnemonicOnce(
         this.config.walletMnemonic,
@@ -221,39 +118,32 @@ export class State {
   }
 
   async updateBlockScout(jsonData: unknown) {
-    await this.appState.update({ blockscout: jsonData });
+    await this.updateProperties("blockscout", jsonData);
   }
 
   async updateChain(jsonData: unknown) {
-    await this.appState.update({ chain: jsonData });
+    await this.updateProperties("chain", jsonData);
   }
 
   async updateCSM(jsonData: unknown) {
-    await this.appState.update({ csm: jsonData });
+    await this.updateProperties("csm", jsonData);
   }
 
   async updateDepositData(depositData: ({ used?: boolean } & DepositData)[]) {
     const currentState = await this.validators.read();
-
     const updated = {
       depositData,
       keystores: [...(currentState?.keystores ?? [])],
     };
-
     await this.validators.update(updated);
   }
 
-  async updateElectraVerifier(jsonData: unknown) {
-    await this.appState.update({ electraVerifier: jsonData });
-  }
-
   async updateLido(jsonData: unknown) {
-    await this.appState.update({ lidoCore: jsonData });
+    await this.updateProperties("lidoCore", jsonData);
   }
 
   async updateValidatorsData(newData: DepositDataResult) {
     const currentState = await this.validators.read();
-
     const updated = {
       depositData: [
         ...(currentState?.depositData ?? []),
@@ -264,44 +154,6 @@ export class State {
         ...newData.map((entry) => entry.keystore),
       ],
     };
-
     await this.validators.update(updated);
-  }
-
-  private async getProperties<T extends Record<string, any>, M extends boolean>(
-    keys: { [K in keyof T]: string },
-    group: keyof Config,
-    schema: ZodSchema<T>,
-    dbReader: { get: (key: string) => any },
-    must: M,
-  ): Promise<M extends true ? T : Partial<T>> {
-    const result: Partial<T> = {};
-    const groupConfig = this.config[group] || {};
-
-    for (const key in keys) {
-      if (Object.hasOwn(keys, key)) {
-        const dbPath = keys[key];
-        result[key] = (groupConfig as any)[key] ?? dbReader.get(dbPath);
-      }
-    }
-
-    const parsed = schema.safeParse(result);
-
-    if (!parsed.success) {
-      if (must) {
-        throw parsed.error;
-      }
-
-      if (schema instanceof z.ZodObject) {
-        const partialParsed = schema.partial().safeParse(result);
-        return (
-          partialParsed.success ? partialParsed.data : {}
-        ) as M extends true ? T : Partial<T>;
-      }
-
-      return {} as M extends true ? T : Partial<T>;
-    }
-
-    return parsed.data;
   }
 }
