@@ -1,18 +1,19 @@
-export class DevNetServiceConfig<T = unknown> {
+export class DevNetServiceConfig<
+  T = unknown,
+  L extends Record<string, string> = Record<string, string>,
+> {
   config?: string;
   constants: T;
   env?: Record<string, string>;
-
-  exposedPorts?: number[]
-
+  exposedPorts?: number[];
   hooks?: {
     build?: string;
     destroy?: string;
     install?: string;
   };
 
+  labels: L;
   name: string;
-
   repository?: string;
 
   constructor({
@@ -22,13 +23,15 @@ export class DevNetServiceConfig<T = unknown> {
     name,
     repository,
     constants,
-    exposedPorts
+    labels,
+    exposedPorts,
   }: {
     config?: string;
     constants: T;
     env?: Record<string, string>;
     exposedPorts?: number[];
     hooks?: { build?: string; destroy?: string; install?: string };
+    labels: L;
     name: string;
     repository?: string;
   }) {
@@ -38,6 +41,9 @@ export class DevNetServiceConfig<T = unknown> {
     this.name = name;
     this.repository = repository;
     this.constants = constants;
-    this.exposedPorts = exposedPorts
+    this.labels = labels;
+    this.exposedPorts = exposedPorts;
   }
 }
+
+// service_name=dora

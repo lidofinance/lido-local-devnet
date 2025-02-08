@@ -1,6 +1,79 @@
 import Docker from "dockerode";
 
 const docker = new Docker();
+export interface ContainerInfo {
+  id: string;
+  ip: string;
+  name: string;
+  privatePort?: number;
+  privateUrl?: string;
+  publicPort?: number;
+  publicUrl?: string;
+}
+
+export async function getContainersByServiceLabels<
+  T extends Record<string, string>,
+>(labels: T, networkName: string): Promise<Record<keyof T, ContainerInfo[]>> {
+  const containers = await docker.listContainers({ all: true });
+
+  const result = {} as Record<keyof T, ContainerInfo[]>;
+
+  for (const serviceName of Object.keys(labels) as (keyof T)[]) {
+    const label = labels[serviceName];
+    const [labelKey, labelValue] = label.split("=");
+
+    const matchingContainers: ContainerInfo[] = [];
+
+    for (const container of containers) {
+      const containerInstance = docker.getContainer(container.Id);
+      const containerDetails = await containerInstance.inspect();
+
+      if (!containerDetails.NetworkSettings.Networks[networkName]) {
+        continue;
+      }
+
+      if (
+        containerDetails.Config.Labels &&
+        containerDetails.Config.Labels[labelKey] === labelValue
+      ) {
+        const ip =
+          containerDetails.NetworkSettings.Networks[networkName].IPAddress;
+
+        const mappedPort = container.Ports.find((port) => port.PublicPort);
+
+        const publicPort = mappedPort?.PublicPort;
+        const privatePort = mappedPort?.PrivatePort;
+
+        const publicUrl = publicPort
+          ? `http://localhost:${publicPort}`
+          : undefined;
+        const privateUrl = privatePort
+          ? `http://${ip}:${privatePort}`
+          : undefined;
+
+        matchingContainers.push({
+          id: containerDetails.Id,
+          name: container.Names[0].replace("/", ""),
+          ip,
+          publicPort,
+          privatePort,
+          publicUrl,
+          privateUrl,
+        });
+      }
+    }
+
+    if (matchingContainers.length === 0) {
+      throw new Error(
+        `No container found for label '${label}' in network '${networkName}'`,
+      );
+    }
+
+    result[serviceName] = matchingContainers;
+  }
+
+  return result;
+}
 
 interface PortMapping {
   privatePort: number;

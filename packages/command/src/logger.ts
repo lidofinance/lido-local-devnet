@@ -21,7 +21,6 @@ export class DevNetLogger {
     this.log(chalk.red(msg));
   }
 
-
   public log(msg: unknown) {
     console.log(`${applyColor(this.color, "||")} ${msg}`);
   }
@@ -50,6 +49,21 @@ export class DevNetLogger {
       .map((s) => `${applyColor(this.color, "||")} ${s}`);
 
     strings.forEach((str) => console.log(str));
+  }
+
+  public table([keyTitle, valueTitle]: string[], data: string[][]) {
+    const maxLengthName = Math.max(
+      keyTitle.length,
+      ...data.map((item) => item[0].length),
+    );
+    const separator = "-".repeat(maxLengthName + 50);
+
+    this.log(`${keyTitle.padEnd(maxLengthName)} | ${valueTitle}`);
+    this.log(separator);
+
+    for (const [key, value] of data) {
+      this.log(`${key.padEnd(maxLengthName)} | ${value}`);
+    }
   }
 
   public warn(msg: string) {

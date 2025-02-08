@@ -7,6 +7,7 @@ import path from "node:path";
 import { assert } from "../assert.js";
 import {
   PublicPortInfo,
+  getContainersByServiceLabels,
   getServiceInfo,
   getServiceInfoByLabel,
 } from "../docker/index.js";
@@ -84,6 +85,11 @@ export class DevNetService<Name extends keyof DevNetServices> {
     );
   }
 
+  public async getDockerInfo() {
+    const { labels } = this.config;
+    return await getContainersByServiceLabels(labels, `kt-${this.network}`);
+  }
+
   public async getDockerServiceInfoByLabel(labelKey: string, label: string) {
     const info = await getServiceInfoByLabel(labelKey, label);
 
@@ -123,11 +129,11 @@ export class DevNetService<Name extends keyof DevNetServices> {
   public async mkdirp(relativePath: string) {
     const servicePath = this.artifact.root;
     const fullPath = path.join(servicePath, relativePath);
-  
+
     this.logger.log(
-      `Creating directory: "${fullPath}" for service "${this.config.name}"`
+      `Creating directory: "${fullPath}" for service "${this.config.name}"`,
     );
-  
+
     return await mkdir(fullPath, { recursive: true });
   }
 

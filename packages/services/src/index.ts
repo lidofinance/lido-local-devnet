@@ -5,6 +5,7 @@ const blockscout = new DevNetServiceConfig({
   name: "blockscout" as const,
   exposedPorts: [80],
   constants: {},
+  labels: { blockscout: "devnet_service_name=blockscout" },
 });
 
 const lidoCore = new DevNetServiceConfig({
@@ -25,6 +26,7 @@ const lidoCore = new DevNetServiceConfig({
   hooks: {
     install: "lido-core:install",
   },
+  labels: {},
 });
 
 const lidoCLI = new DevNetServiceConfig({
@@ -43,12 +45,19 @@ const lidoCLI = new DevNetServiceConfig({
   hooks: {
     install: "lido-cli:install",
   },
+  labels: {},
 });
 
 const kurtosis = new DevNetServiceConfig({
   config: "services/kurtosis",
   name: "kurtosis" as const,
   constants: {},
+  labels: {
+    dora: "service_name=dora",
+    el: "com.kurtosistech.custom.ethereum-package.client-type=execution",
+    cl: "com.kurtosistech.custom.ethereum-package.client-type=beacon",
+    vc: "com.kurtosistech.custom.ethereum-package.client-type=validator",
+  },
 });
 
 const kapi = new DevNetServiceConfig({
@@ -71,6 +80,7 @@ const kapi = new DevNetServiceConfig({
     PROVIDER_JSON_RPC_MAX_BATCH_SIZE: "100",
     VALIDATOR_REGISTRY_ENABLE: "false",
   },
+  labels: { kapi: "devnet_service_name=kapi" },
 });
 
 const oracle = new DevNetServiceConfig({
@@ -78,6 +88,7 @@ const oracle = new DevNetServiceConfig({
   config: "services/oracle-v5",
   name: "oracle" as const,
   constants: {},
+  labels: {},
 });
 
 const csm = new DevNetServiceConfig({
@@ -96,6 +107,7 @@ const csm = new DevNetServiceConfig({
   hooks: {
     install: "csm:install",
   },
+  labels: {},
 });
 
 export const services = {
