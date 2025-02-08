@@ -28,6 +28,15 @@ export class ServiceArtifact {
   ) {
     const artifact = new ServiceArtifact(artifactsRoot, service, logger);
 
+    // Check if the destination path already exists
+    const destinationExists = await artifact.pathExists(artifact.root);
+    if (destinationExists) {
+      return artifact;
+    }
+
+    if (artifact.config.hooks?.install)
+      artifact.emittedCommands.push(artifact.config.hooks?.install);
+
     if (service.repository) {
       await artifact.copyFilesFrom(service.repository);
     }
@@ -52,15 +61,6 @@ export class ServiceArtifact {
    */
   private async copyFilesFrom(sourcePath: string): Promise<void> {
     try {
-      // Check if the destination path already exists
-      const destinationExists = await this.pathExists(this.root);
-      if (destinationExists) {
-        return;
-      }
-
-      if (this.config.hooks?.install)
-        this.emittedCommands.push(this.config.hooks?.install);
-
       // Ensure the destination folder exists
       await fs.mkdir(this.root, { recursive: true });
 
@@ -78,7 +78,7 @@ export class ServiceArtifact {
       // Copy each file or directory
       await Promise.all(
         itemsToCopy.map(async ({ destination, source }) => {
-          await fs.cp(source, destination, { recursive: true });
+          await fs.cp(source, destination, { recursive: true, force: true });
         }),
       );
 
