@@ -6,6 +6,7 @@ import {
   BlockScoutSchema,
   CSMConfigSchema,
   ChainConfigSchema,
+  KurtosisSchema,
   LidoConfigSchema,
   ParsedConsensusGenesisStateSchema,
   WalletSchema,
@@ -71,6 +72,13 @@ export class State extends BaseState {
     return currentState?.keystores as Keystores[];
   }
 
+  async getKurtosis() {
+    const { kurtosis } = this.config;
+    const loadConfig = await KurtosisSchema.parseAsync(kurtosis);
+
+    return loadConfig;
+  }
+
   async getLido<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
       {
@@ -84,11 +92,39 @@ export class State extends BaseState {
         treasury:
           "lidoCore.lidoLocator.implementation.constructorArgs.0.treasury",
         withdrawalVault: "lidoCore.withdrawalVault.proxy.address",
+        stakingRouter: "lidoCore.stakingRouter.proxy.address",
+        curatedModule: "lidoCore.app:node-operators-registry.proxy.address",
       },
       "lido",
       LidoConfigSchema,
       must,
     );
+  }
+
+  async getNamedWallet() {
+    const [
+      deployer,
+      secondDeployer,
+      oracle1,
+      oracle2,
+      oracle3,
+      council1,
+      council2,
+      council3,
+    ] = await this.getWallet();
+
+    return {
+      deployer,
+      secondDeployer,
+      oracle1,
+      oracle2,
+      oracle3,
+      oracles: [oracle1, oracle2, oracle3],
+      council1,
+      council2,
+      council3,
+      councils: [council1, council2, council3],
+    };
   }
 
   async getParsedConsensusGenesisState<M extends boolean = true>(
@@ -136,6 +172,10 @@ export class State extends BaseState {
       keystores: [...(currentState?.keystores ?? [])],
     };
     await this.validators.update(updated);
+  }
+
+  async updateElectraVerifier(jsonData: unknown) {
+    await this.appState.update({ electraVerifier: jsonData });
   }
 
   async updateLido(jsonData: unknown) {

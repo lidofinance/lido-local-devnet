@@ -35,6 +35,8 @@ export const LidoConfigSchema = z.object({
   voting: z.string(),
   treasury: z.string(),
   withdrawalVault: z.string(),
+  stakingRouter: z.string(),
+  curatedModule: z.string(),
 });
 
 export const CSMConfigSchema = z.object({

@@ -23,8 +23,8 @@ const lidoCore = new DevNetServiceConfig({
     SLOTS_PER_EPOCH: "32",
   },
   hooks: {
-    install: "lido-core:install"
-  }
+    install: "lido-core:install",
+  },
 });
 
 const lidoCLI = new DevNetServiceConfig({
@@ -41,14 +41,35 @@ const lidoCLI = new DevNetServiceConfig({
     LIDO_CLI_NON_INTERACTIVE: "true",
   },
   hooks: {
-    install: "lido-cli:install"
-  }
+    install: "lido-cli:install",
+  },
 });
 
 const kurtosis = new DevNetServiceConfig({
   config: "services/kurtosis",
   name: "kurtosis" as const,
   constants: {},
+});
+
+const kapi = new DevNetServiceConfig({
+  repository: "submodules/kapi",
+  config: "services/kapi",
+  name: "kapi" as const,
+  constants: {
+    DB_HOST: "127.0.0.1",
+    DB_NAME: "node_operator_keys_service_db",
+    DB_PASSWORD: "postgres",
+    DB_PORT: "5432",
+    DB_USER: "postgres",
+    LOG_FORMAT: "simple",
+    LOG_LEVEL: "debug",
+    MIKRO_ORM_DISABLE_FOREIGN_KEYS: "false",
+    PORT: "9030",
+    PROVIDER_BATCH_AGGREGATION_WAIT_MS: "10",
+    PROVIDER_CONCURRENT_REQUESTS: "1",
+    PROVIDER_JSON_RPC_MAX_BATCH_SIZE: "100",
+    VALIDATOR_REGISTRY_ENABLE: "false",
+  },
 });
 
 const csm = new DevNetServiceConfig({
@@ -65,8 +86,8 @@ const csm = new DevNetServiceConfig({
     CHAIN: "local-devnet",
   },
   hooks: {
-    install: "csm:install"
-  }
+    install: "csm:install",
+  },
 });
 
 export const services = {
@@ -75,6 +96,7 @@ export const services = {
   lidoCLI,
   kurtosis,
   csm,
+  kapi,
 };
 
 export { DevNetServiceConfig } from "./service.js";

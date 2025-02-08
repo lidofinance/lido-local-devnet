@@ -9,15 +9,17 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    networks:
+      - devnet
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
-      - ./.volumes/pgdata-${CHAIN_ID}/:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
 
   keys_api:
-    image: lidofinance/lido-keys-api:stable
+    build: ./
     platform: linux/amd64
     restart: always
     networks:
@@ -42,10 +44,14 @@ services:
       - JOB_INTERVAL_REGISTRY=${JOB_INTERVAL_REGISTRY}
       - VALIDATOR_REGISTRY_ENABLE=${VALIDATOR_REGISTRY_ENABLE}
       - JOB_INTERVAL_VALIDATORS_REGISTRY=${JOB_INTERVAL_VALIDATORS_REGISTRY}
+      - LIDO_LOCATOR_DEVNET_ADDRESS=${LIDO_LOCATOR_DEVNET_ADDRESS}
+      - CURATED_MODULE_DEVNET_ADDRESS=${CURATED_MODULE_DEVNET_ADDRESS}
+      - CSM_MODULE_DEVNET_ADDRESS=${CSM_MODULE_DEVNET_ADDRESS}
+      - STAKING_ROUTER_DEVNET_ADDRESS=${STAKING_ROUTER_DEVNET_ADDRESS}
     ports:
       - '${PORT}:${PORT}'
     depends_on:
       - db
 
-# volumes:
-#   db-data:
+volumes:
+  pgdata:

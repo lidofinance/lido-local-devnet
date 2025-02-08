@@ -1,27 +1,13 @@
-import { Command } from "@oclif/core";
-import { execa } from "execa";
+import { command } from "@devnet/command";
 
-import { baseConfig } from "../../config/index.js";
-
-export default class KapiDown extends Command {
-  static description = "Stop Kapi";
-
-  async run() {
-    this.log("Stopping Kapi...");
-
-    try {
-      await execa(
-        "docker",
-        ["compose", "-f", "docker-compose.devnet.yml", "down", "-v"],
-        {
-          cwd: baseConfig.kapi.paths.repository,
-          stdio: "inherit",
-          // cwd: baseConfig.kapi.paths.root,
-        }
-      );
-      this.log("Kapi stopped successfully.");
-    } catch (error: any) {
-      this.error(`Failed to stop Kapi: ${error.message}`);
-    }
-  }
-}
+export const KapiDown = command.cli({
+  description: "Stop Kapi",
+  params: {},
+  async handler({
+    dre: {
+      services: { kapi },
+    },
+  }) {
+    await kapi.sh`docker compose -f docker-compose.devnet.yml down -v`;
+  },
+});
