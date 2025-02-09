@@ -10,6 +10,7 @@ export const createRPC = async (
   ctx: DevNetContext<typeof Command>,
   commands: Record<string, typeof DevNetCommand>,
 ) => {
+  const { logger } = ctx.dre;
   const fastify = (await import("fastify")).default();
 
   await fastify.register((await import("@fastify/swagger")).default, {
@@ -126,7 +127,7 @@ export const createRPC = async (
             message: "Command executed successfully",
           });
         } catch (error: any) {
-          console.error(`Error executing ${commandID}:`, error);
+          logger.error(`Error executing ${commandID}: ${error.message}`);
           reply
             .status(500)
             .send({ error: error?.message ?? "Internal server error" });
@@ -134,12 +135,13 @@ export const createRPC = async (
       },
     );
 
-    console.log(`Registered command ${commandID}:`, originalParams);
+    logger.log(`Registered command ${commandID}:`);
+    logger.logJson(originalParams)
   });
   await fastify.ready();
   fastify.swagger();
 
-  await fastify.listen({ port: 4555 });
-  console.log(`Server listening on http://localhost:4555`);
-  console.log(`Swagger UI available at http://localhost:4555/docs`);
+  await fastify.listen({ port });
+  logger.log(`Server listening on http://localhost:${port}`);
+  logger.log(`Swagger UI available at http://localhost:${port}/docs`);
 };

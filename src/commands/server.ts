@@ -1,6 +1,4 @@
-import { DevNetCommand } from "../lib/command/command.js";
-import { DevNetContext } from "../lib/command/context.js";
-import { createRPC } from "../lib/command/rpc.js";
+import { DevNetCommand, DevNetContext, createRPC } from "@devnet/command";
 
 function arrayToObject<T extends typeof DevNetCommand>(
   array: T[],
@@ -20,13 +18,12 @@ export default class DevNetConfig extends DevNetCommand {
   static isIsomorphicCommand: boolean = false;
 
   public async run(): Promise<void> {
-    // TODO: read load source
     const classesLoader = this.config.commands.map(async (cmd) => cmd.load());
 
     const classes = (await Promise.all(
       classesLoader,
     )) as (typeof DevNetCommand)[];
-    
+
     const isomorphic = classes.filter((cl) => cl.isIsomorphicCommand);
 
     const ctx = this.ctx as unknown as DevNetContext<typeof DevNetConfig>;
