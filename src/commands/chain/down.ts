@@ -15,7 +15,9 @@ export const KurtosisCleanUp = command.isomorphic({
 
     logger.log("Removing network artifacts...");
 
-    await kurtosis.sh`kurtosis enclave rm -f ${network.name}`;
+    await kurtosis.sh`kurtosis enclave rm -f ${network.name}`.catch((error) =>
+      logger.error(error.message),
+    );
 
     await kurtosis.artifact.clean();
     logger.log("Cleanup completed successfully.");

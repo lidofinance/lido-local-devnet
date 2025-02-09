@@ -1,6 +1,6 @@
 import { State } from "@devnet/state";
 import { Config as OclifConfig } from "@oclif/core";
-import { readFile } from "node:fs/promises";
+import { readFile, rm } from "node:fs/promises";
 import * as YAML from "yaml";
 
 import { assert } from "./assert.js";
@@ -73,6 +73,15 @@ export class DevNetRuntimeEnvironment {
     );
 
     return dre;
+  }
+
+  public async clean() {
+    for (const service of Object.values(this.services)) {
+      // TODO: call destroy hook here
+      await service.artifact.clean();
+    }
+
+    await rm(this.registry.root, { recursive: true, force: true });
   }
 
   public clone(commandName: string) {

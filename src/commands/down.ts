@@ -12,6 +12,8 @@ export const DevNetStop = command.cli({
     await dre.runCommand(BlockscoutDown, {});
     await dre.runCommand(KurtosisCleanUp, {});
 
+    await dre.clean();
+
     logger.log("DevNet stopped successfully.");
   },
 });
