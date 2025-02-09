@@ -122,6 +122,14 @@ const dataBus = new DevNetServiceConfig({
   labels: {},
 });
 
+const dsmBots = new DevNetServiceConfig({
+  repository: "submodules/dsm-bots",
+  config: "services/dsm-bots",
+  name: "dsmBots" as const,
+  constants: {},
+  labels: {},
+});
+
 const csm = new DevNetServiceConfig({
   repository: "submodules/csm",
   name: "csm" as const,
@@ -153,6 +161,7 @@ export const services = {
   assertoor,
   council,
   dataBus,
+  dsmBots,
 };
 
 export { DevNetServiceConfig } from "./service.js";
