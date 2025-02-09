@@ -71,7 +71,7 @@ const assertoor = new DevNetServiceConfig({
   config: "services/assertoor",
   name: "assertoor" as const,
   constants: {},
-  labels: {},
+  labels: { api: "devnet_service_name=assertoorApi" },
 });
 
 const kapi = new DevNetServiceConfig({

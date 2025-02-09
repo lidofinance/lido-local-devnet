@@ -3,6 +3,7 @@ import chalk from "chalk";
 import { ExecaMethod, execa } from "execa";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import * as YAML from "yaml";
 
 import { assert } from "../assert.js";
 import {
@@ -152,6 +153,10 @@ export class DevNetService<Name extends keyof DevNetServices> {
     return JSON.parse(await this.readFile(relativePath));
   }
 
+  public async readYaml(relativePath: string) {
+    return YAML.parse(await this.readFile(relativePath));
+  }
+
   public async writeENV(relativePath: string, env: Record<string, string>) {
     const envContent = Object.entries(env)
       .map(([key, value]) => `${key}=${value}`)
@@ -173,6 +178,10 @@ export class DevNetService<Name extends keyof DevNetServices> {
 
   public async writeJson(relativePath: string, fileContent: unknown) {
     return await this.writeFile(relativePath, JSON.stringify(fileContent));
+  }
+
+  public async writeYaml(relativePath: string, fileContent: unknown) {
+    return await this.writeFile(relativePath, YAML.stringify(fileContent));
   }
 
   private createShellWrapper() {
