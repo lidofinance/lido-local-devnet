@@ -6,7 +6,7 @@
   "scripts": {
     "submodule": "git submodule update --init --recursive",
     "postinstall": "yarn submodule",
-    "build:modules": "yarn workspaces foreach -W --topological run build",
+    "build:all": "yarn workspaces foreach -W --topological run build",
     "build": "rm -rf dist && tsc -b",
     "lint": "eslint . --ext .ts && tsc --noEmit"
   },
@@ -28,7 +28,6 @@
     "ethers": "^6.13.4",
     "execa": "^9.5.2",
     "fastify": "^5.2.1",
-    "kurtosis-sdk": "^1.4.3",
     "ts-node": "^10.9.2",
     "typescript": "^5",
     "yaml": "^2.6.1",

@@ -4,3 +4,4 @@ node_modules
 packages/cl-client/src/generated-client-fetch
 
 .DS_Store
+artifacts
