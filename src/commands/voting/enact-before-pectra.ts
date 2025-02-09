@@ -1,35 +1,26 @@
-import { Command } from "@oclif/core";
-import { baseConfig } from "../../config/index.js";
-import { execa } from "execa";
+import { command } from "@devnet/command";
 
-export default class EnactBeforePectraVoting extends Command {
-  static description = "Enact before_pectra_upgrade";
+import { VotingAutoVote } from "./auto-vote.js";
+import { VotingInstall } from "./install.js";
+import { PreparePectraVoting } from "./prepare-pectra.js";
 
-  async run() {
-    await this.config.runCommand("voting:install");
+export const EnactBeforePectraVoting = command.cli({
+  description: "Enact before_pectra_upgrade",
+  params: {},
+  async handler({ dre, dre: { services, state } }) {
+    const { voting } = services;
 
-    const cwd = baseConfig.voting.paths.root;
+    await dre.runCommand(VotingInstall, {});
+    await dre.runCommand(PreparePectraVoting, {});
 
-    await this.config.runCommand("voting:prepare-pectra");
+    const { deployer } = await state.getNamedWallet();
 
-    await execa(
-      "poetry",
-      [
-        "run",
-        "brownie",
-        "run",
-        "scripts/before_pectra_upgrade_holesky.py",
-        "--network=devnet4",
-      ],
-      {
-        cwd,
-        stdio: "inherit",
-        env: {
-          DEPLOYER: baseConfig.wallet.address,
-        },
-      }
-    );
+    await voting.sh({
+      env: {
+        DEPLOYER: deployer.publicKey,
+      },
+    })`poetry run brownie run scripts/before_pectra_upgrade_holesky.py --network=devnet4`;
 
-    await this.config.runCommand("voting:auto-vote");
-  }
-}
+    await dre.runCommand(VotingAutoVote, {});
+  },
+});
