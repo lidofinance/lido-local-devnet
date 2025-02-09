@@ -76,11 +76,8 @@ async function executeCommandWithLogging<T>(
     const end = performance.now();
     logger.logFooter(`Execution time ${Math.floor(end - start)}ms`);
     depth -= 1;
-    // This handler was added because of a strange implementation of ethers,
-    // which in case of node inaccessibility causes an error, but leaves a hanging promise,
-    // which does not allow to terminate the process
-    // eslint-disable-next-line n/no-process-exit, unicorn/no-process-exit
-    if (depth === 0) process.exit(lastError ? 1 : 0);
+    // eslint-disable-next-line no-unsafe-finally
+    if (depth === 0) return;
     // eslint-disable-next-line no-unsafe-finally
     if (lastError) throw lastError;
   }
