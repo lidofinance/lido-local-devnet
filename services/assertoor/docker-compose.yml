@@ -9,11 +9,11 @@ services:
 
   assertoor:
     image: ethpandaops/assertoor:latest
-    entrypoint: ['/bin/bash', '-c', 'sleep infinity']
+    entrypoint: ['/app/assertoor', '--config', '/config/config.yml']
     platform: linux/amd64
     networks:
       - devnet
     ports:
-      - '32080:8080'
+      - '0:8080'
     volumes:
       - ./config/:/config

@@ -14,13 +14,25 @@ export const AssertoorUp = command.cli({
     const { elPrivate, clPrivate } = await state.getChain();
 
     const env = {
-      CHAIN_ID: "32382",
-      CONSENSUS_CLIENT_URI: clPrivate,
       DOCKER_NETWORK_NAME: `kt-${network.name}`,
-      EXECUTION_CLIENT_URI: elPrivate,
+      COMPOSE_PROJECT_NAME: `assertoor-${network.name}`,
     };
 
-    await assertoor.writeENV("./.env", env);
+    const config = (await assertoor.readYaml("config/config.yml")) as {
+      endpoints: [
+        {
+          consensusUrl: string;
+          executionUrl: string;
+          name: "local";
+        },
+      ];
+    };
+
+    config.endpoints[0].consensusUrl = clPrivate;
+    config.endpoints[0].executionUrl = elPrivate;
+
+    await assertoor.writeYaml("config/config.yml", config);
+    await assertoor.writeENV(".env", env);
 
     await assertoor.sh`docker compose -f docker-compose.yml up --build -d`;
 
