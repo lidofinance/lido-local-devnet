@@ -50,6 +50,10 @@ export const CSMConfigSchema = z.object({
   verifier: z.string(),
 });
 
+export const DataBusConfigSchema = z.object({
+  address: z.string(),
+});
+
 export const CSMNewVerifierSchema = z.object({
   CSVerifier: z.string(),
 });
@@ -74,6 +78,7 @@ const ConfigSchema = z.object({
     ParsedConsensusGenesisStateSchema.partial().optional(),
   kurtosis: KurtosisSchema.optional(),
   blockscout: BlockScoutSchema.optional(),
+  dataBus: DataBusConfigSchema.optional(),
 });
 
 export type BlockScoutConfig = z.infer<typeof BlockScoutSchema>;

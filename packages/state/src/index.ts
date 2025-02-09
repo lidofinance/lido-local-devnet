@@ -7,6 +7,7 @@ import {
   CSMConfigSchema,
   CSMNewVerifierSchema,
   ChainConfigSchema,
+  DataBusConfigSchema,
   KurtosisSchema,
   LidoConfigSchema,
   ParsedConsensusGenesisStateSchema,
@@ -58,6 +59,17 @@ export class State extends BaseState {
       },
       "csm",
       CSMConfigSchema,
+      must,
+    );
+  }
+
+  async getDataBus<M extends boolean = true>(must: M = true as M) {
+    return this.getProperties(
+      {
+        address: "dataBus.contract.address",
+      },
+      "dataBus",
+      DataBusConfigSchema,
       must,
     );
   }
@@ -174,6 +186,10 @@ export class State extends BaseState {
 
   async updateCSM(jsonData: unknown) {
     await this.updateProperties("csm", jsonData);
+  }
+
+  async updateDataBus(jsonData: unknown) {
+    await this.updateProperties("dataBus", jsonData);
   }
 
   async updateDepositData(depositData: ({ used?: boolean } & DepositData)[]) {

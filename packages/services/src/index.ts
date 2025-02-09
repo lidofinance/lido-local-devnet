@@ -105,6 +105,23 @@ const oracle = new DevNetServiceConfig({
   labels: {},
 });
 
+const council = new DevNetServiceConfig({
+  repository: "submodules/council-daemon",
+  config: "services/council",
+  name: "council" as const,
+  constants: {},
+  labels: {},
+});
+
+const dataBus = new DevNetServiceConfig({
+  repository: "submodules/data-bus",
+  name: "dataBus" as const,
+  constants: {
+    DEPLOYED_FILE: "deployed/local-devnet.json",
+  },
+  labels: {},
+});
+
 const csm = new DevNetServiceConfig({
   repository: "submodules/csm",
   name: "csm" as const,
@@ -134,6 +151,8 @@ export const services = {
   oracle,
   voting,
   assertoor,
+  council,
+  dataBus,
 };
 
 export { DevNetServiceConfig } from "./service.js";
