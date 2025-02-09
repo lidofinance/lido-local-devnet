@@ -15,6 +15,9 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
+    "@devnet/cl-client": "workspace:*",
+    "@devnet/service": "workspace:*",
+    "@devnet/state": "workspace:*",
     "@fastify/swagger": "^9.4.2",
     "@fastify/swagger-ui": "^5.2.1",
     "@oclif/core": "^4.0.37",

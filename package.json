@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "submodule": "git submodule update --init --remote --recursive",
+    "submodule": "git submodule update --init --recursive",
     "postinstall": "yarn submodule",
-    "build:modules": "yarn workspaces foreach -A run build",
+    "build:modules": "yarn workspaces foreach -W --topological run build",
     "build": "rm -rf dist && tsc -b",
     "lint": "eslint . --ext .ts && tsc --noEmit"
   },
@@ -15,6 +15,9 @@
     "src"
   ],
   "dependencies": {
+    "@devnet/command": "workspace:*",
+    "@devnet/key-manager-api": "workspace:*",
+    "@devnet/keygen": "workspace:*",
     "@fastify/swagger": "^9.4.2",
     "@fastify/swagger-ui": "^5.2.1",
     "@oclif/core": "^4.0.37",

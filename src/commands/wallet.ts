@@ -1,10 +1,10 @@
-import { DevNetCommand } from "../lib/command/command.js";
-import { DevNetContext } from "../lib/command/context.js";
+import { command } from "@devnet/command";
 
-export default class PrintWallet extends DevNetCommand {
-  static description = "Print current network wallet";
-
-  static async handler({ dre }: DevNetContext<typeof PrintWallet>) {
-    console.log(await dre.state.getWallet());
-  }
-}
+export const PrintWallet = command.cli({
+  description: "Print current network wallet",
+  params: {},
+  async handler({ dre, dre: { logger } }) {
+    const wallet = await dre.state.getNamedWallet();
+    logger.logJson(wallet);
+  },
+});

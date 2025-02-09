@@ -258,7 +258,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@devnet/cl-client@workspace:packages/cl-client":
+"@devnet/cl-client@workspace:*, @devnet/cl-client@workspace:packages/cl-client":
   version: 0.0.0-use.local
   resolution: "@devnet/cl-client@workspace:packages/cl-client"
   dependencies:
@@ -287,10 +287,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@devnet/command@workspace:packages/command":
+"@devnet/command@workspace:*, @devnet/command@workspace:packages/command":
   version: 0.0.0-use.local
   resolution: "@devnet/command@workspace:packages/command"
   dependencies:
+    "@devnet/cl-client": "workspace:*"
+    "@devnet/service": "workspace:*"
+    "@devnet/state": "workspace:*"
     "@fastify/swagger": "npm:^9.4.2"
     "@fastify/swagger-ui": "npm:^5.2.1"
     "@oclif/core": "npm:^4.0.37"
@@ -315,7 +318,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@devnet/key-manager-api@workspace:packages/key-manager-api":
+"@devnet/key-manager-api@workspace:*, @devnet/key-manager-api@workspace:packages/key-manager-api":
   version: 0.0.0-use.local
   resolution: "@devnet/key-manager-api@workspace:packages/key-manager-api"
   dependencies:
@@ -343,7 +346,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@devnet/keygen@workspace:packages/keygen":
+"@devnet/keygen@workspace:*, @devnet/keygen@workspace:packages/keygen":
   version: 0.0.0-use.local
   resolution: "@devnet/keygen@workspace:packages/keygen"
   dependencies:
@@ -375,7 +378,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@devnet/service@workspace:packages/services":
+"@devnet/service@workspace:*, @devnet/service@workspace:packages/services":
   version: 0.0.0-use.local
   resolution: "@devnet/service@workspace:packages/services"
   dependencies:
@@ -403,10 +406,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@devnet/state@workspace:packages/state":
+"@devnet/state@workspace:*, @devnet/state@workspace:packages/state":
   version: 0.0.0-use.local
   resolution: "@devnet/state@workspace:packages/state"
   dependencies:
+    "@devnet/keygen": "workspace:*"
     "@fastify/swagger": "npm:^9.4.2"
     "@fastify/swagger-ui": "npm:^5.2.1"
     "@oclif/core": "npm:^4.0.37"
@@ -4430,6 +4434,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "lido-local-devnet@workspace:."
   dependencies:
+    "@devnet/command": "workspace:*"
+    "@devnet/key-manager-api": "workspace:*"
+    "@devnet/keygen": "workspace:*"
     "@fastify/swagger": "npm:^9.4.2"
     "@fastify/swagger-ui": "npm:^5.2.1"
     "@oclif/core": "npm:^4.0.37"
