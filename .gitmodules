@@ -30,3 +30,15 @@
 	path = submodules/oracle-v5
 	url = git@github.com:lidofinance/lido-oracle.git
 	branch = feat/oracle-v5-devnet-config
+[submodule "submodules/council-daemon"]
+	path = submodules/council-daemon
+	url = git@github.com:lidofinance/lido-council-daemon.git
+	branch = feat/devnet
+[submodule "submodules/dsm-bots"]
+	path = submodules/dsm-bots
+	url = git@github.com:lidofinance/depositor-bot.git
+	branch = feat/devnet
+[submodule "submodules/data-bus"]
+	path = submodules/data-bus
+	url = git@github.com:lidofinance/data-bus.git
+	branch = feat/devnet
