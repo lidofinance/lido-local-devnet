@@ -23,6 +23,7 @@ export const EnactPectraVoting = command.cli({
         DEPLOYER: deployer.publicKey,
       },
     });
+    // TODO: fix command
 
     await dre.runCommand(VotingAutoVote, {});
   },
