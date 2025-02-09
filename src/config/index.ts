@@ -45,6 +45,8 @@ const SLOTS_PER_EPOCH = KURTOSIS_IS_MINIMAL_MODE ? 8 : 32;
 
 // submodules paths begin
 const SUBMODULES_ROOT = path.join(process.cwd(), "submodules");
+const OFCHAIN_ROOT = path.join(process.cwd(), "ofchain");
+const ONCHAIN_ROOT = path.join(process.cwd(), "onchain");
 const DEPOSIT_CLI_ROOT = path.join(SUBMODULES_ROOT, "staking-deposit-cli");
 const CSM_ROOT = path.join(SUBMODULES_ROOT, "csm");
 const ORACLE_ROOT = path.join(process.cwd(), SUBMODULES_ROOT, "oracle");
@@ -92,6 +94,11 @@ export const baseConfig = {
     },
     url: "http://localhost:3080",
   },
+  council: {
+    paths: {
+      ofchain: path.join(OFCHAIN_ROOT, "council-daemon"),
+    },
+  },
   dockerRunner: {
     depositCli: {
       paths: {
@@ -110,6 +117,11 @@ export const baseConfig = {
       root: DORA_ROOT,
     },
     url: "http://localhost:3070",
+  },
+  dsmBots: {
+    paths: {
+      ofchain: path.join(OFCHAIN_ROOT, "dsm-bots"),
+    },
   },
   kapi: {
     paths: {
@@ -132,6 +144,11 @@ export const baseConfig = {
     name: "my-testnet",
   },
   onchain: {
+    dataBus: {
+      paths: {
+        root: path.join(ONCHAIN_ROOT, "data-bus"),
+      },
+    },
     lido: {
       core: {
         env: {
@@ -243,6 +260,16 @@ export const baseConfig = {
   validator: {
     paths: {
       docker: VALIDATOR_COMPOSE_DIR,
+    },
+  },
+  validator: {
+    paths: {
+      docker: VALIDATOR_COMPOSE_DIR,
+    },
+  },
+  voting: {
+    paths: {
+      root: SCRIPTS_PATH,
     },
   },
   voting: {

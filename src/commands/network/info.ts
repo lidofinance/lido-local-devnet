@@ -17,6 +17,11 @@ export default class KurtosisGetInfo extends Command {
       url: baseConfig.blockscout.url,
     };
 
-    displayUrlTable([...output, blockscoutTempConfig]);
+    displayUrlTable([
+      ...output,
+      blockscoutTempConfig,
+      { name: "KAPI", url: "http://localhost:9030" },
+      { name: "KAPI-Swagger", url: "http://localhost:9030/api" },
+    ]);
   }
 }
