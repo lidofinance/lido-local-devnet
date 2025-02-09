@@ -2,7 +2,6 @@ export class DevNetServiceConfig<
   T = unknown,
   L extends Record<string, string> = Record<string, string>,
 > {
-  config?: string;
   constants: T;
   env?: Record<string, string>;
   exposedPorts?: number[];
@@ -13,11 +12,13 @@ export class DevNetServiceConfig<
   };
 
   labels: L;
+
   name: string;
   repository?: string;
+  workspace?: string;
 
   constructor({
-    config,
+    workspace,
     env,
     hooks,
     name,
@@ -26,7 +27,6 @@ export class DevNetServiceConfig<
     labels,
     exposedPorts,
   }: {
-    config?: string;
     constants: T;
     env?: Record<string, string>;
     exposedPorts?: number[];
@@ -34,8 +34,9 @@ export class DevNetServiceConfig<
     labels: L;
     name: string;
     repository?: string;
+    workspace?: string;
   }) {
-    this.config = config;
+    this.workspace = workspace;
     this.env = env;
     this.hooks = hooks;
     this.name = name;
@@ -45,4 +46,3 @@ export class DevNetServiceConfig<
     this.exposedPorts = exposedPorts;
   }
 }
-

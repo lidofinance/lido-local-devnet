@@ -41,8 +41,8 @@ export class ServiceArtifact {
       await artifact.copyFilesFrom(service.repository);
     }
 
-    if (service.config) {
-      await artifact.copyFilesFrom(service.config);
+    if (service.workspace) {
+      await artifact.copyFilesFrom(service.workspace);
     }
 
     return artifact;

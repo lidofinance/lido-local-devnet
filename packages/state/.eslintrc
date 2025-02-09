@@ -13,10 +13,10 @@
         "unicorn/no-array-reduce": "off",
         "unicorn/text-encoding-identifier-case": "off",
         "unicorn/consistent-destructuring": "off",
-        "max-params":"off",
+        "max-params": "off",
         "unicorn/no-array-for-each": "off",
         "perfectionist/sort-objects": "off",
-        "n/no-extraneous-import": "off"
+        "n/no-extraneous-import": "off",
       },
     },
   ],

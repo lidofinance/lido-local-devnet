@@ -1,7 +1,7 @@
 import { DevNetServiceConfig } from "./service.js";
 
 const blockscout = new DevNetServiceConfig({
-  config: "services/blockscout",
+  workspace: "workspaces/blockscout",
   name: "blockscout" as const,
   exposedPorts: [80],
   constants: {},
@@ -49,7 +49,7 @@ const lidoCLI = new DevNetServiceConfig({
 });
 
 const kurtosis = new DevNetServiceConfig({
-  config: "services/kurtosis",
+  workspace: "workspaces/kurtosis",
   name: "kurtosis" as const,
   constants: {},
   labels: {
@@ -61,14 +61,14 @@ const kurtosis = new DevNetServiceConfig({
 });
 
 const voting = new DevNetServiceConfig({
-  config: "submodules/scripts",
+  workspace: "submodules/scripts",
   name: "voting" as const,
   constants: {},
   labels: {},
 });
 
 const assertoor = new DevNetServiceConfig({
-  config: "services/assertoor",
+  workspace: "workspaces/assertoor",
   name: "assertoor" as const,
   constants: {},
   labels: { api: "devnet_service_name=assertoorApi" },
@@ -76,7 +76,7 @@ const assertoor = new DevNetServiceConfig({
 
 const kapi = new DevNetServiceConfig({
   repository: "submodules/kapi",
-  config: "services/kapi",
+  workspace: "workspaces/kapi",
   name: "kapi" as const,
   exposedPorts: [9030],
   constants: {
@@ -99,7 +99,7 @@ const kapi = new DevNetServiceConfig({
 
 const oracle = new DevNetServiceConfig({
   repository: "submodules/oracle-v5",
-  config: "services/oracle-v5",
+  workspace: "workspaces/oracle-v5",
   name: "oracle" as const,
   constants: {},
   labels: {},
@@ -107,7 +107,7 @@ const oracle = new DevNetServiceConfig({
 
 const council = new DevNetServiceConfig({
   repository: "submodules/council-daemon",
-  config: "services/council",
+  workspace: "workspaces/council",
   name: "council" as const,
   constants: {},
   labels: {},
@@ -124,7 +124,7 @@ const dataBus = new DevNetServiceConfig({
 
 const dsmBots = new DevNetServiceConfig({
   repository: "submodules/dsm-bots",
-  config: "services/dsm-bots",
+  workspace: "workspaces/dsm-bots",
   name: "dsmBots" as const,
   constants: {},
   labels: {},
