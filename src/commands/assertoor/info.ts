@@ -10,8 +10,14 @@ export const AssertoorGetInfo = command.isomorphic({
       services: { assertoor },
     },
   }) {
+    const assertoorInfo = await assertoor.getDockerInfo(false);
+    if (!assertoorInfo) {
+      logger.log(`Assertoor service is not enabled`);
+      return;
+    }
+
     logger.log("");
-    const assertoorInfo = await assertoor.getDockerInfo();
+
     logger.table(
       ["Service", "URL"],
       [["assertoor", assertoorInfo.api[0].ports[0].publicUrl!]],

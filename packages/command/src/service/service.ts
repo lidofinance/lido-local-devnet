@@ -7,8 +7,10 @@ import * as YAML from "yaml";
 
 import { assert } from "../assert.js";
 import {
+  ContainerInfo,
   PublicPortInfo,
   getContainersByServiceLabels,
+  getContainersByServiceLabelsOrNull,
   getServiceInfo,
   getServiceInfoByLabel,
 } from "../docker/index.js";
@@ -86,12 +88,29 @@ export class DevNetService<Name extends keyof DevNetServices> {
     );
   }
 
-  public async getDockerInfo() {
+  public async getDockerInfo<M extends boolean = true>(
+    must: M = true as M,
+  ): Promise<
+    M extends true
+      ? Record<keyof DevNetServices[Name]["labels"], ContainerInfo[]>
+      : Record<keyof DevNetServices[Name]["labels"], ContainerInfo[]> | null
+  > {
     const { labels } = this.config;
-    return (await getContainersByServiceLabels)<DevNetServices[Name]["labels"]>(
-      labels,
-      `kt-${this.network}`,
-    );
+
+    if (must) {
+      return await getContainersByServiceLabels<DevNetServices[Name]["labels"]>(
+        labels,
+        `kt-${this.network}`,
+      );
+    }
+
+    const result = await getContainersByServiceLabelsOrNull<
+      DevNetServices[Name]["labels"]
+    >(labels, `kt-${this.network}`);
+
+    return result as M extends true
+      ? Record<keyof DevNetServices[Name]["labels"], ContainerInfo[]>
+      : Record<keyof DevNetServices[Name]["labels"], ContainerInfo[]> | null;
   }
 
   public async getDockerServiceInfoByLabel(labelKey: string, label: string) {

@@ -1,5 +1,7 @@
 import Docker from "dockerode";
 
+import { DevNetError } from "../error.js";
+
 const docker = new Docker();
 export interface ContainerInfo {
   id: string;
@@ -62,7 +64,7 @@ export async function getContainersByServiceLabels<
     }
 
     if (matchingContainers.length === 0) {
-      throw new Error(
+      throw new DevNetError(
         `No container found for label '${label}' in network '${networkName}'`,
       );
     }
@@ -73,68 +75,25 @@ export async function getContainersByServiceLabels<
   return result;
 }
 
-interface PortMapping {
-  privatePort: number;
-  publicPort: number;
-  type: string;
-}
-
-interface ServiceInfo {
-  name: string;
-  ports: PortMapping[];
-}
-
-export async function getPublicPortsAndServices(
+export async function getContainersByServiceLabelsOrNull<
+  T extends Record<string, string>,
+>(
+  labels: T,
   networkName: string,
-): Promise<ServiceInfo[]> {
-  // Get the list of containers
-  const containers = await docker.listContainers();
+): Promise<Record<keyof T, ContainerInfo[]> | null> {
+  try {
+    return await getContainersByServiceLabels(labels, networkName);
+  } catch (error: unknown) {
 
-  const networkContainers: ServiceInfo[] = [];
-
-  for (const container of containers) {
-    const containerInstance = docker.getContainer(container.Id);
-    const containerDetails = await containerInstance.inspect();
-
-    // Check if the container is connected to the specified network
-    if (containerDetails.NetworkSettings.Networks[networkName]) {
-      const containerInfo: ServiceInfo = {
-        name: container.Names[0].replace("/", ""), // Container name
-        ports: [], // Public ports
-      };
-
-      // Add public ports
-      for (const port of container.Ports) {
-        if (port.PublicPort) {
-          containerInfo.ports.push({
-            privatePort: port.PrivatePort,
-            publicPort: port.PublicPort,
-            type: port.Type,
-          });
-        }
-      }
-
-      networkContainers.push(containerInfo);
+    if (
+      error instanceof DevNetError &&
+      error.message.startsWith("No container found for label")
+    ) {
+      return null;
     }
-  }
 
-  // Output the information
-  console.log(`Services in network "${networkName}":`);
-  for (const service of networkContainers) {
-    console.log(`- Service: ${service.name}`);
-    if (service.ports.length > 0) {
-      console.log("  Ports:");
-      for (const port of service.ports) {
-        console.log(
-          `    - ${port.type.toUpperCase()}: ${port.publicPort} -> ${port.privatePort}`,
-        );
-      }
-    } else {
-      console.log("  No public ports exposed.");
-    }
+    throw error;
   }
-
-  return networkContainers;
 }
 
 export interface PublicPortInfo {
