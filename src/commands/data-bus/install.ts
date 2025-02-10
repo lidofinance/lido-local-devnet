@@ -6,6 +6,6 @@ export const DataBusInstall = command.cli({
   async handler({ dre: { services } }) {
     const { dataBus } = services;
 
-    await dataBus.sh`yarn"`;
+    await dataBus.sh`yarn`;
   },
 });

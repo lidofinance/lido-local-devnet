@@ -24,7 +24,7 @@ export const KapiUp = command.cli({
       COMPOSE_PROJECT_NAME: `kapi-${network.name}`,
     };
 
-    await kapi.writeENV("./env", env);
+    await kapi.writeENV(".env", env);
 
     await kapi.sh`docker compose -f docker-compose.devnet.yml up --build -d`;
   },
