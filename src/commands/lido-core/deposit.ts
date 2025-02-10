@@ -15,6 +15,7 @@ export const LidoDeposit = command.cli({
       description: "Module ID.",
       required: true,
     }),
+    dsm: Params.boolean({ default: false, description: "Use full DSM setup." }),
   },
   async handler({ params, dre, dre: { logger } }) {
     const { services } = dre;
@@ -32,10 +33,12 @@ export const LidoDeposit = command.cli({
     // TODO: Fetch the amount dynamically if required
     await lidoCLI.sh`./run.sh lido submit 1000`;
 
-    logger.log(
-      `Depositing ${params.deposits} deposits to module ID ${params.id}...`,
-    );
-    await lidoCLI.sh`./run.sh lido deposit ${params.deposits} ${params.id}`;
+    if (!params.dsm) {
+      logger.log(
+        `Depositing ${params.deposits} deposits to module ID ${params.id}...`,
+      );
+      await lidoCLI.sh`./run.sh lido deposit ${params.deposits} ${params.id}`;
+    }
 
     logger.log("✅ Deposit process completed successfully.");
   },

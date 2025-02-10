@@ -31,7 +31,7 @@ export const OracleUp = command.cli({
       DOCKER_NETWORK_NAME: `kt-${network.name}`,
     };
 
-    await oracle.writeENV("./env", env);
+    await oracle.writeENV(".env", env);
 
     await oracle.sh`docker compose -f docker-compose.devnet.yml up --build -d`;
   },
