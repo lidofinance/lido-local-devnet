@@ -26,6 +26,7 @@ export const DSMBotsUp = command.cli({
       DEPOSIT_MODULES_WHITELIST: "1,2,3",
       PROMETHEUS_PREFIX: "depositor_bot",
       DOCKER_NETWORK_NAME: `kt-${network.name}`,
+      COMPOSE_PROJECT_NAME: `dsm-bots-${network.name}`,
     };
 
     await dsmBots.writeENV(".env", env);

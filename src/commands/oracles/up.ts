@@ -29,6 +29,7 @@ export const OracleUp = command.cli({
       GW3_ACCESS_KEY: process.env.CSM_ORACLE_GW3_ACCESS_KEY ?? "",
       GW3_SECRET_KEY: process.env.CSM_ORACLE_GW3_SECRET_KEY ?? "",
       DOCKER_NETWORK_NAME: `kt-${network.name}`,
+      COMPOSE_PROJECT_NAME: `oracles-${network.name}`,
     };
 
     await oracle.writeENV(".env", env);

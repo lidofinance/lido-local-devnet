@@ -30,6 +30,7 @@ export const CouncilUp = command.cli({
       RABBITMQ_PASSCODE: "guest",
       LOCATOR_DEVNET_ADDRESS: `"${locator}"`,
       DOCKER_NETWORK_NAME: `kt-${network.name}`,
+      COMPOSE_PROJECT_NAME: `council-${network.name}`,
     };
 
     await council.writeENV(".env", env);
