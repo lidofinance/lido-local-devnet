@@ -1,15 +1,13 @@
 import { command } from "@devnet/command";
 
+import { BlockscoutGetInfo } from "./blockscout/info.js";
+import { KurtosisGetInfo } from "./chain/info.js";
+
 export const ConfigCommand = command.cli({
   description: "Print public DevNet config",
   params: {},
-  async handler({ dre: { state, logger } }) {
-    logger.log("");
-    const chainServices = Object.entries(await state.getChain()).filter(
-      ([k]) => !k.endsWith("Private"),
-    );
-    logger.log("Chain services:");
-    logger.log("");
-    logger.table(["Service", "URL"], chainServices);
+  async handler({ dre }) {
+    await dre.runCommand(BlockscoutGetInfo, {})
+    await dre.runCommand(KurtosisGetInfo, {})
   },
 });
