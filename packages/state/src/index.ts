@@ -122,7 +122,6 @@ export class State extends BaseState {
       oracle3,
       council1,
       council2,
-      council3,
     ] = await this.getWallet();
 
     return {
@@ -134,8 +133,7 @@ export class State extends BaseState {
       oracles: [oracle1, oracle2, oracle3],
       council1,
       council2,
-      council3,
-      councils: [council1, council2, council3],
+      councils: [council1, council2],
     };
   }
 
