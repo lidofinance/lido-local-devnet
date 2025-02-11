@@ -9,7 +9,10 @@ const blockscout = new DevNetServiceConfig({
 });
 
 const lidoCore = new DevNetServiceConfig({
-  repository: "submodules/lido-core",
+  repository: {
+    url: "git@github.com:lidofinance/core.git",
+    branch: "feat/local-devnet",
+  },
   name: "lidoCore" as const,
   constants: {
     DEPLOYED: "deployed-local-devnet.json",
@@ -30,7 +33,10 @@ const lidoCore = new DevNetServiceConfig({
 });
 
 const lidoCLI = new DevNetServiceConfig({
-  repository: "submodules/lido-cli",
+  repository: {
+    url: "git@github.com:lidofinance/lido-cli.git",
+    branch: "feature/devnet-command",
+  },
   name: "lidoCLI" as const,
   constants: {
     DEPLOYED_NETWORK_CONFIG_PATH: "configs/deployed-local-devnet.json",
@@ -61,7 +67,10 @@ const kurtosis = new DevNetServiceConfig({
 });
 
 const voting = new DevNetServiceConfig({
-  workspace: "submodules/scripts",
+  repository: {
+    url: "git@github.com:lidofinance/scripts.git",
+    branch: "feat/pectra-devnet",
+  },
   name: "voting" as const,
   constants: {},
   labels: {},
@@ -75,7 +84,10 @@ const assertoor = new DevNetServiceConfig({
 });
 
 const kapi = new DevNetServiceConfig({
-  repository: "submodules/kapi",
+  repository: {
+    url: "git@github.com:lidofinance/lido-keys-api.git",
+    branch: "feat/devnet",
+  },
   workspace: "workspaces/kapi",
   name: "kapi" as const,
   exposedPorts: [9030],
@@ -98,7 +110,10 @@ const kapi = new DevNetServiceConfig({
 });
 
 const oracle = new DevNetServiceConfig({
-  repository: "submodules/oracle-v5",
+  repository: {
+    url: "git@github.com:lidofinance/lido-oracle.git",
+    branch: "feat/oracle-v5-devnet-config",
+  },
   workspace: "workspaces/oracle-v5",
   name: "oracle" as const,
   constants: {},
@@ -106,7 +121,10 @@ const oracle = new DevNetServiceConfig({
 });
 
 const council = new DevNetServiceConfig({
-  repository: "submodules/council-daemon",
+  repository: {
+    url: "git@github.com:lidofinance/lido-council-daemon.git",
+    branch: "feat/devnet",
+  },
   workspace: "workspaces/council",
   name: "council" as const,
   constants: {},
@@ -114,7 +132,10 @@ const council = new DevNetServiceConfig({
 });
 
 const dataBus = new DevNetServiceConfig({
-  repository: "submodules/data-bus",
+  repository: {
+    url: "git@github.com:lidofinance/data-bus.git",
+    branch: "feat/devnet",
+  },
   name: "dataBus" as const,
   constants: {
     DEPLOYED_FILE: "deployed/local-devnet.json",
@@ -123,7 +144,10 @@ const dataBus = new DevNetServiceConfig({
 });
 
 const dsmBots = new DevNetServiceConfig({
-  repository: "submodules/dsm-bots",
+  repository: {
+    url: "git@github.com:lidofinance/depositor-bot.git",
+    branch: "feat/devnet",
+  },
   workspace: "workspaces/dsm-bots",
   name: "dsmBots" as const,
   constants: {},
@@ -131,7 +155,10 @@ const dsmBots = new DevNetServiceConfig({
 });
 
 const csm = new DevNetServiceConfig({
-  repository: "submodules/csm",
+  repository: {
+    url: "git@github.com:lidofinance/community-staking-module.git",
+    branch: "feat/devnet",
+  },
   name: "csm" as const,
   constants: {
     DEPLOY_CONFIG: "artifacts/latest/deploy-local-devnet.json",

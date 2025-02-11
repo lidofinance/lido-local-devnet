@@ -78,6 +78,12 @@ export class DevNetService<Name extends keyof DevNetServices> {
     return service;
   }
 
+  // TODO: move to command and use as hook
+  public async applyWorkspace() {
+    if (!this.config.workspace) return;
+    await this.artifact.copyFilesFrom(this.config.workspace);
+  }
+
   public clone(commandName: string, logger: DevNetLogger) {
     return new DevNetService(
       this.config.name as Name,
