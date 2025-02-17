@@ -1,5 +1,6 @@
 import { Params, command } from "@devnet/command";
 
+import { PrepareLidoCore } from "./prepare-repository.js";
 import { LidoCoreUpdateState } from "./update-state.js";
 import { LidoCoreVerify } from "./verify.js";
 
@@ -24,7 +25,7 @@ export const DeployLidoContracts = command.cli({
     verify: Params.boolean({
       description: "Verify smart contracts",
       default: false,
-      required: true
+      required: true,
     }),
   },
   async handler({ dre, dre: { logger }, params }) {
@@ -42,6 +43,12 @@ export const DeployLidoContracts = command.cli({
     const { deployer } = await state.getNamedWallet();
 
     await dre.network.waitEL();
+
+    await dre.runCommand(PrepareLidoCore, {
+      objectionPhaseDuration: 5,
+      voteDuration: 60,
+      vesting: "820000000000000000000000",
+    });
 
     const deployEnv: DeployEnvRequired = {
       DEPLOYER: deployer.publicKey,
