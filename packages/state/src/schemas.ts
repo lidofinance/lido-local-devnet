@@ -36,6 +36,14 @@ export const LidoConfigSchema = z.object({
   withdrawalVault: z.string(),
   stakingRouter: z.string(),
   curatedModule: z.string(),
+  acl: z.string(),
+  oracleDaemonConfig: z.string(),
+  withdrawalQueue: z.string(),
+  finance: z.string(),
+
+  withdrawalVaultImpl: z.string(),
+  withdrawalQueueImpl: z.string(),
+  validatorExitBusImpl: z.string(),
 });
 
 export const CSMConfigSchema = z.object({

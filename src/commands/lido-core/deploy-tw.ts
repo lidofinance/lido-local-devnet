@@ -1,5 +1,6 @@
 import { command } from "@devnet/command";
 
+import { PrepareLidoCore } from "./prepare-repository.js";
 import { LidoCoreUpdateState } from "./update-state.js";
 
 type DeployEnvRequired = {
@@ -56,10 +57,16 @@ export const DeployTWContracts = command.cli({
       LOCAL_DENVET_EXPLORER_URL: blockscoutState.url,
     };
 
+    await dre.runCommand(PrepareLidoCore, {
+      objectionPhaseDuration: 5,
+      voteDuration: 60,
+      vesting: "820000000000000000000000",
+    });
+
     await lidoCore.sh({
       shell: true,
       env: deployEnv,
-    })`npx hardhat run  --network ${constants.NETWORK} scripts/triggerable-withdrawals/tw-deploy.ts `;
+    })`npx hardhat run --network ${constants.NETWORK} scripts/triggerable-withdrawals/tw-deploy.ts`;
 
     await dre.runCommand(LidoCoreUpdateState, {});
 

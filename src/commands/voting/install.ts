@@ -59,7 +59,7 @@ export const VotingInstall = command.cli({
     }
 
     try {
-      await voting.sh`python3 -m poetry install`;
+      await voting.sh`poetry install`;
     } catch {
       throw new DevNetError("Failed to install dependencies using Poetry.");
     }

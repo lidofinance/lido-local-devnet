@@ -103,9 +103,17 @@ export class State extends BaseState {
         voting: "lidoCore.app:aragon-voting.proxy.address",
         treasury:
           "lidoCore.lidoLocator.implementation.constructorArgs.0.treasury",
-        withdrawalVault: "lidoCore.withdrawalVault.proxy.address",
+        
         stakingRouter: "lidoCore.stakingRouter.proxy.address",
         curatedModule: "lidoCore.app:node-operators-registry.proxy.address",
+        acl: "lidoCore.aragon-acl.proxy.address",
+        oracleDaemonConfig: "lidoCore.oracleDaemonConfig.address",
+        withdrawalVault: "lidoCore.withdrawalVault.proxy.address",
+        withdrawalQueue: "lidoCore.withdrawalQueueERC721.proxy.address",
+        withdrawalVaultImpl: "lidoCore.withdrawalVault.implementation.address",
+        validatorExitBusImpl: "lidoCore.validatorsExitBusOracle.implementation.address",
+        withdrawalQueueImpl: "lidoCore.withdrawalQueueERC721.implementation.address",
+        finance: "lidoCore.app:aragon-finance.proxy.address"
       },
       "lido",
       LidoConfigSchema,
