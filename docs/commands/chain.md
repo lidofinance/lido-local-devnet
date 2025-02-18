@@ -76,10 +76,11 @@ Runs a specific Ethereum package in Kurtosis and updates local JSON database wit
 
 ```
 USAGE
-  $ ./bin/run.js chain up [--network <value>]
+  $ ./bin/run.js chain up [--network <value>] [--preset <value>]
 
 FLAGS
   --network=<value>  [default: my-devnet] Name of the network
+  --preset=<value>   Kurtosis config name.
 
 DESCRIPTION
   Runs a specific Ethereum package in Kurtosis and updates local JSON database with the network information.
