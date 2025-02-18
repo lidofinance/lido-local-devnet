@@ -11,6 +11,8 @@ export const DownloadKurtosisArtifacts = command.cli({
       network,
     } = dre;
 
+    await kurtosis.sh`rm -rf network`
+
     await kurtosis.sh`kurtosis files download ${network.name} el_cl_genesis_data network`;
     
     logger.log("Genesis data downloaded successfully.");

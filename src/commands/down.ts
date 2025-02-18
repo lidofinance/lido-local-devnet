@@ -13,14 +13,25 @@ export const DevNetStop = command.cli({
   async handler({ dre, dre: { logger } }) {
     logger.log("Stopping DevNet...");
 
-    await dre.runCommand(BlockscoutDown, {});
+    await dre
+      .runCommand(BlockscoutDown, {})
+      .catch((error) => logger.warn(error.message));
+    await dre
+      .runCommand(KapiDown, {})
+      .catch((error) => logger.warn(error.message));
+    await dre
+      .runCommand(OracleDown, {})
+      .catch((error) => logger.warn(error.message));
+    await dre
+      .runCommand(CouncilDown, {})
+      .catch((error) => logger.warn(error.message));
+    await dre
+      .runCommand(DSMBotsDown, {})
+      .catch((error) => logger.warn(error.message));
 
-    await dre.runCommand(KapiDown, {});
-    await dre.runCommand(OracleDown, {});
-    await dre.runCommand(CouncilDown, {});
-    await dre.runCommand(DSMBotsDown, {});
-
-    await dre.runCommand(KurtosisCleanUp, {});
+    await dre
+      .runCommand(KurtosisCleanUp, {})
+      .catch((error) => logger.warn(error.message));
 
     await dre.clean();
 

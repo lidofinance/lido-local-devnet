@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-import { KEY_MANAGER_API_TOKEN } from "./constants.js";
 
 interface KeystoreInfo {
   readonly: boolean;
@@ -25,36 +24,40 @@ interface ImportResponse {
 export const fetchValidatorGraffiti = async (
   apiUrl: string,
   validatorPublicKey: string,
+  token: string,
 ) => {
   const url = `${apiUrl}/eth/v1/validator/${validatorPublicKey}/graffiti`;
   const response = await fetch(url, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${KEY_MANAGER_API_TOKEN}`,
+      Authorization: `Bearer ${token}`,
     },
   });
   const data: GraffitiResponse = await response.json();
   return data;
 };
 
-export const fetchKeystores = async (apiUrl: string) => {
+export const fetchKeystores = async (apiUrl: string, token: string) => {
   const url = `${apiUrl}/eth/v1/keystores`;
   const response = await fetch(url, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${KEY_MANAGER_API_TOKEN}`,
+      Authorization: `Bearer ${token}`,
     },
   });
   const data: KeystoresResponse = await response.json();
   return data;
 };
 
-export const exportSlashingProtection = async (apiUrl: string) => {
+export const exportSlashingProtection = async (
+  apiUrl: string,
+  token: string,
+) => {
   const url = `${apiUrl}/eth/v1/keystores/slashing_protection`;
   const response = await fetch(url, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${KEY_MANAGER_API_TOKEN}`,
+      Authorization: `Bearer ${token}`,
     },
   });
   const data: SlashingProtectionExportResponse = await response.json();
@@ -65,6 +68,7 @@ export const importKeystores = async (
   apiUrl: string,
   keystores: any[],
   passwords: string[],
+  token: string,
   // slashingProtection: string,
 ) => {
   const url = `${apiUrl}/eth/v1/keystores`;
@@ -78,7 +82,7 @@ export const importKeystores = async (
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${KEY_MANAGER_API_TOKEN}`,
+      Authorization: `Bearer ${token}`,
     },
     body,
   });
@@ -86,3 +90,5 @@ export const importKeystores = async (
   const data: ImportResponse = await response.json();
   return data;
 };
+
+export { KEY_MANAGER_DEFAULT_API_TOKEN } from "./constants.js";

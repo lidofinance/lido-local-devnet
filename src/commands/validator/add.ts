@@ -16,7 +16,10 @@ export const ValidatorAdd = command.cli({
     },
   }) {
     const { validatorsApi } = await dre.state.getChain();
-    const keystoresResponse = await keyManager.fetchKeystores(validatorsApi);
+    const keystoresResponse = await keyManager.fetchKeystores(
+      validatorsApi,
+      keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
+    );
 
     const existingPubKeys = new Set(
       keystoresResponse.data.map((p) => p.validating_pubkey.replace("0x", "")),
@@ -42,15 +45,23 @@ export const ValidatorAdd = command.cli({
       validatorsApi,
       keystoresStrings,
       keystoresPasswords,
+      keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
     );
 
     logger.logJson(res);
 
     const {
-      vc: [firstValidator],
+      vc: validatorsInDockerNetwork,
     } = await kurtosis.getDockerInfo();
 
-    const { id: validatorServiceDockerId } = firstValidator;
+    const validVC = validatorsInDockerNetwork.filter(v => v.name.includes('teku'))
+    // in kurtosis api configuration the keys are stored differently, some validators use the default key, some use a generated key, but they are stored in different places.
+    // TODO: In the future, we need to either improve etherium-package or write a parser.
+    // https://github.com/search?q=repo%3Aethpandaops%2Fethereum-package+keymanager&type=code&p=2
+    // lighthouse "/validator-keys/keys/api-token.txt",
+    assert(validVC.length > 0, "Teku validator was not found in the running configuration. At least one teku client must be running to work correctly.")
+
+    const { id: validatorServiceDockerId } = validVC[0];
 
     await kurtosis.sh`docker restart ${validatorServiceDockerId}`;
 
