@@ -26,7 +26,7 @@ import { ValidatorAdd } from "../validator/add.js";
 
 export const PectraDevNetUp = command.cli({
   description:
-    "Starts a local development network (DevNet) for Pectra from scratch, ensuring full setup and deployment of all components.",
+    "Base Pectra test stand.",
   params: {
     full: Params.boolean({
       description:
