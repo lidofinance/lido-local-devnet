@@ -37,7 +37,7 @@ export const PectraTWDevNetUp = command.cli({
 
     logger.log("");
     logger.log("Before Pectra:");
-    logger.log("sh");
+    logger.log("");
     logger.log("./bin/run.js voting enact-before-pectra");
     logger.log("");
 

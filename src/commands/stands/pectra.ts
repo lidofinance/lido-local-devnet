@@ -43,7 +43,7 @@ export const PectraDevNetUp = command.cli({
   async handler({ params, dre, dre: { logger } }) {
     await dre.runCommand(GitCheckout, {
       service: "lidoCore",
-      ref: "feat/local-devnet",
+      ref: "develop",
     });
 
     await dre.runCommand(KurtosisUp, { preset: "pectra-devnet6" });
