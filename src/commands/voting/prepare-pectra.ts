@@ -1,19 +1,7 @@
+/* eslint-disable unicorn/numeric-separators-style */
+/* eslint-disable perfectionist/sort-object-types */
 import { assert, command } from "@devnet/command";
 import * as YAML from "yaml";
-
-interface Config {
-  ACCOUNTING_ORACLE: string;
-  AGENT: string;
-  CHAIN_NETWORK_NAME: string;
-  CS_FEE_ORACLE_ADDRESS: string;
-  CS_VERIFIER_ADDRESS: string;
-  CS_VERIFIER_ADDRESS_OLD: string;
-  CSM_ADDRESS: string;
-  ORACLE_REPORT_SANITY_CHECKER: string;
-  TOKEN_MANAGER: string;
-  VALIDATORS_EXIT_BUS_ORACLE: string;
-  VOTING: string;
-}
 
 export const PreparePectraVoting = command.cli({
   description: "Prepare pectra voting",
@@ -32,16 +20,30 @@ export const PreparePectraVoting = command.cli({
       sanityChecker,
       accountingOracle,
       validatorExitBus,
+      acl,
+      oracleDaemonConfig,
+      
+      finance,
+      withdrawalVault,
+      withdrawalQueue,
+
+      validatorExitBusImpl,
+      withdrawalVaultImpl
     } = await state.getLido();
 
-    const { module: csmModule, feeOracle, verifier } = await state.getCSM();
+    const {
+      module: csmModule,
+      feeOracle,
+      verifier,
+      accounting: CS_ACCOUNTING_ADDRESS,
+    } = await state.getCSM();
 
     const { CSVerifier } = await state.getNewVerifier();
 
-    const config: Config = {
+    const config = {
       ACCOUNTING_ORACLE: accountingOracle,
       AGENT: agent,
-      CHAIN_NETWORK_NAME: "mainnet", // fix needed
+      CHAIN_NETWORK_NAME: "holesky", // fix needed
       CS_FEE_ORACLE_ADDRESS: feeOracle,
       CS_VERIFIER_ADDRESS: CSVerifier,
       CS_VERIFIER_ADDRESS_OLD: verifier,
@@ -50,13 +52,22 @@ export const PreparePectraVoting = command.cli({
       TOKEN_MANAGER: tokenManager,
       VALIDATORS_EXIT_BUS_ORACLE: validatorExitBus,
       VOTING: voting,
+      ACL: acl,
+      ORACLE_DAEMON_CONFIG: oracleDaemonConfig,
+      WITHDRAWAL_QUEUE: withdrawalQueue,
+      CS_ACCOUNTING_ADDRESS,
+      FINANCE: finance,
+      WITHDRAWAL_VAULT: withdrawalVault,
+
+      VALIDATORS_EXIT_BUS_ORACLE_IMPL: validatorExitBusImpl,
+      WITHDRAWAL_VAULT_IMPL: withdrawalVaultImpl,
     };
 
-    const configContent = Object.entries(config)
+    const configContent = Object.entries({ ...config })
       .map(([key, value]) => `${key}="${value}"`)
       .join("\n");
 
-    await votingService.writeFile("./configs/config_devnet4.py", configContent);
+    await votingService.writeFile("./configs/config_holesky.py", configContent);
 
     const configTemplateYaml = YAML.parse(
       await votingService.readFile("network-config.yaml"),
@@ -66,11 +77,19 @@ export const PreparePectraVoting = command.cli({
       Array.isArray(configTemplateYaml.development),
       "'development' must be an array",
     );
+    console.log(configTemplateYaml.development);
 
-    const devnet4Config = configTemplateYaml.development.find(
-      (c: { name: string }) => c.name === "Devnet4",
-    );
-    assert(devnet4Config, "Devnet4 configuration not found");
+    // - cmd: ./ganache.sh
+    // cmd_settings:
+    //   accounts: 10
+    //   chain_id: 32382
+    //   gas_limit: 30000000
+    //   mnemonic: brownie
+    //   port: 49697
+    // host: http://127.0.0.1
+    // id: devnet4
+    // name: Devnet4
+    // timeout: 360
 
     assert(
       typeof elPublic === "string" && elPublic.includes(":"),
@@ -81,14 +100,28 @@ export const PreparePectraVoting = command.cli({
 
     const port = Number.parseInt(parsedPort, 10);
     assert(!Number.isNaN(port), "Failed to parse port");
-
-    devnet4Config.cmd_settings.port = port;
+    delete configTemplateYaml.live;
+    configTemplateYaml.development.filter((d: any) => d.id !== "holesky");
+    configTemplateYaml.development.push({
+      cmd: "./ganache.sh",
+      cmd_settings: {
+        accounts: 10,
+        chain_id: 32382,
+        gas_limit: 30000000,
+        mnemonic: "brownie",
+        port,
+      },
+      host: "http://127.0.0.1",
+      id: "holesky",
+      name: "Local devnet (holesky)",
+      timeout: 360,
+    });
 
     await votingService.writeFile(
       "network-config.yaml",
       YAML.stringify(configTemplateYaml),
     );
-
+    // poetry run brownie networks delete holesky
     await votingService.sh`poetry run brownie networks import network-config.yaml True`;
   },
 });

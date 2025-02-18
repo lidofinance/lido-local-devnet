@@ -9,16 +9,33 @@ export const GitCheckout = command.cli({
       options: Object.keys(services) as (keyof typeof services)[],
       required: true,
     })(),
-    branch: Params.string({
-      description: "Git branch name.",
+    ref: Params.string({
+      description: "Git branch name or branch:commitHash.",
       required: true,
     }),
   },
-  async handler({ params: { service, branch }, dre, dre: { logger } }) {
+  async handler({ params: { service, ref }, dre, dre: { logger } }) {
+    // Parse ref: allow only branch or branch:commitHash
+    const parts = ref.split(":");
+    if (parts.length > 2) {
+      throw new DevNetError(
+        `❌ Invalid ref format: ${ref}. Use branch or branch:commitHash.`,
+      );
+    }
+
+    const [branch, commitHash] = parts;
+    if (!branch) {
+      throw new DevNetError(`❌ You must specify a branch name.`);
+    }
+
+    // eslint-disable-next-line unicorn/better-regex
+    if (commitHash && !/^[0-9a-f]{7,40}$/i.test(commitHash)) {
+      throw new DevNetError(`❌ Invalid commit hash: ${commitHash}`);
+    }
+
     const targetService = dre.services[service];
     const sh = targetService.sh({
       stdout: ["pipe"],
-
       stderr: ["pipe"],
       verbose() {},
     });
@@ -31,9 +48,10 @@ export const GitCheckout = command.cli({
     }
 
     // Check if the branch exists locally
-    const localBranchExists = await sh`git rev-parse --verify ${branch}`
-      .then(() => true)
-      .catch(() => false);
+    const localBranchExists =
+      await sh`git rev-parse --verify refs/heads/${branch}`
+        .then(() => true)
+        .catch(() => false);
 
     if (localBranchExists) {
       logger.log(`🔀 Switching to local branch: ${branch}`);
@@ -47,7 +65,7 @@ export const GitCheckout = command.cli({
 
       if (remoteBranchExists) {
         logger.log(`🔄 Remote branch ${branch} found. Fetching...`);
-        await sh`git fetch origin ${branch}:${branch}`;
+        await sh`git fetch origin ${branch}`;
         await sh`git checkout ${branch}`;
       } else {
         throw new DevNetError(
@@ -56,10 +74,25 @@ export const GitCheckout = command.cli({
       }
     }
 
-    // reapply our local environment
-    // from the `workspace` folder, if it exists
+    // If commitHash is provided, check its existence
+    if (commitHash) {
+      const commitExists = await sh`git cat-file -t ${commitHash}`
+        .then((output) => output.stdout.trim() === "commit")
+        .catch(() => false);
+
+      if (!commitExists) {
+        throw new DevNetError(`❌ Commit ${commitHash} does not exist.`);
+      }
+
+      logger.log(`🔀 Checking out commit: ${commitHash}`);
+      await sh`git checkout ${commitHash}`;
+    }
+
+    // Reapply local environment from the `workspace` folder, if it exists
     await targetService.applyWorkspace();
 
-    logger.log(`✅ Successfully switched to branch: ${branch}`);
+    logger.log(
+      `✅ Successfully switched to ${commitHash ? `commit ${commitHash} on` : ""} branch: ${branch}`,
+    );
   },
 });

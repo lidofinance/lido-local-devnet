@@ -201,8 +201,15 @@ export class DevNetService<Name extends keyof DevNetServices> {
     );
   }
 
-  public async writeJson(relativePath: string, fileContent: unknown) {
-    return await this.writeFile(relativePath, JSON.stringify(fileContent));
+  public async writeJson(
+    relativePath: string,
+    fileContent: unknown,
+    format = false,
+  ) {
+    const json = format
+      ? JSON.stringify(fileContent, null, 2)
+      : JSON.stringify(fileContent);
+    return await this.writeFile(relativePath, json);
   }
 
   public async writeYaml(relativePath: string, fileContent: unknown) {
