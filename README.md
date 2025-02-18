@@ -1,17 +1,25 @@
-# Lido Local DevNet  
+# Lido Local DevNet
 
 <img src="https://docs.lido.fi/img/logo.svg" height="90px" align="right" width="90px">
 
-A project for launching a DevNet with the Lido protocol locally. The project includes starting a new network, launching a block explorer, and deploying Lido smart contracts.
 
-> [!WARNING]
-> This is an alpha version of the project. Stay tuned for updates.
+Lido Local DevNet is a powerful tool for deploying and testing the Lido protocol in a local Ethereum network. It provides a streamlined process for launching Ethereum nodes, block explorers, Lido smart contracts, Lido oracles, and essential tooling.
+
+- **Run Ethereum + Lido locally** – Deploy and test the full Lido protocol on your machine.
+- **One-command setup** – Spin up a complete test environment with a single command.
+- **Multi-node support** – Test the protocol on all available Ethereum node implementations.
+- **Highly customizable deployment** – Fine-tune deployment parameters to fit specific testing needs.
+- **Modular execution** – The project is structured as a set of commands, allowing you to rerun any step independently.
+- **Multiple parallel environments** – Run several test networks on the same machine to validate different scenarios.
+- **Git branch-aware deployment** – Deploy and execute scripts and from different Git branches, simulating real-world deployment workflows.
+- **Integrated tooling** – Built-in support for block explorers, oracles, and auxiliary services to streamline testing.
+- **Seamless debugging** – Restart individual services or redeploy specific components without affecting the entire setup.
 
 ---
 
-### Requirements  
+## Requirements
 
-- **Node** 20+ ([Install Node.js](https://nodejs.org/))  
+- **Node.js** 20+ ([Install Node.js](https://nodejs.org/))  
 - **Docker** 27+ ([Install Docker](https://www.docker.com/))  
 - **Docker Compose** V2 ([Install Docker Compose](https://docs.docker.com/compose/))  
 - **Kurtosis** ([Install Kurtosis](https://www.kurtosistech.com/))  
@@ -20,127 +28,93 @@ A project for launching a DevNet with the Lido protocol locally. The project inc
 
 ---
 
-### Getting Started  
+## Getting Started
 
-Follow these steps to spin up the DevNet:  
+Follow these steps to set up the DevNet:
 
-1. **Start the Kurtosis instance**  
-   This is required for launching Ethereum nodes:  
-   ```sh
-   kurtosis engine start
-   ```  
-
-2. **Install project dependencies**:  
-   ```sh
-   yarn && yarn submodule
-   ```  
-
-3. **Install subdependencies of the project**:  
-   ```sh
-   ./bin/run.js install
-   ```  
-
-4. **Launch the environment and deploy Lido smart contracts**:  
-   ```sh
-   ./bin/run.js up --full
-   ```  
-   Optionally, use the `--verify` flag to deploy smart contracts with verification on the block explorer:  
-   ```sh
-   ./bin/run.js up --full --verify
-   ```  
-   Optionally, use the `--dsm` flag to deploy use full DSM infrastructure:  
-   ```sh
-   ./bin/run.js up --full --verify --dsm
-   ```  
-
-5. **Initiate aragon voting that enables Pectra supporting in the Lido protocol**  
-
-   Since the voting scripts use Python and Brownie, install the required dependencies:  
-   ```sh
-   ./bin/run.js voting install
-   ```  
-   If you encounter errors, install additional modules as prompted.
-
-   Next, add an account. Unfortunately, Brownie cannot fetch account settings automatically, but we provide an easy-to-use console interface for automation. Simply run the following command and enter the private key displayed in the logs:  
-   ```sh
-   ./bin/run.js voting add-account
-   ```  
-
-   After adding the account, initiate the first stage of transitioning the protocol to the Pectra hard fork:  
-   ```sh
-   ./bin/run.js voting enact-before-pectra
-   ```  
-
-   Once the initial stage is complete, finalize the transition by executing the second stage of the voting process after the Pectra hard fork:  
-   ```sh
-   ./bin/run.js voting enact-after-pectra
-   ```  
-
-6. **Launch validators**  
-
-   After completing the `up` command, launch the validators with:  
-   ```sh
-   ./bin/run.js validator up
-   ```  
-
-   Ensure the validators have started without issues by checking the logs:  
-   ```sh
-   ./bin/run.js validator logs
-   ```  
-
-   On Linux, you may encounter access issues with the validator keys. To fix this, run:  
-   ```sh
-   chown -R 1000:1000 artifacts/validator
-   ```  
-   This issue will be resolved in a future release.  
-
-7. **Done!**  
-   You have successfully launched the network, infrastructure, and protocol locally.  
-
----
-
-### Stopping the DevNet  
-
-To stop the DevNet, run the following commands:  
+### 1. Start Kurtosis
+Kurtosis is required to launch Ethereum nodes:
 ```sh
-./bin/run.js validator down
-./bin/run.js kapi down
-./bin/run.js oracles down
-./bin/run.js stop
-```  
-These commands will properly delete the state of all services and restart them.  
-
----
-
-### Available Services  
-
-To get the current links to available services, run:  
-```sh
-./bin/run.js network info
-```  
-This will provide the most up-to-date information on available network services.  
-
----
-
-### Voluntary Exit Command  
-
-To initiate a voluntary exit for a validator from the protocol, use the following command:  
-```sh
-./bin/run.js validator exit --mtype <MNEMONIC_TYPE> --index <VALIDATOR_INDEX>
+kurtosis engine start
 ```
 
-#### Flags
-- `--mtype`: *(required)*
-  Specifies the mnemonic type to use.
-  Options:
-  - `genesis` - Use the mnemonic from the genesis configuration.
-  - `generated` - Use a newly generated mnemonic.
-
-- `--index`: *(required)*
-  Specifies the index of the validator to exit.
-
-#### Example Usage
-If you want to exit a validator with index `42` using the `genesis` mnemonic, run:
+### 2. Install dependencies
 ```sh
-./bin/run.js validator exit --mtype genesis --index 42
+yarn && yarn build:all
 ```
+
+### 3. Launch the environment and deploy Lido smart contracts
+Below is an example for launching the `pectra` test stand. If you need a different setup, refer to the [test stands documentation](./docs/commands/stands.md).
+
+```sh
+./bin/run.js stands pectra --full
+```
+For contract verification, use the `--verify` flag:
+```sh
+./bin/run.js stands pectra --full --verify
+```
+For a full DSM infrastructure deployment, add the `--dsm` flag:
+```sh
+./bin/run.js stands pectra --full --verify --dsm
+```
+
+### 4. Enable Pectra support in the Lido protocol
+
+Since voting scripts require Python and Brownie, install the necessary dependencies:
+```sh
+./bin/run.js voting install
+```
+If errors occur, install any missing modules as prompted.
+
+Next, add an account. Brownie does not automatically fetch account settings, but a console interface simplifies automation. Run the following command and enter the private key displayed in the logs:
+```sh
+./bin/run.js voting add-account
+```
+
+After adding an account, proceed with the voting process. See the [voting documentation](./docs/commands/voting.md) for more details. Below is an example for transitioning the protocol to the Pectra hard fork. If you need a different setup, refer to the documentation.
+
+**Before Pectra:**
+```sh
+./bin/run.js voting enact-before-pectra
+```
+
+**After Pectra:**
+```sh
+./bin/run.js voting enact-after-pectra
+```
+
+### 5. Done!
+The network, infrastructure, and protocol have been successfully launched.
+
+---
+
+## Stopping the DevNet
+To stop the DevNet and remove all services, run:
+```sh
+./bin/run.js down
+```
+
+---
+
+## Running Multiple Environments
+
+To run multiple environments on a single machine, use the `--network <custom-network-name>` flag:
+```sh
+./bin/run.js stands pectra --full --network test-pectra1
+```
+> **Note:** The `--network test-pectra1` flag must be used with all subsequent commands to interact with the specified environment.
+
+---
+
+## Available Services
+To get the latest information on available services, run:
+```sh
+./bin/run.js config
+```
+
+---
+
+## Available Commands
+This repository provides a high-level interface for managing DevNet. However, if you need to restart a specific service or deployment step, refer to the [command documentation](./docs/commands/README.md).
+
+---
