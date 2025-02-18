@@ -8,7 +8,8 @@
     "postinstall": "yarn submodule",
     "build:all": "yarn workspaces foreach -W --topological run build",
     "build": "rm -rf dist && tsc -b",
-    "lint": "eslint . --ext .ts && tsc --noEmit"
+    "lint": "eslint . --ext .ts && tsc --noEmit",
+    "docs": "./bin/dev.js system docs"
   },
   "workspaces": [
     "packages/*",
@@ -40,6 +41,7 @@
     "eslint-config-oclif-typescript": "^3",
     "eslint-config-prettier": "^9",
     "eslint-plugin-prettier": "^5.2.2",
+    "oclif": "^4.17.30",
     "prettier": "^3.4.2"
   },
   "oclif": {
@@ -48,20 +50,65 @@
     "dirname": "devnet",
     "topicSeparator": " ",
     "topics": {
-      "network": {
-        "description": "Manage EL (Execution) and CL (Consensus) nodes."
+      "assertoor": {
+        "description": "Command set for managing Assertoor."
       },
       "blockscout": {
-        "description": "Manage Dora, a Consensus Layer explorer."
+        "description": "Command set for managing Blockscout, a Consensus Layer explorer."
       },
-      "dora": {
-        "description": "Manage Blockscout, a blockchain explorer."
+      "chain": {
+        "description": "Command set for managing EL (Execution) and CL (Consensus) nodes."
       },
-      "onchain": {
-        "description": "Manage and deploy protocol smart contracts."
+      "config": {
+        "description": "Print public DevNet config."
       },
-      "onchain:lido": {
-        "description": "Manage and deploy core smart contracts."
+      "council": {
+        "description": "Command set for managing Council."
+      },
+      "csm": {
+        "description": "Command set for managing CSM, deploying smart contracts, and configuring the environment based on the current network state."
+      },
+      "data-bus": {
+        "description": "Command set for managing Data-Bus contract."
+      },
+      "down": {
+        "description": "Stop full DevNet."
+      },
+      "dsm-bots": {
+        "description": "Command set for managing DSM-Bots."
+      },
+      "git": {
+        "description": "Switch the Git branch in the specified service."
+      },
+      "install": {
+        "description": "Start DevNet from scratch."
+      },
+      "kapi": {
+        "description": "Command set for managing Kapi."
+      },
+      "lido-cli": {
+        "description": "Command set for managing Lido-CLI dependencies."
+      },
+      "lido-core": {
+        "description": "Command set for managing Lido-Core protocol, deploying smart contracts, and configuring the environment based on the current network state."
+      },
+      "oracles": {
+        "description": "Command set for managing Oracles."
+      },
+      "stands": {
+        "description": "A collection of ready-made environments for testing."
+      },
+      "up-full": {
+        "description": "Start DevNet from scratch with smart contracts."
+      },
+      "up": {
+        "description": "Start a local development network (DevNet) from scratch, ensuring full setup and deployment of all components."
+      },
+      "validator": {
+        "description": "Command set for managing Validator, finding available keys in the state, adding them, and restarting it."
+      },
+      "voting": {
+        "description": "Command set for managing Voting scripts."
       }
     },
     "hooks": {}
