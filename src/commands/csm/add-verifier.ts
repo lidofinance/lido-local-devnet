@@ -66,7 +66,7 @@ export const DeployCSVerifier = command.cli({
       args.push(
         "--verify",
         "--verifier",
-        "custom",
+        "blockscout",
         "--chain",
         "32382",
         "--verifier-url",
