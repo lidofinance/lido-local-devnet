@@ -29,7 +29,7 @@ DESCRIPTION
 
 ## `./bin/run.js git pull`
 
-Switching the Git branch in the specified service
+Retrieve changes from a Git branch in a specified service.
 
 ```
 USAGE
@@ -45,5 +45,5 @@ FLAGS
                       blockscout|lidoCore|lidoCLI|kurtosis|csm|kapi|oracle|voting|assertoor|council|dataBus|dsmBots>
 
 DESCRIPTION
-  Switching the Git branch in the specified service
+  Retrieve changes from a Git branch in a specified service.
 ```
