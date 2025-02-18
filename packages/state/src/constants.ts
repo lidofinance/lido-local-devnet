@@ -4,4 +4,4 @@ export const PARSED_CONSENSUS_GENESIS_FILE =
 export const VALIDATORS_STATE = "validators/state.json";
 export const WALLET_KEYS_COUNT = 20;
 
-export const KURTOSIS_DEFAULT_PRESET = "devnet4";
+export const KURTOSIS_DEFAULT_PRESET = "pectra-devnet4";

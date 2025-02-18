@@ -12,13 +12,15 @@ export default class DevNetDocs extends DevNetCommand {
   static isIsomorphicCommand: boolean = false;
 
   public async run(): Promise<void> {
-    const sh = execa({});
+    const sh = execa({ stdio: "inherit" });
     const docsDir = "docs/commands";
     const readmePath = join(docsDir, "README.md");
     const packageJsonPath = join(process.cwd(), "package.json");
 
+    await sh`rm -rf ${docsDir}`;
+    await sh`mkdir -p ${docsDir}`;
     // Generate documentation
-    await sh`yarn oclif readme --output-dir ${docsDir} --multi`;
+    await sh`npx oclif readme --output-dir ${docsDir} --multi`;
 
     // Remove unwanted files
     await sh`rm -rf ${ignoreTopics.map((t) => `${docsDir}/${t}.md`)}`;

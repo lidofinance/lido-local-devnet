@@ -17,7 +17,6 @@ export const KurtosisUpdate = command.isomorphic({
     );
 
     const { cl, el, vc } = await kurtosis.getDockerInfo();
-
     const RPC_PORT_NUM = 8545;
     const WS_PORT_NUM = 8546;
 
@@ -47,8 +46,15 @@ export const KurtosisUpdate = command.isomorphic({
     );
 
     assert(clPorts !== undefined, "cl services not found in Kurtosis");
+    
+    const validVC = vc.filter(v => v.name.includes('teku'))
+    // in kurtosis api configuration the keys are stored differently, some validators use the default key, some use a generated key, but they are stored in different places.
+    // TODO: In the future, we need to either improve etherium-package or write a parser.
+    // https://github.com/search?q=repo%3Aethpandaops%2Fethereum-package+keymanager&type=code&p=2
+    // lighthouse "/validator-keys/keys/api-token.txt",
+    assert(validVC.length > 0, "Teku validator was not found in the running configuration. At least one teku client must be running to work correctly.")
 
-    const vcPorts = vc.map((n) =>
+    const vcPorts = validVC.map((n) =>
       n.ports.find((p) => p.privatePort === VC_API_PORT_NUM),
     );
 

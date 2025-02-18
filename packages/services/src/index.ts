@@ -11,7 +11,7 @@ const blockscout = new DevNetServiceConfig({
 const lidoCore = new DevNetServiceConfig({
   repository: {
     url: "git@github.com:lidofinance/core.git",
-    branch: "feat/local-devnet",
+    branch: "develop",
   },
   name: "lidoCore" as const,
   constants: {

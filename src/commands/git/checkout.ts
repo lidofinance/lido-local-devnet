@@ -34,14 +34,15 @@ export const GitCheckout = command.cli({
     }
 
     const targetService = dre.services[service];
-    const sh = targetService.sh({
+    const silentSh = targetService.sh({
       stdout: ["pipe"],
       stderr: ["pipe"],
       verbose() {},
     });
+    const sh = targetService.sh({});
 
     // Check for uncommitted changes and reset if necessary
-    const hasUncommittedChanges = await sh`git status --porcelain`;
+    const hasUncommittedChanges = await silentSh`git status --porcelain`;
     if (hasUncommittedChanges.stdout.trim()) {
       logger.log("⚠️ Uncommitted changes found. Performing a hard reset...");
       await sh`git reset --hard && git clean -fd`;
@@ -59,13 +60,13 @@ export const GitCheckout = command.cli({
     } else {
       // Check if the branch exists remotely
       const remoteBranchExists =
-        await sh`git ls-remote --heads origin ${branch}`
+        await silentSh`git ls-remote --heads origin ${branch}`
           .then((output) => output.stdout.trim().length > 0)
           .catch(() => false);
 
       if (remoteBranchExists) {
         logger.log(`🔄 Remote branch ${branch} found. Fetching...`);
-        await sh`git fetch origin ${branch}`;
+        await sh`git fetch origin ${branch}:${branch}`;
         await sh`git checkout ${branch}`;
       } else {
         throw new DevNetError(
@@ -76,7 +77,7 @@ export const GitCheckout = command.cli({
 
     // If commitHash is provided, check its existence
     if (commitHash) {
-      const commitExists = await sh`git cat-file -t ${commitHash}`
+      const commitExists = await silentSh`git cat-file -t ${commitHash}`
         .then((output) => output.stdout.trim() === "commit")
         .catch(() => false);
 

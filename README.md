@@ -58,7 +58,8 @@ For a full DSM infrastructure deployment, add the `--dsm` flag:
 ./bin/run.js stands pectra --full --verify --dsm
 ```
 
-### 4. Enable Pectra support in the Lido protocol
+### 4. Interaction with Voting scripts
+
 
 Since voting scripts require Python and Brownie, install the necessary dependencies:
 ```sh

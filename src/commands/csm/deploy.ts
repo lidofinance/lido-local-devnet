@@ -97,7 +97,7 @@ export const DeployCSMContracts = command.cli({
 
     const args = ["deploy-local-devnet"];
     if (params.verify) {
-      args.push("--verify", "--verifier", "custom", "--chain", "32382");
+      args.push("--verify", "--verifier", "blockscout", "--chain", "32382");
     }
 
     await csmSh`just ${args}`;

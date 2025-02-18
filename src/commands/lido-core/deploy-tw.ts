@@ -9,8 +9,8 @@ type DeployEnvRequired = {
   GAS_MAX_FEE: string;
   GAS_PRIORITY_FEE: string;
   GENESIS_TIME: string;
-  LOCAL_DENVET_EXPLORER_API_URL: string;
-  LOCAL_DENVET_EXPLORER_URL: string;
+  LOCAL_DEVNET_EXPLORER_API_URL: string;
+  LOCAL_DEVNET_EXPLORER_URL: string;
   LOCAL_DEVNET_PK: string;
   NETWORK: string;
   NETWORK_STATE_DEFAULTS_FILE: string;
@@ -53,8 +53,8 @@ export const DeployTWContracts = command.cli({
       GENESIS_TIME: genesis_time,
       RPC_URL: elPublic,
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,
-      LOCAL_DENVET_EXPLORER_API_URL: blockscoutState.api,
-      LOCAL_DENVET_EXPLORER_URL: blockscoutState.url,
+      LOCAL_DEVNET_EXPLORER_API_URL: blockscoutState.api,
+      LOCAL_DEVNET_EXPLORER_URL: blockscoutState.url,
     };
 
     await dre.runCommand(PrepareLidoCore, {

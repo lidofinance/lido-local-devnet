@@ -1,31 +1,32 @@
 import { Params, command } from "@devnet/command";
 
-import { BlockscoutUp } from "./blockscout/up.js";
-import { KurtosisGetInfo } from "./chain/info.js";
-import { KurtosisUp } from "./chain/up.js";
-import { CouncilUp } from "./council/up.js";
-import { ActivateCSM } from "./csm/activate.js";
-import { LidoAddCSMOperatorWithKeys } from "./csm/add-operator.js";
-import { DeployCSVerifier } from "./csm/add-verifier.js";
-import { DeployCSMContracts } from "./csm/deploy.js";
-import { DataBusDeploy } from "./data-bus/deploy.js";
-import { DSMBotsUp } from "./dsm-bots/up.js";
-import { KapiUp } from "./kapi/up.js";
-import { ActivateLidoProtocol } from "./lido-core/activate.js";
-import { LidoAddKeys } from "./lido-core/add-keys.js";
-import { LidoAddOperator } from "./lido-core/add-operator.js";
-import { DeployLidoContracts } from "./lido-core/deploy.js";
-import { LidoDeposit } from "./lido-core/deposit.js";
-import { GenerateLidoDevNetKeys } from "./lido-core/keys/generate.js";
-import { UseLidoDevNetKeys } from "./lido-core/keys/use.js";
-import { ReplaceDSM } from "./lido-core/replace-dsm.js";
-import { LidoSetStakingLimit } from "./lido-core/set-staking-limit.js";
-import { OracleUp } from "./oracles/up.js";
-import { ValidatorAdd } from "./validator/add.js";
+import { BlockscoutUp } from "../blockscout/up.js";
+import { KurtosisGetInfo } from "../chain/info.js";
+import { KurtosisUp } from "../chain/up.js";
+import { CouncilUp } from "../council/up.js";
+import { ActivateCSM } from "../csm/activate.js";
+import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
+import { DeployCSVerifier } from "../csm/add-verifier.js";
+import { DeployCSMContracts } from "../csm/deploy.js";
+import { DataBusDeploy } from "../data-bus/deploy.js";
+import { DSMBotsUp } from "../dsm-bots/up.js";
+import { GitCheckout } from "../git/checkout.js";
+import { KapiUp } from "../kapi/up.js";
+import { ActivateLidoProtocol } from "../lido-core/activate.js";
+import { LidoAddKeys } from "../lido-core/add-keys.js";
+import { LidoAddOperator } from "../lido-core/add-operator.js";
+import { DeployLidoContracts } from "../lido-core/deploy.js";
+import { LidoDeposit } from "../lido-core/deposit.js";
+import { GenerateLidoDevNetKeys } from "../lido-core/keys/generate.js";
+import { UseLidoDevNetKeys } from "../lido-core/keys/use.js";
+import { ReplaceDSM } from "../lido-core/replace-dsm.js";
+import { LidoSetStakingLimit } from "../lido-core/set-staking-limit.js";
+import { OracleUp } from "../oracles/up.js";
+import { ValidatorAdd } from "../validator/add.js";
 
-export const DevNetUp = command.cli({
+export const PectraDevNetUp = command.cli({
   description:
-    "Starts a local development network (DevNet) from scratch, ensuring full setup and deployment of all components.",
+    "Base Pectra test stand.",
   params: {
     full: Params.boolean({
       description:
@@ -40,7 +41,12 @@ export const DevNetUp = command.cli({
     }),
   },
   async handler({ params, dre, dre: { logger } }) {
-    await dre.runCommand(KurtosisUp, {});
+    await dre.runCommand(GitCheckout, {
+      service: "lidoCore",
+      ref: "develop",
+    });
+
+    await dre.runCommand(KurtosisUp, { preset: "pectra-devnet6" });
     logger.log("✅ Network initialized.");
 
     await dre.runCommand(BlockscoutUp, {});

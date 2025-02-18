@@ -9,7 +9,7 @@
     "build:all": "yarn workspaces foreach -W --topological run build",
     "build": "rm -rf dist && tsc -b",
     "lint": "eslint . --ext .ts && tsc --noEmit",
-    "docs": "./bin/dev.js system docs"
+    "docs": "yarn build:all && ./bin/run.js system docs"
   },
   "workspaces": [
     "packages/*",
