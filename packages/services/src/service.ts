@@ -5,6 +5,8 @@ export class DevNetServiceConfig<
   constants: T;
   env?: Record<string, string>;
   exposedPorts?: number[];
+  git?: string;
+
   hooks?: {
     build?: string;
     destroy?: string;
@@ -12,9 +14,9 @@ export class DevNetServiceConfig<
   };
 
   labels: L;
-
   name: string;
-  repository?: string;
+  repository?: { branch: string, url: string };
+
   workspace?: string;
 
   constructor({
@@ -33,7 +35,7 @@ export class DevNetServiceConfig<
     hooks?: { build?: string; destroy?: string; install?: string };
     labels: L;
     name: string;
-    repository?: string;
+    repository?: { branch: string, url: string };
     workspace?: string;
   }) {
     this.workspace = workspace;

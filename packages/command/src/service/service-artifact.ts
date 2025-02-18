@@ -1,5 +1,6 @@
 /* eslint-disable valid-jsdoc */
 import { DevNetServiceConfig } from "@devnet/service";
+import { execa } from "execa";
 import fs, { rm } from "node:fs/promises";
 import path from "node:path";
 
@@ -37,9 +38,7 @@ export class ServiceArtifact {
     if (artifact.config.hooks?.install)
       artifact.emittedCommands.push(artifact.config.hooks?.install);
 
-    if (service.repository) {
-      await artifact.copyFilesFrom(service.repository);
-    }
+    await artifact.gitInit(service);
 
     if (service.workspace) {
       await artifact.copyFilesFrom(service.workspace);
@@ -54,12 +53,11 @@ export class ServiceArtifact {
 
   /**
    * Copies all files and directories from the source path to the destination path,
-   * excluding the `.git` directory in the root. If the destination path already exists,
-   * the method does nothing.
+   * If the destination path already exists, the method does nothing.
    *
    * @param sourcePath - The path where files are being copied from.
    */
-  private async copyFilesFrom(sourcePath: string): Promise<void> {
+  public async copyFilesFrom(sourcePath: string): Promise<void> {
     try {
       // Ensure the destination folder exists
       await fs.mkdir(this.root, { recursive: true });
@@ -83,6 +81,26 @@ export class ServiceArtifact {
       );
 
       this.logger.log(`Files copied successfully to "${this.root}".`);
+    } catch (error: any) {
+      this.logger.error(`Error copying files: ${error.message}`);
+      throw error;
+    }
+  }
+
+  private async gitInit(service: DevNetServiceConfig): Promise<void> {
+    try {
+      if (!service.repository) {
+        return;
+      }
+
+      // Ensure the destination folder exists
+      await fs.mkdir(this.root, { recursive: true });
+
+      const { url, branch } = service.repository;
+      // TODO: move to git command and use it as hook
+      await execa({
+        cwd: this.root,
+      })`git clone --branch ${branch} --single-branch ${url} .`;
     } catch (error: any) {
       this.logger.error(`Error copying files: ${error.message}`);
       throw error;

@@ -56,10 +56,13 @@ export const boolean = wrapWithAdditionalFields(Flags.boolean, {
 
 export const string = wrapWithAdditionalFields(Flags.string, {
   paramParserType: "string",
-  paramParser
+  paramParser,
 }) as typeof Flags.string;
 
 export const integer = wrapWithAdditionalFields(Flags.integer, {
   paramParserType: "integer",
-  paramParser
+  paramParser,
 }) as typeof Flags.integer;
+
+// TODO: add param parser
+export const { option } = Flags;

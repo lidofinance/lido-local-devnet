@@ -1,8 +1,7 @@
-import { Params, command } from "@devnet/command";
+import { command } from "@devnet/command";
 
 import { PrepareLidoCore } from "./prepare-repository.js";
 import { LidoCoreUpdateState } from "./update-state.js";
-import { LidoCoreVerify } from "./verify.js";
 
 type DeployEnvRequired = {
   DEPLOYER: string;
@@ -10,6 +9,8 @@ type DeployEnvRequired = {
   GAS_MAX_FEE: string;
   GAS_PRIORITY_FEE: string;
   GENESIS_TIME: string;
+  LOCAL_DENVET_EXPLORER_API_URL: string;
+  LOCAL_DENVET_EXPLORER_URL: string;
   LOCAL_DEVNET_PK: string;
   NETWORK: string;
   NETWORK_STATE_DEFAULTS_FILE: string;
@@ -18,22 +19,17 @@ type DeployEnvRequired = {
   SLOTS_PER_EPOCH: string;
 };
 
-export const DeployLidoContracts = command.cli({
+export const DeployTWContracts = command.cli({
   description:
     "Deploys lido-core smart contracts using configured deployment scripts.",
-  params: {
-    verify: Params.boolean({
-      description: "Verify smart contracts",
-      default: false,
-      required: true,
-    }),
-  },
-  async handler({ dre, dre: { logger }, params }) {
+  params: {},
+  async handler({ dre, dre: { logger } }) {
     const { state, services, network } = dre;
     const { lidoCore } = services;
     const { constants } = lidoCore.config;
 
     const { elPublic } = await state.getChain();
+    const blockscoutState = await state.getBlockScout();
     const clClient = await network.getCLClient();
 
     const {
@@ -43,12 +39,6 @@ export const DeployLidoContracts = command.cli({
     const { deployer } = await state.getNamedWallet();
 
     await dre.network.waitEL();
-
-    await dre.runCommand(PrepareLidoCore, {
-      objectionPhaseDuration: 5,
-      voteDuration: 60,
-      vesting: "820000000000000000000000",
-    });
 
     const deployEnv: DeployEnvRequired = {
       DEPLOYER: deployer.publicKey,
@@ -63,16 +53,22 @@ export const DeployLidoContracts = command.cli({
       GENESIS_TIME: genesis_time,
       RPC_URL: elPublic,
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,
+      LOCAL_DENVET_EXPLORER_API_URL: blockscoutState.api,
+      LOCAL_DENVET_EXPLORER_URL: blockscoutState.url,
     };
 
-    await lidoCore.sh({ env: deployEnv })`bash -c scripts/dao-deploy.sh`;
+    await dre.runCommand(PrepareLidoCore, {
+      objectionPhaseDuration: 5,
+      voteDuration: 60,
+      vesting: "820000000000000000000000",
+    });
+
+    await lidoCore.sh({
+      shell: true,
+      env: deployEnv,
+    })`npx hardhat run --network ${constants.NETWORK} scripts/triggerable-withdrawals/tw-deploy.ts`;
 
     await dre.runCommand(LidoCoreUpdateState, {});
-
-    if (params.verify) {
-      logger.log("Verifying smart contracts...");
-      await dre.runCommand(LidoCoreVerify, {});
-    }
 
     logger.log("✅ Deployment of smart contracts completed successfully.");
   },

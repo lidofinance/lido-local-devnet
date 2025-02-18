@@ -78,6 +78,12 @@ export class DevNetService<Name extends keyof DevNetServices> {
     return service;
   }
 
+  // TODO: move to command and use as hook
+  public async applyWorkspace() {
+    if (!this.config.workspace) return;
+    await this.artifact.copyFilesFrom(this.config.workspace);
+  }
+
   public clone(commandName: string, logger: DevNetLogger) {
     return new DevNetService(
       this.config.name as Name,
@@ -195,8 +201,15 @@ export class DevNetService<Name extends keyof DevNetServices> {
     );
   }
 
-  public async writeJson(relativePath: string, fileContent: unknown) {
-    return await this.writeFile(relativePath, JSON.stringify(fileContent));
+  public async writeJson(
+    relativePath: string,
+    fileContent: unknown,
+    format = false,
+  ) {
+    const json = format
+      ? JSON.stringify(fileContent, null, 2)
+      : JSON.stringify(fileContent);
+    return await this.writeFile(relativePath, json);
   }
 
   public async writeYaml(relativePath: string, fileContent: unknown) {
