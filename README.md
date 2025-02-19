@@ -119,3 +119,11 @@ To get the latest information on available services, run:
 This repository provides a high-level interface for managing DevNet. However, if you need to restart a specific service or deployment step, refer to the [command documentation](./docs/commands/README.md).
 
 ---
+
+---
+
+## Developing Your Own Commands  
+
+If you want to start developing your own commands, read the [short guide on the core API](./docs/developer/README.md).  
+
+---
