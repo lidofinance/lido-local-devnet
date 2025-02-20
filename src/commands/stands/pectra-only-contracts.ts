@@ -8,7 +8,7 @@ import { DeployLidoContracts } from "../lido-core/deploy.js";
 
 
 export const PectraDevNetUp = command.cli({
-  description: "Pectra cotracts only with protocol smart contracts.",
+  description: "Pectra contracts only with protocol smart contracts.",
   params: {
     verify: Params.boolean({
       description: "Enables verification of smart contracts during deployment.",
