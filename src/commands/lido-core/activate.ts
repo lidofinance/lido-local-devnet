@@ -7,11 +7,13 @@ export const ActivateLidoProtocol = command.cli({
   async handler({ dre }) {
     const {
       state,
-      services: { lidoCLI },
+      services: { lidoCLI, oracle },
+      network,
     } = dre;
 
     const { elPublic } = await state.getChain();
     const { deployer, oracles, councils } = await state.getNamedWallet();
+    const clClient = await network.getCLClient();
 
     await dre.network.waitEL();
 
@@ -23,12 +25,25 @@ export const ActivateLidoProtocol = command.cli({
       EL_API_PROVIDER: elPublic,
     };
 
+    const {
+      HASH_CONSENSUS_AO_EPOCHS_PER_FRAME,
+      HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME,
+    } = oracle.config.constants;
+
+    const epochPerFrame = Math.max(
+      HASH_CONSENSUS_AO_EPOCHS_PER_FRAME,
+      HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME,
+    );
+
+    const currentEpoch = await clClient.getHeadEpoch();
+    const initialEpoch = epochPerFrame + currentEpoch + 2;
+
     const activateCoreSh = lidoCLI.sh({ env: deployEnv });
-    // TODO: calc oracles-initial-epoch (time voting + 1 epoch for core and +50 for CSM)
-    await activateCoreSh`./run.sh devnet setup 
+
+    await activateCoreSh`./run.sh devnet setup
                           --oracles-members ${oracles.map(({ publicKey }) => publicKey).join(",")}
                           --oracles-quorum ${oracles.length - 1}
-                          --oracles-initial-epoch 60
+                          --oracles-initial-epoch ${initialEpoch}
                           --dsm-guardians ${councils.map(({ publicKey }) => publicKey).join(",")}
                           --dsm-quorum ${councils.length}
                           --roles-beneficiary ${deployer.publicKey}`;
