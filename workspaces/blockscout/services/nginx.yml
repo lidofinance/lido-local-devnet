@@ -1,0 +1,29 @@
+version: '3.9'
+
+networks:
+  devnet:
+    name: ${DOCKER_NETWORK_NAME}
+    external: true
+  blockscout:
+    name: blockscout-${DOCKER_NETWORK_NAME}
+    external: true
+
+services:
+  proxy:
+    image: nginx
+    restart: unless-stopped
+    volumes:
+      - "../proxy:/etc/nginx/templates"
+    environment:
+      BACK_PROXY_PASS: ${BACK_PROXY_PASS:-http://backend:4000}
+      FRONT_PROXY_PASS: ${FRONT_PROXY_PASS:-http://frontend:3000}
+    networks:
+      - blockscout
+      - devnet
+    ports:
+      - target: 80
+        published: 0
+      - target: 8080
+        published: 0
+      # - target: 8081
+      #   published: 8781

@@ -1,0 +1,21 @@
+version: '3.9'
+
+networks:
+  devnet:
+    name: ${DOCKER_NETWORK_NAME}
+    external: true
+
+services:
+
+  assertoor:
+    image: ethpandaops/assertoor:latest
+    entrypoint: ['/app/assertoor', '--config', '/config/config.yml']
+    platform: linux/amd64
+    labels:
+      devnet_service_name: assertoorApi
+    networks:
+      - devnet
+    ports:
+      - '0:8080'
+    volumes:
+      - ./config/:/config

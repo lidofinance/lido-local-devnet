@@ -1,0 +1,27 @@
+participants:
+  - el_type: geth
+    el_image: ethpandaops/geth:prague-devnet-5-a193537
+    el_extra_params: [--gcmode=archive]
+    cl_type: teku
+    cl_image: ethpandaops/teku:master-cc94afc
+    use_separate_vc: true
+    # only for mac with M4
+    # cl_extra_env_vars: { "JAVA_TOOL_OPTIONS": "-XX:UseSVE=0" }
+    count: 1
+
+network_params:
+  network_id: "32382"
+  electra_fork_epoch: 5
+  min_validator_withdrawability_delay: 1
+  shard_committee_period: 1
+  eth1_follow_distance: 12
+  seconds_per_slot: 12
+  # seconds_per_eth1_block: 12
+  # slots_per_epoch: 32
+  # preset: mainnet #minimal
+  preset: mainnet #minimal
+
+keymanager_enabled: true
+
+additional_services:
+  - dora

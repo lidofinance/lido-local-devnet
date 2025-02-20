@@ -1,0 +1,51 @@
+web:
+  server:
+    host: "0.0.0.0"
+    port: 8080
+  api:
+    enabled: true # enable rest api
+  frontend:
+    enabled: true # enable web ui
+
+endpoints:
+  - name: "local"
+    executionUrl: http://172.16.0.10:8545
+    consensusUrl: http://172.16.0.11:4000
+
+# tests:
+#   - name: "Every client pair proposed block with exits"
+#     timeout: 48h
+#     tasks:
+#       - name: check_clients_are_healthy
+#         title: "Check if at least one client is ready"
+#         timeout: 5m
+#         config:
+#           minClientCount: 1
+
+#       - name: run_tasks_concurrent
+#         title: "Generate exits & Track inclusion"
+#         config:
+#           succeedTaskCount: 1
+#           tasks:
+#             - name: generate_exits
+#               title: "Generate 1 voluntary exits"
+#               config:
+#                 mnemonic: "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+#                 limitTotal: 1
+#                 limitPerSlot: 1
+#                 indexCount: 0
+
+#             - name: run_task_matrix
+#               title: "Check voluntary exit inclusion with all client pairs"
+#               configVars:
+#                 matrixValues: "validatorPairNames"
+#               config:
+#                 runConcurrent: true
+#                 matrixVar: "validatorPairName"
+#                 task:
+#                   name: check_consensus_block_proposals
+#                   title: "Wait for block proposal with deposits from ${validatorPairName}"
+#                   configVars:
+#                     validatorNamePattern: "validatorPairName"
+#                   config:
+#                     minExitCount: 1

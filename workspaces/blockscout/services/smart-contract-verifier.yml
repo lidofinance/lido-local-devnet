@@ -1,0 +1,21 @@
+version: '3.9'
+
+networks:
+  devnet:
+    name: ${DOCKER_NETWORK_NAME}
+    external: true
+  blockscout:
+    name: blockscout-${DOCKER_NETWORK_NAME}
+    external: true
+
+services:
+  smart-contract-verifier:
+    image: ghcr.io/blockscout/smart-contract-verifier:${SMART_CONTRACT_VERIFIER_DOCKER_TAG:-latest}
+    
+    platform: linux/amd64
+    restart: always
+    networks:
+      - devnet
+      - blockscout
+    env_file:
+      -  ../envs/common-smart-contract-verifier.env
