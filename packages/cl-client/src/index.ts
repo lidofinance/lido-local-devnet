@@ -44,6 +44,22 @@ export const BeaconConfigSchema = z.object({
 
 export type BeaconConfigResponse = z.infer<typeof BeaconConfigSchema>;
 
+export const BeaconFinalizedCheckpointSchema = z.object({
+  data: z.object({
+    finalized: z.object({
+      epoch: z.string(),
+    }),
+  }),
+});
+
+export const BeaconHeadCheckpointSchema = z.object({
+  data: z.object({
+    current_justified: z.object({
+      epoch: z.string(),
+    }),
+  }),
+});
+
 export class BeaconClient {
   private baseUrl: string;
 
@@ -54,39 +70,57 @@ export class BeaconClient {
   public async getBlock(blockId: string): Promise<BeaconBlockResponse> {
     return this.fetchAndValidate(
       `${this.baseUrl}/eth/v1/beacon/blocks/${blockId}`,
-      BeaconBlockSchema
+      BeaconBlockSchema,
     );
   }
 
   public async getConfig(): Promise<BeaconConfigResponse> {
     return this.fetchAndValidate(
       `${this.baseUrl}/eth/v1/config/spec`,
-      BeaconConfigSchema
+      BeaconConfigSchema,
     );
+  }
+
+  public async getFinalizedEpoch(): Promise<number> {
+    const response = await this.fetchAndValidate(
+      `${this.baseUrl}/eth/v1/beacon/states/finalized/finality_checkpoints`,
+      BeaconFinalizedCheckpointSchema,
+    );
+    return Number.parseInt(response.data.finalized.epoch, 10);
   }
 
   public async getGenesis(): Promise<BeaconGenesisResponse> {
     return this.fetchAndValidate(
       `${this.baseUrl}/eth/v1/beacon/genesis`,
-      BeaconGenesisSchema
+      BeaconGenesisSchema,
     );
   }
 
-  public async getValidators(stateId: string): Promise<BeaconValidatorsResponse> {
+  public async getHeadEpoch(): Promise<number> {
+    const response = await this.fetchAndValidate(
+      `${this.baseUrl}/eth/v1/beacon/states/head/finality_checkpoints`,
+      BeaconHeadCheckpointSchema,
+    );
+    return Number.parseInt(response.data.current_justified.epoch, 10);
+  }
+
+  public async getValidators(
+    stateId: string,
+  ): Promise<BeaconValidatorsResponse> {
     return this.fetchAndValidate(
       `${this.baseUrl}/eth/v1/beacon/states/${stateId}/validators`,
-      BeaconValidatorsSchema
+      BeaconValidatorsSchema,
     );
   }
 
   private async fetchAndValidate<T>(
     url: string,
-    schema: z.Schema<T>
+    schema: z.Schema<T>,
   ): Promise<T> {
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(
-        `Error fetching ${url}: ${response.status} ${response.statusText}`
+        `Error fetching ${url}: ${response.status} ${response.statusText}`,
       );
     }
 

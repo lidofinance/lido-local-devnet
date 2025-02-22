@@ -116,7 +116,10 @@ const oracle = new DevNetServiceConfig({
   },
   workspace: "workspaces/oracle-v5",
   name: "oracle" as const,
-  constants: {},
+  constants: {
+    HASH_CONSENSUS_AO_EPOCHS_PER_FRAME: 8,
+    HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME: 8
+  },
   labels: {},
 });
 

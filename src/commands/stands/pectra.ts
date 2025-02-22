@@ -28,10 +28,6 @@ export const PectraDevNetUp = command.cli({
   description:
     "Base Pectra test stand.",
   params: {
-    full: Params.boolean({
-      description:
-        "Deploys all smart contracts, not just initializes the network.",
-    }),
     verify: Params.boolean({
       description: "Enables verification of smart contracts during deployment.",
     }),
@@ -51,11 +47,6 @@ export const PectraDevNetUp = command.cli({
 
     await dre.runCommand(BlockscoutUp, {});
     logger.log("✅ BlockScout launched for transaction visualization.");
-
-    if (!params.full) {
-      await dre.runCommand(KurtosisGetInfo, {});
-      return;
-    }
 
     const deployArgs = { verify: params.verify };
     const depositArgs = { dsm: params.dsm };
