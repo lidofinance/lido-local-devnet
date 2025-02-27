@@ -21,8 +21,7 @@ const lidoCore = new DevNetServiceConfig({
     GAS_MAX_FEE: "100",
     GAS_PRIORITY_FEE: "1",
     NETWORK: "local-devnet",
-    NETWORK_STATE_DEFAULTS_FILE:
-      "scripts/scratch/deployed-testnet-defaults.json",
+    NETWORK_STATE_DEFAULTS_FILE: "scripts/defaults/testnet-defaults.json",
     NETWORK_STATE_FILE: `deployed-local-devnet.json`,
     SLOTS_PER_EPOCH: "32",
   },
