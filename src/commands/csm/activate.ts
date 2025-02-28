@@ -14,20 +14,34 @@ export const ActivateCSM = command.cli({
   description:
     "Activates the csm by deploying smart contracts and configuring the environment based on the current network state.",
   params: {},
-  async handler({ dre, dre: { logger } }) {
-    const { lidoCLI } = dre.services;
+  async handler({ dre, dre: { logger, network } }) {
+    const { lidoCLI, oracle } = dre.services;
 
     const { elPublic } = await dre.state.getChain();
     const csmState = await dre.state.getCSM();
+    const clClient = await network.getCLClient();
 
     await dre.network.waitEL();
+
+    const {
+      HASH_CONSENSUS_AO_EPOCHS_PER_FRAME,
+      HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME,
+    } = oracle.config.constants;
+
+    const epochPerFrame = Math.max(
+      HASH_CONSENSUS_AO_EPOCHS_PER_FRAME,
+      HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME,
+    );
+
+    const currentEpoch = await clClient.getHeadEpoch();
+    const initialEpoch = epochPerFrame + currentEpoch + 2;
 
     const env: CSMActivateENV = {
       CS_ACCOUNTING_ADDRESS: csmState.accounting,
       CS_MODULE_ADDRESS: csmState.module,
       CS_ORACLE_HASH_CONSENSUS_ADDRESS: csmState.hashConsensus,
       // TODO: calculate it
-      CS_ORACLE_INITIAL_EPOCH: "60",
+      CS_ORACLE_INITIAL_EPOCH: initialEpoch.toString(),
       EL_API_PROVIDER: elPublic,
     };
 

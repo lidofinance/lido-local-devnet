@@ -86,7 +86,7 @@ async function executeCommandWithLogging<T>(
 export class DevNetCommand extends BaseCommand {
   static baseFlags = {
     network: string({
-      default: DEFAULT_NETWORK_NAME,
+      default: process.env.DEFAULT_NETWORK_NAME ?? DEFAULT_NETWORK_NAME,
       description: "Name of the network",
       required: false,
     }),
