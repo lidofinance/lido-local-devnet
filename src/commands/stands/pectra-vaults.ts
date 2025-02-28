@@ -57,7 +57,6 @@ export const PectraVaultsDevNetUp = command.cli({
     });
 
     const deployArgs = { verify: params.verify };
-    const depositArgs = { dsm: params.dsm };
 
     logger.log("🚀 Deploying Lido Core contracts...");
     await dre.runCommand(DeployLidoContracts, deployArgs);
@@ -116,10 +115,9 @@ export const PectraVaultsDevNetUp = command.cli({
     await dre.runCommand(KapiUp, {});
     logger.log("✅ KAPI service started.");
 
-    // TODO: use local oracle for vaults
-    // logger.log("🚀 Run Oracle service.");
-    // await dre.runCommand(OracleUp, {});
-    // logger.log("✅ Oracle service started.");
+    logger.log("🚀 Run Oracle service.");
+    await dre.runCommand(OracleUp, {});
+    logger.log("✅ Oracle service started.");
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");
@@ -135,23 +133,25 @@ export const PectraVaultsDevNetUp = command.cli({
       logger.log("✅ DSM-bots service started.");
     }
 
-    // logger.log("🚀 Making deposit to NOR...");
-    // await dre.runCommand(LidoDeposit, { id: 1, deposits: 30, ...depositArgs });
-    // logger.log("✅ Deposit to NOR completed.");
+    const depositArgs = { dsm: params.dsm };
 
-    // logger.log("🚀 Making deposit to CSM...");
-    // await dre.runCommand(LidoDeposit, { id: 3, deposits: 30, ...depositArgs });
-    // logger.log("✅ Deposit to CSM completed.");
+    logger.log("🚀 Making deposit to NOR...");
+    await dre.runCommand(LidoDeposit, { id: 1, deposits: 30, ...depositArgs });
+    logger.log("✅ Deposit to NOR completed.");
 
-    // logger.log("🚀 Adding keys to the validator...");
-    // await dre.runCommand(ValidatorAdd, {});
-    // logger.log("✅ Validator keys added.");
+    logger.log("🚀 Making deposit to CSM...");
+    await dre.runCommand(LidoDeposit, { id: 3, deposits: 30, ...depositArgs });
+    logger.log("✅ Deposit to CSM completed.");
 
-    // logger.log("🚀 Deploying new CSM Verifier...");
-    // await dre.runCommand(DeployCSVerifier, deployArgs);
-    // logger.log("✅ New CSM Verifier deployed.");
+    logger.log("🚀 Adding keys to the validator...");
+    await dre.runCommand(ValidatorAdd, {});
+    logger.log("✅ Validator keys added.");
 
-    // await dre.runCommand(KurtosisGetInfo, {});
+    logger.log("🚀 Deploying new CSM Verifier...");
+    await dre.runCommand(DeployCSVerifier, deployArgs);
+    logger.log("✅ New CSM Verifier deployed.");
+
+    await dre.runCommand(KurtosisGetInfo, {});
 
     logger.log("");
     logger.log("Vaults deployment completed successfully.");
