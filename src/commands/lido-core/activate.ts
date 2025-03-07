@@ -36,7 +36,7 @@ export const ActivateLidoProtocol = command.cli({
     );
 
     const currentEpoch = await clClient.getHeadEpoch();
-    const initialEpoch = epochPerFrame + currentEpoch + 2;
+    const initialEpoch = epochPerFrame + currentEpoch;
 
     const activateCoreSh = lidoCLI.sh({ env: deployEnv });
 

@@ -1,9 +1,14 @@
-import { command } from "@devnet/command";
+import { Params, command } from "@devnet/command";
 
 export const OracleUp = command.cli({
   description: "Start Oracle(s)",
-  params: {},
-  async handler({ dre: { state, network, services } }) {
+  params: {
+    csm: Params.boolean({
+      description: "Use CSM module.",
+      default: false,
+    }),
+  },
+  async handler({ params, dre: { state, network, services } }) {
     const { oracle } = services;
 
     const { elPrivate, clPrivate } = await state.getChain();
@@ -12,8 +17,12 @@ export const OracleUp = command.cli({
     // const name = state.getOrError("network.name");
 
     const { locator } = await state.getLido();
-    const { module: csmModule } = await state.getCSM();
     const { oracle1, oracle2, oracle3 } = await state.getNamedWallet();
+
+    let csmModule = "";
+    if (params.csm) {
+      csmModule = (await state.getCSM()).module;
+    }
 
     const env = {
       CHAIN_ID: "32382",

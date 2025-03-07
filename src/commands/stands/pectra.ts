@@ -25,8 +25,7 @@ import { OracleUp } from "../oracles/up.js";
 import { ValidatorAdd } from "../validator/add.js";
 
 export const PectraDevNetUp = command.cli({
-  description:
-    "Base Pectra test stand.",
+  description: "Base Pectra test stand.",
   params: {
     full: Params.boolean({
       description:
@@ -114,10 +113,10 @@ export const PectraDevNetUp = command.cli({
     logger.log(`✅ Keys for operator ${CSM_DEVNET_OPERATOR} added.`);
 
     logger.log("🚀 Run KAPI service.");
-    await dre.runCommand(KapiUp, {});
+    await dre.runCommand(KapiUp, { csm: true });
 
     logger.log("🚀 Run Oracle service.");
-    await dre.runCommand(OracleUp, {});
+    await dre.runCommand(OracleUp, { csm: true });
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");
