@@ -1,0 +1,30 @@
+participants_matrix:
+  el:
+    - el_type: geth
+      el_image: docker.ethquokkaops.io/dh/ethereum/client-go:v1.15.2
+      el_extra_params: [--gcmode=archive]
+  cl:
+    - cl_type: teku
+      cl_image: docker.ethquokkaops.io/dh/consensys/teku:25.2.0
+      use_separate_vc: true
+      cl_extra_env_vars: { "JAVA_TOOL_OPTIONS": "-XX:UseSVE=0" }
+      vc_extra_env_vars: { "JAVA_TOOL_OPTIONS": "-XX:UseSVE=0" }
+
+    - cl_type: prysm
+      cl_image: docker.ethquokkaops.io/dh/prysmaticlabs/prysm-beacon-chain:v5.3.0
+      vc_image: docker.ethquokkaops.io/dh/prysmaticlabs/prysm-validator:v5.3.0
+
+network_params:
+  network_id: "32382"
+  electra_fork_epoch: 1
+  min_validator_withdrawability_delay: 1
+  shard_committee_period: 1
+  eth1_follow_distance: 12
+  seconds_per_slot: 12
+  preset: mainnet
+  num_validator_keys_per_node: 32
+
+keymanager_enabled: true
+
+additional_services:
+  - dora

@@ -1,15 +1,24 @@
-import { command } from "@devnet/command";
+import { Params, command } from "@devnet/command";
 
 export const KapiUp = command.cli({
   description: "Start Kapi",
-  params: {},
-  async handler({ dre: { state, network, services } }) {
+  params: {
+    csm: Params.boolean({
+      description: "Use CSM module.",
+      default: false,
+    }),
+  },
+  async handler({ params, dre: { state, network, services } }) {
     const { elPrivate } = await state.getChain();
 
     const { kapi } = services;
 
     const { locator, stakingRouter, curatedModule } = await state.getLido();
-    const { module: csmModule } = await state.getCSM();
+
+    let csmModule = "";
+    if (params.csm) {
+      csmModule = (await state.getCSM()).module;
+    }
 
     const env = {
       ...kapi.config.constants,

@@ -1,10 +1,17 @@
-`./bin/run.js stands`
-=====================
+# `./bin/run.js stands`
 
 A collection of ready-made environments for testing.
 
-* [`./bin/run.js stands pectra`](#binrunjs-stands-pectra)
-* [`./bin/run.js stands pectra-tw`](#binrunjs-stands-pectra-tw)
+- [`./bin/run.js stands pectra`](#binrunjs-stands-pectra)
+- [`./bin/run.js stands pectra-tw`](#binrunjs-stands-pectra-tw)
+- [`./bin/run.js stands pectra-vaults`](#binrunjs-stands-pectra-vaults)
+
+> [!NOTE]
+> After adding new stand, you need to re-build the project.
+>
+> ```sh
+> yarn build:all
+> ```
 
 ## `./bin/run.js stands pectra`
 

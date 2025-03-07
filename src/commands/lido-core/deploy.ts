@@ -65,6 +65,7 @@ export const DeployLidoContracts = command.cli({
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,
     };
 
+    await lidoCore.sh({ env: deployEnv })`bash -c yarn install`; // Fix for hardhat not found error
     await lidoCore.sh({ env: deployEnv })`bash -c scripts/dao-deploy.sh`;
 
     await dre.runCommand(LidoCoreUpdateState, {});

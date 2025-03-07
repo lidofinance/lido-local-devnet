@@ -21,8 +21,7 @@ const lidoCore = new DevNetServiceConfig({
     GAS_MAX_FEE: "100",
     GAS_PRIORITY_FEE: "1",
     NETWORK: "local-devnet",
-    NETWORK_STATE_DEFAULTS_FILE:
-      "scripts/scratch/deployed-testnet-defaults.json",
+    NETWORK_STATE_DEFAULTS_FILE: "scripts/defaults/testnet-defaults.json",
     NETWORK_STATE_FILE: `deployed-local-devnet.json`,
     SLOTS_PER_EPOCH: "32",
   },
@@ -110,13 +109,17 @@ const kapi = new DevNetServiceConfig({
 });
 
 const oracle = new DevNetServiceConfig({
+  // TODO: revert when have stable branch
   repository: {
     url: "git@github.com:lidofinance/lido-oracle.git",
-    branch: "feat/oracle-v5-devnet-config",
+    branch: "feat/vaults-pectra",
   },
-  workspace: "workspaces/oracle-v5",
+  workspace: "workspaces/oracle-vaults",
   name: "oracle" as const,
-  constants: {},
+  constants: {
+    HASH_CONSENSUS_AO_EPOCHS_PER_FRAME: 8,
+    HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME: 8,
+  },
   labels: {},
 });
 
