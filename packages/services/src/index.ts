@@ -110,11 +110,11 @@ const kapi = new DevNetServiceConfig({
 
 const oracle = new DevNetServiceConfig({
   // TODO: revert when have stable branch
-  // repository: {
-  //   url: "git@github.com:lidofinance/lido-oracle.git",
-  //   branch: "feat/oracle-v5-devnet-config",
-  // },
-  workspace: "workspaces/oracle-v5-vaults",
+  repository: {
+    url: "git@github.com:lidofinance/lido-oracle.git",
+    branch: "feat/vaults-pectra",
+  },
+  workspace: "workspaces/oracle-vaults",
   name: "oracle" as const,
   constants: {
     HASH_CONSENSUS_AO_EPOCHS_PER_FRAME: 8,
