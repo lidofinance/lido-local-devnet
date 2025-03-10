@@ -8,16 +8,16 @@ export const PectraTWDevNetUp = command.cli({
   description:
     "Triggerable Withdrawals test stand.",
   params: {
-    full: Params.boolean({
-      description:
-        "Deploys all smart contracts, not just initializes the network.",
-    }),
     verify: Params.boolean({
       description: "Enables verification of smart contracts during deployment.",
     }),
     dsm: Params.boolean({
       description: "Use full DSM setup.",
       default: false,
+    }),
+    preset: Params.string({
+      description: "Kurtosis preset name",
+      default: "pectra-devnet7",
     }),
   },
   async handler({ params, dre, dre: { logger } }) {

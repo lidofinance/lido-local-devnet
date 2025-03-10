@@ -23,7 +23,7 @@ services:
     ports:
       - target: 80
         published: 0
-      - target: 8080
-        published: 0
+      # - target: 8080
+      #   published: 0
       # - target: 8081
       #   published: 8781

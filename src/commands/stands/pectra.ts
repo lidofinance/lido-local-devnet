@@ -25,19 +25,18 @@ import { OracleUp } from "../oracles/up.js";
 import { ValidatorAdd } from "../validator/add.js";
 
 export const PectraDevNetUp = command.cli({
-  description:
-    "Base Pectra test stand.",
+  description: "Base Pectra test stand.",
   params: {
-    full: Params.boolean({
-      description:
-        "Deploys all smart contracts, not just initializes the network.",
-    }),
     verify: Params.boolean({
       description: "Enables verification of smart contracts during deployment.",
     }),
     dsm: Params.boolean({
       description: "Use full DSM setup.",
       default: false,
+    }),
+    preset: Params.string({
+      description: "Kurtosis preset name",
+      default: "pectra-devnet7",
     }),
   },
   async handler({ params, dre, dre: { logger } }) {
@@ -46,16 +45,11 @@ export const PectraDevNetUp = command.cli({
       ref: "develop",
     });
 
-    await dre.runCommand(KurtosisUp, { preset: "pectra-devnet6" });
+    await dre.runCommand(KurtosisUp, { preset: params.preset });
     logger.log("✅ Network initialized.");
 
     await dre.runCommand(BlockscoutUp, {});
     logger.log("✅ BlockScout launched for transaction visualization.");
-
-    if (!params.full) {
-      await dre.runCommand(KurtosisGetInfo, {});
-      return;
-    }
 
     const deployArgs = { verify: params.verify };
     const depositArgs = { dsm: params.dsm };
@@ -86,12 +80,12 @@ export const PectraDevNetUp = command.cli({
     const CSM_DEVNET_OPERATOR = "devnet_csm_1";
 
     logger.log("🚀 Generating and allocating keys for NOR Module...");
-    await dre.runCommand(GenerateLidoDevNetKeys, {});
+    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
     await dre.runCommand(UseLidoDevNetKeys, { name: NOR_DEVNET_OPERATOR });
     logger.log("✅ NOR Module keys generated and allocated.");
 
     logger.log("🚀 Generating and allocating keys for CSM Module...");
-    await dre.runCommand(GenerateLidoDevNetKeys, {});
+    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
     await dre.runCommand(UseLidoDevNetKeys, { name: CSM_DEVNET_OPERATOR });
     logger.log("✅ CSM Module keys generated and allocated.");
 

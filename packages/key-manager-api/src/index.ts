@@ -21,6 +21,10 @@ interface ImportResponse {
   data: { imported: boolean; message: string }[];
 }
 
+interface DeleteResponse {
+  data: { message: string; status: string }[];
+}
+
 export const fetchValidatorGraffiti = async (
   apiUrl: string,
   validatorPublicKey: string,
@@ -88,6 +92,29 @@ export const importKeystores = async (
   });
 
   const data: ImportResponse = await response.json();
+  return data;
+};
+
+export const deleteKeystores = async (
+  apiUrl: string,
+  pubkeys: string[],
+  token: string,
+) => {
+  const url = `${apiUrl}/eth/v1/keystores`;
+  const body = JSON.stringify({
+    pubkeys,
+  });
+
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body,
+  });
+
+  const data: DeleteResponse = await response.json();
   return data;
 };
 
