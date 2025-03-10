@@ -25,8 +25,7 @@ import { OracleUp } from "../oracles/up.js";
 import { ValidatorAdd } from "../validator/add.js";
 
 export const PectraDevNetUp = command.cli({
-  description:
-    "Base Pectra test stand.",
+  description: "Base Pectra test stand.",
   params: {
     verify: Params.boolean({
       description: "Enables verification of smart contracts during deployment.",
@@ -35,6 +34,10 @@ export const PectraDevNetUp = command.cli({
       description: "Use full DSM setup.",
       default: false,
     }),
+    preset: Params.string({
+      description: "Kurtosis preset name",
+      default: "pectra-devnet7",
+    }),
   },
   async handler({ params, dre, dre: { logger } }) {
     await dre.runCommand(GitCheckout, {
@@ -42,7 +45,7 @@ export const PectraDevNetUp = command.cli({
       ref: "develop",
     });
 
-    await dre.runCommand(KurtosisUp, { preset: "pectra-devnet6" });
+    await dre.runCommand(KurtosisUp, { preset: params.preset });
     logger.log("✅ Network initialized.");
 
     await dre.runCommand(BlockscoutUp, {});
