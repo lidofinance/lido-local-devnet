@@ -137,10 +137,11 @@ Create deposit keys for Lido validators in the DevNet configuration.
 
 ```
 USAGE
-  $ ./bin/run.js lido-core keys generate [--network <value>]
+  $ ./bin/run.js lido-core keys generate [--network <value>] [--validators <value>]
 
 FLAGS
-  --network=<value>  [default: my-devnet] Name of the network
+  --network=<value>     [default: my-devnet] Name of the network
+  --validators=<value>  [default: 30] Number of validator keys to generate.
 
 DESCRIPTION
   Create deposit keys for Lido validators in the DevNet configuration.
