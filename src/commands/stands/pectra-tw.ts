@@ -15,6 +15,10 @@ export const PectraTWDevNetUp = command.cli({
       description: "Use full DSM setup.",
       default: false,
     }),
+    preset: Params.string({
+      description: "Kurtosis preset name",
+      default: "pectra-devnet7",
+    }),
   },
   async handler({ params, dre, dre: { logger } }) {
     await dre.runCommand(PectraDevNetUp, { ...params });

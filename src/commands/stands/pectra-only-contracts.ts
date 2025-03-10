@@ -7,7 +7,7 @@ import { GitCheckout } from "../git/checkout.js";
 import { DeployLidoContracts } from "../lido-core/deploy.js";
 
 
-export const PectraDevNetUp = command.cli({
+export const PectraContractsOnlyDevNetUp = command.cli({
   description: "Pectra contracts only with protocol smart contracts.",
   params: {
     verify: Params.boolean({
@@ -17,6 +17,10 @@ export const PectraDevNetUp = command.cli({
       description: "Use full DSM setup.",
       default: false,
     }),
+    preset: Params.string({
+      description: "Kurtosis preset name",
+      default: "pectra-devnet7",
+    }),
   },
   async handler({ params, dre, dre: { logger } }) {
     await dre.runCommand(GitCheckout, {
@@ -24,7 +28,7 @@ export const PectraDevNetUp = command.cli({
       ref: "develop",
     });
 
-    await dre.runCommand(KurtosisUp, { preset: "pectra-devnet6" });
+    await dre.runCommand(KurtosisUp, { preset: params.preset });
     logger.log("✅ Network initialized.");
 
     await dre.runCommand(BlockscoutUp, {});
