@@ -14,16 +14,21 @@ export const ValidatorRestart = command.cli({
   }) {
     logger.log("Preparing to restart Teku validator...");
 
-    const {
-      vc: validatorsInDockerNetwork,
-    } = await kurtosis.getDockerInfo();
+    const { vc: validatorsInDockerNetwork } = await kurtosis.getDockerInfo();
 
-    const validVC = validatorsInDockerNetwork.filter(v => v.name.includes('teku'));
-    assert(validVC.length > 0, "Teku validator was not found in the running configuration. At least one teku client must be running to work correctly.");
+    const validVC = validatorsInDockerNetwork.filter((v) =>
+      v.name.includes("teku"),
+    );
+    assert(
+      validVC.length > 0,
+      "Teku validator was not found in the running configuration. At least one teku client must be running to work correctly.",
+    );
 
     const { id: validatorServiceDockerId } = validVC[0];
 
-    logger.log(`Restarting Teku validator (Docker ID: ${validatorServiceDockerId})...`);
+    logger.log(
+      `Restarting Teku validator (Docker ID: ${validatorServiceDockerId})...`,
+    );
     await kurtosis.sh`docker restart ${validatorServiceDockerId}`;
     logger.log("Teku validator restart command sent.");
 
