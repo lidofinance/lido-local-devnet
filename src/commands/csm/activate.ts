@@ -1,6 +1,6 @@
 // services/lido-cli/programs/omnibus-scripts/devnet-csm-start.ts
 
-import { command } from "@devnet/command";
+import { command, Params } from "@devnet/command";
 
 type CSMActivateENV = {
   CS_ACCOUNTING_ADDRESS: string;
@@ -8,13 +8,26 @@ type CSMActivateENV = {
   CS_ORACLE_HASH_CONSENSUS_ADDRESS: string;
   CS_ORACLE_INITIAL_EPOCH: string;
   EL_API_PROVIDER: string;
+  CS_STAKE_SHARE_LIMIT: string;
+  CS_MAX_DEPOSITS_PER_BLOCK: string;
 };
 
 export const ActivateCSM = command.cli({
   description:
     "Activates the csm by deploying smart contracts and configuring the environment based on the current network state.",
-  params: {},
-  async handler({ dre, dre: { logger, network } }) {
+  params: {
+    stakeShareLimitBP: Params.integer({
+      description: "CSM stake share limit in BP.",
+      required: false,
+      default: 2000,
+    }),
+    maxDepositsPerBlock: Params.integer({
+      description: "CSM max deposits per block.",
+      required: false,
+      default: 30,
+    }),
+  },
+  async handler({ params, dre, dre: { logger, network } }) {
     const { lidoCLI, oracle } = dre.services;
 
     const { elPublic } = await dre.state.getChain();
@@ -40,6 +53,8 @@ export const ActivateCSM = command.cli({
       CS_ACCOUNTING_ADDRESS: csmState.accounting,
       CS_MODULE_ADDRESS: csmState.module,
       CS_ORACLE_HASH_CONSENSUS_ADDRESS: csmState.hashConsensus,
+      CS_STAKE_SHARE_LIMIT: params.stakeShareLimitBP.toString(),
+      CS_MAX_DEPOSITS_PER_BLOCK: params.maxDepositsPerBlock.toString(),
       // TODO: calculate it
       CS_ORACLE_INITIAL_EPOCH: initialEpoch.toString(),
       EL_API_PROVIDER: elPublic,

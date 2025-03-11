@@ -56,6 +56,7 @@ export const CSMConfigSchema = z.object({
   lidoLocator: z.string(),
   module: z.string(),
   verifier: z.string(),
+  permissionlessGate: z.string(),
 });
 
 export const DataBusConfigSchema = z.object({

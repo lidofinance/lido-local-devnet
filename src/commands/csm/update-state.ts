@@ -10,6 +10,11 @@ export const CSMUpdateState = command.cli({
 
     const jsonData = await csm.readJson(csm.config.constants.DEPLOY_CONFIG);
 
+    // NOTE: Patch for backward compatibility with CSM v1.
+    if (jsonData.PermissionlessGate === undefined) {
+      jsonData.PermissionlessGate = "0x00";
+    }
+
     await state.updateCSM(jsonData);
 
     const csmState = await state.getCSM();
@@ -31,6 +36,7 @@ export const CSMUpdateState = command.cli({
         lidoLocator: { address: csmState.lidoLocator },
         module: { address: csmState.module },
         verifier: { address: csmState.verifier },
+        permissionlessGate: { address: csmState.permissionlessGate },
       },
     };
 
