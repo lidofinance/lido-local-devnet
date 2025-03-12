@@ -10,7 +10,7 @@ const blockscout = new DevNetServiceConfig({
 
 const lidoCore = new DevNetServiceConfig({
   repository: {
-    url: "git@github.com:lidofinance/core.git",
+    url: "https://github.com/lidofinance/core.git",
     branch: "develop",
   },
   name: "lidoCore" as const,
@@ -34,7 +34,7 @@ const lidoCore = new DevNetServiceConfig({
 
 const lidoCLI = new DevNetServiceConfig({
   repository: {
-    url: "git@github.com:lidofinance/lido-cli.git",
+    url: "https://github.com/lidofinance/lido-cli.git",
     branch: "feature/devnet-command",
   },
   name: "lidoCLI" as const,
@@ -68,7 +68,7 @@ const kurtosis = new DevNetServiceConfig({
 
 const voting = new DevNetServiceConfig({
   repository: {
-    url: "git@github.com:lidofinance/scripts.git",
+    url: "https://github.com/lidofinance/scripts.git",
     branch: "feat/pectra-devnet",
   },
   name: "voting" as const,
@@ -85,7 +85,7 @@ const assertoor = new DevNetServiceConfig({
 
 const kapi = new DevNetServiceConfig({
   repository: {
-    url: "git@github.com:lidofinance/lido-keys-api.git",
+    url: "https://github.com/lidofinance/lido-keys-api.git",
     branch: "feat/devnet",
   },
   workspace: "workspaces/kapi",
@@ -111,7 +111,7 @@ const kapi = new DevNetServiceConfig({
 
 const oracle = new DevNetServiceConfig({
   repository: {
-    url: "git@github.com:lidofinance/lido-oracle.git",
+    url: "https://github.com/lidofinance/lido-oracle.git",
     branch: "feat/oracle-v5-devnet-config",
   },
   workspace: "workspaces/oracle-v5",
@@ -125,7 +125,7 @@ const oracle = new DevNetServiceConfig({
 
 const council = new DevNetServiceConfig({
   repository: {
-    url: "git@github.com:lidofinance/lido-council-daemon.git",
+    url: "https://github.com/lidofinance/lido-council-daemon.git",
     branch: "feat/devnet",
   },
   workspace: "workspaces/council",
@@ -136,7 +136,7 @@ const council = new DevNetServiceConfig({
 
 const dataBus = new DevNetServiceConfig({
   repository: {
-    url: "git@github.com:lidofinance/data-bus.git",
+    url: "https://github.com/lidofinance/data-bus.git",
     branch: "feat/devnet",
   },
   name: "dataBus" as const,
@@ -148,7 +148,7 @@ const dataBus = new DevNetServiceConfig({
 
 const dsmBots = new DevNetServiceConfig({
   repository: {
-    url: "git@github.com:lidofinance/depositor-bot.git",
+    url: "https://github.com/lidofinance/depositor-bot.git",
     branch: "feat/devnet",
   },
   workspace: "workspaces/dsm-bots",
@@ -159,7 +159,7 @@ const dsmBots = new DevNetServiceConfig({
 
 const csm = new DevNetServiceConfig({
   repository: {
-    url: "git@github.com:lidofinance/community-staking-module.git",
+    url: "https://github.com/lidofinance/community-staking-module.git",
     branch: "feat/devnet",
   },
   name: "csm" as const,
