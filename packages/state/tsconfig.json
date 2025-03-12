@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "declaration": true,
     "module": "Node16",
     "outDir": "./dist",
     "rootDir": "src",
@@ -8,14 +7,16 @@
     "target": "es2022",
     "moduleResolution": "node16",
     "resolveJsonModule": true,
-    // "emitDeclarationOnly":true,
-    // "declaration": true
-    // "baseUrl": "./src"
+    "strictNullChecks": true,
+
+    "declaration": true, 
+    "declarationMap": true, 
+    "sourceMap": true 
     
   },
   "include": ["./src/**/*"],
   "exclude": [
-      "./dist/**/*" // This is what fixed it!
+      "./dist/**/*"
     ],
   "ts-node": {
     "esm": true
