@@ -14,6 +14,9 @@ export const CSMUpdateState = command.cli({
     if (jsonData.PermissionlessGate === undefined) {
       jsonData.PermissionlessGate = "0x00";
     }
+    if (jsonData.CSEarlyAdoption === undefined) {
+      jsonData.CSEarlyAdoption = "0x00";
+    }
 
     await state.updateCSM(jsonData);
 
