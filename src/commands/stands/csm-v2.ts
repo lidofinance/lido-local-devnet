@@ -83,6 +83,7 @@ export const PectraDevNetUp = command.cli({
     logger.log("🚀 Activating CSM module...");
     await dre.runCommand(ActivateCSM, {
       stakeShareLimitBP: 10000,
+      priorityExitShareThresholdBP: 10000,
       maxDepositsPerBlock: 100,
     });
     logger.log("✅ CSM module activated.");
