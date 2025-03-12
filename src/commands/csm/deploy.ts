@@ -4,6 +4,7 @@ import { CSMInstall } from "./install.js";
 import { CSMUpdateState } from "./update-state.js";
 
 type CSMENVConfig = {
+  FOUNDRY_PROFILE: string;
   ARTIFACTS_DIR: string;
   // CHAIN: string;
   CSM_ARAGON_AGENT_ADDRESS: string;
@@ -62,6 +63,7 @@ export const DeployCSMContracts = command.cli({
     const blockscoutConfig = await state.getBlockScout();
 
     const env: CSMENVConfig = {
+      FOUNDRY_PROFILE: constants.FOUNDRY_PROFILE,
       ARTIFACTS_DIR: constants.ARTIFACTS_DIR,
       CSM_ARAGON_AGENT_ADDRESS: agent,
       CSM_FIRST_ADMIN_ADDRESS: deployer.publicKey,

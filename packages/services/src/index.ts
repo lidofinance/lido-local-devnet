@@ -164,6 +164,7 @@ const csm = new DevNetServiceConfig({
   },
   name: "csm" as const,
   constants: {
+    FOUNDRY_PROFILE: "deploy",
     DEPLOY_CONFIG: "artifacts/latest/deploy-local-devnet.json",
     UPGRADE_CONFIG: "artifacts/latest/deploy-local-devnet.json",
     VERIFIER_API_KEY: "local-testnet",
