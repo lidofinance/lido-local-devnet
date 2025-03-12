@@ -95,7 +95,7 @@ export const DeployCSMContracts = command.cli({
 
     await dre.runCommand(CSMInstall, {});
 
-    const args = ["deploy"];
+    const args = ["deploy-live-no-confirm"];
     if (params.verify) {
       args.push("--verify", "--verifier", "blockscout", "--chain", "32382");
     }
