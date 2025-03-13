@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "src/index.ts",
   "scripts": {
-    "build": "rm -rf dist && tsc -b",
+    "build": "rm -rf dist && rm -rf tsconfig.tsbuildinfo && tsc -b",
     "lint": "eslint . --ext .ts && tsc --noEmit"
   },
   "files": [

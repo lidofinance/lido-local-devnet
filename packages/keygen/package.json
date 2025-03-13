@@ -2,9 +2,10 @@
   "name": "@devnet/keygen",
   "version": "1.0.0",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
   "scripts": {
-    "build": "rm -rf dist && tsc -b",
+    "build": "rm -rf dist && rm -rf tsconfig.tsbuildinfo && tsc -b",
     "build:types": "tsc --build --emitDeclarationOnly",
     "lint": "eslint . --ext .ts && tsc --noEmit",
     "test": "node --trace-uncaught --disable-warning=ExperimentalWarning --loader ts-node/esm --test ./tests/**/*.test.ts "

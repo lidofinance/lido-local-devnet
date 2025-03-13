@@ -7,7 +7,7 @@
     "submodule": "git submodule update --init --recursive",
     "postinstall": "yarn submodule",
     "build:all": "yarn workspaces foreach -W --topological run build",
-    "build": "rm -rf dist && tsc -b",
+    "build": "rm -rf dist && rm -rf tsconfig.tsbuildinfo && tsc -b",
     "lint": "eslint . --ext .ts && tsc --noEmit",
     "docs": "yarn build:all && ./bin/run.js system docs"
   },
