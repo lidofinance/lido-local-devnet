@@ -1,3 +1,4 @@
+---
 version: '3.9'
 
 networks:
@@ -7,7 +8,7 @@ networks:
 
 services:
   lido-oracle-accounting:
-#    build: ./
+    # build: ./
     image: lidofinance/oracle:4.1.1
     platform: linux/amd64
     restart: unless-stopped
@@ -22,6 +23,8 @@ services:
       - "prometheus-job=lido-oracle-accounting"
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
+    ports:
+      - 5679:5678
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
@@ -35,8 +38,8 @@ services:
 
   lido-oracle-ejector:
     build: ./
-#    image: lidofinance/oracle:4.1.1
-#    platform: linux/amd64
+    # image: lidofinance/oracle:4.1.1
+    # platform: linux/amd64
     restart: unless-stopped
 
     networks:
@@ -50,6 +53,8 @@ services:
       - "prometheus-job=lido-oracle-ejector"
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
+    ports:
+      - 5680:5678
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
@@ -62,8 +67,8 @@ services:
 
   lido-oracle-csm:
     build: ./
-#    image: lidofinance/oracle:4.1.1
-#    platform: linux/amd64
+    # image: lidofinance/oracle:4.1.1
+    # platform: linux/amd64
     restart: unless-stopped
 
     networks:
@@ -77,6 +82,8 @@ services:
       - "prometheus-job=lido-oracle-ejector"
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
+    ports:
+      - 5681:5678
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
@@ -106,6 +113,8 @@ services:
       - "prometheus-job=lido-oracle-accounting"
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
+    ports:
+      - 5682:5678
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
@@ -132,6 +141,8 @@ services:
       - "prometheus-job=lido-oracle-ejector"
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
+    ports:
+      - 5683:5678
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
@@ -156,6 +167,8 @@ services:
       - "prometheus-job=lido-oracle-ejector"
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
+    ports:
+      - 5684:5678
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
@@ -185,6 +198,8 @@ services:
       - "prometheus-job=lido-oracle-accounting"
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
+    ports:
+      - 5685:5678
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
@@ -235,6 +250,8 @@ services:
       - "prometheus-job=lido-oracle-ejector"
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
+    ports:
+      - 5686:5678
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
