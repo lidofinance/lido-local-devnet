@@ -139,11 +139,10 @@ export const PectraDevNetUp = command.cli({
       logger.log("✅ DSM-bots service started.");
     }
 
-    // TODO: Most likely it will take N times to deposit.
     logger.log("🚀 Making deposit to CSM...");
     await dre.runCommand(LidoDeposit, {
       id: 3,
-      deposits: CSM_OPERATORS_COUNT * 25,
+      deposits: 100,
       ...depositArgs,
     });
     logger.log("✅ Deposit to CSM completed.");
@@ -153,18 +152,5 @@ export const PectraDevNetUp = command.cli({
     logger.log("✅ Validator keys added.");
 
     await dre.runCommand(KurtosisGetInfo, {});
-
-    // FIXME: Extract to a separate command.
-    const {
-      services: { lidoCLI },
-    } = dre;
-    logger.log("Getting CSM operators count");
-    await lidoCLI.sh`./run.sh csm operators`;
-    logger.log("Going through the operators");
-    for (let i = 0; i < CSM_OPERATORS_COUNT; i++) {
-      await lidoCLI.sh`./run.sh csm operator ${i}`;
-    }
-    logger.log("Getting staking modules");
-    await lidoCLI.sh`./run.sh sr modules`;
   },
 });
