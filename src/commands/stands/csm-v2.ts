@@ -48,6 +48,11 @@ export const PectraDevNetUp = command.cli({
     });
 
     await dre.runCommand(GitCheckout, {
+      service: "oracle",
+      ref: "csm-v2",
+    });
+
+    await dre.runCommand(GitCheckout, {
       service: "csm",
       ref: "deploy-devnet",
     });
