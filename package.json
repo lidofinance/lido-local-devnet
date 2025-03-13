@@ -9,8 +9,7 @@
     "build:all": "yarn workspaces foreach -W --topological run build",
     "build": "rm -rf dist && rm -rf tsconfig.tsbuildinfo && tsc -b",
     "lint": "eslint . --ext .ts && tsc --noEmit",
-    "docs": "yarn build:all && ./bin/run.js system docs",
-    "up": "./bin/run.js stands csm-v2"
+    "docs": "yarn build:all && ./bin/run.js system docs"
   },
   "workspaces": [
     "packages/*",
