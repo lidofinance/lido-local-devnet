@@ -118,7 +118,8 @@ const oracle = new DevNetServiceConfig({
   name: "oracle" as const,
   constants: {
     HASH_CONSENSUS_AO_EPOCHS_PER_FRAME: 8,
-    HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME: 8
+    HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME: 8,
+    HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME: 24
   },
   labels: {},
 });

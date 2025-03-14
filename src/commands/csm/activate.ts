@@ -47,17 +47,11 @@ export const ActivateCSM = command.cli({
     await dre.network.waitEL();
 
     const {
-      HASH_CONSENSUS_AO_EPOCHS_PER_FRAME,
-      HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME,
+      HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME
     } = oracle.config.constants;
 
-    const epochPerFrame = Math.max(
-      HASH_CONSENSUS_AO_EPOCHS_PER_FRAME,
-      HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME,
-    );
-
     const currentEpoch = await clClient.getHeadEpoch();
-    const initialEpoch = epochPerFrame + currentEpoch + 2;
+    const initialEpoch = HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME + currentEpoch + 2;
 
     const env: CSMActivateENV = {
       CS_ACCOUNTING_ADDRESS: csmState.accounting,

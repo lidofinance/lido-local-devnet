@@ -9,6 +9,7 @@ type CSMENVConfig = {
   // CHAIN: string;
   CSM_ARAGON_AGENT_ADDRESS: string;
   CSM_FIRST_ADMIN_ADDRESS: string;
+  CSM_EPOCHS_PER_FRAME: string;
   CSM_LOCATOR_ADDRESS: string;
   CSM_LOCATOR_TREASURY_ADDRESS: string;
   CSM_ORACLE_1_ADDRESS: string;
@@ -38,7 +39,7 @@ export const DeployCSMContracts = command.cli({
   },
   async handler({ params, dre, dre: { logger } }) {
     const { state, services, network } = dre;
-    const { csm } = services;
+    const { csm, oracle } = services;
     const {
       config: { constants },
     } = csm;
@@ -69,6 +70,7 @@ export const DeployCSMContracts = command.cli({
       CSM_FIRST_ADMIN_ADDRESS: deployer.publicKey,
       CSM_LOCATOR_ADDRESS: locator,
       CSM_LOCATOR_TREASURY_ADDRESS: treasury,
+      CSM_EPOCHS_PER_FRAME: oracle.config.constants.HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME.toString(),
 
       CSM_ORACLE_1_ADDRESS: oracle1.publicKey,
       CSM_ORACLE_2_ADDRESS: oracle2.publicKey,
