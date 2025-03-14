@@ -56,6 +56,7 @@ export class State extends BaseState {
         lidoLocator: "csm.LidoLocator",
         module: "csm.CSModule",
         verifier: "csm.CSVerifier",
+        permissionlessGate: "csm.PermissionlessGate",
       },
       "csm",
       CSMConfigSchema,
