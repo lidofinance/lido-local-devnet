@@ -25,9 +25,7 @@ export const OracleUp = command.cli({
       MEMBER_PRIV_KEY_1: oracle1.privateKey,
       MEMBER_PRIV_KEY_2: oracle2.privateKey,
       MEMBER_PRIV_KEY_3: oracle3.privateKey,
-      PINATA_JWT: "",
-      GW3_ACCESS_KEY: process.env.CSM_ORACLE_GW3_ACCESS_KEY ?? "",
-      GW3_SECRET_KEY: process.env.CSM_ORACLE_GW3_SECRET_KEY ?? "",
+      PINATA_JWT: process.env.CSM_ORACLE_PINATA_JWT ?? "",
       DOCKER_NETWORK_NAME: `kt-${network.name}`,
       COMPOSE_PROJECT_NAME: `oracles-${network.name}`,
     };
