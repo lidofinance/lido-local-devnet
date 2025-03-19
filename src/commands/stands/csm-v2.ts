@@ -54,7 +54,7 @@ export const PectraDevNetUp = command.cli({
 
     await dre.runCommand(GitCheckout, {
       service: "csm",
-      ref: "deploy-devnet",
+      ref: "develop",
     });
 
     await dre.runCommand(KurtosisUp, { preset: "csm-v2" });
