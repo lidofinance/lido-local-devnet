@@ -46,9 +46,7 @@ export const ActivateCSM = command.cli({
 
     await dre.network.waitEL();
 
-    const {
-      HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME
-    } = oracle.config.constants;
+    const { HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME } = oracle.config.constants;
 
     const currentEpoch = await clClient.getHeadEpoch();
     const initialEpoch = HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME + currentEpoch + 2;
@@ -58,7 +56,8 @@ export const ActivateCSM = command.cli({
       CS_MODULE_ADDRESS: csmState.module,
       CS_ORACLE_HASH_CONSENSUS_ADDRESS: csmState.hashConsensus,
       CS_STAKE_SHARE_LIMIT: params.stakeShareLimitBP.toString(),
-      CS_PRIORITY_EXIT_SHARE_THRESHOLD: params.priorityExitShareThresholdBP.toString(),
+      CS_PRIORITY_EXIT_SHARE_THRESHOLD:
+        params.priorityExitShareThresholdBP.toString(),
       CS_MAX_DEPOSITS_PER_BLOCK: params.maxDepositsPerBlock.toString(),
       // TODO: calculate it
       CS_ORACLE_INITIAL_EPOCH: initialEpoch.toString(),
