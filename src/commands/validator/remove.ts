@@ -47,6 +47,12 @@ export const ValidatorRemove = command.cli({
     await kurtosis.sh`docker exec ${id} rm -f ${filePath}`;
     await kurtosis.sh`docker exec ${id} rm -f ${lockFile}`;
 
+    await keyManager.deleteKeystores(
+      validatorsApi,
+      [existingPubKey.validating_pubkey],
+      keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
+    );
+
     await dre.runCommand(ValidatorRestart, {});
   },
 });
