@@ -1,8 +1,6 @@
 import { Params, assert, command } from "@devnet/command";
 import * as keyManager from "@devnet/key-manager-api";
 
-import { ValidatorRestart } from "./restart.js";
-
 export const ValidatorRemove = command.cli({
   description:
     "Removes a specified validator key from the validator and restarts it.",
@@ -14,6 +12,7 @@ export const ValidatorRemove = command.cli({
     params,
     dre: {
       services: { kurtosis },
+      logger,
     },
   }) {
     const { validatorsApi } = await dre.state.getChain();
@@ -44,9 +43,17 @@ export const ValidatorRemove = command.cli({
 
     const { id } = validVC[0];
 
+    logger.log("Removing keystores from the VC container");
     await kurtosis.sh`docker exec ${id} rm -f ${filePath}`;
     await kurtosis.sh`docker exec ${id} rm -f ${lockFile}`;
 
-    await dre.runCommand(ValidatorRestart, {});
+    logger.log("Removing key from Key Manager")
+    await keyManager.deleteKeystores(
+      validatorsApi,
+      [existingPubKey.validating_pubkey],
+      keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
+    );
+
+    logger.warn("Consider restarting VC manually via 'validator restart'");
   },
 });
