@@ -19,7 +19,7 @@ USAGE
 FLAGS
   --dsm              Use full DSM setup.
   --network=<value>  [default: my-devnet] Name of the network
-  --preset=<value>   [default: pectra-devnet7] Kurtosis preset name
+  --preset=<value>   [default: pectra-stable] Kurtosis preset name
   --verify           Enables verification of smart contracts during deployment.
 
 DESCRIPTION
@@ -36,7 +36,7 @@ USAGE
 
 FLAGS
   --network=<value>  [default: my-devnet] Name of the network
-  --preset=<value>   [default: pectra-devnet7] Kurtosis preset name
+  --preset=<value>   [default: pectra-stable] Kurtosis preset name
 
 DESCRIPTION
   Sets up a Pectra blockchain environment without deploying contracts.
@@ -53,7 +53,7 @@ USAGE
 FLAGS
   --dsm              Use full DSM setup.
   --network=<value>  [default: my-devnet] Name of the network
-  --preset=<value>   [default: pectra-devnet7] Kurtosis preset name
+  --preset=<value>   [default: pectra-stable] Kurtosis preset name
   --verify           Enables verification of smart contracts during deployment.
 
 DESCRIPTION
@@ -71,7 +71,7 @@ USAGE
 FLAGS
   --dsm              Use full DSM setup.
   --network=<value>  [default: my-devnet] Name of the network
-  --preset=<value>   [default: pectra-devnet7] Kurtosis preset name
+  --preset=<value>   [default: pectra-stable] Kurtosis preset name
   --verify           Enables verification of smart contracts during deployment.
 
 DESCRIPTION
