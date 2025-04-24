@@ -31,7 +31,7 @@ export const LidoDeposit = command.cli({
 
     logger.log("Submitting Ether to the protocol...");
     // TODO: Fetch the amount dynamically if required
-    await lidoCLI.sh`./run.sh lido submit 1000`;
+    await lidoCLI.sh`./run.sh lido submit 10000`;
 
     if (!params.dsm) {
       logger.log(
