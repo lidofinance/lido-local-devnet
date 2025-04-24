@@ -15,7 +15,7 @@ export const DSMBotsUp = command.cli({
       WEB3_RPC_ENDPOINTS: elPrivate,
       WALLET_PRIVATE_KEY: deployer.privateKey,
       LIDO_LOCATOR: locator,
-      DEPOSIT_CONTRACT: "0x4242424242424242424242424242424242424242",
+      DEPOSIT_CONTRACT: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
       MESSAGE_TRANSPORTS: "onchain_transport",
       ONCHAIN_TRANSPORT_ADDRESS: dataBusAddress,
       ONCHAIN_TRANSPORT_RPC_ENDPOINTS: elPrivate,

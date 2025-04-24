@@ -17,7 +17,7 @@ const lidoCore = new DevNetServiceConfig({
   constants: {
     DEPLOYED: "deployed-local-devnet.json",
     EL_NETWORK_NAME: "local-devnet",
-    DEPOSIT_CONTRACT: "0x4242424242424242424242424242424242424242",
+    DEPOSIT_CONTRACT: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
     GAS_MAX_FEE: "100",
     GAS_PRIORITY_FEE: "1",
     NETWORK: "local-devnet",
