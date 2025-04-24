@@ -17,7 +17,7 @@ export const PectraTWDevNetUp = command.cli({
     }),
     preset: Params.string({
       description: "Kurtosis preset name",
-      default: "pectra-devnet7",
+      default: "pectra-stable",
     }),
   },
   async handler({ params, dre, dre: { logger } }) {
