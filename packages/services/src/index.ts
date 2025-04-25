@@ -160,7 +160,7 @@ const dsmBots = new DevNetServiceConfig({
 const csm = new DevNetServiceConfig({
   repository: {
     url: "git@github.com:lidofinance/community-staking-module.git",
-    branch: "feat/devnet",
+    branch: "main",
   },
   name: "csm" as const,
   constants: {
