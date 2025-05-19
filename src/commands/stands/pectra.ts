@@ -45,6 +45,11 @@ export const PectraDevNetUp = command.cli({
       ref: "develop",
     });
 
+    await dre.runCommand(GitCheckout, {
+      service: "csm",
+      ref: "main",
+    });
+
     await dre.runCommand(KurtosisUp, { preset: params.preset });
     logger.log("✅ Network initialized.");
 
@@ -142,10 +147,6 @@ export const PectraDevNetUp = command.cli({
     logger.log("🚀 Adding keys to the validator...");
     await dre.runCommand(ValidatorAdd, {});
     logger.log("✅ Validator keys added.");
-
-    logger.log("🚀 Deploying new CSM Verifier...");
-    await dre.runCommand(DeployCSVerifier, deployArgs);
-    logger.log("✅ New CSM Verifier deployed.");
 
     await dre.runCommand(KurtosisGetInfo, {});
   },
