@@ -6,37 +6,34 @@ import { KurtosisUp } from "../chain/up.js";
 import { CouncilUp } from "../council/up.js";
 import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
-import { DeployCSVerifier } from "../csm/add-verifier.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
 import { DataBusDeploy } from "../data-bus/deploy.js";
 import { DSMBotsUp } from "../dsm-bots/up.js";
 import { GitCheckout } from "../git/checkout.js";
 import { KapiUp } from "../kapi/up.js";
 import { ActivateLidoProtocol } from "../lido-core/activate.js";
-import { LidoAddKeys } from "../lido-core/add-keys.js";
-import { LidoAddOperator } from "../lido-core/add-operator.js";
 import { DeployLidoContracts } from "../lido-core/deploy.js";
 import { LidoDeposit } from "../lido-core/deposit.js";
 import { GenerateLidoDevNetKeys } from "../lido-core/keys/generate.js";
 import { UseLidoDevNetKeys } from "../lido-core/keys/use.js";
 import { ReplaceDSM } from "../lido-core/replace-dsm.js";
-import { LidoSetStakingLimit } from "../lido-core/set-staking-limit.js";
 import { OracleUp } from "../oracles/up.js";
 import { ValidatorAdd } from "../validator/add.js";
+import { CSMUpdateState } from "../csm/update-state.js";
 
 export const PectraDevNetUp = command.cli({
-  description: "Base Pectra test stand.",
+  description: "CSM v2 on Pectra stand.",
   params: {
+    full: Params.boolean({
+      description:
+        "Deploys all smart contracts, not just initializes the network.",
+    }),
     verify: Params.boolean({
       description: "Enables verification of smart contracts during deployment.",
     }),
     dsm: Params.boolean({
       description: "Use full DSM setup.",
       default: false,
-    }),
-    preset: Params.string({
-      description: "Kurtosis preset name",
-      default: "pectra-stable",
     }),
   },
   async handler({ params, dre, dre: { logger } }) {
@@ -46,15 +43,30 @@ export const PectraDevNetUp = command.cli({
     });
 
     await dre.runCommand(GitCheckout, {
-      service: "csm",
-      ref: "main",
+      service: "lidoCLI",
+      ref: "devnet-csm-v2",
     });
 
-    await dre.runCommand(KurtosisUp, { preset: params.preset });
+    await dre.runCommand(GitCheckout, {
+      service: "oracle",
+      ref: "csm-v2",
+    });
+
+    await dre.runCommand(GitCheckout, {
+      service: "csm",
+      ref: "develop",
+    });
+
+    await dre.runCommand(KurtosisUp, { preset: "csm-v2" });
     logger.log("✅ Network initialized.");
 
     await dre.runCommand(BlockscoutUp, {});
     logger.log("✅ BlockScout launched for transaction visualization.");
+
+    // if (!params.full) {
+    //   await dre.runCommand(KurtosisGetInfo, {});
+    //   return;
+    // }
 
     const deployArgs = { verify: params.verify };
     const depositArgs = { dsm: params.dsm };
@@ -67,17 +79,19 @@ export const PectraDevNetUp = command.cli({
     await dre.runCommand(DeployCSMContracts, deployArgs);
     logger.log("✅ CSM contracts deployed.");
 
+    await dre.runCommand(CSMUpdateState, {});
+
     logger.log("🚀 Activating Lido Core protocol...");
     await dre.runCommand(ActivateLidoProtocol, {});
     logger.log("✅ Lido Core protocol activated.");
 
-    logger.log("🚀 Activating CSM protocol...");
+    logger.log("🚀 Activating CSM module...");
     await dre.runCommand(ActivateCSM, {
-      stakeShareLimitBP: 2000,
-      priorityExitShareThresholdBP: 2500,
-      maxDepositsPerBlock: 30,
+      stakeShareLimitBP: 10000,
+      priorityExitShareThresholdBP: 10000,
+      maxDepositsPerBlock: 100,
     });
-    logger.log("✅ CSM protocol activated.");
+    logger.log("✅ CSM module activated.");
 
     if (!params.dsm) {
       logger.log("🚀 Replacing DSM with an EOA...");
@@ -85,36 +99,25 @@ export const PectraDevNetUp = command.cli({
       logger.log("✅ DSM replaced with an EOA.");
     }
 
-    const NOR_DEVNET_OPERATOR = "devnet_nor_1";
-    const CSM_DEVNET_OPERATOR = "devnet_csm_1";
-
-    logger.log("🚀 Generating and allocating keys for NOR Module...");
-    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
-    await dre.runCommand(UseLidoDevNetKeys, { name: NOR_DEVNET_OPERATOR });
-    logger.log("✅ NOR Module keys generated and allocated.");
+    const CSM_OPERATOR_PREFIX = "devnet_csm_";
+    const CSM_OPERATORS_COUNT = 4;
 
     logger.log("🚀 Generating and allocating keys for CSM Module...");
-    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
-    await dre.runCommand(UseLidoDevNetKeys, { name: CSM_DEVNET_OPERATOR });
+    for (let i = 0; i < CSM_OPERATORS_COUNT; i++) {
+      await dre.runCommand(GenerateLidoDevNetKeys, { validators: 25 });
+      await dre.runCommand(UseLidoDevNetKeys, {
+        name: `${CSM_OPERATOR_PREFIX}${i}`,
+      });
+    }
     logger.log("✅ CSM Module keys generated and allocated.");
 
-    logger.log("🚀 Adding NOR operator...");
-    await dre.runCommand(LidoAddOperator, { name: NOR_DEVNET_OPERATOR });
-    logger.log(`✅ Operator ${NOR_DEVNET_OPERATOR} added.`);
-
-    logger.log("🚀 Adding NOR keys...");
-    await dre.runCommand(LidoAddKeys, { name: NOR_DEVNET_OPERATOR, id: 0 });
-    logger.log("✅ NOR keys added.");
-
-    logger.log("🚀 Increasing staking limit for NOR...");
-    await dre.runCommand(LidoSetStakingLimit, { operatorId: 0, limit: 30 });
-    logger.log("✅ Staking limit for NOR increased.");
-
     logger.log("🚀 Adding CSM operator with keys...");
-    await dre.runCommand(LidoAddCSMOperatorWithKeys, {
-      name: CSM_DEVNET_OPERATOR,
-    });
-    logger.log(`✅ Keys for operator ${CSM_DEVNET_OPERATOR} added.`);
+    for (let i = 0; i < CSM_OPERATORS_COUNT; i++) {
+      await dre.runCommand(LidoAddCSMOperatorWithKeys, {
+        name: `${CSM_OPERATOR_PREFIX}${i}`,
+      });
+      logger.log(`✅ Keys for operator ${CSM_OPERATOR_PREFIX}${i} added.`);
+    }
 
     logger.log("🚀 Run KAPI service.");
     await dre.runCommand(KapiUp, {});
@@ -136,12 +139,12 @@ export const PectraDevNetUp = command.cli({
       logger.log("✅ DSM-bots service started.");
     }
 
-    logger.log("🚀 Making deposit to NOR...");
-    await dre.runCommand(LidoDeposit, { id: 1, deposits: 30, ...depositArgs });
-    logger.log("✅ Deposit to NOR completed.");
-
     logger.log("🚀 Making deposit to CSM...");
-    await dre.runCommand(LidoDeposit, { id: 3, deposits: 30, ...depositArgs });
+    await dre.runCommand(LidoDeposit, {
+      id: 3,
+      deposits: 100,
+      ...depositArgs,
+    });
     logger.log("✅ Deposit to CSM completed.");
 
     logger.log("🚀 Adding keys to the validator...");
