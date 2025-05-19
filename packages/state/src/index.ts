@@ -103,7 +103,7 @@ export class State extends BaseState {
         validatorExitBus: "lidoCore.validatorsExitBusOracle.proxy.address",
         voting: "lidoCore.app:aragon-voting.proxy.address",
         treasury:
-          "lidoCore.lidoLocator.implementation.constructorArgs.0.treasury",
+          "lidoCore.withdrawalVault.implementation.constructorArgs.1",
         
         stakingRouter: "lidoCore.stakingRouter.proxy.address",
         curatedModule: "lidoCore.app:node-operators-registry.proxy.address",
