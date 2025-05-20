@@ -30,6 +30,8 @@ export class State extends BaseState {
     return this.getProperties(
       {
         clPrivate: "chain.binding.clNodesPrivate.0",
+        // clWsPrivate1: "chain.binding.clWsPrivate.1",
+        // ...
         clPublic: "chain.binding.clNodes.0",
         elPrivate: "chain.binding.elNodesPrivate.0",
         elPublic: "chain.binding.elNodes.0",

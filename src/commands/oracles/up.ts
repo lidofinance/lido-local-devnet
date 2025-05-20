@@ -1,15 +1,20 @@
 import { command } from "@devnet/command";
 
+import { GitCheckout } from "../git/checkout.js";
+
 export const OracleUp = command.cli({
   description: "Start Oracle(s)",
   params: {},
-  async handler({ dre: { state, network, services } }) {
+  async handler({ dre: { state, network, services }, dre }) {
     const { oracle } = services;
+    await dre.runCommand(GitCheckout, {
+      service: "oracle",
+      ref: "feat/oracle-v6",
+    });
 
     const { elPrivate, clPrivate } = await state.getChain();
-    // const cl1 = state.getOrError("network.binding.clNodesPrivate.1");
-    // const cl2 = state.getOrError("network.binding.clNodesPrivate.2");
-    // const name = state.getOrError("network.name");
+    // TODO: Uncomment when CL1,2,3 is available
+    // const { clPrivate1 } = await state.getChain();
 
     const { locator } = await state.getLido();
     const { module: csmModule } = await state.getCSM();
