@@ -112,9 +112,9 @@ const kapi = new DevNetServiceConfig({
 const oracle = new DevNetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/lido-oracle.git",
-    branch: "feat/oracle-v5-devnet-config",
+    branch: "feat/oracle-v6",
   },
-  workspace: "workspaces/oracle-v5",
+  workspace: "workspaces/oracle-v6",
   name: "oracle" as const,
   constants: {
     HASH_CONSENSUS_AO_EPOCHS_PER_FRAME: 8,
