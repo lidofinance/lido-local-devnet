@@ -10,6 +10,88 @@ volumes:
 
 services:
 
+  lido-oracle-accounting-v5:
+    image: lidofinance/oracle:5.1.0
+    restart: unless-stopped
+    networks:
+      - devnet
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 4G
+    labels:
+      - "prometheus-job=lido-oracle-accounting"
+      - "prometheus-endpoint=/"
+      - "prometheus-port=9000"
+    ports:
+      - 5681:5678
+    environment:
+      - "PROMETHEUS_PORT=9000"
+      - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
+      - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
+      - "KEYS_API_URI=http://keys_api:9030"
+      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_1}"
+      - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
+      - "ALLOW_REPORTING_IN_BUNKER_MODE=false"
+      - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
+    command: accounting
+
+  lido-oracle-ejector-v5:
+    image: lidofinance/oracle:5.1.0
+    restart: unless-stopped
+    networks:
+      - devnet
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 4G
+    labels:
+      - "prometheus-job=lido-oracle-ejector"
+      - "prometheus-endpoint=/"
+      - "prometheus-port=9000"
+    ports:
+      - 5682:5678
+    environment:
+      - "PROMETHEUS_PORT=9000"
+      - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
+      - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
+      - "KEYS_API_URI=http://keys_api:9030"
+      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_1}"
+      - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
+      - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
+    command: ejector
+
+  lido-oracle-csm-v5:
+    image: lidofinance/oracle:5.1.0
+    restart: unless-stopped
+    networks:
+      - devnet
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+    labels:
+      - "prometheus-job=lido-oracle-ejector"
+      - "prometheus-endpoint=/"
+      - "prometheus-port=9000"
+    ports:
+      - 5683:5678
+    environment:
+      - "PROMETHEUS_PORT=9000"
+      - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
+      - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
+      - "KEYS_API_URI=http://keys_api:9030"
+      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_1}"
+      - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
+      - "CSM_MODULE_ADDRESS=${CSM_MODULE_ADDRESS}"
+      - "CSM_ORACLE_MAX_CONCURRENCY=1"
+      - "PINATA_JWT=${PINATA_JWT}"
+      - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
+    command: csm
+
   lido-oracle-accounting-v6:
     build: ./
     restart: unless-stopped
@@ -25,17 +107,17 @@ services:
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
     ports:
-      - 5685:5678
+      - 5684:5678
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
       - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
       - "KEYS_API_URI=http://keys_api:9030"
-      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_1}"
+      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_2}"
       - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
       - "ALLOW_REPORTING_IN_BUNKER_MODE=false"
       - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
-      - "KUBO_HOST=http://ipfs:5001"
+      - "KUBO_HOST=http://ipfs"
     command: accounting
 
   lido-oracle-ejector-v6:
@@ -52,15 +134,17 @@ services:
       - "prometheus-job=lido-oracle-ejector"
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
+    ports:
+      - 5685:5678
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
       - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
       - "KEYS_API_URI=http://keys_api:9030"
-      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_1}"
+      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_2}"
       - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
       - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
-      - "KUBO_HOST=http://ipfs:5001"
+      - "KUBO_HOST=http://ipfs"
     command: ejector
 
   lido-oracle-csm-v6:
@@ -84,13 +168,13 @@ services:
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
       - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
       - "KEYS_API_URI=http://keys_api:9030"
-      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_1}"
+      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_2}"
       - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
       - "CSM_MODULE_ADDRESS=${CSM_MODULE_ADDRESS}"
       - "CSM_ORACLE_MAX_CONCURRENCY=1"
       - "PINATA_JWT=${PINATA_JWT}"
       - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
-      - "KUBO_HOST=http://ipfs:5001"
+      - "KUBO_HOST=http://ipfs"
     command: csm
 
   ipfs:

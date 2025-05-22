@@ -1,4 +1,4 @@
-# Based in branch feat/oracle-v6
+# Based on branch feat/oracle-v6
 # https://github.com/lidofinance/lido-oracle/commit/e5f44e619116ded46dc7e240ebbc57fdbb0a28cb
 #
 # Changes:
