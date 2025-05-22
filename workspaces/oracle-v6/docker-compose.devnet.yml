@@ -1,4 +1,3 @@
----
 version: '3.9'
 
 networks:
@@ -6,11 +5,13 @@ networks:
     name: ${DOCKER_NETWORK_NAME}
     external: true
 
+volumes:
+  ipfs_data:
+
 services:
-  lido-oracle-accounting:
-    # build: ./
-    image: lidofinance/oracle:4.1.1
-    platform: linux/amd64
+
+  lido-oracle-accounting-v5:
+    image: lidofinance/oracle:5.1.0
     restart: unless-stopped
     networks:
       - devnet
@@ -21,65 +22,6 @@ services:
           memory: 4G
     labels:
       - "prometheus-job=lido-oracle-accounting"
-      - "prometheus-endpoint=/"
-      - "prometheus-port=9000"
-    ports:
-      - 5679:5678
-    environment:
-      - "PROMETHEUS_PORT=9000"
-      - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
-      - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
-      - "KEYS_API_URI=http://keys_api:9030"
-      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_1}"
-      - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
-      - "ALLOW_REPORTING_IN_BUNKER_MODE=false"
-      - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
-    command: accounting
-
-  lido-oracle-ejector:
-    build: ./
-    # image: lidofinance/oracle:4.1.1
-    # platform: linux/amd64
-    restart: unless-stopped
-
-    networks:
-      - devnet
-    deploy:
-      resources:
-        limits:
-          cpus: "1"
-          memory: 4G
-    labels:
-      - "prometheus-job=lido-oracle-ejector"
-      - "prometheus-endpoint=/"
-      - "prometheus-port=9000"
-    ports:
-      - 5680:5678
-    environment:
-      - "PROMETHEUS_PORT=9000"
-      - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
-      - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
-      - "KEYS_API_URI=http://keys_api:9030"
-      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_1}"
-      - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
-      - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
-    command: ejector
-
-  lido-oracle-csm:
-    build: ./
-    # image: lidofinance/oracle:4.1.1
-    # platform: linux/amd64
-    restart: unless-stopped
-
-    networks:
-      - devnet
-    deploy:
-      resources:
-        limits:
-          cpus: "2"
-          memory: 4G
-    labels:
-      - "prometheus-job=lido-oracle-ejector"
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
     ports:
@@ -91,16 +33,13 @@ services:
       - "KEYS_API_URI=http://keys_api:9030"
       - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_1}"
       - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
-      - "CSM_MODULE_ADDRESS=${CSM_MODULE_ADDRESS}"
-      - "CSM_ORACLE_MAX_CONCURRENCY=1"
-      - "PINATA_JWT=${PINATA_JWT}"
+      - "ALLOW_REPORTING_IN_BUNKER_MODE=false"
       - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
-    command: csm
+    command: accounting
 
-  lido-oracle-accounting-v5:
-    build: ./
+  lido-oracle-ejector-v5:
+    image: lidofinance/oracle:5.1.0
     restart: unless-stopped
-
     networks:
       - devnet
     deploy:
@@ -109,7 +48,7 @@ services:
           cpus: "1"
           memory: 4G
     labels:
-      - "prometheus-job=lido-oracle-accounting"
+      - "prometheus-job=lido-oracle-ejector"
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
     ports:
@@ -119,22 +58,20 @@ services:
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
       - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
       - "KEYS_API_URI=http://keys_api:9030"
-      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_2}"
+      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_1}"
       - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
-      - "ALLOW_REPORTING_IN_BUNKER_MODE=false"
       - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
-    command: accounting
+    command: ejector
 
-  lido-oracle-ejector-v5:
-    build: ./
+  lido-oracle-csm-v5:
+    image: lidofinance/oracle:5.1.0
     restart: unless-stopped
-
     networks:
       - devnet
     deploy:
       resources:
         limits:
-          cpus: "1"
+          cpus: "2"
           memory: 4G
     labels:
       - "prometheus-job=lido-oracle-ejector"
@@ -147,33 +84,7 @@ services:
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
       - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
       - "KEYS_API_URI=http://keys_api:9030"
-      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_2}"
-      - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
-      - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
-    command: ejector
-
-  lido-oracle-csm-v5:
-    build: ./
-    restart: unless-stopped
-    networks:
-      - devnet
-    deploy:
-      resources:
-        limits:
-          cpus: "2"
-          memory: 4G
-    labels:
-      - "prometheus-job=lido-oracle-ejector"
-      - "prometheus-endpoint=/"
-      - "prometheus-port=9000"
-    ports:
-      - 5684:5678
-    environment:
-      - "PROMETHEUS_PORT=9000"
-      - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
-      - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
-      - "KEYS_API_URI=http://keys_api:9030"
-      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_2}"
+      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_1}"
       - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
       - "CSM_MODULE_ADDRESS=${CSM_MODULE_ADDRESS}"
       - "CSM_ORACLE_MAX_CONCURRENCY=1"
@@ -181,10 +92,9 @@ services:
       - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
     command: csm
 
-  lido-oracle-accounting-v5.2:
+  lido-oracle-accounting-v6:
     build: ./
     restart: unless-stopped
-
     networks:
       - devnet
     deploy:
@@ -197,22 +107,22 @@ services:
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
     ports:
-      - 5685:5678
+      - 5684:5678
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
-      - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI_2}"
+      - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
       - "KEYS_API_URI=http://keys_api:9030"
-      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_3}"
+      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_2}"
       - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
       - "ALLOW_REPORTING_IN_BUNKER_MODE=false"
       - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
+      - "KUBO_HOST=http://ipfs"
     command: accounting
 
-  lido-oracle-ejector-v5.2:
+  lido-oracle-ejector-v6:
     build: ./
     restart: unless-stopped
-
     networks:
       - devnet
     deploy:
@@ -224,17 +134,20 @@ services:
       - "prometheus-job=lido-oracle-ejector"
       - "prometheus-endpoint=/"
       - "prometheus-port=9000"
+    ports:
+      - 5685:5678
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
-      - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI_2}"
+      - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
       - "KEYS_API_URI=http://keys_api:9030"
-      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_3}"
+      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_2}"
       - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
       - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
+      - "KUBO_HOST=http://ipfs"
     command: ejector
 
-  lido-oracle-csm-v5.2:
+  lido-oracle-csm-v6:
     build: ./
     restart: unless-stopped
     networks:
@@ -253,12 +166,33 @@ services:
     environment:
       - "PROMETHEUS_PORT=9000"
       - "EXECUTION_CLIENT_URI=${EXECUTION_CLIENT_URI}"
-      - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI_2}"
+      - "CONSENSUS_CLIENT_URI=${CONSENSUS_CLIENT_URI}"
       - "KEYS_API_URI=http://keys_api:9030"
-      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_3}"
+      - "MEMBER_PRIV_KEY=${MEMBER_PRIV_KEY_2}"
       - "LIDO_LOCATOR_ADDRESS=${LIDO_LOCATOR_ADDRESS}"
       - "CSM_MODULE_ADDRESS=${CSM_MODULE_ADDRESS}"
       - "CSM_ORACLE_MAX_CONCURRENCY=1"
       - "PINATA_JWT=${PINATA_JWT}"
       - "SUBMIT_DATA_DELAY_IN_SLOTS=1"
+      - "KUBO_HOST=http://ipfs"
     command: csm
+
+  ipfs:
+    build: ./kubo
+    container_name: lido-oracle-kubo
+    networks:
+      - devnet
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2G
+    restart: unless-stopped
+    volumes:
+      - ipfs_data:/data/ipfs
+    command:
+      - daemon
+      - --migrate=true
+      - --agent-version-suffix=docker
+    environment:
+      CHAIN: artifact
