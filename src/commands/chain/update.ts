@@ -1,5 +1,7 @@
 import {assert, command} from "@devnet/command";
 
+const ALLOWED_CLS = new Set<string>(["lighthouse", "teku", "prysm"]);
+
 export const KurtosisUpdate = command.isomorphic({
   description:
     "Updates the network configuration using a specific Ethereum package in Kurtosis and stores the configuration in the local JSON database.",
@@ -63,6 +65,22 @@ export const KurtosisUpdate = command.isomorphic({
 
     assert(vcPorts !== undefined, "vc services not found in Kurtosis");
 
+    const clNodesSpecs = cl
+      .filter((c) => ALLOWED_CLS.has(c.client))
+      .map((c) => {
+        const port = c.ports.find(
+          (p) =>
+            p.privatePort === CL_PRYSM_API_PORT_NUM ||
+            p.privatePort === CL_API_PORT_NUM
+        );
+
+        return {
+          ...c,
+          ports: port ? [port] : [],
+        };
+      });
+
+
     const binding = {
       clNodes: clPorts.map((n) => n!.publicUrl),
       clNodesPrivate: clPorts.map((n) => n!.privateUrl),
@@ -73,6 +91,7 @@ export const KurtosisUpdate = command.isomorphic({
 
       elWs: wsElPorts.map((n) => n!.publicUrl),
       elWsPrivate: wsElPorts.map((n) => n!.privateUrl),
+      clNodesSpecs: clNodesSpecs,
     };
 
     await state.updateChain({

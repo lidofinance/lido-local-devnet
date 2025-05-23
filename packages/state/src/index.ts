@@ -50,8 +50,7 @@ export class State extends BaseState {
   async getNodes<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
       {
-        clPrivate: "chain.binding.clNodesPrivate",
-        elPrivate: "chain.binding.elNodesPrivate",
+        clNodesSpecs: "chain.binding.clNodesSpecs",
       },
       "chain",
       NodesChainConfigSchema,

@@ -9,8 +9,8 @@ participants_matrix:
     - cl_type: teku
       cl_image: consensys/teku:25.4.1
       use_separate_vc: true
-      #vc_extra_env_vars: { "JAVA_TOOL_OPTIONS": "-XX:UseSVE=0" }
-      #cl_extra_env_vars: { "JAVA_TOOL_OPTIONS": "-XX:UseSVE=0" }
+      vc_extra_env_vars: { "JAVA_TOOL_OPTIONS": "-XX:UseSVE=0" }
+      cl_extra_env_vars: { "JAVA_TOOL_OPTIONS": "-XX:UseSVE=0" }
 
     - cl_type: lighthouse
       cl_image: sigp/lighthouse:v7.0.0-beta.5
