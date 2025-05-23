@@ -8,6 +8,25 @@ export const BlockScoutSchema = z.object({
   api: z.string().url(),
 });
 
+export const PortSchema = z.object({
+  publicPort: z.number().optional(),
+  privatePort: z.number().optional(),
+  publicUrl: z.string().url().optional(),
+  privateUrl: z.string().url().optional(),
+});
+
+export const ContainerInfoSchema = z.object({
+  id: z.string(),
+  ip: z.string(),
+  name: z.string(),
+  client: z.string(),
+  ports: z.array(PortSchema),
+});
+
+export const NodesChainConfigSchema = z.object({
+  clNodesSpecs: z.array(ContainerInfoSchema),
+});
+
 export const ChainConfigSchema = z.object({
   clPrivate: z.string().url(),
   clPublic: z.string().url(),
