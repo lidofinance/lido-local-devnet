@@ -8,6 +8,11 @@ export const BlockScoutSchema = z.object({
   api: z.string().url(),
 });
 
+export const NodesChainConfigSchema = z.object({
+  clPrivate: z.array(z.string().url()),
+  elPrivate: z.array(z.string().url()),
+});
+
 export const ChainConfigSchema = z.object({
   clPrivate: z.string().url(),
   clPublic: z.string().url(),

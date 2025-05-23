@@ -11,7 +11,7 @@ import {
   KurtosisSchema,
   LidoConfigSchema,
   ParsedConsensusGenesisStateSchema,
-  WalletSchema,
+  WalletSchema, NodesChainConfigSchema,
 } from "./schemas.js";
 import { sharedWallet } from "./shared-wallet.js";
 import { generateKeysFromMnemonicOnce } from "./wallet/index.js";
@@ -42,6 +42,18 @@ export class State extends BaseState {
       },
       "chain",
       ChainConfigSchema,
+      must,
+    );
+  }
+
+  async getNodes<M extends boolean = true>(must: M = true as M) {
+    return this.getProperties(
+      {
+        clPrivate: "chain.binding.clNodesPrivate",
+        elPrivate: "chain.binding.elNodesPrivate",
+      },
+      "chain",
+      NodesChainConfigSchema,
       must,
     );
   }

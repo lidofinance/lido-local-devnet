@@ -12,19 +12,24 @@ export const OracleUp = command.cli({
       ref: "feat/oracle-v6",
     });
 
-    const { elPrivate, clPrivate } = await state.getChain();
-    // TODO: Uncomment when CL1,2,3 is available
-    // const { clPrivate1 } = await state.getChain();
+    const { elPrivate, clPrivate } = await state.getNodes();
 
     const { locator } = await state.getLido();
     const { module: csmModule } = await state.getCSM();
     const { oracle1, oracle2, oracle3 } = await state.getNamedWallet();
 
+    function getRandom<T>(arr: T[]): T {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
     const env = {
       CHAIN_ID: "32382",
-      EXECUTION_CLIENT_URI: elPrivate,
-      CONSENSUS_CLIENT_URI: clPrivate,
-      CONSENSUS_CLIENT_URI_2: clPrivate,
+      EXECUTION_CLIENT_URI_1: getRandom(elPrivate),
+      EXECUTION_CLIENT_URI_2: getRandom(elPrivate),
+      EXECUTION_CLIENT_URI_3: getRandom(elPrivate),
+      CONSENSUS_CLIENT_URI_1: getRandom(clPrivate),
+      CONSENSUS_CLIENT_URI_2: getRandom(clPrivate),
+      CONSENSUS_CLIENT_URI_3: getRandom(clPrivate),
       LIDO_LOCATOR_ADDRESS: locator,
       CSM_MODULE_ADDRESS: csmModule,
       MEMBER_PRIV_KEY_1: oracle1.privateKey,

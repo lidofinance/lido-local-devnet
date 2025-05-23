@@ -1,4 +1,4 @@
-import { assert, command } from "@devnet/command";
+import {assert, command} from "@devnet/command";
 
 export const KurtosisUpdate = command.isomorphic({
   description:
@@ -16,7 +16,7 @@ export const KurtosisUpdate = command.isomorphic({
       "Updating network configuration using Ethereum package in Kurtosis...",
     );
 
-    const { cl, el, vc } = await kurtosis.getDockerInfo();
+    const {cl, el, vc} = await kurtosis.getDockerInfo();
     const RPC_PORT_NUM = 8545;
     const WS_PORT_NUM = 8546;
 
@@ -31,9 +31,12 @@ export const KurtosisUpdate = command.isomorphic({
 
     assert(elPorts !== undefined, "EL services not found in Kurtosis");
 
-    const wsElPorts = el.map((n) =>
-      n.ports.find((p) => p.privatePort === WS_PORT_NUM),
-    );
+    const wsElPorts = el
+      .map((n) =>
+        // RPC_PORT_NUM - erigon
+        // WS_PORT_NUM - geth
+        n.ports.find((p) => p?.publicUrl && (p.privatePort === WS_PORT_NUM || p.privatePort === RPC_PORT_NUM))
+      )
 
     assert(wsElPorts !== undefined, "wsEl services not found in Kurtosis");
 
@@ -46,7 +49,7 @@ export const KurtosisUpdate = command.isomorphic({
     );
 
     assert(clPorts !== undefined, "cl services not found in Kurtosis");
-    
+
     const validVC = vc.filter(v => v.name.includes('teku'))
     // in kurtosis api configuration the keys are stored differently, some validators use the default key, some use a generated key, but they are stored in different places.
     // TODO: In the future, we need to either improve etherium-package or write a parser.
