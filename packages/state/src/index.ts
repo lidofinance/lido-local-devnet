@@ -10,8 +10,9 @@ import {
   DataBusConfigSchema,
   KurtosisSchema,
   LidoConfigSchema,
+  NodesChainConfigSchema,
   ParsedConsensusGenesisStateSchema,
-  WalletSchema, NodesChainConfigSchema,
+  WalletSchema,
 } from "./schemas.js";
 import { sharedWallet } from "./shared-wallet.js";
 import { generateKeysFromMnemonicOnce } from "./wallet/index.js";
@@ -118,7 +119,7 @@ export class State extends BaseState {
         voting: "lidoCore.app:aragon-voting.proxy.address",
         treasury:
           "lidoCore.withdrawalVault.implementation.constructorArgs.1",
-        
+
         stakingRouter: "lidoCore.stakingRouter.proxy.address",
         curatedModule: "lidoCore.app:node-operators-registry.proxy.address",
         acl: "lidoCore.aragon-acl.proxy.address",
