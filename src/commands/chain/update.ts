@@ -7,13 +7,13 @@ export const KurtosisUpdate = command.isomorphic({
     "Updates the network configuration using a specific Ethereum package in Kurtosis and stores the configuration in the local JSON database.",
   params: {},
   async handler({
-    dre: {
-      logger,
-      state,
-      network,
-      services: { kurtosis },
-    },
-  }) {
+                  dre: {
+                    logger,
+                    state,
+                    network,
+                    services: {kurtosis},
+                  },
+                }) {
     logger.log(
       "Updating network configuration using Ethereum package in Kurtosis...",
     );
@@ -69,9 +69,12 @@ export const KurtosisUpdate = command.isomorphic({
       .filter((c) => ALLOWED_CLS.has(c.client))
       .map((c) => {
         const port = c.ports.find(
-          (p) =>
-            p.privatePort === CL_PRYSM_API_PORT_NUM ||
-            p.privatePort === CL_API_PORT_NUM
+          (p) => {
+            if (c.client === "prysm") {
+              return p.privatePort === CL_PRYSM_API_PORT_NUM
+            }
+            return p.privatePort === CL_API_PORT_NUM
+          }
         );
 
         return {
