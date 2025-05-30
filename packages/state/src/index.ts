@@ -10,6 +10,7 @@ import {
   DataBusConfigSchema,
   KurtosisSchema,
   LidoConfigSchema,
+  NodesChainConfigSchema,
   ParsedConsensusGenesisStateSchema,
   WalletSchema,
 } from "./schemas.js";
@@ -42,6 +43,17 @@ export class State extends BaseState {
       },
       "chain",
       ChainConfigSchema,
+      must,
+    );
+  }
+
+  async getNodes<M extends boolean = true>(must: M = true as M) {
+    return this.getProperties(
+      {
+        clNodesSpecs: "chain.binding.clNodesSpecs",
+      },
+      "chain",
+      NodesChainConfigSchema,
       must,
     );
   }
@@ -106,7 +118,7 @@ export class State extends BaseState {
         voting: "lidoCore.app:aragon-voting.proxy.address",
         treasury:
           "lidoCore.withdrawalVault.implementation.constructorArgs.1",
-        
+
         stakingRouter: "lidoCore.stakingRouter.proxy.address",
         curatedModule: "lidoCore.app:node-operators-registry.proxy.address",
         acl: "lidoCore.aragon-acl.proxy.address",
