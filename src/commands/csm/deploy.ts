@@ -67,7 +67,7 @@ export const DeployCSMContracts = command.cli({
       FOUNDRY_PROFILE: constants.FOUNDRY_PROFILE,
       ARTIFACTS_DIR: constants.ARTIFACTS_DIR,
       CSM_ARAGON_AGENT_ADDRESS: agent,
-      CSM_FIRST_ADMIN_ADDRESS: deployer.publicKey,
+      CSM_FIRST_ADMIN_ADDRESS: agent,
       CSM_LOCATOR_ADDRESS: locator,
       CSM_LOCATOR_TREASURY_ADDRESS: treasury,
       CSM_EPOCHS_PER_FRAME: oracle.config.constants.HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME.toString(),
