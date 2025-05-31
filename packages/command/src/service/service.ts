@@ -1,7 +1,13 @@
 import { DevNetServiceConfig, services } from "@devnet/service";
 import chalk from "chalk";
 import { ExecaMethod, execa } from "execa";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import {
+  access,
+  constants,
+  mkdir,
+  readFile,
+  writeFile,
+} from "node:fs/promises";
 import path from "node:path";
 import * as YAML from "yaml";
 
@@ -92,6 +98,18 @@ export class DevNetService<Name extends keyof DevNetServices> {
       commandName,
       this.artifact,
     );
+  }
+
+  public async fileExists(relativePath: string): Promise<boolean> {
+    const servicePath = this.artifact.root;
+    const fullPath = path.join(servicePath, relativePath);
+
+    try {
+      await access(fullPath, constants.F_OK);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   public async getDockerInfo<M extends boolean = true>(
