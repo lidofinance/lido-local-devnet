@@ -334,14 +334,183 @@ export const Setup = command.cli({
 #### 5.1 Service Locator Pattern
 DRE provides centralized access to services through the Service Locator pattern.
 
+**Code Example:**
+```typescript
+// packages/command/src/context.ts
+export interface DevNetRuntimeEnvironment {
+  services: DevNetServiceRegistry;
+  state: State;
+  network: DevNetNetwork;
+  logger: DevNetLogger;
+}
+
+// Usage in command
+export const OracleUp = command.cli({
+  async handler({ dre }) {
+    const { services, state, logger } = dre;
+    const oracle = services.oracle;  // Service Locator in action
+    const chain = await state.getChain();
+  }
+});
+```
+
 #### 5.2 Factory Pattern
 Commands are created through factory functions to unify the API.
+
+**Code Example:**
+```typescript
+// packages/command/src/command.ts
+export const command = {
+  cli: <T extends ParamsConfig>(config: CommandConfig<T>) => {
+    return new DevNetCommand(config, 'cli');
+  },
+  
+  hidden: <T extends ParamsConfig>(config: CommandConfig<T>) => {
+    return new DevNetCommand(config, 'hidden');
+  },
+  
+  isomorphic: <T extends ParamsConfig>(config: CommandConfig<T>) => {
+    return new DevNetCommand(config, 'isomorphic');
+  }
+};
+
+// Using the factory
+export const MyCommand = command.cli({
+  description: "Deploy contracts",
+  params: { verify: Params.boolean() },
+  async handler({ dre, params }) { /* ... */ }
+});
+```
 
 #### 5.3 Repository Pattern
 State management is abstracted through a repository with typed access.
 
+**Code Example:**
+```typescript
+// packages/state/src/index.ts
+export class State extends BaseState {
+  async getLido<M extends boolean = true>(must: M = true as M) {
+    return this.getProperties(
+      {
+        accountingOracle: "lidoCore.accountingOracle.proxy.address",
+        stakingRouter: "lidoCore.stakingRouter.proxy.address",
+        // ... other properties
+      },
+      "lido",
+      LidoConfigSchema,
+      must,
+    );
+  }
+  
+  async updateLido(jsonData: unknown) {
+    await this.updateProperties("lidoCore", jsonData);
+  }
+}
+
+// Using the repository
+const lido = await dre.state.getLido();
+await dre.state.updateLido({ newContractAddress: "0x123..." });
+```
+
 #### 5.4 Command Pattern
 Each command is a self-contained unit with defined parameters and handler.
+
+**Code Example:**
+```typescript
+// src/commands/lido-core/deploy.ts
+export const DeployLidoContracts = command.cli({
+  description: "Deploy Lido contracts",
+  params: {
+    verify: Params.boolean({
+      description: "Verify contracts on block explorer",
+      default: false
+    })
+  },
+  async handler({ dre, params }) {
+    const { services, state, logger } = dre;
+    
+    // All logic encapsulated in the command
+    logger.log("🚀 Deploying Lido contracts...");
+    
+    const deployArgs = params.verify ? ["--verify"] : [];
+    await services.lidoCore.sh`npm run deploy ${deployArgs}`;
+    
+    // State update
+    const deployedContracts = await services.lidoCore.readJson("deployed.json");
+    await state.updateLido(deployedContracts);
+    
+    logger.log("✅ Lido contracts deployed successfully");
+  }
+});
+```
+
+#### 5.5 Builder Pattern
+Complex service configurations are built through Builder pattern.
+
+**Code Example:**
+```typescript
+// packages/services/src/index.ts
+export const services = {
+  oracle: {
+    name: "oracle",
+    repository: {
+      url: "https://github.com/lidofinance/lido-oracle",
+      branch: "main"
+    },
+    envs: {
+      CHAIN_ID: "31337",
+      CONSENSUS_RPC_URL: "${CL_PRIVATE_ENDPOINT}",
+      EXECUTION_RPC_URL: "${EL_PRIVATE_ENDPOINT}"
+    },
+    exposedPorts: [8080, 9090],
+    dockerLabels: {
+      "com.kurtosistech.custom.ethereum-package.service-name": "oracle",
+    },
+    constants: {
+      ORACLE_DAEMON_CONFIG_FILE: "oracle-daemon-config.json"
+    }
+  }
+} as const;
+```
+
+#### 5.6 Template Method Pattern
+Base command logic is defined in `BaseState`, concrete implementations override details.
+
+**Code Example:**
+```typescript
+// packages/state/src/base-state.ts
+export abstract class BaseState {
+  protected async getProperties<T, M extends boolean>(
+    keys: { [K in keyof T]: string },
+    group: keyof Config,
+    schema: ZodSchema<T>,
+    must: M,
+  ): Promise<M extends true ? T : Partial<T>> {
+    // Template method - common logic for all inheritors
+    const reader = await this.appState.getReader();
+    const result: Partial<T> = {};
+    const groupConfig = this.config[group] || {};
+
+    for (const key in keys) {
+      const dbPath = keys[key];
+      result[key] = (groupConfig as any)[key] ?? reader.get(dbPath);
+    }
+    
+    return schema.parse(result);
+  }
+}
+
+// Concrete implementations in State class
+export class State extends BaseState {
+  async getLido() {
+    return this.getProperties(/* Lido-specific parameters */);
+  }
+  
+  async getCSM() {
+    return this.getProperties(/* CSM-specific parameters */);
+  }
+}
+```
 
 ### 6. Docker Integration
 
