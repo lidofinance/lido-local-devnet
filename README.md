@@ -121,10 +121,14 @@ This repository provides a high-level interface for managing DevNet. However, if
 
 ---
 
+## Architecture
+
+For a comprehensive understanding of the project architecture, including the command system, services, state management, and how to extend the project, please refer to the [Architecture Guide](./ARCHITECTURE.md).
+
 ---
 
 ## Developing Your Own Commands  
 
-If you want to start developing your own commands, read the [short guide on the core API](./docs/developer/README.md).  
+If you want to start developing your own commands, read the [short guide on the core API](./docs/developer/README.md). For a deeper understanding of the architecture and design patterns, see the [Architecture Guide](./ARCHITECTURE.md).
 
 ---
