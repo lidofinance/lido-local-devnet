@@ -124,6 +124,28 @@ The state management system is based on JSON files with typed access through Zod
 - Data validation through Zod schemas
 - Separation into multiple files by purpose
 
+**config.yaml Override Logic:**
+
+When retrieving data, the system uses a cascading priority:
+1. **First checks config.yaml** - static configuration from file
+2. **Then state.json** - dynamic state written by commands
+3. **config.yaml takes precedence** - if a value exists in config, it overrides state
+
+```typescript
+// In BaseState's getProperties method
+for (const key in keys) {
+  const dbPath = keys[key];
+  // First take from config (groupConfig), then from DB (reader.get)
+  result[key] = (groupConfig as any)[key] ?? reader.get(dbPath);
+}
+```
+
+This allows:
+- Setting initial values via config.yaml
+- Overriding values in config.yaml for testing
+- Saving runtime data in state.json
+- Automatic application of config.yaml values on restart
+
 **State Files:**
 ```
 artifacts/network-name/
@@ -153,6 +175,20 @@ const wallets = await dre.state.getNamedWallet();
 - Validator data (deposit data, keystores)
 - Wallet information
 - Service metadata
+
+**State Example:**
+```yaml
+# config.yaml
+chain:
+  clPrivate: "http://localhost:4000"  # Overrides value in state.json
+
+lido:
+  # No static addresses - will be taken from state.json
+```
+
+When calling `getChain()`:
+- `clPrivate` returns from config.yaml
+- Other fields (elPrivate, elPublic, etc.) from state.json
 
 ### 3. Workflows
 
