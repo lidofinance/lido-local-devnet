@@ -1,22 +1,24 @@
-import { assert, command } from "@devnet/command";
+import {assert, command} from "@devnet/command";
+
+const ALLOWED_CLS = new Set<string>(["lighthouse", "teku", "prysm"]);
 
 export const KurtosisUpdate = command.isomorphic({
   description:
     "Updates the network configuration using a specific Ethereum package in Kurtosis and stores the configuration in the local JSON database.",
   params: {},
   async handler({
-    dre: {
-      logger,
-      state,
-      network,
-      services: { kurtosis },
-    },
-  }) {
+                  dre: {
+                    logger,
+                    state,
+                    network,
+                    services: {kurtosis},
+                  },
+                }) {
     logger.log(
       "Updating network configuration using Ethereum package in Kurtosis...",
     );
 
-    const { cl, el, vc } = await kurtosis.getDockerInfo();
+    const {cl, el, vc} = await kurtosis.getDockerInfo();
     const RPC_PORT_NUM = 8545;
     const WS_PORT_NUM = 8546;
 
@@ -31,9 +33,12 @@ export const KurtosisUpdate = command.isomorphic({
 
     assert(elPorts !== undefined, "EL services not found in Kurtosis");
 
-    const wsElPorts = el.map((n) =>
-      n.ports.find((p) => p.privatePort === WS_PORT_NUM),
-    );
+    const wsElPorts = el
+      .map((n) =>
+        // RPC_PORT_NUM - erigon
+        // WS_PORT_NUM - geth
+        n.ports.find((p) => p?.publicUrl && (p.privatePort === WS_PORT_NUM || p.privatePort === RPC_PORT_NUM))
+      )
 
     assert(wsElPorts !== undefined, "wsEl services not found in Kurtosis");
 
@@ -46,7 +51,7 @@ export const KurtosisUpdate = command.isomorphic({
     );
 
     assert(clPorts !== undefined, "cl services not found in Kurtosis");
-    
+
     const validVC = vc.filter(v => v.name.includes('teku'))
     // in kurtosis api configuration the keys are stored differently, some validators use the default key, some use a generated key, but they are stored in different places.
     // TODO: In the future, we need to either improve etherium-package or write a parser.
@@ -60,6 +65,25 @@ export const KurtosisUpdate = command.isomorphic({
 
     assert(vcPorts !== undefined, "vc services not found in Kurtosis");
 
+    const clNodesSpecs = cl
+      .filter((c) => ALLOWED_CLS.has(c.client))
+      .map((c) => {
+        const port = c.ports.find(
+          (p) => {
+            if (c.client === "prysm") {
+              return p.privatePort === CL_PRYSM_API_PORT_NUM
+            }
+            return p.privatePort === CL_API_PORT_NUM
+          }
+        );
+
+        return {
+          ...c,
+          ports: port ? [port] : [],
+        };
+      });
+
+
     const binding = {
       clNodes: clPorts.map((n) => n!.publicUrl),
       clNodesPrivate: clPorts.map((n) => n!.privateUrl),
@@ -70,6 +94,7 @@ export const KurtosisUpdate = command.isomorphic({
 
       elWs: wsElPorts.map((n) => n!.publicUrl),
       elWsPrivate: wsElPorts.map((n) => n!.privateUrl),
+      clNodesSpecs: clNodesSpecs,
     };
 
     await state.updateChain({

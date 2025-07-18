@@ -10,6 +10,7 @@ import {
   DataBusConfigSchema,
   KurtosisSchema,
   LidoConfigSchema,
+  NodesChainConfigSchema,
   ParsedConsensusGenesisStateSchema,
   WalletSchema,
 } from "./schemas.js";
@@ -30,6 +31,8 @@ export class State extends BaseState {
     return this.getProperties(
       {
         clPrivate: "chain.binding.clNodesPrivate.0",
+        // clWsPrivate1: "chain.binding.clWsPrivate.1",
+        // ...
         clPublic: "chain.binding.clNodes.0",
         elPrivate: "chain.binding.elNodesPrivate.0",
         elPublic: "chain.binding.elNodes.0",
@@ -40,6 +43,17 @@ export class State extends BaseState {
       },
       "chain",
       ChainConfigSchema,
+      must,
+    );
+  }
+
+  async getNodes<M extends boolean = true>(must: M = true as M) {
+    return this.getProperties(
+      {
+        clNodesSpecs: "chain.binding.clNodesSpecs",
+      },
+      "chain",
+      NodesChainConfigSchema,
       must,
     );
   }
@@ -103,8 +117,8 @@ export class State extends BaseState {
         validatorExitBus: "lidoCore.validatorsExitBusOracle.proxy.address",
         voting: "lidoCore.app:aragon-voting.proxy.address",
         treasury:
-          "lidoCore.lidoLocator.implementation.constructorArgs.0.treasury",
-        
+          "lidoCore.withdrawalVault.implementation.constructorArgs.1",
+
         stakingRouter: "lidoCore.stakingRouter.proxy.address",
         curatedModule: "lidoCore.app:node-operators-registry.proxy.address",
         acl: "lidoCore.aragon-acl.proxy.address",

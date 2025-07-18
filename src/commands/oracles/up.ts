@@ -1,15 +1,34 @@
 import { command } from "@devnet/command";
 
+import { GitCheckout } from "../git/checkout.js";
+
 export const OracleUp = command.cli({
   description: "Start Oracle(s)",
   params: {},
-  async handler({ dre: { state, network, services } }) {
+  async handler({ dre: { state, network, services }, dre }) {
     const { oracle } = services;
+    await dre.runCommand(GitCheckout, {
+      service: "oracle",
+      ref: "feat/oracle-v6",
+    });
 
-    const { elPrivate, clPrivate } = await state.getChain();
-    // const cl1 = state.getOrError("network.binding.clNodesPrivate.1");
-    // const cl2 = state.getOrError("network.binding.clNodesPrivate.2");
-    // const name = state.getOrError("network.name");
+    const { elPrivate } = await state.getChain();
+    const { clNodesSpecs } = await state.getNodes();
+
+    const distinctConsensusUris = Object.values(
+      Object.fromEntries(
+        new Map(
+          clNodesSpecs.map((c) => {
+            const port = c.ports.find((p) => p.privateUrl);
+            if (!port || !port.privateUrl) {
+              throw new Error(`Missing privateUrl for client: ${c.client} (${c.name})`);
+            }
+            return [c.client, port.privateUrl];
+          })
+        )
+      )
+    );
+
 
     const { locator } = await state.getLido();
     const { module: csmModule } = await state.getCSM();
@@ -17,9 +36,12 @@ export const OracleUp = command.cli({
 
     const env = {
       CHAIN_ID: "32382",
-      EXECUTION_CLIENT_URI: elPrivate,
-      CONSENSUS_CLIENT_URI: clPrivate,
-      CONSENSUS_CLIENT_URI_2: clPrivate,
+      EXECUTION_CLIENT_URI_1: elPrivate,
+      EXECUTION_CLIENT_URI_2: elPrivate,
+      EXECUTION_CLIENT_URI_3: elPrivate,
+      CONSENSUS_CLIENT_URI_1: distinctConsensusUris[0],
+      CONSENSUS_CLIENT_URI_2: distinctConsensusUris[1],
+      CONSENSUS_CLIENT_URI_3: distinctConsensusUris[2],
       LIDO_LOCATOR_ADDRESS: locator,
       CSM_MODULE_ADDRESS: csmModule,
       MEMBER_PRIV_KEY_1: oracle1.privateKey,

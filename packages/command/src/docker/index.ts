@@ -1,12 +1,14 @@
 import Docker from "dockerode";
 
-import { DevNetError } from "../error.js";
+import {DevNetError} from "../error.js";
 
 const docker = new Docker();
+
 export interface ContainerInfo {
   id: string;
   ip: string;
   name: string;
+  client: string;
   ports: {
     privatePort?: number;
     privateUrl?: string;
@@ -15,10 +17,12 @@ export interface ContainerInfo {
   }[];
 }
 
+const CLIENT_LABEL: string = "com.kurtosistech.custom.ethereum-package.client"
+
 export async function getContainersByServiceLabels<
   T extends Record<string, string>,
 >(labels: T, networkName: string): Promise<Record<keyof T, ContainerInfo[]>> {
-  const containers = await docker.listContainers({ all: true });
+  const containers = await docker.listContainers({all: true});
 
   const result = {} as Record<keyof T, ContainerInfo[]>;
 
@@ -57,6 +61,7 @@ export async function getContainersByServiceLabels<
         matchingContainers.push({
           id: containerDetails.Id,
           name: container.Names[0].replace("/", ""),
+          client: container.Labels[CLIENT_LABEL],
           ip,
           ports,
         });
@@ -102,6 +107,7 @@ export interface PublicPortInfo {
   publicPort: number;
   serviceName: string;
 }
+
 /**
  * Finds the public port and service name for a given private port and network.
  *
