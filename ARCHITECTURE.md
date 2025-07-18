@@ -434,7 +434,3 @@ artifacts/
         ├── csm/
         └── ...
 ```
-
-## Conclusion
-
-Lido Local DevNet provides a powerful and flexible architecture for local development and testing of the Lido protocol. The modular structure, strong typing, and thoughtful abstractions make the project easily extensible and maintainable.
