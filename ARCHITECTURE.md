@@ -656,7 +656,7 @@ await service.mkdirp("data/logs");
 
 **During Development:**
 - After changing TypeScript code, always run `yarn build` or `yarn build:all`
-- When changing service configuration, delete the `artifacts/network-name/services/service-name` directory to apply changes
+- When changing service configuration, delete the `artifacts/network-name/service-name` directory to apply changes
 - When changing state directly in JSON files, restart the corresponding services
 
 **Artifacts Structure:**
@@ -666,8 +666,8 @@ artifacts/
     ├── state.json              # Network state
     ├── validators.json         # Validator data
     ├── chain/                  # Kurtosis artifacts
-    └── services/               # Cloned repositories
-        ├── lidoCore/
-        ├── csm/
-        └── ...
+    ├── lidoCore/               # Lido Core service
+    ├── csm/                    # CSM service
+    ├── oracle/                 # Oracle service
+    └── ...                     # Other services
 ```
