@@ -375,9 +375,6 @@ yarn test packages/keygen
 # Chain information
 ./bin/run.js chain info
 
-# View service logs
-./bin/run.js logs <service-name>
-
 # Stop all services
 ./bin/run.js down
 ```
