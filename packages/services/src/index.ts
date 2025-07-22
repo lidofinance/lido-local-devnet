@@ -112,7 +112,7 @@ const kapi = new DevNetServiceConfig({
 const oracle = new DevNetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/lido-oracle.git",
-    branch: "feat/oracle-v6",
+    branch: "feature/oracle-v6-testnet",
   },
   workspace: "workspaces/oracle-v6",
   name: "oracle" as const,
@@ -161,7 +161,7 @@ const dsmBots = new DevNetServiceConfig({
 const csm = new DevNetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/community-staking-module.git",
-    branch: "tags/v1",
+    branch: "v1.1",
   },
   name: "csm" as const,
   constants: {
