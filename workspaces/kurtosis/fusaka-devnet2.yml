@@ -1,33 +1,35 @@
 participants_matrix:
   el:
-    - el_type: besu
-      el_image: ethpandaops/besu:fusaka-devnet-2
-    - el_type: reth
-      el_image: ethpandaops/reth:fusaka-devnet-2
-    - el_type: nimbus
-      el_image: ethpandaops/nimbus-eth1:fusaka-devnet-2
+    # - el_type: besu
+    #   el_image: ethpandaops/besu:fusaka-devnet-3
+    # - el_type: reth
+    #   el_image: ethpandaops/reth:fusaka-devnet-3
+    # - el_type: nimbus
+    #   el_image: ethpandaops/nimbus-eth1:fusaka-devnet-3
     - el_type: erigon
-      el_image: ethpandaops/erigon:fusaka-devnet-2
+      el_image: docker.ethquokkaops.io/dh/ethpandaops/erigon:fusaka-devnet-3
     - el_type: geth
-      el_image: ethpandaops/geth:fusaka-devnet-2
-    - el_type: nethermind
-      el_image: ethpandaops/nethermind:fusaka-devnet-2
+      el_image: docker.ethquokkaops.io/dh/ethpandaops/geth:fusaka-devnet-3
+      el_extra_params: [ --gcmode=archive ]
+    # - el_type: nethermind
+    #   el_image: ethpandaops/nethermind:fusaka-devnet-3
   cl:
-    # - cl_type: lighthouse
-    #   cl_image: ethpandaops/lighthouse:fusaka-devnet-2
-    #   supernode: true
+    - cl_type: lighthouse
+      cl_image: docker.ethquokkaops.io/dh/ethpandaops/lighthouse:fusaka-devnet-3
+      supernode: true
     - cl_type: prysm
-      cl_image: ethpandaops/prysm-beacon-chain:fusaka-devnet-2
+      cl_image: docker.ethquokkaops.io/dh/ethpandaops/prysm-beacon-chain:fusaka-devnet-3
       supernode: true
     - cl_type: teku
-      cl_image: ethpandaops/teku:fusaka-devnet-2
+      cl_image: docker.ethquokkaops.io/dh/ethpandaops/teku:fusaka-devnet-3
       supernode: true
+      use_separate_vc: true
     # - cl_type: grandine
-    #   cl_image: ethpandaops/grandine:fusaka-devnet-2
+    #   cl_image: ethpandaops/grandine:fusaka-devnet-3
     #   supernode: true
-    - cl_type: lodestar
-      cl_image: ethpandaops/lodestar:fusaka-devnet-2
-      supernode: true
+    # - cl_type: lodestar
+    #   cl_image: ethpandaops/lodestar:fusaka-devnet-3
+    #   supernode: true
 
 
 network_params:
@@ -53,6 +55,8 @@ network_params:
 additional_services:
   - dora
   - spamoor
+
+keymanager_enabled: true
 
 spamoor_params:
   image: ethpandaops/spamoor:master
