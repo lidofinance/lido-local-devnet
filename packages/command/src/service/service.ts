@@ -276,21 +276,14 @@ export class DevNetService<Name extends keyof DevNetServices> {
 
         if (verboseObject.type === "duration") {
           console.log();
-          // console.log(verboseObject.result.failed);
           if (verboseObject.result.failed) {
-            // console.log(verboseObject.result)
-            // shortMessage
-            // const errorMessage = verboseObject.result.stderr.replaceAll(getSeparator(color, '||'), '')
-            // console.log(`${getSeparator(color, '||')}${chalk.red(errorMessage)}`)
-            // console.log(
-            //   `${getSeparator(commandColor, "||")} ${chalk.red(verboseObject.result.shortMessage)}`,
-            // );
             console.log(`${chalk.red(verboseObject.result.shortMessage)}`);
             console.log();
-          }
 
-          // console.log(getSeparator(color, "||"));
-          // console.log();
+            if (verboseObject.result.stderr) {
+              console.log(`${chalk.red('stderr:')} ${verboseObject.result.stderr}`);
+            }
+          }
 
           const ms = Math.floor(verboseObject.result.durationMs);
           return console.log(
