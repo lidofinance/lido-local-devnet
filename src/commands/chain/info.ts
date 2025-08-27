@@ -7,15 +7,8 @@ export const KurtosisGetInfo = command.cli({
     dre: {
       logger,
       state,
-      services: { kurtosis },
     },
   }) {
-    const kurtosisInfo = await kurtosis.getDockerInfo(false);
-    if (!kurtosisInfo) {
-      logger.log(`Kurtosis service is not enabled`);
-      return;
-    }
-
     logger.log("");
     const chainServices = Object.entries(await state.getChain()).filter(
       ([k]) => !k.endsWith("Private"),
@@ -24,7 +17,6 @@ export const KurtosisGetInfo = command.cli({
       ["Service", "URL"],
       [
         ...chainServices,
-        ["dora", kurtosisInfo.dora[0].ports[0].publicUrl!],
       ],
     );
   },

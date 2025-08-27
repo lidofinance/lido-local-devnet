@@ -14,9 +14,9 @@ export const ValidatorAdd = command.cli({
       state,
     },
   }) {
-    const { validatorsApi } = await dre.state.getChain();
+    const { validatorsApiPublic } = await dre.state.getChain();
     const keystoresResponse = await keyManager.fetchKeystores(
-      validatorsApi,
+      validatorsApiPublic,
       keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
     );
 
@@ -41,7 +41,7 @@ export const ValidatorAdd = command.cli({
     const keystoresStrings = actualKeystores.map((v) => JSON.stringify(v));
     const keystoresPasswords = actualKeystores.map((_) => "12345678");
     const res = await keyManager.importKeystores(
-      validatorsApi,
+      validatorsApiPublic,
       keystoresStrings,
       keystoresPasswords,
       keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,

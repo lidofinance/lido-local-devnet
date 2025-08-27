@@ -20,19 +20,23 @@ export abstract class BaseState {
   }
 
   protected async getProperties<T, M extends boolean>(
-    keys: { [K in keyof T]: string },
+    keysOrRootKey: { [K in keyof T]: string } | string,
     group: keyof Config,
     schema: ZodSchema<T>,
     must: M,
   ): Promise<M extends true ? T : Partial<T>> {
     const reader = await this.appState.getReader();
-    const result: Partial<T> = {};
+    let result: Partial<T> = {};
     const groupConfig = this.config[group] || {};
 
-    for (const key in keys) {
-      if (Object.hasOwn(keys, key)) {
-        const dbPath = keys[key];
-        result[key] = (groupConfig as any)[key] ?? reader.get(dbPath);
+    if (typeof keysOrRootKey === "string") {
+      result = reader.get(keysOrRootKey)
+    } else {
+      for (const key in keysOrRootKey) {
+        if (Object.hasOwn(keysOrRootKey, key)) {
+          const dbPath = keysOrRootKey[key];
+          result[key] = (groupConfig as any)[key] ?? reader.get(dbPath);
+        }
       }
     }
 

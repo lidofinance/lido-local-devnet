@@ -1,4 +1,6 @@
 import { DepositData, DepositDataResult, Keystores } from "@devnet/keygen";
+import * as k8s from "@kubernetes/client-node";
+import { KubeConfig } from "@kubernetes/client-node";
 
 import { BaseState } from "./base-state.js";
 import { WALLET_KEYS_COUNT } from "./constants.js";
@@ -6,18 +8,24 @@ import {
   BlockScoutSchema,
   CSMConfigSchema,
   CSMNewVerifierSchema,
-  ChainConfigSchema,
+  ChainState,
   DataBusConfigSchema,
   KurtosisSchema,
   LidoConfigSchema,
-  NodesChainConfigSchema,
   ParsedConsensusGenesisStateSchema,
   WalletSchema,
 } from "./schemas.js";
 import { sharedWallet } from "./shared-wallet.js";
 import { generateKeysFromMnemonicOnce } from "./wallet/index.js";
 
+export { Config } from './schemas.js';
+
+export interface StateInterface extends State {
+
+}
+
 export class State extends BaseState {
+
   async getBlockScout<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
       { url: "blockscout.url", api: "blockscout.api" },
@@ -29,31 +37,9 @@ export class State extends BaseState {
 
   async getChain<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
-      {
-        clPrivate: "chain.binding.clNodesPrivate.0",
-        // clWsPrivate1: "chain.binding.clWsPrivate.1",
-        // ...
-        clPublic: "chain.binding.clNodes.0",
-        elPrivate: "chain.binding.elNodesPrivate.0",
-        elPublic: "chain.binding.elNodes.0",
-        elWsPublic: "chain.binding.elWs.0",
-        elWsPrivate: "chain.binding.elWsPrivate.0",
-        validatorsApi: "chain.binding.validatorsApi.0",
-        validatorsApiPrivate: "chain.binding.validatorsApiPrivate.0",
-      },
       "chain",
-      ChainConfigSchema,
-      must,
-    );
-  }
-
-  async getNodes<M extends boolean = true>(must: M = true as M) {
-    return this.getProperties(
-      {
-        clNodesSpecs: "chain.binding.clNodesSpecs",
-      },
       "chain",
-      NodesChainConfigSchema,
+      ChainState,
       must,
     );
   }
@@ -89,9 +75,28 @@ export class State extends BaseState {
     );
   }
 
+  // async getNodes<M extends boolean = true>(must: M = true as M) {
+  //   return this.getProperties(
+  //     {
+  //       clNodesSpecs: "chain.binding.clNodesSpecs",
+  //     },
+  //     "chain",
+  //     NodesChainConfigSchema,
+  //     must,
+  //   );
+  // }
+
   async getDepositData() {
     const currentState = await this.validators.read();
     return currentState?.depositData as ({ used?: boolean } & DepositData)[];
+  }
+
+  async getK8s<M extends boolean = true>(must: M = true as M): Promise<KubeConfig> {
+    const kc = new k8s.KubeConfig();
+    kc.loadFromDefault();
+    kc.setCurrentContext('tooling');
+
+    return kc;
   }
 
   async getKeystores() {
@@ -201,9 +206,11 @@ export class State extends BaseState {
     await this.updateProperties("blockscout", jsonData);
   }
 
-  async updateChain(jsonData: unknown) {
-    await this.updateProperties("chain", jsonData);
+  async updateChain(state: Partial<ChainState>) {
+    await this.updateProperties("chain", state);
   }
+
+
 
   async updateCSM(jsonData: unknown) {
     await this.updateProperties("csm", jsonData);

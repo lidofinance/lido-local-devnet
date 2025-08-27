@@ -27,16 +27,18 @@ export const NodesChainConfigSchema = z.object({
   clNodesSpecs: z.array(ContainerInfoSchema),
 });
 
-export const ChainConfigSchema = z.object({
+export const ChainState = z.object({
   clPrivate: z.string().url(),
   clPublic: z.string().url(),
   elPrivate: z.string().url(),
   elPublic: z.string().url(),
   elWsPublic: z.string().url(),
   elWsPrivate: z.string().url(),
-  validatorsApi: z.string().url(),
+  validatorsApiPublic: z.string().url(),
   validatorsApiPrivate: z.string().url(),
 });
+
+export type ChainState = z.infer<typeof ChainState>;
 
 export const ParsedConsensusGenesisStateSchema = z.object({
   genesisValidatorsRoot: z.string(),
@@ -97,7 +99,7 @@ export const KurtosisSchema = z
 export const WalletMnemonic = z.string();
 
 const ConfigSchema = z.object({
-  chain: ChainConfigSchema.partial().optional(),
+  chain: ChainState.partial().optional(),
   csm: CSMConfigSchema.partial().optional(),
   lido: LidoConfigSchema.partial().optional(),
   wallet: WalletSchema.optional(),
@@ -110,7 +112,7 @@ const ConfigSchema = z.object({
 });
 
 export type BlockScoutConfig = z.infer<typeof BlockScoutSchema>;
-export type ChainConfig = z.infer<typeof ChainConfigSchema>;
+export type ChainConfig = z.infer<typeof ChainState>;
 export type LidoConfig = z.infer<typeof LidoConfigSchema>;
 export type ParsedConsensusGenesisState = z.infer<
   typeof ParsedConsensusGenesisStateSchema
@@ -119,7 +121,9 @@ export type CSMConfig = z.infer<typeof CSMConfigSchema>;
 export type WalletConfig = z.infer<typeof WalletSchema>;
 export type KurtosisConfig = z.infer<typeof KurtosisSchema>;
 
-export type Config = z.infer<typeof ConfigSchema>;
+export interface Config extends z.infer<typeof ConfigSchema> {
+
+}
 
 export const ConfigValidator = {
   validate(config: unknown): Config {

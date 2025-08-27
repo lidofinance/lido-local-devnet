@@ -53,8 +53,8 @@ export const FusakaDevNetUp = command.cli({
     await dre.runCommand(KurtosisUp, { preset: params.preset });
     logger.log("✅ Network initialized.");
 
-    await dre.runCommand(BlockscoutUp, {});
-    logger.log("✅ BlockScout launched for transaction visualization.");
+    // await dre.runCommand(BlockscoutUp, {});
+    // logger.log("✅ BlockScout launched for transaction visualization.");
 
     const deployArgs = { verify: params.verify };
     const depositArgs = { dsm: params.dsm };

@@ -1,20 +1,17 @@
 import { DevNetError, Params, command } from "@devnet/command";
 
+import { K8sDoraIngressUp } from "../k8s-dora-ingress/up.js";
 import { DownloadKurtosisArtifacts } from "./artifacts.js";
-import { KurtosisUpdate } from "./update.js";
+import { K8sNodesIngressUp } from "./ingress-up.js";
+import { SyncChainState } from "./sync-chain-state.js";
+import { SyncNodesState } from "./sync-nodes-state.js";
 
 export const KurtosisUp = command.isomorphic({
   description:
     "Runs a specific Ethereum package in Kurtosis and updates local JSON database with the network information.",
   params: { preset: Params.string({ description: "Kurtosis config name." }) },
-  async handler({ dre, dre: { logger }, params: { preset } }) {
+  async handler({ dre, dre: { logger, state, services: { kurtosis } }, params: { preset } }) {
     logger.log("Running Ethereum package in Kurtosis...");
-    const { name } = dre.network;
-    const {
-      state,
-      services: { kurtosis },
-    } = dre;
-
     const { preset: configPreset } = await state.getKurtosis();
     const configFileName = `${preset ?? configPreset}.yml`;
 
@@ -30,11 +27,20 @@ export const KurtosisUp = command.isomorphic({
     logger.logJson(file);
 
     await kurtosis.sh`kurtosis run
-                        --enclave ${name} 
-                        github.com/ethpandaops/ethereum-package 
+                        --enclave ${dre.network.name}
+                        github.com/ethpandaops/ethereum-package
                         --args-file ${configFileName}`;
 
-    await dre.runCommand(KurtosisUpdate, {});
+    const sleep = (timeoutMs: number) => {
+      return new Promise((resolve) => setTimeout(resolve, timeoutMs));
+    };
+
+    await sleep(5000);
+
+    await dre.runCommand(SyncNodesState, {});
+    await dre.runCommand(K8sNodesIngressUp, {});
+    await dre.runCommand(SyncChainState, {});
     await dre.runCommand(DownloadKurtosisArtifacts, {});
+    await dre.runCommand(K8sDoraIngressUp, {});
   },
 });
