@@ -6,8 +6,9 @@ import { ZodError } from "zod";
 import { DEFAULT_NETWORK_NAME } from "./constants.js";
 import { CustomDevNetContext, DevNetContext } from "./context.js";
 import { DevNetError } from "./error.js";
+import { CustomDevNetExtension } from "./extension.js";
 import { string } from "./params.js";
-import { DevNetRuntimeEnvironment } from "./runtime-env.js";
+import { DevNetRuntimeEnvironment, DevNetRuntimeEnvironmentInterface } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
 
 export function formatZodErrors(error: ZodError): string[] {
@@ -139,17 +140,33 @@ export type InferredFlags<T> = T extends FlagInput<infer F> ? F : unknown;
 
 type CommandOptions<F extends Record<string, any>> = {
   description: string;
+  extensions?: CustomDevNetExtension[],
   handler: (ctx: CustomDevNetContext<F, typeof DevNetCommand>) => Promise<void>;
   params: F;
 };
 
 export type FactoryResult<F extends Record<string, any>> = {
-  exec(dre: DevNetRuntimeEnvironment, params: InferredFlags<F>): Promise<void>;
+  exec(dre: DevNetRuntimeEnvironmentInterface, params: InferredFlags<F>): Promise<void>;
 } & { _internalParams: InferredFlags<F> } & typeof DevNetCommand;
+
+const extensions: CustomDevNetExtension[] = [];
+
+const applyExtensions = (dre: DevNetRuntimeEnvironmentInterface) => {
+  dre.logger.log(`Applying extensions`);
+  extensions?.forEach(extension => {
+    // if (!applyedExtensions.has(extension)) {
+      extension(dre);
+      // applyedExtensions.set(extension, true);
+      dre.logger.log(`  [${extension.name}] applied`);
+    // }
+  });
+};
 
 function isomorphic<F extends Record<string, any>>(
   options: CommandOptions<F>,
 ): FactoryResult<F> {
+  extensions.push(...options.extensions ?? []);
+
   class WrappedCommand extends DevNetCommand {
     static description = options.description;
     static flags = {
@@ -186,6 +203,7 @@ function isomorphic<F extends Record<string, any>>(
     }
 
     static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {
+      applyExtensions(ctx.dre);
       await options.handler(ctx);
     }
   }
@@ -195,6 +213,8 @@ function isomorphic<F extends Record<string, any>>(
 function cli<F extends Record<string, any>>(
   options: CommandOptions<F>,
 ): FactoryResult<F> {
+  extensions.push(...options.extensions ?? []);
+
   class WrappedCommand extends DevNetCommand {
     static description = options.description;
     static flags = {
@@ -231,6 +251,8 @@ function cli<F extends Record<string, any>>(
     }
 
     static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {
+      applyExtensions(ctx.dre);
+
       await options.handler(ctx);
     }
   }
@@ -240,6 +262,8 @@ function cli<F extends Record<string, any>>(
 function hidden<F extends Record<string, any>>(
   options: CommandOptions<F>,
 ): FactoryResult<F> {
+  extensions.push(...options.extensions ?? []);
+
   class WrappedCommand extends DevNetCommand {
     static description = options.description;
     static flags = {
@@ -277,6 +301,8 @@ function hidden<F extends Record<string, any>>(
     }
 
     static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {
+      applyExtensions(ctx.dre);
+
       await options.handler(ctx);
     }
   }

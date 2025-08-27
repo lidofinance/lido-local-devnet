@@ -1,0 +1,41 @@
+import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Config, StateInterface } from "@devnet/state";
+import { z } from "zod";
+
+
+// augmenting the StateInterface
+declare module "@devnet/state" {
+  export interface StateInterface {
+    getDora<M extends boolean = true>(
+      must?: M,
+    ): Promise<M extends true ? DoraState : Partial<DoraState>>;
+    updateDora(state: DoraState): Promise<void>;
+  }
+
+  export interface Config {
+    dora: DoraState;
+  }
+}
+
+export const DoraState = z.object({
+  url: z.string().url(),
+  k8sIngressName: z.string(),
+});
+
+export type DoraState = z.infer<typeof DoraState>;
+
+export const doraExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
+  dre.state.updateDora = (async function (state: DoraState) {
+    await dre.state.updateProperties("dora", state);
+  });
+
+  dre.state.getDora = (async function <M extends boolean = true>(must: M = true as M) {
+    return dre.state.getProperties(
+      "dora",
+      "dora",
+      DoraState,
+      must,
+    );
+  });
+};

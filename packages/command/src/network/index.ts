@@ -1,5 +1,5 @@
 import { BeaconClient } from "@devnet/cl-client";
-import { State } from "@devnet/state";
+import { State, StateInterface } from "@devnet/state";
 import {
   AbstractSigner,
   JsonRpcProvider,
@@ -14,8 +14,8 @@ import { DevNetLogger } from "../logger.js";
 export class DevNetDRENetwork {
   name: string;
   private logger: DevNetLogger;
-  private state: State;
-  constructor(network: string, state: State, logger: DevNetLogger) {
+  private state: StateInterface;
+  constructor(network: string, state: StateInterface, logger: DevNetLogger) {
     this.name = network;
     this.state = state;
     this.logger = logger;

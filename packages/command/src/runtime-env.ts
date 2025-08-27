@@ -1,4 +1,4 @@
-import { State } from "@devnet/state";
+import { State, StateInterface } from "@devnet/state";
 import { Config as OclifConfig } from "@oclif/core";
 import { readFile, rm } from "node:fs/promises";
 import * as YAML from "yaml";
@@ -13,11 +13,29 @@ import { DevNetServiceRegistry } from "./service/service-registry.js";
 export const loadUserConfig = async () =>
   YAML.parse(await readFile(USER_CONFIG_PATH, "utf-8"));
 
-export class DevNetRuntimeEnvironment {
+export interface DevNetRuntimeEnvironmentInterface {
+  clean(): Promise<void>;
+  clone(commandName: string): DevNetRuntimeEnvironmentInterface;
+  readonly logger: DevNetLogger;
+  readonly network: DevNetDRENetwork;
+
+  runCommand<
+    F extends Record<string, any>,
+    CMD extends FactoryResult<F>,
+  >(cmd: CMD, args: CMD["_internalParams"]): Promise<void>;
+
+  runHooks(): Promise<void>;
+
+  readonly services: DevNetServiceRegistry["services"];
+
+  readonly state: StateInterface
+}
+
+export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterface {
   public readonly logger: DevNetLogger;
   public readonly network: DevNetDRENetwork;
   public readonly services: DevNetServiceRegistry["services"];
-  public readonly state: State;
+  public readonly state: StateInterface;
 
   private readonly oclifConfig: OclifConfig;
 
@@ -49,7 +67,7 @@ export class DevNetRuntimeEnvironment {
     network: string,
     commandName: string,
     oclifConfig: OclifConfig,
-  ) {
+  ): Promise<DevNetRuntimeEnvironmentInterface> {
     const logger = new DevNetLogger(network, commandName);
     const userConfig = await loadUserConfig().catch(() =>
       console.log("User config not found, use empty object"),
@@ -84,7 +102,7 @@ export class DevNetRuntimeEnvironment {
     await rm(this.registry.root, { recursive: true, force: true });
   }
 
-  public clone(commandName: string) {
+  public clone(commandName: string): DevNetRuntimeEnvironmentInterface {
     const newLogger = new DevNetLogger(this.network.name, commandName);
     return new DevNetRuntimeEnvironment(
       this.network.name,
@@ -98,7 +116,7 @@ export class DevNetRuntimeEnvironment {
   public runCommand<
     F extends Record<string, any>,
     CMD extends FactoryResult<F>,
-  >(cmd: CMD, args: CMD["_internalParams"]) {
+  >(cmd: CMD, args: CMD["_internalParams"]): Promise<void> {
     return cmd.exec(this, args);
   }
 

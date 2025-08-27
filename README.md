@@ -26,6 +26,9 @@ Lido Local DevNet is a powerful tool for deploying and testing the Lido protocol
 - **Kurtosis** ([Install Kurtosis](https://www.kurtosistech.com/))  
 - **Foundry tools** ([Install Foundry](https://book.getfoundry.sh/getting-started/installation))  
 - **Just** ([Install Just](https://github.com/casey/just))  
+- **Make** 4+  
+- **Kubectl** v1.32.7 (for k8s deployments)
+- **Helm** 3.17+ (for k8s deployments) 
 
 ---
 

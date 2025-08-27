@@ -51,6 +51,7 @@ export const DeployLidoContracts = command.cli({
       vesting: "820000000000000000000000",
     });
 
+
     const deployEnv: DeployEnvRequired = {
       DEPLOYER: deployer.publicKey,
       // TODO: get DEPOSIT_CONTRACT from state

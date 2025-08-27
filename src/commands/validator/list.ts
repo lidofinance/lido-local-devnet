@@ -5,9 +5,9 @@ export const ValidatorList = command.cli({
   description: "Lists all validator keystores in the system",
   params: {},
   async handler({ dre: { logger, state } }) {
-    const { validatorsApi } = await state.getChain();
+    const { validatorsApiPublic } = await state.getChain();
     const keystoresResponse = await keyManager.fetchKeystores(
-      validatorsApi,
+      validatorsApiPublic,
       keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
     );
 

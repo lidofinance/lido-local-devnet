@@ -196,4 +196,8 @@ export const services = {
   dsmBots,
 };
 
+export interface Services {
+  kurtosis: typeof kurtosis,
+}
+
 export { DevNetServiceConfig } from "./service.js";
