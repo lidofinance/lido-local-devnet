@@ -1,5 +1,7 @@
 import { BeaconClient } from "@devnet/cl-client";
+import { DevNetLogger } from "@devnet/logger";
 import { State, StateInterface } from "@devnet/state";
+import { assert } from "@devnet/utils";
 import {
   AbstractSigner,
   JsonRpcProvider,
@@ -9,8 +11,6 @@ import {
   parseEther,
 } from "ethers";
 
-import { assert } from "../assert.js";
-import { DevNetLogger } from "@devnet/logger";
 export class DevNetDRENetwork {
   name: string;
   private logger: DevNetLogger;

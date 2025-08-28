@@ -1,4 +1,5 @@
-import { assert, command } from "@devnet/command";
+import { command } from "@devnet/command";
+import { assert } from "@devnet/utils";
 
 export const ValidatorRestart = command.cli({
   description: "Restarts the Teku validator client.",

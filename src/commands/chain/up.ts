@@ -1,4 +1,5 @@
-import { DevNetError, Params, command } from "@devnet/command";
+import { Params, command } from "@devnet/command";
+import { DevNetError } from "@devnet/utils";
 
 import { K8sDoraIngressUp } from "../k8s-dora-ingress/up.js";
 import { DownloadKurtosisArtifacts } from "./artifacts.js";

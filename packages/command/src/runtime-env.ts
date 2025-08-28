@@ -1,14 +1,14 @@
+import { DevNetLogger } from "@devnet/logger";
+import { DevNetServiceRegistry } from "@devnet/service";
 import { State, StateInterface } from "@devnet/state";
+import { assert } from "@devnet/utils";
 import { Config as OclifConfig } from "@oclif/core";
 import { readFile, rm } from "node:fs/promises";
 import * as YAML from "yaml";
 
-import { assert } from "./assert.js";
 import { FactoryResult } from "./command.js";
 import { USER_CONFIG_PATH } from "./constants.js";
-import { DevNetLogger } from "@devnet/logger";
 import { DevNetDRENetwork } from "./network/index.js";
-import { DevNetServiceRegistry } from "./service/service-registry.js";
 
 export const loadUserConfig = async () =>
   YAML.parse(await readFile(USER_CONFIG_PATH, "utf-8"));

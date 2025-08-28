@@ -1,5 +1,17 @@
+import {
+  ContainerInfo,
+  PublicPortInfo,
+  getContainersByServiceLabels,
+  getContainersByServiceLabelsOrNull,
+  getServiceInfo,
+  getServiceInfoByLabel,
+} from "@devnet/docker";
 import { DevNetLogger } from "@devnet/logger";
-import { EmbeddedServicesConfigs, services } from "@devnet/service";
+import {
+  applyColor,
+  getCachedColor,
+} from "@devnet/ui";
+import { assert } from "@devnet/utils";
 import chalk from "chalk";
 import { ExecaMethod, execa } from "execa";
 import {
@@ -12,21 +24,7 @@ import {
 import path from "node:path";
 import * as YAML from "yaml";
 
-import { assert } from "../assert.js";
-import {
-  ContainerInfo,
-  PublicPortInfo,
-  getContainersByServiceLabels,
-  getContainersByServiceLabelsOrNull,
-  getServiceInfo,
-  getServiceInfoByLabel,
-} from "../docker/index.js";
-import {
-  applyColor,
-  getCachedColor,
-  // getSeparator,
-  // transformCMDOutput,
-} from "../ui.js";
+import { services } from "./embedded/index.js";
 import { ServiceArtifact } from "./service-artifact.js";
 import { DevNetServicesConfigs } from "./services-configs.js";
 

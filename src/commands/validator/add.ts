@@ -1,5 +1,6 @@
-import { assert, command } from "@devnet/command";
+import { command } from "@devnet/command";
 import * as keyManager from "@devnet/key-manager-api";
+import { assert } from "@devnet/utils";
 
 import { ValidatorRestart } from "./restart.js";
 

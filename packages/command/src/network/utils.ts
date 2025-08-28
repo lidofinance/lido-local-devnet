@@ -5,7 +5,7 @@ import {
   parseEther,
 } from "ethers";
 
-import { assert } from "../assert.js";
+import { assert } from "@devnet/utils";
 
 interface TransactionDetails {
   amount: string;
