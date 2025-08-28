@@ -1,4 +1,4 @@
-// import type { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
+import { DevNetService } from "./devnet-service.js";
 
-export type ServiceGetter =
-  (dre: any) => (Promise<unknown> | unknown)
+export type ServiceGetter<Name extends string > =
+  (dre: DevNetService<Name & any>) => (Promise<unknown> | unknown)

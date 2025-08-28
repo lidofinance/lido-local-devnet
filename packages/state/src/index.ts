@@ -1,6 +1,4 @@
 import { DepositData, DepositDataResult, Keystores } from "@devnet/keygen";
-import * as k8s from "@kubernetes/client-node";
-import { KubeConfig } from "@kubernetes/client-node";
 
 import { BaseState } from "./base-state.js";
 import { WALLET_KEYS_COUNT } from "./constants.js";
@@ -21,7 +19,7 @@ import { generateKeysFromMnemonicOnce } from "./wallet/index.js";
 export { Config } from './schemas.js';
 
 export interface StateInterface extends State {
-
+  // augmented in user code
 }
 
 export class State extends BaseState {
@@ -74,17 +72,6 @@ export class State extends BaseState {
       must,
     );
   }
-
-  // async getNodes<M extends boolean = true>(must: M = true as M) {
-  //   return this.getProperties(
-  //     {
-  //       clNodesSpecs: "chain.binding.clNodesSpecs",
-  //     },
-  //     "chain",
-  //     NodesChainConfigSchema,
-  //     must,
-  //   );
-  // }
 
   async getDepositData() {
     const currentState = await this.validators.read();

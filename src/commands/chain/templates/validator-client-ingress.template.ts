@@ -22,7 +22,7 @@ export const validatorClientIngressTmpl =  async (
       ingressClassName: "public",
       rules: [
         {
-          host: "hr6vb81d1ndsx-validator.fusaka-devnet.valset-02.testnet.fi",
+          host: `${process.env.SECRET_INGRESS_HOST_PREFIX}-validator.fusaka-devnet.valset-02.testnet.fi`,
           http: {
             paths: [
               {

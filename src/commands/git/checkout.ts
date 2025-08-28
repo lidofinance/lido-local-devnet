@@ -1,5 +1,5 @@
 import { Params, command } from "@devnet/command";
-import { services } from "@devnet/service";
+import { serviceConfigs } from "@devnet/service";
 import { DevNetError } from "@devnet/utils";
 
 export const GitCheckout = command.cli({
@@ -7,7 +7,7 @@ export const GitCheckout = command.cli({
   params: {
     service: Params.option({
       description: "Name of one of the existing services.",
-      options: Object.keys(services) as (keyof typeof services)[],
+      options: Object.keys(serviceConfigs) as (keyof typeof serviceConfigs)[],
       required: true,
     })(),
     ref: Params.string({

@@ -1,14 +1,17 @@
 import { DevNetLogger } from "@devnet/logger";
-import { DevNetServiceRegistry } from "@devnet/service";
+import { DevnetServiceRegistry } from "@devnet/service";
 import { State, StateInterface } from "@devnet/state";
 import { assert } from "@devnet/utils";
 import { Config as OclifConfig } from "@oclif/core";
+import * as dotenv from "dotenv";
 import { readFile, rm } from "node:fs/promises";
 import * as YAML from "yaml";
 
 import { FactoryResult } from "./command.js";
 import { USER_CONFIG_PATH } from "./constants.js";
 import { DevNetDRENetwork } from "./network/index.js";
+
+dotenv.config({ path: '.env' });
 
 export const loadUserConfig = async () =>
   YAML.parse(await readFile(USER_CONFIG_PATH, "utf-8"));
@@ -18,7 +21,6 @@ export interface DevNetRuntimeEnvironmentInterface {
   clone(commandName: string): DevNetRuntimeEnvironmentInterface;
   readonly logger: DevNetLogger;
   readonly network: DevNetDRENetwork;
-
   runCommand<
     F extends Record<string, any>,
     CMD extends FactoryResult<F>,
@@ -26,7 +28,7 @@ export interface DevNetRuntimeEnvironmentInterface {
 
   runHooks(): Promise<void>;
 
-  readonly services: DevNetServiceRegistry["services"];
+  readonly services: DevnetServiceRegistry["services"];
 
   readonly state: StateInterface
 }
@@ -34,17 +36,17 @@ export interface DevNetRuntimeEnvironmentInterface {
 export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterface {
   public readonly logger: DevNetLogger;
   public readonly network: DevNetDRENetwork;
-  public readonly services: DevNetServiceRegistry["services"];
+  public readonly services: DevnetServiceRegistry["services"];
   public readonly state: StateInterface;
 
   private readonly oclifConfig: OclifConfig;
 
-  private readonly registry: DevNetServiceRegistry;
+  private readonly registry: DevnetServiceRegistry;
 
   constructor(
     network: string,
     rawConfig: unknown,
-    registry: DevNetServiceRegistry,
+    registry: DevnetServiceRegistry,
     logger: DevNetLogger,
     oclifConfig: OclifConfig,
   ) {
@@ -76,7 +78,7 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
     const networkConfig =
       userConfig?.networks?.find((net: any) => net?.name === network) ?? {};
 
-    const registry = await DevNetServiceRegistry.create(
+    const registry = await DevnetServiceRegistry.create(
       network,
       commandName,
       logger,

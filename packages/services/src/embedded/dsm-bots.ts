@@ -1,6 +1,6 @@
-import { DevNetServiceConfig } from "../service-config.js";
+import { DevnetServiceConfig } from "../devnet-service-config.js";
 
-export const dsmBots = new DevNetServiceConfig({
+export const dsmBots = new DevnetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/depositor-bot.git",
     branch: "feat/devnet",

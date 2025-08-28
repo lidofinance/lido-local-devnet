@@ -1,6 +1,6 @@
-import { DevNetServiceConfig } from "../service-config.js";
+import { DevnetServiceConfig } from "../devnet-service-config.js";
 
-export const assertoor = new DevNetServiceConfig({
+export const assertoor = new DevnetServiceConfig({
   workspace: "workspaces/assertoor",
   name: "assertoor" as const,
   constants: {},

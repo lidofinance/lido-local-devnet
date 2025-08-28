@@ -1,6 +1,6 @@
-import { DevNetServiceConfig } from "../service-config.js";
+import { DevnetServiceConfig } from "../devnet-service-config.js";
 
-export const csm = new DevNetServiceConfig({
+export const csm = new DevnetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/community-staking-module.git",
     branch: "v1.1",

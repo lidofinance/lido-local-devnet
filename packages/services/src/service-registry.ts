@@ -1,14 +1,14 @@
 import { DevNetLogger } from "@devnet/logger";
-import { services } from "@devnet/service";
+import { serviceConfigs } from "@devnet/service";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 
 import { ARTIFACTS_ROOT } from "./constants.js";
-import { DevNetService } from "./service.js";
+import { DevNetService } from "./devnet-service.js";
 import { DevNetServicesConfigs } from "./services-configs.js";
 
 
-export class DevNetServiceRegistry {
+export class DevnetServiceRegistry {
   protected network: string;
   public readonly root: string;
   public readonly services: { [K in keyof DevNetServicesConfigs]: DevNetService<K> };
@@ -26,12 +26,12 @@ export class DevNetServiceRegistry {
     network: string,
     commandName: string,
     logger: DevNetLogger,
-  ): Promise<DevNetServiceRegistry> {
+  ): Promise<DevnetServiceRegistry> {
     await this.createRootDir(network);
     const rootDir = this.getRoot(network);
 
     const servicesList = await Promise.all(
-      Object.entries(services).map(async ([key]) => [
+      Object.entries(serviceConfigs).map(async ([key]) => [
         key,
         await DevNetService.create(
           rootDir,
@@ -43,7 +43,7 @@ export class DevNetServiceRegistry {
       ]),
     );
 
-    return new DevNetServiceRegistry(
+    return new DevnetServiceRegistry(
       network,
       Object.fromEntries(servicesList) as {
         [K in keyof DevNetServicesConfigs]: DevNetService<K>;
@@ -74,6 +74,6 @@ export class DevNetServiceRegistry {
         service.clone(commandName, logger),
       ])
     ) as { [K in keyof DevNetServicesConfigs]: DevNetService<K> };
-    return new DevNetServiceRegistry(this.network, clonedServices);
+    return new DevnetServiceRegistry(this.network, clonedServices);
   }
 }
