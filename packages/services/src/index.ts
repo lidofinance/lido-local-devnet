@@ -1,4 +1,8 @@
 import { DevNetServiceConfig } from "./service.js";
+import { kurtosis } from "./kurtosis.js";
+import { lidoCLI } from "./lido-cli.js";
+import { council } from "./council-daemon.js";
+import { lidoCore } from "./lido-core.js";
 
 const blockscout = new DevNetServiceConfig({
   workspace: "workspaces/blockscout",
@@ -8,63 +12,9 @@ const blockscout = new DevNetServiceConfig({
   labels: { blockscout: "devnet_service_name=blockscout" },
 });
 
-const lidoCore = new DevNetServiceConfig({
-  repository: {
-    url: "https://github.com/lidofinance/core.git",
-    branch: "develop",
-  },
-  name: "lidoCore" as const,
-  constants: {
-    DEPLOYED: "deployed-local-devnet.json",
-    EL_NETWORK_NAME: "local-devnet",
-    DEPOSIT_CONTRACT: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
-    GAS_MAX_FEE: "100",
-    GAS_PRIORITY_FEE: "1",
-    NETWORK: "local-devnet",
-    NETWORK_STATE_DEFAULTS_FILE:
-      "scripts/scratch/deployed-testnet-defaults.json",
-    NETWORK_STATE_FILE: `deployed-local-devnet.json`,
-    SLOTS_PER_EPOCH: "32",
-  },
-  hooks: {
-    install: "lido-core:install",
-  },
-  labels: {},
-});
 
-const lidoCLI = new DevNetServiceConfig({
-  repository: {
-    url: "https://github.com/lidofinance/lido-cli.git",
-    branch: "feature/devnet-command",
-  },
-  name: "lidoCLI" as const,
-  constants: {
-    DEPLOYED_NETWORK_CONFIG_PATH: "configs/deployed-local-devnet.json",
-    DEPLOYED_NETWORK_CONFIG_NAME: "deployed-local-devnet.json",
-    DEPLOYED_NETWORK_CONFIG_EXTRA_PATH:
-      "configs/extra-deployed-local-devnet.json",
-    ENV_CONFIG_PATH: ".env",
-  },
-  env: {
-    LIDO_CLI_NON_INTERACTIVE: "true",
-  },
-  hooks: {
-    install: "lido-cli:install",
-  },
-  labels: {},
-});
 
-const kurtosis = new DevNetServiceConfig({
-  workspace: "workspaces/kurtosis",
-  name: "kurtosis" as const,
-  constants: {},
-  labels: {
-    dora: "service_name=dora",
-    el: "com.kurtosistech.custom.ethereum-package.client-type=execution",
-    cl: "com.kurtosistech.custom.ethereum-package.client-type=beacon",
-    vc: "com.kurtosistech.custom.ethereum-package.client-type=validator",
-  },
-});
+
 
 const voting = new DevNetServiceConfig({
   repository: {
@@ -121,17 +71,6 @@ const oracle = new DevNetServiceConfig({
     HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME: 8,
     HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME: 24
   },
-  labels: {},
-});
-
-const council = new DevNetServiceConfig({
-  repository: {
-    url: "https://github.com/lidofinance/lido-council-daemon.git",
-    branch: "feat/devnet",
-  },
-  workspace: "workspaces/council",
-  name: "council" as const,
-  constants: {},
   labels: {},
 });
 

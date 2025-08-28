@@ -1,5 +1,6 @@
 import { command } from "@devnet/command";
-import { SyncNodesState } from "./sync-nodes-state.js";
+
+import { K8sDoraIngressDown } from "../k8s-dora-ingress/down.js";
 import { K8sNodesIngressDown } from "./ingress-down.js";
 
 export const KurtosisCleanUp = command.isomorphic({
@@ -18,6 +19,7 @@ export const KurtosisCleanUp = command.isomorphic({
     logger.log("Removing K8s Nodes Ingress...");
 
     await dre.runCommand(K8sNodesIngressDown, {});
+    await dre.runCommand(K8sDoraIngressDown, {});
 
     logger.log("Destroying Kurtosis enclave...");
 

@@ -17,22 +17,28 @@ declare module "@devnet/state" {
 }
 
 export const NodesState = z.object({
-  el: z.object({
-    client: z.string(),
-    service: z.string(),
-    rpcPort: z.number(),
-    wsPort: z.number(),
-  }),
-  cl: z.object({
-    client: z.string(),
-    service: z.string(),
-    httpPort: z.number(),
-  }),
-  vc: z.object({
-    client: z.string(),
-    service: z.string(),
-    httpValidatorPort: z.number(),
-  }),
+  el: z.array(
+    z.object({
+      clientType: z.string(),
+      k8sService: z.string(),
+      rpcPort: z.number(),
+      wsPort: z.number(),
+    })
+  ).nonempty(),
+  cl: z.array(
+    z.object({
+      clientType: z.string(),
+      k8sService: z.string(),
+      httpPort: z.number(),
+    }),
+  ).nonempty(),
+  vc: z.array(
+    z.object({
+      clientType: z.string(),
+      k8sService: z.string(),
+      httpValidatorPort: z.number(),
+    }),
+  ).nonempty(),
 });
 
 export type NodesState = z.infer<typeof NodesState>;

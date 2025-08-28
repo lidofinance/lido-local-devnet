@@ -56,8 +56,8 @@ export const FusakaDevNetUp = command.cli({
     // await dre.runCommand(BlockscoutUp, {});
     // logger.log("✅ BlockScout launched for transaction visualization.");
 
-    const deployArgs = { verify: params.verify };
-    const depositArgs = { dsm: params.dsm };
+    const deployArgs = { verify: false };
+    const depositArgs = { dsm: true };
 
     logger.log("🚀 Deploying Lido Core contracts...");
     await dre.runCommand(DeployLidoContracts, deployArgs);

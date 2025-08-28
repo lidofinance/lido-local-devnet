@@ -91,14 +91,6 @@ export class State extends BaseState {
     return currentState?.depositData as ({ used?: boolean } & DepositData)[];
   }
 
-  async getK8s<M extends boolean = true>(must: M = true as M): Promise<KubeConfig> {
-    const kc = new k8s.KubeConfig();
-    kc.loadFromDefault();
-    kc.setCurrentContext('tooling');
-
-    return kc;
-  }
-
   async getKeystores() {
     const currentState = await this.validators.read();
     return currentState?.keystores as Keystores[];

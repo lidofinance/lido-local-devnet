@@ -14,17 +14,17 @@ export const SyncChainState = command.isomorphic({
 
 
     await state.updateChain({
-      clPrivate: `http://${nodes.cl.service}:${nodes.cl.httpPort}`,
-      clPublic: nodesIngress.cl.publicIngressUrl,
+      clPrivate: `http://${nodes.cl[0].k8sService}:${nodes.cl[0].httpPort}`,
+      clPublic: nodesIngress.cl[0].publicIngressUrl,
 
-      elPrivate: `http://${nodes.el.service}:${nodes.el.rpcPort}`,
-      elPublic: nodesIngress.el.publicIngressUrl,
+      elPrivate: `http://${nodes.el[0].k8sService}:${nodes.el[0].rpcPort}`,
+      elPublic: nodesIngress.el[0].publicIngressUrl,
 
-      elWsPublic: `http://${nodes.el.service}:${nodes.el.rpcPort}`,
-      elWsPrivate: nodesIngress.el.publicIngressUrl,
+      elWsPublic: `http://${nodes.el[0].k8sService}:${nodes.el[0].rpcPort}`,
+      elWsPrivate: nodesIngress.el[0].publicIngressUrl,
 
-      validatorsApiPublic: nodesIngress.vc.publicIngressUrl,
-      validatorsApiPrivate: `http://${nodes.vc.service}:${nodes.vc.httpValidatorPort}`,
+      validatorsApiPublic: nodesIngress.vc[0].publicIngressUrl,
+      validatorsApiPrivate: `http://${nodes.vc[0].k8sService}:${nodes.vc[0].httpValidatorPort}`,
     });
   },
 });

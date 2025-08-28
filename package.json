@@ -18,11 +18,12 @@
   ],
   "dependencies": {
     "@devnet/command": "workspace:*",
+    "@devnet/k8s": "workspace:*",
     "@devnet/key-manager-api": "workspace:*",
     "@devnet/keygen": "workspace:*",
+    "@devnet/utils": "workspace:*",
     "@fastify/swagger": "^9.4.2",
     "@fastify/swagger-ui": "^5.2.1",
-    "@kubernetes/client-node": "^1.3.0",
     "@oclif/core": "^4.0.37",
     "@oclif/plugin-help": "^6.2.19",
     "@types/node": "^22.10.5",
