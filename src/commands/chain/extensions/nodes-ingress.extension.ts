@@ -7,31 +7,31 @@ import { z } from "zod";
 // augmenting the StateInterface
 declare module "@devnet/state" {
   export interface StateInterface {
-    getNodesIngress<M extends boolean = true>(must?: M,): Promise<M extends true ? NodesIngressOptions : Partial<NodesIngressOptions>>;
-    updateNodesIngress(options: NodesIngressOptions): Promise<void>;
+    getNodesIngress<M extends boolean = true>(must?: M,): Promise<M extends true ? NodesIngressState : Partial<NodesIngressState>>;
+    updateNodesIngress(options: NodesIngressState): Promise<void>;
   }
 
   export interface Config {
-    nodesIngress: NodesIngressOptions;
+    nodesIngress: NodesIngressState;
   }
 }
 
-export const NodesIngressOptions = z.object({
-  el: z.object({
+export const NodesIngressState = z.object({
+  el: z.array(z.object({
     publicIngressUrl: z.string().url(),
-  }),
-  cl: z.object({
+  })).nonempty(),
+  cl: z.array(z.object({
     publicIngressUrl: z.string().url(),
-  }),
-  vc: z.object({
+  })).nonempty(),
+  vc: z.array(z.object({
     publicIngressUrl: z.string().url(),
-  }),
+  })).nonempty(),
 });
 
-export type NodesIngressOptions = z.infer<typeof NodesIngressOptions>;
+export type NodesIngressState = z.infer<typeof NodesIngressState>;
 
 export const nodesIngressExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
-  dre.state.updateNodesIngress = (async function (jsonData: NodesIngressOptions) {
+  dre.state.updateNodesIngress = (async function (jsonData: NodesIngressState) {
     await dre.state.updateProperties("nodesIngress", jsonData);
   });
 
@@ -39,7 +39,7 @@ export const nodesIngressExtension = (dre: DevNetRuntimeEnvironmentInterface) =>
     return dre.state.getProperties(
       "nodesIngress",
       "nodesIngress",
-      NodesIngressOptions,
+      NodesIngressState,
       must,
     );
   });

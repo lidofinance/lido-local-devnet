@@ -1,5 +1,5 @@
 import {command} from "@devnet/command";
-import * as k8s from "@kubernetes/client-node";
+import { checkK8sIngressExists, getK8s, k8s } from "@devnet/k8s";
 
 import { nodesIngressExtension } from "./extensions/nodes-ingress.extension.js";
 import { consensusIngressTmpl } from "./templates/consensus-ingress.template.js";
@@ -21,29 +21,26 @@ export const K8sNodesIngressDown = command.cli({
     );
 
     const nodes = await state.getNodes();
-    const kc = await state.getK8s();
+    const kc = await getK8s();
     const k8sNetworkApi = kc.makeApiClient(k8s.NetworkingV1Api);
 
     const elIngress = await executionIngressTmpl(
-      dre, nodes.el.service, nodes.el.rpcPort
+      dre, nodes.el[0].k8sService, nodes.el[0].rpcPort
     );
 
     const clIngress =  await consensusIngressTmpl(
-      dre, nodes.cl.service, nodes.cl.httpPort
+      dre, nodes.cl[0].k8sService, nodes.cl[0].httpPort
     );
 
     const vcIngress =  await validatorClientIngressTmpl(
-      dre, nodes.vc.service, nodes.vc.httpValidatorPort
-    );
-
-    const existingIngresses = await k8sNetworkApi.listNamespacedIngress(
-      { namespace: `kt-${network.name}`, labelSelector: "" },
+      dre, nodes.vc[0].k8sService, nodes.vc[0].httpValidatorPort
     );
 
     await Promise.all([elIngress, clIngress, vcIngress].map(async (ingress) => {
-      if (!existingIngresses.items.some(
-        (existingIngress) => existingIngress.metadata?.name === ingress.metadata.name)
-      ) {
+
+      const exists = await checkK8sIngressExists(dre, { name: ingress.metadata.name});
+
+      if (!exists) {
         logger.log(`Ingress with name [${ingress.metadata.name}] already removed. Skipping ...`);
         return;
       }

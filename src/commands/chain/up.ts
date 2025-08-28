@@ -29,6 +29,7 @@ export const KurtosisUp = command.isomorphic({
     await kurtosis.sh`kurtosis run
                         --enclave ${dre.network.name}
                         github.com/ethpandaops/ethereum-package
+                        --production
                         --args-file ${configFileName}`;
 
     const sleep = (timeoutMs: number) => {
