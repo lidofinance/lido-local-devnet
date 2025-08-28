@@ -1,12 +1,12 @@
 import { Params, command } from "@devnet/command";
-import { services } from "@devnet/service";
+import { serviceConfigs } from "@devnet/service";
 
 export const GitCheckout = command.cli({
   description: "Retrieve changes from a Git branch in a specified service.",
   params: {
     service: Params.option({
       description: "Name of one of the existing services.",
-      options: Object.keys(services) as (keyof typeof services)[],
+      options: Object.keys(serviceConfigs) as (keyof typeof serviceConfigs)[],
       required: true,
     })(),
     branch: Params.string({

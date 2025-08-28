@@ -1,19 +1,20 @@
 /* eslint-disable valid-jsdoc */
 import { DevNetLogger } from "@devnet/logger";
-import { DevNetServiceConfig } from "@devnet/service";
 import { execa } from "execa";
 import fs, { rm } from "node:fs/promises";
 import path from "node:path";
 
-export class ServiceArtifact {
-  public config: DevNetServiceConfig;
+import { DevnetServiceConfig } from "./devnet-service-config.js";
+
+export class DevnetServiceArtifact {
+  public config: DevnetServiceConfig;
   public emittedCommands: string[] = [];
   public readonly root: string;
 
   private logger: DevNetLogger;
-  constructor(
+  protected constructor(
     artifactsRoot: string,
-    service: DevNetServiceConfig,
+    service: DevnetServiceConfig,
     logger: DevNetLogger,
   ) {
     this.root = path.join(artifactsRoot, service.name);
@@ -21,12 +22,12 @@ export class ServiceArtifact {
     this.logger = logger;
   }
 
-  static async getNew(
+  static async create(
     artifactsRoot: string,
-    service: DevNetServiceConfig,
+    serviceConfig: DevnetServiceConfig,
     logger: DevNetLogger,
   ) {
-    const artifact = new ServiceArtifact(artifactsRoot, service, logger);
+    const artifact = new DevnetServiceArtifact(artifactsRoot, serviceConfig, logger);
 
     // Check if the destination path already exists
     const destinationExists = await artifact.pathExists(artifact.root);
@@ -37,10 +38,10 @@ export class ServiceArtifact {
     if (artifact.config.hooks?.install)
       artifact.emittedCommands.push(artifact.config.hooks?.install);
 
-    await artifact.gitInit(service);
+    await artifact.gitInit(serviceConfig);
 
-    if (service.workspace) {
-      await artifact.copyFilesFrom(service.workspace);
+    if (serviceConfig.workspace) {
+      await artifact.copyFilesFrom(serviceConfig.workspace);
     }
 
     return artifact;
@@ -86,16 +87,16 @@ export class ServiceArtifact {
     }
   }
 
-  private async gitInit(service: DevNetServiceConfig): Promise<void> {
+  private async gitInit(serviceConfig: DevnetServiceConfig): Promise<void> {
     try {
-      if (!service.repository) {
+      if (!serviceConfig.repository) {
         return;
       }
 
       // Ensure the destination folder exists
       await fs.mkdir(this.root, { recursive: true });
 
-      const { url, branch } = service.repository;
+      const { url, branch } = serviceConfig.repository;
       // TODO: move to git command and use it as hook
       await execa({
         cwd: this.root,

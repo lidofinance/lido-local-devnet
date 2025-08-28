@@ -1,6 +1,6 @@
-import { DevNetServiceConfig } from "../service-config.js";
+import { DevnetServiceConfig } from "../devnet-service-config.js";
 
-export const kapi = new DevNetServiceConfig({
+export const kapi = new DevnetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/lido-keys-api.git",
     branch: "feat/devnet",

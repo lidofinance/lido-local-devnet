@@ -1,6 +1,9 @@
-import { DevNetServiceConfig } from "../service-config.js";
+import { toHex, getAddress } from 'viem'
 
-export const kurtosis = new DevNetServiceConfig({
+import { DevnetServiceConfig } from "../devnet-service-config.js";
+
+
+export const kurtosis = new DevnetServiceConfig({
   workspace: "workspaces/kurtosis",
   name: "kurtosis" as const,
   constants: {},
@@ -11,11 +14,15 @@ export const kurtosis = new DevNetServiceConfig({
     vc: "com.kurtosistech.custom.ethereum-package.client-type=validator",
   },
   getters: {
-    async DEPOSIT_CONTRACT_ADDRESS() {
-      return '1';
+    async DEPOSIT_CONTRACT_ADDRESS(service) {
+      const json = await service.readJson('network/genesis.json');
+
+      return getAddress(json?.config?.depositContractAddress ?? '');
     },
-    async GENESIS_TIME() {
-      return 1;
+    async GENESIS_TIME(service) {
+      const json = await service.readJson('network/genesis.json');
+
+      return Number(json.timestamp as number);
     }
   }
 });

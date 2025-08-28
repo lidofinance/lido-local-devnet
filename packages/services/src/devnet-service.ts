@@ -24,13 +24,13 @@ import {
 import path from "node:path";
 import * as YAML from "yaml";
 
-import { services } from "./embedded/index.js";
-import { ServiceArtifact } from "./service-artifact.js";
+import { DevnetServiceArtifact } from "./devnet-service-artifact.js";
+import { serviceConfigs } from "./embedded/index.js";
 import { DevNetServicesConfigs } from "./services-configs.js";
 
 
 export class DevNetService<Name extends keyof DevNetServicesConfigs> {
-  public artifact: ServiceArtifact;
+  public artifact: DevnetServiceArtifact;
   public config: DevNetServicesConfigs[Name];
 
   public sh!: ExecaMethod<{
@@ -41,7 +41,6 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
 
   private commandName: string;
   private logger: DevNetLogger;
-
   private network: string;
 
   constructor(
@@ -49,9 +48,9 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
     network: string,
     logger: DevNetLogger,
     commandName: string,
-    artifact: ServiceArtifact,
+    artifact: DevnetServiceArtifact,
   ) {
-    this.config = services[name];
+    this.config = serviceConfigs[name];
     this.artifact = artifact;
     this.network = network;
     this.commandName = commandName;
@@ -68,9 +67,9 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
     commandName: string,
     name: Name,
   ): Promise<DevNetService<Name>> {
-    const artifact = await ServiceArtifact.getNew(
+    const artifact = await DevnetServiceArtifact.create(
       rootPath,
-      services[name],
+      serviceConfigs[name],
       logger,
     );
     const service = new DevNetService(
@@ -197,7 +196,7 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
   }
 
   public async readYaml(relativePath: string) {
-    return YAML.parse(await this.readFile(relativePath));
+    return YAML.parse(await this.readFile(relativePath), { intAsBigInt: true });
   }
 
   public async writeENV(relativePath: string, env: Record<string, string>) {

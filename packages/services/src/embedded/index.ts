@@ -11,7 +11,7 @@ import { lidoCore } from "./lido-core.js";
 import { oracle } from "./oracle.js";
 import { voting } from "./voting.js";
 
-export const services = {
+export const serviceConfigs = {
   blockscout,
   lidoCore,
   lidoCLI,
@@ -26,4 +26,4 @@ export const services = {
   dsmBots,
 };
 
-export type EmbeddedServicesConfigs = typeof services;
+export type EmbeddedServicesConfigs = typeof serviceConfigs;

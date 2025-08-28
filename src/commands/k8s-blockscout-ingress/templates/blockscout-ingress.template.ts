@@ -20,7 +20,7 @@ export const blockscoutIngressTmpl =  async (
       ingressClassName: "public",
       rules: [
         {
-          host: "hr6vb81d1ndsx-blockscout.fusaka-devnet.valset-02.testnet.fi",
+          host: `${process.env.SECRET_INGRESS_HOST_PREFIX}-blockscout.fusaka-devnet.valset-02.testnet.fi`,
           http: {
             paths: [
               {

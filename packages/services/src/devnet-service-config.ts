@@ -1,8 +1,8 @@
 import { ServiceGetter } from "./service-getter.js";
 
 
-export class DevNetServiceConfig<
-  CustomServiceGetters extends Record<string, ServiceGetter> = Record<string, ServiceGetter>,
+export class DevnetServiceConfig<
+  CustomServiceGetters extends Record<string, ServiceGetter<string>> = Record<string, ServiceGetter<string>>,
   Constants = unknown,
   Labels extends Record<string, string> = Record<string, string>,
 > {

@@ -1,6 +1,6 @@
-import { DevNetServiceConfig } from "../service-config.js";
+import { DevnetServiceConfig } from "../devnet-service-config.js";
 
-export const lidoCore = new DevNetServiceConfig({
+export const lidoCore = new DevnetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/core.git",
     branch: "develop",
@@ -9,7 +9,6 @@ export const lidoCore = new DevNetServiceConfig({
   constants: {
     DEPLOYED: "deployed-local-devnet.json",
     EL_NETWORK_NAME: "local-devnet",
-    DEPOSIT_CONTRACT: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
     GAS_MAX_FEE: "100",
     GAS_PRIORITY_FEE: "1",
     NETWORK: "local-devnet",

@@ -23,7 +23,8 @@
     "@oclif/plugin-help": "^6.2.19",
     "@types/node": "^22.10.5",
     "execa": "^9.5.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "viem": "^2.36.0"
   },
   "devDependencies": {
     "eslint": "^8",

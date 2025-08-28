@@ -1,6 +1,6 @@
-import { DevNetServiceConfig } from "../service-config.js";
+import { DevnetServiceConfig } from "../devnet-service-config.js";
 
-export const blockscout = new DevNetServiceConfig({
+export const blockscout = new DevnetServiceConfig({
   workspace: "workspaces/blockscout",
   name: "blockscout" as const,
   exposedPorts: [80],
