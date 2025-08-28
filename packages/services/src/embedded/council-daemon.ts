@@ -1,4 +1,4 @@
-import { DevNetServiceConfig } from "./service.js";
+import { DevNetServiceConfig } from "../service-config.js";
 
 export const council = new DevNetServiceConfig({
   repository: {
@@ -9,4 +9,5 @@ export const council = new DevNetServiceConfig({
   name: "council" as const,
   constants: {},
   labels: {},
+  getters: {},
 });

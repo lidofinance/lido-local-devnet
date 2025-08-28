@@ -6,7 +6,7 @@ import * as YAML from "yaml";
 import { assert } from "./assert.js";
 import { FactoryResult } from "./command.js";
 import { USER_CONFIG_PATH } from "./constants.js";
-import { DevNetLogger } from "./logger.js";
+import { DevNetLogger } from "@devnet/logger";
 import { DevNetDRENetwork } from "./network/index.js";
 import { DevNetServiceRegistry } from "./service/service-registry.js";
 
@@ -63,7 +63,7 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
     this.oclifConfig = oclifConfig;
   }
 
-  static async getNew(
+  static async create(
     network: string,
     commandName: string,
     oclifConfig: OclifConfig,
@@ -76,7 +76,7 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
     const networkConfig =
       userConfig?.networks?.find((net: any) => net?.name === network) ?? {};
 
-    const registry = await DevNetServiceRegistry.getNew(
+    const registry = await DevNetServiceRegistry.create(
       network,
       commandName,
       logger,

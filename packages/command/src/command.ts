@@ -112,7 +112,7 @@ export class DevNetCommand extends BaseCommand {
       flags: this.ctor.flags,
       strict: this.ctor.strict,
     });
-    const dre = await DevNetRuntimeEnvironment.getNew(
+    const dre = await DevNetRuntimeEnvironment.create(
       params.network,
       this.id ?? "anonymous",
       this.config,

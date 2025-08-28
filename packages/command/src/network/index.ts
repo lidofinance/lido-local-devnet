@@ -10,7 +10,7 @@ import {
 } from "ethers";
 
 import { assert } from "../assert.js";
-import { DevNetLogger } from "../logger.js";
+import { DevNetLogger } from "@devnet/logger";
 export class DevNetDRENetwork {
   name: string;
   private logger: DevNetLogger;

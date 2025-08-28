@@ -951,6 +951,7 @@ __metadata:
   resolution: "@devnet/command@workspace:packages/command"
   dependencies:
     "@devnet/cl-client": "workspace:*"
+    "@devnet/logger": "workspace:*"
     "@devnet/service": "workspace:*"
     "@devnet/state": "workspace:*"
     "@fastify/swagger": "npm:^9.4.2"
@@ -1022,6 +1023,23 @@ __metadata:
     "@chainsafe/blst": "npm:^2.2.0"
     "@chainsafe/ssz": "npm:^1.0.2"
     "@types/dockerode": "npm:^3.3.34"
+    eslint: "npm:^8"
+    eslint-config-oclif: "npm:^5"
+    eslint-config-oclif-typescript: "npm:^3"
+    eslint-config-prettier: "npm:^9"
+    eslint-plugin-prettier: "npm:^5.2.2"
+    prettier: "npm:^3.4.2"
+    typescript: "npm:^5"
+  languageName: unknown
+  linkType: soft
+
+"@devnet/logger@workspace:*, @devnet/logger@workspace:packages/logger":
+  version: 0.0.0-use.local
+  resolution: "@devnet/logger@workspace:packages/logger"
+  dependencies:
+    "@oclif/core": "npm:^4.0.37"
+    "@oclif/plugin-help": "npm:^6.2.19"
+    "@types/node": "npm:^22.10.5"
     eslint: "npm:^8"
     eslint-config-oclif: "npm:^5"
     eslint-config-oclif-typescript: "npm:^3"
