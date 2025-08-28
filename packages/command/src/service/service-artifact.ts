@@ -1,15 +1,14 @@
 /* eslint-disable valid-jsdoc */
+import { DevNetLogger } from "@devnet/logger";
 import { DevNetServiceConfig } from "@devnet/service";
 import { execa } from "execa";
 import fs, { rm } from "node:fs/promises";
 import path from "node:path";
 
-import { DevNetLogger } from "@devnet/logger";
-
 export class ServiceArtifact {
   public config: DevNetServiceConfig;
   public emittedCommands: string[] = [];
-  public root: string;
+  public readonly root: string;
 
   private logger: DevNetLogger;
   constructor(

@@ -1,3 +1,4 @@
+import { DevNetLogger } from "@devnet/logger";
 import { EmbeddedServicesConfigs, services } from "@devnet/service";
 import chalk from "chalk";
 import { ExecaMethod, execa } from "execa";
@@ -20,7 +21,6 @@ import {
   getServiceInfo,
   getServiceInfoByLabel,
 } from "../docker/index.js";
-import { DevNetLogger } from "@devnet/logger";
 import {
   applyColor,
   getCachedColor,
@@ -63,7 +63,7 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
     this.createShellWrapper();
   }
 
-  static async getNew<Name extends keyof DevNetServicesConfigs>(
+  static async create<Name extends keyof DevNetServicesConfigs>(
     rootPath: string,
     network: string,
     logger: DevNetLogger,
