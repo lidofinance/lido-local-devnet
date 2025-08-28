@@ -1,6 +1,5 @@
+import { applyColor, getColorForText } from "@devnet/ui";
 import chalk from "chalk";
-
-import { applyColor, getColorForText } from "./ui.js";
 
 export class DevNetLogger {
   color: string;

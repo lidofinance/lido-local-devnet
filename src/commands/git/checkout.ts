@@ -1,5 +1,6 @@
-import { DevNetError, Params, command } from "@devnet/command";
+import { Params, command } from "@devnet/command";
 import { services } from "@devnet/service";
+import { DevNetError } from "@devnet/utils";
 
 export const GitCheckout = command.cli({
   description: "Switching the Git branch in the specified service",

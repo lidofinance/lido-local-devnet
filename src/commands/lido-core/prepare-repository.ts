@@ -1,4 +1,5 @@
-import { Params, assert, command } from "@devnet/command";
+import { Params, command } from "@devnet/command";
+import { assert } from "@devnet/utils";
 
 export const PrepareLidoCore = command.cli({
   description: "Prepare lido core repository.",

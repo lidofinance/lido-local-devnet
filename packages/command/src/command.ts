@@ -1,3 +1,4 @@
+import { DevNetError } from "@devnet/utils";
 import { Command as BaseCommand } from "@oclif/core";
 import { FlagInput } from "@oclif/core/interfaces";
 import { ExecaError } from "execa";
@@ -5,7 +6,6 @@ import { ZodError } from "zod";
 
 import { DEFAULT_NETWORK_NAME } from "./constants.js";
 import { CustomDevNetContext, DevNetContext } from "./context.js";
-import { DevNetError } from "./error.js";
 import { CustomDevNetExtension } from "./extension.js";
 import { string } from "./params.js";
 import { DevNetRuntimeEnvironment, DevNetRuntimeEnvironmentInterface } from "./runtime-env.js";

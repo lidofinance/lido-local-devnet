@@ -1,4 +1,5 @@
-import { Params, assert, command } from "@devnet/command";
+import { Params, command } from "@devnet/command";
+import { assert } from "@devnet/utils";
 
 import { LidoAddKeys } from "../lido-core/add-keys.js";
 import { LidoAddOperator } from "../lido-core/add-operator.js";

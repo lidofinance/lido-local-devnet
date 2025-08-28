@@ -1,6 +1,6 @@
 import Docker from "dockerode";
 
-import {DevNetError} from "../error.js";
+import { DevNetError } from "@devnet/utils";
 
 const docker = new Docker();
 

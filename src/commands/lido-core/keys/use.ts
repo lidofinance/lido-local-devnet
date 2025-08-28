@@ -1,4 +1,5 @@
-import { Params, assert, command } from "@devnet/command";
+import { Params, command } from "@devnet/command";
+import { assert } from "@devnet/utils";
 
 export const UseLidoDevNetKeys = command.cli({
   description: "Finds previously unused validator keys and saves them under the specified name in the lido-cli service.",
@@ -19,7 +20,7 @@ export const UseLidoDevNetKeys = command.cli({
       .replace("0x", "010000000000000000000000");
 
     const lidoKeys = depositData.filter((d) => d.withdrawal_credentials === WC);
-    
+
     const lidoUnusedKeys = lidoKeys.filter((k) => !k.used);
 
     assert(lidoUnusedKeys.length > 0, "No unused keys found.");

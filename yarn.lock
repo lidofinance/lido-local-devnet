@@ -954,6 +954,7 @@ __metadata:
     "@devnet/logger": "workspace:*"
     "@devnet/service": "workspace:*"
     "@devnet/state": "workspace:*"
+    "@devnet/ui": "workspace:*"
     "@fastify/swagger": "npm:^9.4.2"
     "@fastify/swagger-ui": "npm:^5.2.1"
     "@oclif/core": "npm:^4.0.37"
@@ -974,6 +975,26 @@ __metadata:
     typescript: "npm:^5"
     yaml: "npm:^2.6.1"
     zod: "npm:^3.24.1"
+  languageName: unknown
+  linkType: soft
+
+"@devnet/docker@workspace:*, @devnet/docker@workspace:packages/docker":
+  version: 0.0.0-use.local
+  resolution: "@devnet/docker@workspace:packages/docker"
+  dependencies:
+    "@devnet/utils": "workspace:*"
+    "@oclif/core": "npm:^4.0.37"
+    "@oclif/plugin-help": "npm:^6.2.19"
+    "@types/node": "npm:^22.10.5"
+    dockerode: "npm:^4.0.4"
+    dotenv: "npm:^17.2.1"
+    eslint: "npm:^8"
+    eslint-config-oclif: "npm:^5"
+    eslint-config-oclif-typescript: "npm:^3"
+    eslint-config-prettier: "npm:^9"
+    eslint-plugin-prettier: "npm:^5.2.2"
+    prettier: "npm:^3.4.2"
+    typescript: "npm:^5"
   languageName: unknown
   linkType: soft
 
@@ -1037,6 +1058,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@devnet/logger@workspace:packages/logger"
   dependencies:
+    "@devnet/ui": "workspace:*"
     "@oclif/core": "npm:^4.0.37"
     "@oclif/plugin-help": "npm:^6.2.19"
     "@types/node": "npm:^22.10.5"
@@ -1054,6 +1076,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@devnet/service@workspace:packages/services"
   dependencies:
+    "@devnet/docker": "workspace:*"
+    "@devnet/logger": "workspace:*"
+    "@devnet/ui": "workspace:*"
+    "@devnet/utils": "workspace:*"
     "@fastify/swagger": "npm:^9.4.2"
     "@fastify/swagger-ui": "npm:^5.2.1"
     "@oclif/core": "npm:^4.0.37"
@@ -1064,6 +1090,7 @@ __metadata:
     eslint-config-oclif-typescript: "npm:^3"
     eslint-config-prettier: "npm:^9"
     eslint-plugin-prettier: "npm:^5.2.2"
+    execa: "npm:^9.5.2"
     prettier: "npm:^3.4.2"
     typescript: "npm:^5"
   languageName: unknown
@@ -1084,6 +1111,23 @@ __metadata:
     prettier: "npm:^3.4.2"
     typescript: "npm:^5"
     zod: "npm:^3.24.1"
+  languageName: unknown
+  linkType: soft
+
+"@devnet/ui@workspace:*, @devnet/ui@workspace:packages/ui":
+  version: 0.0.0-use.local
+  resolution: "@devnet/ui@workspace:packages/ui"
+  dependencies:
+    "@oclif/core": "npm:^4.0.37"
+    "@oclif/plugin-help": "npm:^6.2.19"
+    "@types/node": "npm:^22.10.5"
+    eslint: "npm:^8"
+    eslint-config-oclif: "npm:^5"
+    eslint-config-oclif-typescript: "npm:^3"
+    eslint-config-prettier: "npm:^9"
+    eslint-plugin-prettier: "npm:^5.2.2"
+    prettier: "npm:^3.4.2"
+    typescript: "npm:^5"
   languageName: unknown
   linkType: soft
 

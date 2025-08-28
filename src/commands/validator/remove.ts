@@ -1,5 +1,6 @@
-import { Params, assert, command } from "@devnet/command";
+import { Params, command } from "@devnet/command";
 import * as keyManager from "@devnet/key-manager-api";
+import { assert } from "@devnet/utils";
 
 export const ValidatorRemove = command.cli({
   description:

@@ -1,4 +1,5 @@
-import { DevNetError, command } from "@devnet/command";
+import { command } from "@devnet/command";
+import { DevNetError } from "@devnet/utils";
 
 export const VotingInstall = command.cli({
   description: "Install voting scripts dependencies",

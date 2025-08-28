@@ -1,5 +1,6 @@
-import { DevNetError, command } from "@devnet/command";
+import { command } from "@devnet/command";
 import { getK8sService } from "@devnet/k8s";
+import { DevNetError } from "@devnet/utils";
 import {
   assertNonEmpty,
   isInstance, isNonEmptyArray,

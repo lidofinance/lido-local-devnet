@@ -1,9 +1,9 @@
+import { DevNetLogger } from "@devnet/logger";
 import { services } from "@devnet/service";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 
-import { ARTIFACTS_ROOT } from "../constants.js";
-import { DevNetLogger } from "@devnet/logger";
+import { ARTIFACTS_ROOT } from "./constants.js";
 import { DevNetService } from "./service.js";
 import { DevNetServicesConfigs } from "./services-configs.js";
 
