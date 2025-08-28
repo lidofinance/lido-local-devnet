@@ -1,7 +1,9 @@
 /* eslint-disable no-bitwise */
 import chalk from "chalk";
+
 export const applyColor = (color: string, text: string) =>
   chalk.hex(color)(text);
+
 export const getColorForText = (text: string): string => {
   let hash = 0;
   for (let i = 0; i < text.length; i++) {

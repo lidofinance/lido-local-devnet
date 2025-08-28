@@ -4,7 +4,7 @@ import { execa } from "execa";
 import fs, { rm } from "node:fs/promises";
 import path from "node:path";
 
-import { DevNetLogger } from "../logger.js";
+import { DevNetLogger } from "@devnet/logger";
 
 export class ServiceArtifact {
   public config: DevNetServiceConfig;

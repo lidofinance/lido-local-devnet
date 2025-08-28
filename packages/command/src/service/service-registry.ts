@@ -3,30 +3,26 @@ import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 
 import { ARTIFACTS_ROOT } from "../constants.js";
-import { DevNetLogger } from "../logger.js";
+import { DevNetLogger } from "@devnet/logger";
 import { DevNetService } from "./service.js";
+import { DevNetServicesConfigs } from "./services-configs.js";
 
-type DevNetServices = typeof services;
 
 export class DevNetServiceRegistry {
-  network: string;
-  root: string;
-  services: { [K in keyof DevNetServices]: DevNetService<K> };
+  protected network: string;
+  public readonly root: string;
+  public readonly services: { [K in keyof DevNetServicesConfigs]: DevNetService<K> };
 
-  constructor(
+  protected constructor(
     network: string,
-    services: { [K in keyof DevNetServices]: DevNetService<K> },
+    services: { [K in keyof DevNetServicesConfigs]: DevNetService<K> },
   ) {
     this.root = path.join(ARTIFACTS_ROOT, network);
     this.network = network;
     this.services = services;
   }
 
-  static async createRootDir(network: string) {
-    await mkdir(this.getRoot(network), { recursive: true });
-  }
-
-  static async getNew(
+  public static async create(
     network: string,
     commandName: string,
     logger: DevNetLogger,
@@ -42,7 +38,7 @@ export class DevNetServiceRegistry {
           network,
           logger,
           commandName,
-          key as keyof DevNetServices,
+          key as keyof DevNetServicesConfigs,
         ),
       ]),
     );
@@ -50,16 +46,24 @@ export class DevNetServiceRegistry {
     return new DevNetServiceRegistry(
       network,
       Object.fromEntries(servicesList) as {
-        [K in keyof DevNetServices]: DevNetService<K>;
+        [K in keyof DevNetServicesConfigs]: DevNetService<K>;
       },
     );
   }
 
-  static getRoot(network: string) {
+  protected static async createRootDir(network: string) {
+    await mkdir(this.getRoot(network), { recursive: true });
+  }
+
+  protected static getRoot(network: string) {
     return path.join(ARTIFACTS_ROOT, network);
   }
 
   public async clean() {
+    if (this.root === '/') {
+      return;
+    }
+
     await rm(this.root, { force: true, recursive: true });
   }
 
@@ -69,7 +73,7 @@ export class DevNetServiceRegistry {
         key,
         service.clone(commandName, logger),
       ])
-    ) as { [K in keyof DevNetServices]: DevNetService<K> };
+    ) as { [K in keyof DevNetServicesConfigs]: DevNetService<K> };
     return new DevNetServiceRegistry(this.network, clonedServices);
   }
 }

@@ -1,11 +1,19 @@
+import { ServiceGetter } from "./service-getter.js";
+
+
 export class DevNetServiceConfig<
-  T = unknown,
-  L extends Record<string, string> = Record<string, string>,
+  CustomServiceGetters extends Record<string, ServiceGetter> = Record<string, ServiceGetter>,
+  Constants = unknown,
+  Labels extends Record<string, string> = Record<string, string>,
 > {
-  constants: T;
+  constants: Constants;
   env?: Record<string, string>;
   exposedPorts?: number[];
+
+  getters: CustomServiceGetters;
+
   git?: string;
+
 
   hooks?: {
     build?: string;
@@ -13,7 +21,7 @@ export class DevNetServiceConfig<
     install?: string;
   };
 
-  labels: L;
+  labels: Labels;
   name: string;
   repository?: { branch: string, url: string };
 
@@ -22,6 +30,7 @@ export class DevNetServiceConfig<
   constructor({
     workspace,
     env,
+    getters,
     hooks,
     name,
     repository,
@@ -29,11 +38,12 @@ export class DevNetServiceConfig<
     labels,
     exposedPorts,
   }: {
-    constants: T;
+    constants: Constants;
     env?: Record<string, string>;
     exposedPorts?: number[];
+    getters: CustomServiceGetters;
     hooks?: { build?: string; destroy?: string; install?: string };
-    labels: L;
+    labels: Labels;
     name: string;
     repository?: { branch: string, url: string };
     workspace?: string;
@@ -41,6 +51,7 @@ export class DevNetServiceConfig<
     this.workspace = workspace;
     this.env = env;
     this.hooks = hooks;
+    this.getters = getters;
     this.name = name;
     this.repository = repository;
     this.constants = constants;

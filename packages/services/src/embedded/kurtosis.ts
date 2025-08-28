@@ -1,4 +1,4 @@
-import { DevNetServiceConfig } from "./service.js";
+import { DevNetServiceConfig } from "../service-config.js";
 
 export const kurtosis = new DevNetServiceConfig({
   workspace: "workspaces/kurtosis",
@@ -10,4 +10,12 @@ export const kurtosis = new DevNetServiceConfig({
     cl: "com.kurtosistech.custom.ethereum-package.client-type=beacon",
     vc: "com.kurtosistech.custom.ethereum-package.client-type=validator",
   },
+  getters: {
+    async DEPOSIT_CONTRACT_ADDRESS() {
+      return '1';
+    },
+    async GENESIS_TIME() {
+      return 1;
+    }
+  }
 });

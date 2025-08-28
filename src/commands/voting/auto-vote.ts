@@ -1,4 +1,5 @@
-import { DevNetLogger, command } from "@devnet/command";
+import { command } from "@devnet/command";
+import { DevNetLogger } from "@devnet/logger";
 import { JsonRpcProvider, ethers } from "ethers";
 
 const abi = [

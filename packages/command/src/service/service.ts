@@ -1,4 +1,4 @@
-import { DevNetServiceConfig, services } from "@devnet/service";
+import { EmbeddedServicesConfigs, services } from "@devnet/service";
 import chalk from "chalk";
 import { ExecaMethod, execa } from "execa";
 import {
@@ -20,7 +20,7 @@ import {
   getServiceInfo,
   getServiceInfoByLabel,
 } from "../docker/index.js";
-import { DevNetLogger } from "../logger.js";
+import { DevNetLogger } from "@devnet/logger";
 import {
   applyColor,
   getCachedColor,
@@ -28,11 +28,13 @@ import {
   // transformCMDOutput,
 } from "../ui.js";
 import { ServiceArtifact } from "./service-artifact.js";
+import { DevNetServicesConfigs } from "./services-configs.js";
 
-type DevNetServices = typeof services;
-export class DevNetService<Name extends keyof DevNetServices> {
+
+export class DevNetService<Name extends keyof DevNetServicesConfigs> {
   public artifact: ServiceArtifact;
-  public config: DevNetServiceConfig<DevNetServices[Name]["constants"]>;
+  public config: DevNetServicesConfigs[Name];
+
   public sh!: ExecaMethod<{
     cwd: string;
     env: Record<string, string> | undefined;
@@ -61,7 +63,7 @@ export class DevNetService<Name extends keyof DevNetServices> {
     this.createShellWrapper();
   }
 
-  static async getNew<Name extends keyof DevNetServices>(
+  static async getNew<Name extends keyof DevNetServicesConfigs>(
     rootPath: string,
     network: string,
     logger: DevNetLogger,
@@ -116,25 +118,25 @@ export class DevNetService<Name extends keyof DevNetServices> {
     must: M = true as M,
   ): Promise<
     M extends true
-      ? Record<keyof DevNetServices[Name]["labels"], ContainerInfo[]>
-      : Record<keyof DevNetServices[Name]["labels"], ContainerInfo[]> | null
+      ? Record<keyof DevNetServicesConfigs[Name]["labels"], ContainerInfo[]>
+      : Record<keyof DevNetServicesConfigs[Name]["labels"], ContainerInfo[]> | null
   > {
     const { labels } = this.config;
     // todo: make something with dora
     if (must) {
-      return await getContainersByServiceLabels<DevNetServices[Name]["labels"]>(
+      return await getContainersByServiceLabels<DevNetServicesConfigs[Name]["labels"]>(
         labels,
         `kt-${this.network}`,
       );
     }
 
     const result = await getContainersByServiceLabelsOrNull<
-      DevNetServices[Name]["labels"]
+      DevNetServicesConfigs[Name]["labels"]
     >(labels, `kt-${this.network}`);
 
     return result as M extends true
-      ? Record<keyof DevNetServices[Name]["labels"], ContainerInfo[]>
-      : Record<keyof DevNetServices[Name]["labels"], ContainerInfo[]> | null;
+      ? Record<keyof DevNetServicesConfigs[Name]["labels"], ContainerInfo[]>
+      : Record<keyof DevNetServicesConfigs[Name]["labels"], ContainerInfo[]> | null;
   }
 
   public async getDockerServiceInfoByLabel(labelKey: string, label: string) {

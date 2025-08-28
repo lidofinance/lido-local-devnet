@@ -1,4 +1,4 @@
-import { DevNetServiceConfig } from "./service.js";
+import { DevNetServiceConfig } from "../service-config.js";
 
 export const lidoCore = new DevNetServiceConfig({
   repository: {
@@ -22,4 +22,5 @@ export const lidoCore = new DevNetServiceConfig({
     install: "lido-core:install",
   },
   labels: {},
+  getters: {},
 });
