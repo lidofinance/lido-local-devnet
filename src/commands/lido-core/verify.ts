@@ -25,7 +25,7 @@ export const LidoCoreVerify = command.cli({
 
     const { elPublic } = await state.getChain();
     const { deployer } = await state.getNamedWallet();
-    const blockscoutState = await state.getBlockScout();
+    const blockscoutState = await state.getBlockscout();
 
 
     logger.log("Verifying deployed contracts...");

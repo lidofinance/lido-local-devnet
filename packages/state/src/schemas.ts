@@ -2,12 +2,6 @@ import { z } from "zod";
 
 import { KURTOSIS_DEFAULT_PRESET } from "./constants.js";
 
-export const BlockScoutSchema = z.object({
-  url: z.string().url(),
-  // http://localhost:3080/api
-  api: z.string().url(),
-});
-
 export const PortSchema = z.object({
   publicPort: z.number().optional(),
   privatePort: z.number().optional(),
@@ -107,11 +101,9 @@ const ConfigSchema = z.object({
   parsedConsensusGenesisState:
     ParsedConsensusGenesisStateSchema.partial().optional(),
   kurtosis: KurtosisSchema.optional(),
-  blockscout: BlockScoutSchema.optional(),
   dataBus: DataBusConfigSchema.optional(),
 });
 
-export type BlockScoutConfig = z.infer<typeof BlockScoutSchema>;
 export type ChainConfig = z.infer<typeof ChainState>;
 export type LidoConfig = z.infer<typeof LidoConfigSchema>;
 export type ParsedConsensusGenesisState = z.infer<

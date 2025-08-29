@@ -11,7 +11,7 @@ export const DataBusDeploy = command.cli({
 
     const { deployer } = await state.getNamedWallet();
     const { elPublic } = await state.getChain();
-    const { api, url } = await state.getBlockScout();
+    const { api, url } = await state.getBlockscout();
 
     await dre.runCommand(DataBusInstall, {});
 

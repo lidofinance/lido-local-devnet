@@ -1,8 +1,12 @@
 import { command } from "@devnet/command";
 
+import { blockscoutExtension } from "./extensions/blockscout.extension.js";
+import path from "path";
+
 export const BlockscoutUp = command.cli({
-  description: "Start Blockscout",
+  description: "Start Blockscout in k8s",
   params: {},
+  extensions: [blockscoutExtension],
   async handler({ dre, dre: { logger } }) {
     const {
       state,
@@ -12,29 +16,28 @@ export const BlockscoutUp = command.cli({
 
     const { elPrivate, elWsPrivate } = await state.getChain();
 
-    const blockScoutSh = blockscout.sh({
+    const blockScoutStackSh = blockscout.sh({
+      cwd: path.join(blockscout.artifact.root, 'blockscout-stack'),
       env: {
-        BLOCKSCOUT_RPC_URL: elPrivate,
-        BLOCKSCOUT_WS_RPC_URL: elWsPrivate,
-        DOCKER_NETWORK_NAME: `kt-${network.name}`,
-        COMPOSE_PROJECT_NAME: `blockscout-${network.name}`,
+        HELM_CHART_ROOT_PATH: `../../../../helm/vendor`,
+        NAMESPACE: `kt-${dre.network.name}-blockscout`,
       },
     });
 
-    await blockScoutSh`docker compose -f ./geth.yml up -d`;
-
-    const [info] = await blockscout.getExposedPorts();
-    const apiHost = `localhost:${info.publicPort}`;
-    const publicUrl = `http://${apiHost}`;
-
-    logger.log("Restart the frontend instance to pass the actual public url");
-
-    await blockScoutSh({
-      env: { NEXT_PUBLIC_API_HOST: apiHost, NEXT_PUBLIC_APP_HOST: apiHost },
-    })`docker compose -f geth.yml up -d frontend`;
-
-    logger.log(`Blockscout started successfully on URL: ${publicUrl}`);
-
-    await state.updateBlockScout({ url: publicUrl, api: `${publicUrl}/api` });
+    await blockScoutStackSh`pwd && make lint`;
+    //
+    // const [info] = await blockscout.getExposedPorts();
+    // const apiHost = `localhost:${info.publicPort}`;
+    // const publicUrl = `http://${apiHost}`;
+    //
+    // logger.log("Restart the frontend instance to pass the actual public url");
+    //
+    // await blockScoutSh({
+    //   env: { NEXT_PUBLIC_API_HOST: apiHost, NEXT_PUBLIC_APP_HOST: apiHost },
+    // })`docker compose -f geth.yml up -d frontend`;
+    //
+    // logger.log(`Blockscout started successfully on URL: ${publicUrl}`);
+    //
+    // await state.updateBlockscout({ url: publicUrl, api: `${publicUrl}/api` });
   },
 });

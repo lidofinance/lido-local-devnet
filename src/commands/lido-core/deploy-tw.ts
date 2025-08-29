@@ -29,7 +29,7 @@ export const DeployTWContracts = command.cli({
     const { constants } = lidoCore.config;
 
     const { elPublic } = await state.getChain();
-    const blockscoutState = await state.getBlockScout();
+    const blockscoutState = await state.getBlockscout();
     const clClient = await network.getCLClient();
 
     const {

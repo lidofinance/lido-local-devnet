@@ -7,20 +7,19 @@ import { z } from "zod";
 // augmenting the StateInterface
 declare module "@devnet/state" {
   export interface StateInterface {
-    getBlockscout<M extends boolean = true>(
-      must?: M,
-    ): Promise<M extends true ? BlockscoutState : Partial<BlockscoutState>>;
+    getBlockscout<M extends boolean = true>(must?: M,): Promise<M extends true ? BlockscoutState : Partial<BlockscoutState>>;
+    removeBlockscout(): Promise<void>;
     updateBlockscout(state: BlockscoutState): Promise<void>;
   }
 
   export interface Config {
-    dora: BlockscoutState;
+    blockscout: BlockscoutState;
   }
 }
 
 export const BlockscoutState = z.object({
   url: z.string().url(),
-  k8sIngressName: z.string(),
+  api: z.string().url(),
 });
 
 export type BlockscoutState = z.infer<typeof BlockscoutState>;
@@ -28,6 +27,10 @@ export type BlockscoutState = z.infer<typeof BlockscoutState>;
 export const blockscoutExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
   dre.state.updateBlockscout = (async function (state: BlockscoutState) {
     await dre.state.updateProperties("blockscout", state);
+  });
+
+  dre.state.removeBlockscout = (async function () {
+    await dre.state.updateProperties("blockscout", {});
   });
 
   dre.state.getBlockscout = (async function <M extends boolean = true>(must: M = true as M) {
