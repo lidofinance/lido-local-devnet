@@ -27,27 +27,66 @@ Lido Local DevNet is a powerful tool for deploying and testing the Lido protocol
 - **Foundry tools** ([Install Foundry](https://book.getfoundry.sh/getting-started/installation))  
 - **Just** ([Install Just](https://github.com/casey/just))  
 - **Make** 4+  
-- **Kubectl** v1.32.7 (for k8s deployments)
-- **Helm** 3.17+ (for k8s deployments) 
+- **Kubectl** v1.32.7 (for k8s deployments)`
+- **Helm** 3.17+ (for k8s deployments) `
 
 ---
 
-## Getting Started
+## Getting Started with k8s integration
 
-Follow these steps to set up the DevNet:
+Original docs are located in `https://docs.kurtosis.com/k8s/`
 
-### 1. Start Kurtosis
-Kurtosis is required to launch Ethereum nodes:
+### 1. Change kurtosis config to work with k8s the cluster
+
+Update your kurtosis config at `echo $(kurtosis config path)` location
+
+```yaml
+config-version: 6
+should-send-metrics: false
+kurtosis-clusters:
+  docker:
+    type: "docker"
+  minikube:
+    type: "kubernetes"
+    config:
+      kubernetes-cluster-name: "minikube"
+      storage-class: "standard"
+      enclave-size-in-megabytes: 10
+  cloud:
+    type: "kubernetes"
+    config:
+      kubernetes-cluster-name: "tooling-holesky-sandbox-0" # change cluster name if needed
+      storage-class: "ssd-hostpath"
+      enclave-size-in-megabytes: 10
+```
+
+### 2. Set current context to the cluster (if you have multiple clusters)
+```sh
+kubectl config use-context tooling-holesky-sandbox-0 # or whatever your k8s context is
+```
+
+### 3. Point kurtosis to the cluster
+```sh
+kurtosis cluster set cloud
+```
+
+### 4. Start Kurtosis
+Kurtosis is required to launch Ethereum nodes
 ```sh
 kurtosis engine start
 ```
 
-### 2. Install dependencies
+### 5. Start kurtosis gateway
+```sh
+kurtosis gateway
+```
+
+### 6. Install dependencies
 ```sh
 yarn && yarn build:all
 ```
 
-### 3. Launch the environment and deploy Lido smart contracts
+### 7. Launch the environment and deploy Lido smart contracts
 Below is an example for launching the `pectra` test stand. If you need a different setup, refer to the [test stands documentation](./docs/commands/stands.md).
 
 ```sh
@@ -62,7 +101,7 @@ For a full DSM infrastructure deployment, add the `--dsm` flag:
 ./bin/run.js stands pectra --full --verify --dsm
 ```
 
-### 4. Interaction with Voting scripts
+### 8. Interaction with Voting scripts
 
 
 Since voting scripts require Python and Brownie, install the necessary dependencies:
@@ -88,7 +127,7 @@ After adding an account, proceed with the voting process. See the [voting docume
 ./bin/run.js voting enact-after-pectra
 ```
 
-### 5. Done!
+### 9. Done!
 The network, infrastructure, and protocol have been successfully launched.
 
 ---
