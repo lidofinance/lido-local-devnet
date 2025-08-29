@@ -5,7 +5,8 @@
 NAMESPACE ?= blockscout
 
 # Helm chart paths
-HELM_CHART_PATH = ../../../helm/vendor/blockscout-stack
+HELM_CHART_ROOT_PATH ?= ../../../helm/vendor
+HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/blockscout-stack
 HELM_VALUES_PATH = ./values.yaml
 
 # Release names

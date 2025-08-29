@@ -12,7 +12,7 @@ export const TunnelGetInfo = command.cli({
   }) {
     const [kurtosisInfo, blockscoutInfo, chainServices] = await Promise.all([
       kurtosis.getDockerInfo(false),
-      state.getBlockScout(false),
+      state.getBlockscout(false),
       (async () => {
         const chainServices = await state.getChain();
         return Object.entries(chainServices).filter(

@@ -1,7 +1,7 @@
 import { command } from "@devnet/command";
 
 export const BlockscoutDown = command.cli({
-  description: "Down Blockscout",
+  description: "Down Blockscout in k8s",
   params: {},
   async handler({ dre, dre: { logger } }) {
     const {
@@ -25,6 +25,6 @@ export const BlockscoutDown = command.cli({
 
     logger.log("Blockscout stopped successfully.");
 
-    await state.updateBlockScout({});
+    await state.removeBlockscout();
   },
 });

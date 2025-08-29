@@ -3,7 +3,6 @@ import { DepositData, DepositDataResult, Keystores } from "@devnet/keygen";
 import { BaseState } from "./base-state.js";
 import { WALLET_KEYS_COUNT } from "./constants.js";
 import {
-  BlockScoutSchema,
   CSMConfigSchema,
   CSMNewVerifierSchema,
   ChainState,
@@ -23,17 +22,7 @@ export interface StateInterface extends State {
 }
 
 export class State extends BaseState {
-
-  async getBlockScout<M extends boolean = true>(must: M = true as M) {
-    return this.getProperties(
-      { url: "blockscout.url", api: "blockscout.api" },
-      "blockscout",
-      BlockScoutSchema,
-      must,
-    );
-  }
-
-  async getChain<M extends boolean = true>(must: M = true as M) {
+    async getChain<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
       "chain",
       "chain",
@@ -179,10 +168,6 @@ export class State extends BaseState {
     }
 
     return WalletSchema.parseAsync(wallet ?? sharedWallet);
-  }
-
-  async updateBlockScout(jsonData: unknown) {
-    await this.updateProperties("blockscout", jsonData);
   }
 
   async updateChain(state: Partial<ChainState>) {

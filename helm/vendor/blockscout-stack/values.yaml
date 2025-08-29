@@ -1,0 +1,500 @@
+# Default values for blockscout-stack.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+## Provide a name in place of blockscout-stack for `app:` labels
+##
+nameOverride: ""
+## Provide a name to substitute for the full names of resources
+##
+fullnameOverride: ""
+## Reference to one or more secrets to be used when pulling images
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+##
+imagePullSecrets: []
+## Blockscout configuration options
+##
+config:
+  network:
+    id: 1
+    name: Ether
+    shortname: Ether
+    currency:
+      name: Ether
+      symbol: ETH
+      decimals: 18
+      # if network uses dual token model like gnosis (in most case it should be set to false)
+      dualToken: false
+  account:
+    enabled: false
+  testnet: false
+  nameService:
+    enabled: false
+    url: ""
+  ## Creates redirect from additional domain to frontend domain
+  ## Works only if backend and frontend runs on single domain
+  redirect:
+    enabled: false
+    hostnames: ["extra-chart-example.local"]
+    ingress:
+      className: nginx
+      annotations:
+        nginx.ingress.kubernetes.io/server-snippet: |
+          if ($request_uri !~ ^/.well-known/(.*)$) {
+            return 301 $scheme://{{ .Values.frontend.ingress.hostname }}$request_uri;
+          }
+      tls:
+        enabled: true
+  ## If set to true will create service monitors for blockscout and stats
+  ##
+  prometheus:
+    enabled: true
+  ## Whitelist metrics path on ingress to make metrics non-public
+    ingressWhitelist:
+      enabled: true
+      annotations:
+        nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+    blackbox:
+      enabled: true
+      path: /api/health
+    rules:
+      enabled: true
+      ## If latest block timestamp is older than healthyBlockPeriod instance is considered unhealthy and alert is created
+      healthyBlockPeriod: 300
+      ## Alert is created if there is no new batches for more than batchTimeMultiplier x average_batch_time
+      batchTimeMultiplier: 2
+      labels: {}
+## Configuration options for backend
+##
+blockscout:
+  enabled: true
+  ## Replica count for indexer (if separate api is not used this replica count for deployment containing both indexer and api). Currently only one replica is supported
+  ##
+  replicaCount: 1
+  ## Image parametes
+  ##
+  image:
+    repository: ghcr.io/blockscout/blockscout
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  ## Init container configuration (used to run DB migrations)
+  ##
+  init:
+    enabled: true
+    command:
+      - /bin/sh
+    args:
+      - -c
+      - bin/blockscout eval "Elixir.Explorer.ReleaseTasks.create_and_migrate()"
+  ## Run API service as separate deployment
+  ##
+  separateApi:
+    enabled: false
+    replicaCount: 2
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+  nftStorage:
+    enabled: false
+    cookie: secret
+    bucketHost: xxx.r2.cloudflarestorage.com
+    accessKey: ""
+    secretKey: ""
+    bucketName: nft
+    bucketUrl: https://pub-xxx.r2.dev
+    ipfsGateway: https://ipfs.io/ipfs
+    workerConcurrency: 10
+    resources:
+      limits:
+        cpu: 2
+        memory: 4Gi
+      requests:
+        cpu: 1
+        memory: 2Gi
+  ## Blockscout ENV vars
+  ## ref: https://docs.blockscout.com/setup/env-variables
+  ##
+  env: []
+    # NAME: VALUE
+  # Refer to an existing Secret/ConfigMap
+  extraEnv: []
+    # - name: DATABASE_URL
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: blockscout-secret
+    #       key: DATABASE_URL
+  ## Set ENV vars via secret, this can be useful for DB connection params, api keys, etc.
+  ##
+  # This will create a Secret with the specified data
+  envFromSecret: []
+    # NAME: VALUE
+  # Refer to an existing Secret/ConfigMap
+  envFrom: []
+    # - secretRef:
+    #     name: blockscout-secret
+    # - configMapRef:
+    #     name: blockscout-config
+  ## Command to start blockscout instance
+  ##
+  command:
+    - /bin/sh
+  args:
+    - -c
+    - bin/blockscout start
+  ## Annotations to add to blockscout pod
+  podAnnotations: {}
+
+  ## Annotations to add to blockscout deployment
+  annotations: {}
+
+  podSecurityContext: {}
+  ## SecurityContext holds pod-level security attributes and common container settings.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  ##
+  securityContext: {}
+  terminationGracePeriodSeconds: 300
+  ## Liveness probe
+  ##
+  livenessProbe:
+    enabled: true
+    path: /api/health/liveness
+    params:
+      initialDelaySeconds: 100
+      periodSeconds: 100
+      timeoutSeconds: 30
+  ## Readiness probe
+  ##
+  readinessProbe:
+    enabled: true
+    path: /api/health/readiness
+    params:
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 60
+
+  service:
+    type: ClusterIP
+    port: 80
+  ## Configure ingress resource that allow you to access the blockscout installation.
+  ## ref: http://kubernetes.io/docs/user-guide/ingress/
+  ##
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hostname: chart-example.local
+    tls:
+      enabled: false
+      #secretName:
+    paths:
+      - path: /api
+        pathType: Prefix
+      - path: /socket
+        pathType: Prefix
+      - path: /public-metrics
+        pathType: Prefix
+      - path: /auth/auth0
+        pathType: Exact
+      - path: /auth/auth0/callback
+        pathType: Exact
+      - path: /auth/logout
+        pathType: Exact
+
+  resources:
+    limits:
+      cpu: 2
+      memory: 4Gi
+    requests:
+      cpu: 1
+      memory: 2Gi
+  # Additional volumes on the output Blockscout Deployment definition.
+  volumes: []
+  # - name: foo
+  #   secret:
+  #     secretName: mysecret
+  #     optional: false
+
+  # Additional volumeMounts on the output Blockscout Deployment definition.
+  volumeMounts: []
+  # - name: foo
+  #   mountPath: "/etc/foo"
+  #   readOnly: true
+## Configuration options for frontend
+##
+frontend:
+  enabled: true
+  ## Image parametes
+  image:
+    repository: ghcr.io/blockscout/frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  replicaCount: 2
+  ## Annotations to add to frontend pod
+  podAnnotations: {}
+
+  ## Annotations to add to frontend deployment
+  annotations: {}
+
+  podSecurityContext: {}
+  ## SecurityContext holds pod-level security attributes and common container settings.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  ##
+  securityContext: {}
+
+  service:
+    type: ClusterIP
+    port: 80
+  ## Configure ingress resource that allow you to access the frontend installation.
+  ## ref: http://kubernetes.io/docs/user-guide/ingress/
+  ##
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hostname: chart-example.local
+    tls:
+      enabled: false
+      #secretName:
+    paths:
+      - path: /
+
+  resources:
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+  ## Liveness probe
+  ##
+  livenessProbe:
+    enabled: true
+    path: /api/healthz
+    params:
+      initialDelaySeconds: 100
+      periodSeconds: 100
+      timeoutSeconds: 30
+  ## Readiness probe
+  ##
+  readinessProbe:
+    enabled: true
+    path: /api/healthz
+    params:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 30
+  ## Frontend ENV vars
+  ## ref: https://github.com/blockscout/frontend/blob/main/docs/ENVS.md
+  ##
+  env: []
+    # NAME: VALUE
+  # Refer to an existing Secret/ConfigMap
+  extraEnv: []
+    # - name: FAVICON_GENERATOR_API_KEY
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: blockscout-frontend-secret
+    #       key: FAVICON_GENERATOR_API_KEY
+  # This will create a Secret with the specified data
+  envFromSecret: []
+    # NAME: VALUE
+  # Refer to an existing Secret/ConfigMap
+  envFrom: []
+    # - secretRef:
+    #     name: blockscout-frontend-secret
+    # - configMapRef:
+    #     name: blockscout-frontend-config
+
+stats:
+  enabled: false
+  ## Image parametes
+  ##
+  image:
+    repository: ghcr.io/blockscout/stats
+    tag: v2.4.0
+    pullPolicy: IfNotPresent
+
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+    metricsPort: 6060
+
+  podAnnotations: {}
+
+  ## Annotations to add to stats deployment
+  annotations: {}
+
+  podSecurityContext: {}
+
+  securityContext: {}
+
+  basePath: "/"
+
+  ## Configure ingress resource that allow you to access the stats installation.
+  ## ref: http://kubernetes.io/docs/user-guide/ingress/
+  ##
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hostname: chart-example-stats.local
+    tls:
+      enabled: false
+      #secretName:
+    paths:
+      - path: /
+        pathType: Prefix
+
+  resources:
+    limits:
+      memory: "512Mi"
+      cpu: 250m
+    requests:
+      memory: 512Mi
+      cpu: 250m
+  ## Files to mount to stats pod
+  ##
+  files:
+    enabled: false
+    list: {}
+      # file.txt: |
+      #   test
+    mountPath: /tmp/path
+
+  ## Liveness probe
+  ##
+  livenessProbe:
+    enabled: true
+    path: /health
+    params:
+      initialDelaySeconds: 100
+      periodSeconds: 100
+      timeoutSeconds: 30
+  ## Readiness probe
+  ##
+  readinessProbe:
+    enabled: true
+    path: /health
+    params:
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 60
+  ## Stats ENV vars
+  ## ref: https://github.com/blockscout/blockscout-rs/tree/main/stats#env
+  env: []
+    # NAME: VALUE
+  envFromSecret: []
+    # NAME: VALUE
+  extraEnv: []
+    # - name: STATS__DB_URL
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: blockscout-stats-secret
+    #       key: STATS__DB_URL
+
+userOpsIndexer:
+  enabled: false
+    ## Image parametes
+  ##
+  image:
+    repository: ghcr.io/blockscout/user-ops-indexer
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+    grpc:
+      enabled: true
+      port: 8051
+    metricsPort: 6060
+
+  podAnnotations: {}
+
+  ## Annotations to add to user-ops-indexer deployment
+  annotations: {}
+
+  podSecurityContext: {}
+
+  securityContext: {}
+
+  ## Configure ingress resource that allow you to access the stats installation.
+  ## ref: http://kubernetes.io/docs/user-guide/ingress/
+  ##
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hostname: chart-example-stats.local
+    tls:
+      enabled: false
+      #secretName:
+    paths:
+      - path: /
+        pathType: Prefix
+
+  resources:
+    limits:
+      memory: "512Mi"
+      cpu: 250m
+    requests:
+      memory: 512Mi
+      cpu: 250m
+
+  ## Liveness probe
+  ##
+  livenessProbe:
+    enabled: false
+    path: /health
+    params:
+      initialDelaySeconds: 100
+      periodSeconds: 100
+      timeoutSeconds: 30
+  ## Readiness probe
+  ##
+  readinessProbe:
+    enabled: false
+    path: /health
+    params:
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 60
+  ## Stats ENV vars
+  ## ref: https://github.com/blockscout/blockscout-rs/tree/main/stats#env
+  env: []
+    # NAME: VALUE
+  envFromSecret: []
+    # NAME: VALUE
+  extraEnv: []
+    # - name: USER_OPS_INDEXER__DATABASE__CONNECT__URL
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: blockscout-userops-indexer-secret
+    #       key: USER_OPS_INDEXER__DATABASE__CONNECT__URL
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+## Node labels for blockscout-stack pod assignment
+## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+
+tolerations: []
+
+## Affinity for pod assignment
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}

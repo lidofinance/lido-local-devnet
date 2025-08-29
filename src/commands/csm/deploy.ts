@@ -61,7 +61,7 @@ export const DeployCSMContracts = command.cli({
       data: { ELECTRA_FORK_EPOCH, SLOTS_PER_EPOCH },
     } = await clClient.getConfig();
 
-    const blockscoutConfig = await state.getBlockScout();
+    const blockscoutConfig = await state.getBlockscout();
 
     const env: CSMENVConfig = {
       FOUNDRY_PROFILE: constants.FOUNDRY_PROFILE,

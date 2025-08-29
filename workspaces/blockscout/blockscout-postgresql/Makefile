@@ -5,7 +5,8 @@
 NAMESPACE ?= blockscout
 
 # Helm chart paths
-HELM_CHART_PATH = ../../../helm/vendor/postgresql
+HELM_CHART_ROOT_PATH ?= ../../../helm/vendor
+HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/postgresql
 HELM_VALUES_PATH = ./values.yaml
 
 # Release names
