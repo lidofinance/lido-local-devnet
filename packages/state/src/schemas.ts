@@ -24,6 +24,7 @@ export const NodesChainConfigSchema = z.object({
 export const ChainState = z.object({
   clPrivate: z.string().url(),
   clPublic: z.string().url(),
+  elClientType: z.string(), // geth | reth | ...
   elPrivate: z.string().url(),
   elPublic: z.string().url(),
   elWsPublic: z.string().url(),

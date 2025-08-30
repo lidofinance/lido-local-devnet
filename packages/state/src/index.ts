@@ -31,6 +31,10 @@ export class State extends BaseState {
     );
   }
 
+  async updateChain(state: ChainState) {
+    await this.updateProperties("chain", state);
+  }
+
   async getCSM<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
       {
@@ -169,12 +173,6 @@ export class State extends BaseState {
 
     return WalletSchema.parseAsync(wallet ?? sharedWallet);
   }
-
-  async updateChain(state: Partial<ChainState>) {
-    await this.updateProperties("chain", state);
-  }
-
-
 
   async updateCSM(jsonData: unknown) {
     await this.updateProperties("csm", jsonData);

@@ -1,5 +1,7 @@
 # Copyright Broadcom, Inc. All Rights Reserved.
 # SPDX-License-Identifier: APACHE-2.0
+# Default values for blockscout-posgresql.
+
 
 ## @section Global parameters
 ## Please, note that this will override the parameters, including dependencies, configured to use the global value

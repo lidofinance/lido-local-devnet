@@ -1,3 +1,4 @@
+import "./bigint.js";
 export * from "./command.js";
 export * from "./context.js";
 export * as Params from "./params.js";
