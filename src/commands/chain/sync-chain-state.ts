@@ -12,11 +12,11 @@ export const SyncChainState = command.isomorphic({
     const nodes = await state.getNodes();
     const nodesIngress = await state.getNodesIngress();
 
-
     await state.updateChain({
       clPrivate: `http://${nodes.cl[0].k8sService}:${nodes.cl[0].httpPort}`,
       clPublic: nodesIngress.cl[0].publicIngressUrl,
 
+      elClientType: nodes.el[0].clientType,
       elPrivate: `http://${nodes.el[0].k8sService}:${nodes.el[0].rpcPort}`,
       elPublic: nodesIngress.el[0].publicIngressUrl,
 

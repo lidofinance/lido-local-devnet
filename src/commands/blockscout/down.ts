@@ -10,6 +10,11 @@ export const BlockscoutDown = command.cli({
       services: { blockscout },
     } = dre;
 
+    if (!(await dre.state.blockscoutDeployed())) {
+      logger.log("Blockscout already stopped.");
+      return;
+    }
+
     const { elPrivate, elWsPrivate} = await state.getChain();
 
     const blockScoutSh = blockscout.sh({

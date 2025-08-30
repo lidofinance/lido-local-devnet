@@ -206,7 +206,7 @@ blockscout:
     enabled: true
     className: "public"
     annotations: {}
-    hostname: ${SECRET_INGRESS_HOST_PREFIX}-blockscout-backend.fusaka-devnet.valset-02.testnet.fi
+    hostname: blockscout-backend.valset-02.testnet.fi
     tls:
       enabled: false
       #secretName:
@@ -276,7 +276,7 @@ frontend:
     enabled: true
     className: "public"
     annotations: {}
-    hostname: ${SECRET_INGRESS_HOST_PREFIX}-blockscout.fusaka-devnet.valset-02.testnet.fi
+    hostname: blockscout.valset-02.testnet.fi
     tls:
       enabled: false
       #secretName:
@@ -366,7 +366,7 @@ stats:
     enabled: false
     className: "public"
     annotations: {}
-    hostname: ${SECRET_INGRESS_HOST_PREFIX}-blockscout-stats.fusaka-devnet.valset-02.testnet.fi
+    hostname: blockscout-stats.valset-02.testnet.fi
     tls:
       enabled: false
       #secretName:

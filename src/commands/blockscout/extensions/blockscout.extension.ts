@@ -7,6 +7,7 @@ import { z } from "zod";
 // augmenting the StateInterface
 declare module "@devnet/state" {
   export interface StateInterface {
+    blockscoutDeployed(): Promise<boolean>;
     getBlockscout<M extends boolean = true>(must?: M,): Promise<M extends true ? BlockscoutState : Partial<BlockscoutState>>;
     removeBlockscout(): Promise<void>;
     updateBlockscout(state: BlockscoutState): Promise<void>;
@@ -32,6 +33,10 @@ export const blockscoutExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
   dre.state.removeBlockscout = (async function () {
     await dre.state.updateProperties("blockscout", {});
   });
+
+  dre.state.blockscoutDeployed = (async function () {
+    return dre.state.getBlockscout(false) !== undefined;
+  })
 
   dre.state.getBlockscout = (async function <M extends boolean = true>(must: M = true as M) {
     return dre.state.getProperties(
