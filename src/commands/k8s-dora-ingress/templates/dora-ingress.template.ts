@@ -26,7 +26,7 @@ export const doraIngressTmpl =  async (
       ingressClassName: "public",
       rules: [
         {
-          host: `${process.env.SECRET_INGRESS_HOST_PREFIX}-dora.fusaka-devnet.valset-02.testnet.fi`,
+          host: `${process.env.GLOBAL_INGRESS_HOST_PREFIX}-dora.fusaka-devnet.valset-02.testnet.fi`,
           http: {
             paths: [
               {

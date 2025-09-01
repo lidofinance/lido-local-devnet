@@ -3,6 +3,7 @@ import { blockscout } from "./blockscout.js";
 import { council } from "./council-daemon.js";
 import { csm } from "./csm.js";
 import { dataBus } from "./data-bus.js";
+import { dockerRegistry } from "./docker-registry.js";
 import { dsmBots } from "./dsm-bots.js";
 import { kapi } from "./kapi.js";
 import { kurtosis } from "./kurtosis.js";
@@ -24,6 +25,7 @@ export const serviceConfigs = {
   council,
   dataBus,
   dsmBots,
+  dockerRegistry
 };
 
 export type EmbeddedServicesConfigs = typeof serviceConfigs;

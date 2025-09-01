@@ -3,12 +3,21 @@ import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
 import { Config, StateInterface } from "@devnet/state";
 import { z } from "zod";
 
+const isEmpty = (obj: object): obj is Record<string, never> => {
+  for (const prop in obj) {
+    if (Object.hasOwn(obj, prop)) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 // augmenting the StateInterface
 declare module "@devnet/state" {
   export interface StateInterface {
-    blockscoutDeployed(): Promise<boolean>;
     getBlockscout<M extends boolean = true>(must?: M,): Promise<M extends true ? BlockscoutState : Partial<BlockscoutState>>;
+    isBlockscoutDeployed(): Promise<boolean>;
     removeBlockscout(): Promise<void>;
     updateBlockscout(state: BlockscoutState): Promise<void>;
   }
@@ -34,8 +43,9 @@ export const blockscoutExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
     await dre.state.updateProperties("blockscout", {});
   });
 
-  dre.state.blockscoutDeployed = (async function () {
-    return dre.state.getBlockscout(false) !== undefined;
+  dre.state.isBlockscoutDeployed = (async function () {
+    const state = await dre.state.getBlockscout(false);
+    return state && !isEmpty(state);
   })
 
   dre.state.getBlockscout = (async function <M extends boolean = true>(must: M = true as M) {

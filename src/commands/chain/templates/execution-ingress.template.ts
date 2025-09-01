@@ -22,7 +22,7 @@ export const executionIngressTmpl =  async (
       ingressClassName: "public",
       rules: [
         {
-          host: `${process.env.SECRET_INGRESS_HOST_PREFIX}-execution.fusaka-devnet.valset-02.testnet.fi`,
+          host: `${process.env.GLOBAL_INGRESS_HOST_PREFIX}-execution.fusaka-devnet.valset-02.testnet.fi`,
           http: {
             paths: [
               {

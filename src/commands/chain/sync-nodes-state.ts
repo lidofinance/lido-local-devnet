@@ -11,13 +11,18 @@ import {
 import { nodesExtension } from "./extensions/nodes.extension.js";
 
 const SUPPORTED_CL = ["lighthouse", "teku", "prysm"];
-const SUPPORTED_EL = ["geth", "reth"];
+const SUPPORTED_EL = ["geth", "reth", "lodestar"];
 
 const elRegex = new RegExp(`^el-[1-9]-(${SUPPORTED_EL.join('|')})-(${SUPPORTED_CL.join('|')})$`);
 const clRegex = new RegExp(`^cl-[1-9]-(${SUPPORTED_CL.join("|")})-(${SUPPORTED_EL.join('|')})$`);
 const vcRegex = new RegExp(`^vc-[1-9]-(${SUPPORTED_EL.join("|")})-(${SUPPORTED_CL.join('|')})$`);
 
 const getClientTypeFromK8sServiceName = (k8sServiceName: string, regex: RegExp) => {
+  const results = k8sServiceName.match(regex);
+  return results?.[1];
+}
+
+const getVcClientTypeFromK8sServiceName = (k8sServiceName: string, regex: RegExp) => {
   const results = k8sServiceName.match(regex);
   return results?.[2];
 }
@@ -106,7 +111,7 @@ export const SyncNodesState = command.cli({
         return new DevNetError("❌ Validator client nodes k8s service name not found or empty");
       }
 
-      const clientType = getClientTypeFromK8sServiceName(k8sServiceName, vcRegex);
+      const clientType = getVcClientTypeFromK8sServiceName(k8sServiceName, vcRegex);
 
       if (!clientType) {
         return new DevNetError("❌ Validator client node client type not found or empty");

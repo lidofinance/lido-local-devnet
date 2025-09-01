@@ -2,15 +2,15 @@
 # This Makefile provides convenient commands for managing Helm charts
 
 # Default namespace for Helm operations
-NAMESPACE ?= kt-my-devnet-blockscout
+NAMESPACE ?= kt-my-devnet-docker-registry
 
 # Helm chart paths
 HELM_CHART_ROOT_PATH ?= ../../../helm/vendor
-HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/postgresql
+HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/docker-registry-ui
 HELM_VALUES_PATH = ./values.yaml
 
 # Release names
-HELM_RELEASE = postgresql
+HELM_RELEASE = docker-registry-ui
 
 # Default Helm timeout
 TIMEOUT ?= 5m
@@ -34,12 +34,14 @@ else
 endif
 
 # Default ENV Variables specific to chart
-# -
+DOCKER_REGISTRY_INGRESS_HOSTNAME ?= docker-registry.devnet.valset-02.testnet.fi
+DOCKER_REGISTRY_UI_INGRESS_HOSTNAME ?= docker-registry-ui.devnet.valset-02.testnet.fi
 
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
-
+	--set ui.ingress.host=$(DOCKER_REGISTRY_UI_INGRESS_HOSTNAME) \
+	--set registry.ingress.host=$(DOCKER_REGISTRY_INGRESS_HOSTNAME)
 endef
 
 # Lint Helm chart

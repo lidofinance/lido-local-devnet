@@ -1005,6 +1005,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@devnet/helm@workspace:packages/helm":
+  version: 0.0.0-use.local
+  resolution: "@devnet/helm@workspace:packages/helm"
+  dependencies:
+    "@oclif/core": "npm:^4.0.37"
+    "@oclif/plugin-help": "npm:^6.2.19"
+    "@types/node": "npm:^22.10.5"
+    dotenv: "npm:^17.2.1"
+    eslint: "npm:^8"
+    eslint-config-oclif: "npm:^5"
+    eslint-config-oclif-typescript: "npm:^3"
+    eslint-config-prettier: "npm:^9"
+    eslint-plugin-prettier: "npm:^5.2.2"
+    prettier: "npm:^3.4.2"
+    typescript: "npm:^5"
+  languageName: unknown
+  linkType: soft
+
 "@devnet/k8s@workspace:*, @devnet/k8s@workspace:packages/k8s":
   version: 0.0.0-use.local
   resolution: "@devnet/k8s@workspace:packages/k8s"

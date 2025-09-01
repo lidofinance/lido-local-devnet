@@ -1,0 +1,100 @@
+{{- if .Values.registry.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "docker-registry-ui.fullname" . }}-registry-server
+  labels:
+    app.kubernetes.io/component	: registry-server
+    {{- include "docker-registry-ui.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.registry.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component	: registry-server
+      {{- include "docker-registry-ui.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component	: registry-server
+        {{- include "docker-registry-ui.labels" . | nindent 8 }}
+      {{- if .Values.registry.annotations }}
+      annotations:
+        {{- toYaml .Values.registry.annotations | nindent 8 }}
+      {{- end }}
+    spec:
+    {{- if ne (.Values.registry.imagePullSecrets | toString) "-" }}
+      imagePullSecrets:
+        {{- toYaml .Values.registry.imagePullSecrets | nindent 8 }}
+    {{- else }}
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+    {{- end}}
+      containers:
+        - name: "registry-server"
+          image: {{ .Values.registry.image | quote }}
+          imagePullPolicy: {{ if ne (.Values.registry.imagePullPolicy | toString) "-" }}{{ .Values.registry.imagePullPolicy }}{{ else }}{{ .Values.global.imagePullPolicy }}{{ end }}
+          env:
+            - name: REGISTRY_HTTP_ADDR
+              value: {{ printf "%s:%d" "0.0.0.0" (.Values.registry.service.targetPort | int) }}
+            {{- if .Values.ui.deleteImages }}
+            - name: REGISTRY_STORAGE_DELETE_ENABLED
+              value: 'true'
+            {{- end }}
+            {{- if .Values.registry.auth.basic.enabled }}
+            - name: REGISTRY_AUTH
+              value: htpasswd
+            - name: REGISTRY_AUTH_HTPASSWD_REALM
+              value: {{ if ne (.Values.registry.auth.basic.realm | toString) "-" }}{{ .Values.registry.auth.basic.realm }}{{ else }}{{ "Docker registry" }}{{ end }}
+            - name: REGISTRY_AUTH_HTPASSWD_PATH
+              value: {{ if ne (.Values.registry.auth.basic.htpasswdPath | toString) "-" }}{{ .Values.registry.auth.basic.htpasswdPath }}{{ else }}{{ "/etc/docker/registry/auth/htpasswd" }}{{ end }}
+            {{- end }}
+            {{- range .Values.registry.extraEnv }}
+            - name: {{ .name | quote }}
+              value: {{ .value | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.registry.service.targetPort }}
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/lib/registry
+              name: data
+            {{- if .Values.registry.auth.basic.enabled }}
+            - name: htpasswd
+              mountPath: {{ if ne (.Values.registry.auth.basic.htpasswdPath | toString) "-" }}{{ dir .Values.registry.auth.basic.htpasswdPath }}{{ else }}{{ "/etc/docker/registry/auth" }}{{ end }}
+              readOnly: true
+            {{- end }}
+          resources:
+            {{- toYaml .Values.registry.resources | nindent 12 }}
+      volumes:
+        - name: data
+          {{- if .Values.registry.dataVolume }}
+            {{- toYaml .Values.registry.dataVolume | nindent 10 }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- if .Values.registry.auth.basic.enabled }}
+        - name: htpasswd
+          secret:
+            secretName: {{ if .Values.registry.auth.basic.secretName  }}{{ .Values.registry.auth.basic.secretName }}{{ else }}{{ fail "Basic auth secret name is required" }}{{ end }}
+        {{- end }}
+      {{- with .Values.registry.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.registry.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.registry.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if not .Values.registry.runAsRoot }}
+      securityContext:
+        runAsUser: 101
+    {{- end }}
+    {{- if .Values.registry.additionalSpec }}
+      {{ tpl .Values.registry.additionalSpec . | nindent 6 | trim }}
+    {{- end }}
+{{- end }}
