@@ -23,7 +23,7 @@ ui:
   # Remove the menu that show the dialogs to add, remove and change the endpoint of your docker registry.
   singleRegistry: true
   # By default, the UI will check on every requests if your registry is secured or not (you will see `401` responses in your console). Set to `true` if your registry uses Basic Authentication and divide by two the number of call to your registry.
-  registrySecured: false
+  registrySecured: true
 
   # Show number of tags per images on catalog page. This will produce + nb images requests, not recommended on large registries.
   showCatalogNbTags: false
@@ -137,7 +137,12 @@ ui:
     # TLS configuration
     tls: []
     # Annotations to apply to the user interface ingress.
-    annotations: {}
+    annotations:
+      "nginx.ingress.kubernetes.io/enable-cors": "true"
+      "nginx.ingress.kubernetes.io/cors-allow-credentials": "true"
+      "nginx.ingress.kubernetes.io/cors-allow-origin": "*"
+      "nginx.ingress.kubernetes.io/cors-allow-methods": "GET, POST, PUT, DELETE, OPTIONS"
+      "nginx.ingress.kubernetes.io/cors-allow-headers": "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
     # If you want a custom path, you can try this example:
     # path: /ui(/|$)(.*)
     # annotations:
@@ -174,13 +179,13 @@ registry:
   auth:
     basic:
       # Enable basic auth for Registry.
-      enabled: false
+      enabled: true
       # Basic auth realm.
       realm: Docker registry
       # Full path for htpasswd file. Note that filename should match the secret key.
       htpasswdPath: /etc/docker/registry/auth/htpasswd
       # htpasswd secret name volume to mount.
-      secretName: ''
+      secretName: 'registry-auth-secret'
 
   service:
     # Type of service: `LoadBalancer`, `ClusterIP` or `NodePort`. If using `NodePort` service
@@ -211,7 +216,12 @@ registry:
     # TLS configuration
     tls: []
     # Annotations to apply to the registry server ingress.
-    annotations: {}
+    annotations:
+      "nginx.ingress.kubernetes.io/enable-cors": "true"
+      "nginx.ingress.kubernetes.io/cors-allow-credentials": "true"
+      "nginx.ingress.kubernetes.io/cors-allow-origin": "*"
+      "nginx.ingress.kubernetes.io/cors-allow-methods": "GET, POST, PUT, DELETE, OPTIONS"
+      "nginx.ingress.kubernetes.io/cors-allow-headers": "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
     # If you want a custom path, you can try this example:
     # path: /api(/|$)(.*)
     # annotations:
