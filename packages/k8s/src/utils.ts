@@ -1,5 +1,6 @@
 import type { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
 
+import { DevNetError } from "@devnet/utils";
 import * as k8s from "@kubernetes/client-node";
 import * as dotenv from "dotenv";
 
@@ -13,6 +14,18 @@ export async function getK8s() {
   kc.setCurrentContext(process.env.K8S_KUBECTL_DEFAULT_CONTEXT || "default");
 
   return kc;
+}
+
+export async function pingCluster(): Promise<void> {
+  const kc = await getK8s();
+  const k8sCoreApi = kc.makeApiClient(k8s.CoreV1Api);
+  try {
+    await k8sCoreApi.listNamespace();
+  } catch (error: unknown) {
+    throw new DevNetError(`Unable to connect to the cluster.
+      Ensure 'K8S_KUBECTL_DEFAULT_CONTEXT' env variable in '.env' is set.
+      Original error: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 export const getK8sService = async (
@@ -82,4 +95,12 @@ export const checkK8sServiceExists = async (
 )=> {
   const k8sServices = await getK8sService(dre, filter, namespace);
   return k8sServices.length > 0;
+}
+
+export const addPrefixToIngressHostname = (
+  hostname: string,
+) => {
+  const GLOBAL_INGRESS_HOST_PREFIX = process.env.GLOBAL_INGRESS_HOST_PREFIX ?? 'prefix';
+
+  return `${GLOBAL_INGRESS_HOST_PREFIX}-${hostname}`;
 }

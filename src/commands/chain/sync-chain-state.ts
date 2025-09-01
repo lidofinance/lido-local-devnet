@@ -4,7 +4,7 @@ export const SyncChainState = command.isomorphic({
   description:
     "Updates the network configuration using a specific Ethereum package in Kurtosis and stores the configuration in the local JSON database.",
   params: {},
-  async handler({ dre: { logger, state} }) {
+  async handler({ dre: { logger, state , network} }) {
     logger.log(
       "Syncing network configuration state",
     );
@@ -13,18 +13,18 @@ export const SyncChainState = command.isomorphic({
     const nodesIngress = await state.getNodesIngress();
 
     await state.updateChain({
-      clPrivate: `http://${nodes.cl[0].k8sService}:${nodes.cl[0].httpPort}`,
+      clPrivate: `http://${nodes.cl[0].k8sService}.kt-${network.name}.svc.cluster.local:${nodes.cl[0].httpPort}`,
       clPublic: nodesIngress.cl[0].publicIngressUrl,
 
       elClientType: nodes.el[0].clientType,
-      elPrivate: `http://${nodes.el[0].k8sService}:${nodes.el[0].rpcPort}`,
+      elPrivate: `http://${nodes.el[0].k8sService}.kt-${network.name}.svc.cluster.local:${nodes.el[0].rpcPort}`,
       elPublic: nodesIngress.el[0].publicIngressUrl,
 
-      elWsPublic: `http://${nodes.el[0].k8sService}:${nodes.el[0].rpcPort}`,
-      elWsPrivate: nodesIngress.el[0].publicIngressUrl,
+      elWsPrivate: `http://${nodes.el[0].k8sService}.kt-${network.name}.svc.cluster.local:${nodes.el[0].wsPort}`,
+      elWsPublic: nodesIngress.el[0].publicIngressUrl,
 
       validatorsApiPublic: nodesIngress.vc[0].publicIngressUrl,
-      validatorsApiPrivate: `http://${nodes.vc[0].k8sService}:${nodes.vc[0].httpValidatorPort}`,
+      validatorsApiPrivate: `http://${nodes.vc[0].k8sService}.kt-${network.name}.svc.cluster.local:${nodes.vc[0].httpValidatorPort}`,
     });
   },
 });

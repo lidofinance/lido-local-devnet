@@ -1,7 +1,9 @@
 import { command } from "@devnet/command";
+import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
+import { addPrefixToIngressHostname } from "@devnet/k8s";
+import path from "node:path";
 
 import { blockscoutExtension } from "./extensions/blockscout.extension.js";
-import path from "path";
 
 export const BlockscoutUp = command.cli({
   description: "Start Blockscout in k8s",
@@ -10,29 +12,35 @@ export const BlockscoutUp = command.cli({
   async handler({ dre, dre: { logger } }) {
     const {
       state,
-      network,
       services: { blockscout },
     } = dre;
 
-    if (await dre.state.blockscoutDeployed()) {
+    if (await dre.state.isBlockscoutDeployed()) {
       logger.log("Blockscout already deployed.");
       return;
     }
 
-    const HELM_CHART_ROOT_PATH = `../../../../helm/vendor`;
+
     const NAMESPACE = `kt-${dre.network.name}-blockscout`;
-    const BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME = process.env.BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME ??
-    "blockscout-backend.valset-02.testnet.fi";
-    const BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME = process.env.BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME ??
-    "blockscout.valset-02.testnet.fi";
+    const BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME = addPrefixToIngressHostname(
+      process.env.BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME ??
+        "blockscout-backend.valset-02.testnet.fi"
+    );
+    const BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME = addPrefixToIngressHostname(
+      process.env.BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME ??
+        "blockscout.valset-02.testnet.fi"
+    );
 
     const { elPrivate, elWsPrivate, elClientType } = await state.getChain();
 
+    console.log(HELM_VENDOR_CHARTS_ROOT_PATH, BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME);
+    console.log(path.join(blockscout.artifact.root, 'blockscout-postgresql'));
+
     const blockScoutPostgresqlSh = blockscout.sh({
-      cwd: path.join(blockscout.artifact.root, 'blockscout-stack'),
+      cwd: path.join(blockscout.artifact.root, 'blockscout-postgresql'),
       env: {
         NAMESPACE,
-        HELM_CHART_ROOT_PATH,
+        HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
       },
     });
 
@@ -44,10 +52,9 @@ export const BlockscoutUp = command.cli({
       cwd: path.join(blockscout.artifact.root, 'blockscout-stack'),
       env: {
         NAMESPACE,
-        HELM_CHART_ROOT_PATH,
+        HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
         // Makefile-related ENV vars for Helm charts overrides
         // see workspaces/blockscout/blockscout-*/Makefile
-        GLOBAL_INGRESS_HOST_PREFIX: process.env.SECRET_INGRESS_HOST_PREFIX || "random-prefix",
         BLOCKSCOUT_ETHEREUM_JSONRPC_VARIANT: elClientType,
         BLOCKSCOUT_ETHEREUM_JSONRPC_WS_URL: elWsPrivate,
         BLOCKSCOUT_ETHEREUM_JSONRPC_TRACE_URL: elPrivate,
@@ -64,7 +71,7 @@ export const BlockscoutUp = command.cli({
     const publicUrl = `http://${BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME}`;
     const publicBackendUrl = `http://${BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME}`;
 
-    logger.log(`Blockscout started successfully on URL: ${BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME}`);
+    logger.log(`Blockscout started on URL: ${BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME}`);
 
     await state.updateBlockscout({ url: publicUrl, api: `${publicBackendUrl}/api` });
   },

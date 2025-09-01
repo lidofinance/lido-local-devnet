@@ -1,0 +1,139 @@
+{{- if and (not .Values.ui.runAsRoot) (lt (.Values.ui.service.targetPort | int) 1024) }}
+{{ fail "When `ui.runAsRoot` is false `ui.service.targetPort` must be less than 1024." }}
+{{- end }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "docker-registry-ui.fullname" . }}-user-interface
+  labels:
+    app.kubernetes.io/component	: user-interface
+    {{- include "docker-registry-ui.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.ui.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component	: user-interface
+      {{- include "docker-registry-ui.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component	: user-interface
+        {{- include "docker-registry-ui.labels" . | nindent 8 }}
+      {{- if .Values.ui.annotations }}
+      annotations:
+        {{- toYaml .Values.ui.annotations | nindent 8 }}
+      {{- end }}
+    spec:
+    {{- if ne (.Values.ui.imagePullSecrets | toString) "-" }}
+      imagePullSecrets:
+        {{- toYaml .Values.ui.imagePullSecrets | nindent 8 }}
+    {{- else }}
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+    {{- end}}
+      containers:
+        - name: "registry-ui"
+          image: {{ .Values.ui.image | quote }}
+          imagePullPolicy: {{ if ne (.Values.ui.imagePullPolicy | toString) "-" }}{{ .Values.ui.imagePullPolicy }}{{ else }}{{ .Values.global.imagePullPolicy }}{{ end }}
+          env:
+            - name: REGISTRY_TITLE
+              value: {{ .Values.ui.title | quote }}
+            - name: DELETE_IMAGES
+              value: {{ .Values.ui.deleteImages | quote }}
+            {{- if .Values.ui.proxy }}
+            {{- if .Values.ui.dockerRegistryUrl }}
+            - name: NGINX_PROXY_PASS_URL
+              value: {{ .Values.ui.dockerRegistryUrl | quote }}
+            {{- else if .Values.registry.enabled }}
+            - name: NGINX_PROXY_PASS_URL
+              value: {{ printf "http://%s-registry-server:%d" (include "docker-registry-ui.fullname" .) (.Values.registry.service.port | int) }}
+            {{- end }}
+            {{- range $header := .Values.ui.nginxProxyHeaders }}
+            {{- range $key, $value := $header }}
+            - name: {{ printf "NGINX_PROXY_HEADER_%s" $key }}
+              value: {{ $value }}
+            {{- end }}
+            {{- end }}
+            {{- range $header := .Values.ui.nginxProxyPassHeaders }}
+            - name: {{ printf "NGINX_PROXY_PASS_HEADER_%s" $header }}
+            {{- end }}
+            {{- else }}
+            - name: REGISTRY_URL
+              value: {{ .Values.ui.dockerRegistryUrl | quote }}
+            {{- end }}
+            - name: PULL_URL
+              value: {{ .Values.ui.pullUrl | quote }}
+            - name: SHOW_CATALOG_NB_TAGS
+              value: {{ .Values.ui.showCatalogNbTags | quote }}
+            - name: SHOW_CONTENT_DIGEST
+              value: {{ .Values.ui.showContentDigest | quote }}
+            - name: SINGLE_REGISTRY
+              value: {{ .Values.ui.singleRegistry | quote }}
+            - name: CATALOG_ELEMENTS_LIMIT
+              value: {{ .Values.ui.catalogElementsLimit | quote }}
+            - name: HISTORY_CUSTOM_LABELS
+              value: {{ .Values.ui.historyCustomLabels | join "," }}
+            - name: NGINX_LISTEN_PORT
+              value: {{ .Values.ui.service.targetPort | quote }}
+            - name: USE_CONTROL_CACHE_HEADER
+              value: {{ .Values.ui.useControlCacheHeader | quote }}
+            - name: TAGLIST_ORDER
+              value: {{ .Values.ui.taglistOrder | quote }}
+            - name: CATALOG_DEFAULT_EXPANDED
+              value: {{ .Values.ui.catalogDefaultExpanded | quote }}
+            - name: CATALOG_MIN_BRANCHES
+              value: {{ .Values.ui.catalogMinBranches | quote }}
+            - name: CATALOG_MAX_BRANCHES
+              value: {{ .Values.ui.catalogMaxBranches | quote }}
+            - name: TAGLIST_PAGE_SIZE
+              value: {{ .Values.ui.taglistPageSize | quote }}
+            - name: REGISTRY_SECURED
+              value: {{ .Values.ui.registrySecured | quote }}
+            - name: THEME
+              value: {{ .Values.ui.defaultTheme | quote }}
+            - name: THEME_PRIMARY_TEXT
+              value: {{ .Values.ui.theme.primaryText | quote }}
+            - name: THEME_NEUTRAL_TEXT
+              value: {{ .Values.ui.theme.neutralText | quote }}
+            - name: THEME_BACKGROUND
+              value: {{ .Values.ui.theme.background | quote }}
+            - name: THEME_HOVER_BACKGROUND
+              value: {{ .Values.ui.theme.hoverBackground | quote }}
+            - name: THEME_ACCENT_TEXT
+              value: {{ .Values.ui.theme.accentText | quote }}
+            - name: THEME_HEADER_TEXT
+              value: {{ .Values.ui.theme.headerText | quote }}
+            - name: THEME_HEADER_BACKGROUND
+              value: {{ .Values.ui.theme.headerBackground | quote }}
+            - name: THEME_FOOTER_TEXT
+              value: {{ .Values.ui.theme.footerText | quote }}
+            - name: THEME_FOOTER_NEUTRAL_TEXT
+              value: {{ .Values.ui.theme.footerNeutralText | quote }}
+            - name: THEME_FOOTER_BACKGROUND
+              value: {{ .Values.ui.theme.footerBackground | quote }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.ui.service.targetPort }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.ui.resources | nindent 12 }}
+      {{- with .Values.ui.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.ui.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.ui.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if not .Values.ui.runAsRoot }}
+      securityContext:
+        runAsUser: 101
+    {{- end }}
+    {{- if .Values.ui.additionalSpec }}
+      {{ tpl .Values.ui.additionalSpec . | nindent 6 | trim }}
+    {{- end }}
