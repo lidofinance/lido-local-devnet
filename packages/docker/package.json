@@ -13,12 +13,14 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
+    "@devnet/logger": "workspace:*",
     "@devnet/utils": "workspace:*",
     "@oclif/core": "^4.0.37",
     "@oclif/plugin-help": "^6.2.19",
     "@types/node": "^22.10.5",
     "dockerode": "^4.0.4",
     "dotenv": "^17.2.1",
+    "execa": "^9.5.2",
     "typescript": "^5"
   },
   "devDependencies": {

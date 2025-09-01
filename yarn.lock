@@ -989,6 +989,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@devnet/docker@workspace:packages/docker"
   dependencies:
+    "@devnet/logger": "workspace:*"
     "@devnet/utils": "workspace:*"
     "@oclif/core": "npm:^4.0.37"
     "@oclif/plugin-help": "npm:^6.2.19"
@@ -1000,6 +1001,7 @@ __metadata:
     eslint-config-oclif-typescript: "npm:^3"
     eslint-config-prettier: "npm:^9"
     eslint-plugin-prettier: "npm:^5.2.2"
+    execa: "npm:^9.5.2"
     prettier: "npm:^3.4.2"
     typescript: "npm:^5"
   languageName: unknown
