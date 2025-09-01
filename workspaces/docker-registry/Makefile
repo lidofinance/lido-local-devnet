@@ -41,7 +41,8 @@ DOCKER_REGISTRY_UI_INGRESS_HOSTNAME ?= docker-registry-ui.devnet.valset-02.testn
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
 	--set ui.ingress.host=$(DOCKER_REGISTRY_UI_INGRESS_HOSTNAME) \
-	--set registry.ingress.host=$(DOCKER_REGISTRY_INGRESS_HOSTNAME)
+	--set registry.ingress.host=$(DOCKER_REGISTRY_INGRESS_HOSTNAME) \
+	--set ui.dockerRegistryUrl=http://$(DOCKER_REGISTRY_INGRESS_HOSTNAME)
 endef
 
 # Lint Helm chart
