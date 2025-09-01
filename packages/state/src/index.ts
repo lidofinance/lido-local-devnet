@@ -8,7 +8,6 @@ import {
   ChainState,
   DataBusConfigSchema,
   KurtosisSchema,
-  LidoConfigSchema,
   ParsedConsensusGenesisStateSchema,
   WalletSchema,
 } from "./schemas.js";
@@ -81,36 +80,6 @@ export class State extends BaseState {
     const loadConfig = await KurtosisSchema.parseAsync(kurtosis);
 
     return loadConfig;
-  }
-
-  async getLido<M extends boolean = true>(must: M = true as M) {
-    return this.getProperties(
-      {
-        accountingOracle: "lidoCore.accountingOracle.proxy.address",
-        agent: "lidoCore.app:aragon-agent.proxy.address",
-        locator: "lidoCore.lidoLocator.proxy.address",
-        sanityChecker: "lidoCore.oracleReportSanityChecker.address",
-        tokenManager: "lidoCore.app:aragon-token-manager.proxy.address",
-        validatorExitBus: "lidoCore.validatorsExitBusOracle.proxy.address",
-        voting: "lidoCore.app:aragon-voting.proxy.address",
-        treasury:
-          "lidoCore.withdrawalVault.implementation.constructorArgs.1",
-
-        stakingRouter: "lidoCore.stakingRouter.proxy.address",
-        curatedModule: "lidoCore.app:node-operators-registry.proxy.address",
-        acl: "lidoCore.aragon-acl.proxy.address",
-        oracleDaemonConfig: "lidoCore.oracleDaemonConfig.address",
-        withdrawalVault: "lidoCore.withdrawalVault.proxy.address",
-        withdrawalQueue: "lidoCore.withdrawalQueueERC721.proxy.address",
-        withdrawalVaultImpl: "lidoCore.withdrawalVault.implementation.address",
-        validatorExitBusImpl: "lidoCore.validatorsExitBusOracle.implementation.address",
-        withdrawalQueueImpl: "lidoCore.withdrawalQueueERC721.implementation.address",
-        finance: "lidoCore.app:aragon-finance.proxy.address"
-      },
-      "lido",
-      LidoConfigSchema,
-      must,
-    );
   }
 
   async getNamedWallet() {
@@ -193,10 +162,6 @@ export class State extends BaseState {
 
   async updateElectraVerifier(jsonData: unknown) {
     await this.appState.update({ electraVerifier: jsonData });
-  }
-
-  async updateLido(jsonData: unknown) {
-    await this.updateProperties("lidoCore", jsonData);
   }
 
   async updateValidatorsData(newData: DepositDataResult) {

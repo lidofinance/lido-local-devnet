@@ -1,5 +1,6 @@
 import { Params, command } from "@devnet/command";
 
+import { lidoCoreExtension } from "./extensions/lido-core.extension.js";
 import { PrepareLidoCore } from "./prepare-repository.js";
 import { LidoCoreUpdateState } from "./update-state.js";
 import { LidoCoreVerify } from "./verify.js";
@@ -28,6 +29,7 @@ export const DeployLidoContracts = command.cli({
       required: true,
     }),
   },
+  extensions:[lidoCoreExtension],
   async handler({ dre, dre: { logger }, params }) {
     const { state, services, network } = dre;
     const { lidoCore } = services;

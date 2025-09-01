@@ -40,28 +40,6 @@ export const ParsedConsensusGenesisStateSchema = z.object({
   genesisTime: z.string(),
 });
 
-export const LidoConfigSchema = z.object({
-  accountingOracle: z.string(),
-  agent: z.string(),
-  locator: z.string(),
-  sanityChecker: z.string(),
-  tokenManager: z.string(),
-  validatorExitBus: z.string(),
-  voting: z.string(),
-  treasury: z.string(),
-  withdrawalVault: z.string(),
-  stakingRouter: z.string(),
-  curatedModule: z.string(),
-  acl: z.string(),
-  oracleDaemonConfig: z.string(),
-  withdrawalQueue: z.string(),
-  finance: z.string(),
-
-  withdrawalVaultImpl: z.string(),
-  withdrawalQueueImpl: z.string(),
-  validatorExitBusImpl: z.string(),
-});
-
 export const CSMConfigSchema = z.object({
   accounting: z.string(),
   earlyAdoption: z.string(),
@@ -96,7 +74,6 @@ export const WalletMnemonic = z.string();
 const ConfigSchema = z.object({
   chain: ChainState.partial().optional(),
   csm: CSMConfigSchema.partial().optional(),
-  lido: LidoConfigSchema.partial().optional(),
   wallet: WalletSchema.optional(),
   walletMnemonic: WalletMnemonic.optional(),
   parsedConsensusGenesisState:
@@ -106,7 +83,6 @@ const ConfigSchema = z.object({
 });
 
 export type ChainConfig = z.infer<typeof ChainState>;
-export type LidoConfig = z.infer<typeof LidoConfigSchema>;
 export type ParsedConsensusGenesisState = z.infer<
   typeof ParsedConsensusGenesisStateSchema
 >;
