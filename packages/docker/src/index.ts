@@ -1,14 +1,14 @@
-import Docker from "dockerode";
-
 import { DevNetError } from "@devnet/utils";
+import Docker from "dockerode";
+export * from "./registry.js";
 
 const docker = new Docker();
 
 export interface ContainerInfo {
+  client: string;
   id: string;
   ip: string;
   name: string;
-  client: string;
   ports: {
     privatePort?: number;
     privateUrl?: string;
