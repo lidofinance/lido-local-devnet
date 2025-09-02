@@ -13,6 +13,7 @@ export const csm = new DevnetServiceConfig({
     VERIFIER_API_KEY: "local-testnet",
     ARTIFACTS_DIR: "artifacts/latest/",
     DEPLOYED_VERIFIER: "artifacts/latest/deploy-verifier-devnet.json",
+    CSM_STAKING_MODULE_ID: "2",
   },
   env: {
     CHAIN: "local-devnet",

@@ -17,10 +17,12 @@ type CSMENVConfig = {
   CSM_ORACLE_2_ADDRESS: string;
   CSM_ORACLE_3_ADDRESS: string;
   CSM_SECOND_ADMIN_ADDRESS: string;
+  CSM_STAKING_MODULE_ID: string;
   DEPLOY_CONFIG: string;
   DEPLOYER_PRIVATE_KEY: string;
   DEVNET_CHAIN_ID: string;
   DEVNET_ELECTRA_EPOCH: string;
+  DEVNET_CAPELLA_EPOCH: string;
   DEVNET_GENESIS_TIME: string;
   DEVNET_SLOTS_PER_EPOCH: string;
   EVM_SCRIPT_EXECUTOR_ADDRESS: string;
@@ -61,7 +63,7 @@ export const DeployCSMContracts = command.cli({
     } = await clClient.getGenesis();
 
     const {
-      data: { ELECTRA_FORK_EPOCH, SLOTS_PER_EPOCH },
+      data: { ELECTRA_FORK_EPOCH, SLOTS_PER_EPOCH, CAPELLA_FORK_EPOCH },
     } = await clClient.getConfig();
 
     const blockscoutConfig = await state.getBlockscout();
@@ -80,6 +82,8 @@ export const DeployCSMContracts = command.cli({
       CSM_ORACLE_3_ADDRESS: oracle3.publicKey,
 
       CSM_SECOND_ADMIN_ADDRESS: secondDeployer.publicKey,
+      CSM_STAKING_MODULE_ID: constants.CSM_STAKING_MODULE_ID,
+      DEVNET_CAPELLA_EPOCH: CAPELLA_FORK_EPOCH,
       DEPLOY_CONFIG: constants.DEPLOY_CONFIG,
       DEPLOYER_PRIVATE_KEY: deployer.privateKey,
       DEVNET_CHAIN_ID: "32382",
