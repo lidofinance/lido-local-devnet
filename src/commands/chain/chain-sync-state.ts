@@ -1,20 +1,14 @@
 import {command} from "@devnet/command";
 
-import { ChainSyncNodesStateFromK8s } from "./chain-sync-nodes-state-from-k8s.js";
-import { K8sNodesIngressUp } from "./ingress-up.js";
-
 export const ChainSyncState = command.isomorphic({
   description:
     "Sync Chain state and place it in the state. Should be run after chain is up and nodes state synced",
   params: {},
-  async handler({ dre, dre: { logger, state , network} }) {
-    await dre.runCommand(K8sNodesIngressUp, {});
-
+  async handler({ dre: { logger, state , network} }) {
     logger.log(
       "Syncing network configuration state",
     );
     // TODO check that devnet is in k8s
-    await dre.runCommand(ChainSyncNodesStateFromK8s, {});
 
     const nodes = await state.getNodes();
     const nodesIngress = await state.getNodesIngress();

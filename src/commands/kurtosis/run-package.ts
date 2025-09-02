@@ -9,6 +9,12 @@ export const KurtosisRunPackage = command.isomorphic({
   params: { preset: Params.string({ description: "Kurtosis config name.", default: KURTOSIS_DEFAULT_PRESET }) },
   extensions: [kurtosisExtension],
   async handler({ dre, dre: { logger, state, services: { kurtosis } }, params: { preset } }) {
+
+    if (await state.isKurtosisDeployed()) {
+      logger.log(`Kurtosis already started with preset [${preset}]`);
+      return;
+    }
+
     logger.log(`Running Ethereum package with preset [${preset}] in Kurtosis...`);
     const configFileName = `${preset}.yml`;
     const file = await kurtosis.readYaml(configFileName).catch((error: any) => {

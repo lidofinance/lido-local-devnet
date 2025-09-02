@@ -53,6 +53,7 @@ export const DeployCSMContracts = command.cli({
     const { deployer, secondDeployer, oracle1, oracle2, oracle3 } =
       await state.getNamedWallet();
 
+    await network.waitCL();
     const clClient = await network.getCLClient();
 
     const {

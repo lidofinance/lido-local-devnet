@@ -1,6 +1,6 @@
 import { BeaconClient } from "@devnet/cl-client";
 import { DevNetLogger } from "@devnet/logger";
-import { State, StateInterface } from "@devnet/state";
+import { StateInterface } from "@devnet/state";
 import { Network } from "@devnet/types";
 import { assert } from "@devnet/utils";
 import {
@@ -37,11 +37,36 @@ export class DevNetDRENetwork {
     return wallet as AbstractSigner<Provider>;
   }
 
+  public async waitCL() {
+    const { clPublic } = await this.state.getChain();
+    this.logger.log(`Ensuring the consensus node at ${clPublic} is ready...`);
+    await this.fetchGenesisWithRetry();
+    this.logger.log("Consensus node is ready.");
+  }
+
   public async waitEL() {
     const { elPublic } = await this.state.getChain();
     this.logger.log(`Ensuring the execution node at ${elPublic} is ready...`);
     await this.sendTransactionWithRetry();
     this.logger.log("Execution node is ready.");
+  }
+
+  private async fetchGenesisWithRetry(): Promise<void> {
+    const clClient = await this.getCLClient();
+
+    const attemptToFetchGenesis = async (): Promise<void> => {
+      try {
+        await clClient.getGenesis();
+      } catch {
+        this.logger.log(
+          "Consensus node not ready yet... Retrying in 5 seconds",
+        );
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        return attemptToFetchGenesis();
+      }
+    };
+
+    return attemptToFetchGenesis();
   }
 
   private async sendTransactionWithRetry(
