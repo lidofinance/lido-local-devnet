@@ -158,7 +158,7 @@ const applyExtensions = (dre: DevNetRuntimeEnvironmentInterface) => {
     // if (!applyedExtensions.has(extension)) {
       extension(dre);
       // applyedExtensions.set(extension, true);
-      dre.logger.log(`  [${extension.name}] applied`);
+      // dre.logger.log(`  [${extension.name}] applied`);
     // }
   });
 };

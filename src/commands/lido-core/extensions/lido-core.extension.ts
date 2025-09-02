@@ -56,7 +56,7 @@ export const lidoCoreExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
   dre.state.isLidoDeployed = (async function () {
     const state = await dre.state.getLido(false);
     return state && !isEmptyObject(state);
-  })
+  });
 
   dre.state.getLido = (async function<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
