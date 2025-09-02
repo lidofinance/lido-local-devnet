@@ -36,6 +36,7 @@ export const DeployLidoContracts = command.cli({
     const { constants } = lidoCore.config;
 
     const { elPublic } = await state.getChain();
+    await network.waitCL();
     const clClient = await network.getCLClient();
 
     const {
