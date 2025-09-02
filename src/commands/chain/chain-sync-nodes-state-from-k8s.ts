@@ -27,7 +27,7 @@ const getVcClientTypeFromK8sServiceName = (k8sServiceName: string, regex: RegExp
   return results?.[2];
 }
 
-export const SyncNodesState = command.cli({
+export const ChainSyncNodesStateFromK8s = command.cli({
   description:
     "Get nodes state from K8s and save it to JSON state",
   params: {},

@@ -1,6 +1,7 @@
 import { BeaconClient } from "@devnet/cl-client";
 import { DevNetLogger } from "@devnet/logger";
 import { State, StateInterface } from "@devnet/state";
+import { Network } from "@devnet/types";
 import { assert } from "@devnet/utils";
 import {
   AbstractSigner,
@@ -12,10 +13,10 @@ import {
 } from "ethers";
 
 export class DevNetDRENetwork {
-  name: string;
+  public readonly name: Network;
   private logger: DevNetLogger;
   private state: StateInterface;
-  constructor(network: string, state: StateInterface, logger: DevNetLogger) {
+  constructor(network: Network, state: StateInterface, logger: DevNetLogger) {
     this.name = network;
     this.state = state;
     this.logger = logger;

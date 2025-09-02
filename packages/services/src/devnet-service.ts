@@ -7,6 +7,7 @@ import {
   getServiceInfoByLabel,
 } from "@devnet/docker";
 import { DevNetLogger } from "@devnet/logger";
+import { ArtifactRoot, Network, NetworkArtifactRoot } from "@devnet/types";
 import {
   applyColor,
   getCachedColor,
@@ -41,11 +42,12 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
 
   private commandName: string;
   private logger: DevNetLogger;
-  private network: string;
+  private network: Network;
 
-  constructor(
+
+  protected constructor(
     name: Name,
-    network: string,
+    network: Network,
     logger: DevNetLogger,
     commandName: string,
     artifact: DevnetServiceArtifact,
@@ -61,14 +63,14 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
   }
 
   static async create<Name extends keyof DevNetServicesConfigs>(
-    rootPath: string,
-    network: string,
+    networkArtifactRootPath: NetworkArtifactRoot,
+    network: Network,
     logger: DevNetLogger,
     commandName: string,
     name: Name,
   ): Promise<DevNetService<Name>> {
     const artifact = await DevnetServiceArtifact.create(
-      rootPath,
+      networkArtifactRootPath,
       serviceConfigs[name],
       logger,
     );

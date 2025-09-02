@@ -1,8 +1,8 @@
 import { Params, command } from "@devnet/command";
 
 import { BlockscoutUp } from "../blockscout/up.js";
-import { KurtosisGetInfo } from "../chain/info.js";
-import { KurtosisUp } from "../chain/up.js";
+import { ChainGetInfo } from "../chain/info.js";
+import { ChainUp } from "../chain/up.js";
 import { CouncilUp } from "../council/up.js";
 import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
@@ -57,7 +57,7 @@ export const PectraDevNetUp = command.cli({
       ref: "develop",
     });
 
-    await dre.runCommand(KurtosisUp, { preset: "csm-v2" });
+    await dre.runCommand(ChainUp, { preset: "csm-v2" });
     logger.log("✅ Network initialized.");
 
     await dre.runCommand(BlockscoutUp, {});
@@ -151,6 +151,6 @@ export const PectraDevNetUp = command.cli({
     await dre.runCommand(ValidatorAdd, {});
     logger.log("✅ Validator keys added.");
 
-    await dre.runCommand(KurtosisGetInfo, {});
+    await dre.runCommand(ChainGetInfo, {});
   },
 });

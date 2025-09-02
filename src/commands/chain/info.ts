@@ -1,7 +1,7 @@
 import { command } from "@devnet/command";
 
-export const KurtosisGetInfo = command.cli({
-  description: "Retrieves and displays information about the Kurtosis enclave.",
+export const ChainGetInfo = command.cli({
+  description: "Retrieves and displays information about the chain.",
   params: {},
   async handler({
     dre: {

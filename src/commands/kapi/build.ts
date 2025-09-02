@@ -16,8 +16,8 @@ export const KapiBuild = command.cli({
       buildContext: '.',
       imageName: IMAGE,
       tag: TAG,
-      password: 'test',
-      username: 'test',
+      password: process.env.DOCKER_REGISTRY_USERNAME ?? '',
+      username: process.env.DOCKER_REGISTRY_PASSWORD ?? '',
     })
 
     logger.log(`Kapi image pushed to ${dockerRegistry.registryUrl}/${IMAGE}:${TAG}`)

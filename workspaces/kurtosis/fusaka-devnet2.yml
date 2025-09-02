@@ -48,7 +48,7 @@ participants_matrix:
 
 network_params:
   network_id: "32382"
-  fulu_fork_epoch: 10
+  fulu_fork_epoch: 5
   bpo_1_epoch: 32
   bpo_1_max_blobs: 12
   bpo_1_target_blobs: 9

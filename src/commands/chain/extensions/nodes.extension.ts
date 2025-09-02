@@ -8,6 +8,7 @@ import { z } from "zod";
 declare module "@devnet/state" {
   export interface StateInterface {
     getNodes<M extends boolean = true>(must?: M,): Promise<M extends true ? NodesState : Partial<NodesState>>;
+    removeNodes(): Promise<void>;
     updateNodes(options: NodesState): Promise<void>;
   }
 
@@ -46,6 +47,10 @@ export type NodesState = z.infer<typeof NodesState>;
 export const nodesExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
   dre.state.updateNodes = (async function (state: NodesState) {
     await dre.state.updateProperties("nodes", state);
+  });
+
+  dre.state.removeNodes = (async function () {
+    await dre.state.updateProperties("nodes", {});
   });
 
   dre.state.getNodes = (async function <M extends boolean = true>(must: M = true as M) {

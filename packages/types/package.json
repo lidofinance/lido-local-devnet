@@ -1,5 +1,5 @@
 {
-  "name": "@devnet/state",
+  "name": "@devnet/types",
   "version": "1.0.0",
   "type": "module",
   "main": "dist/index.js",
@@ -13,14 +13,13 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
-    "@devnet/keygen": "workspace:*",
-    "@devnet/types": "workspace:*",
+    "@oclif/core": "^4.0.37",
+    "@oclif/plugin-help": "^6.2.19",
     "@types/node": "^22.10.5",
-    "typescript": "^5",
-    "zod": "^3.24.1"
+    "dotenv": "^17.2.1",
+    "typescript": "^5"
   },
   "devDependencies": {
-    "@types/dockerode": "^3.3.34",
     "eslint": "^8",
     "eslint-config-oclif": "^5",
     "eslint-config-oclif-typescript": "^3",

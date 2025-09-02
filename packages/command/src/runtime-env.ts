@@ -1,11 +1,13 @@
 import { DevNetLogger } from "@devnet/logger";
 import { DevnetServiceRegistry } from "@devnet/service";
 import { State, StateInterface } from "@devnet/state";
+import { ChainRoot, Network } from "@devnet/types";
 import { assert } from "@devnet/utils";
 import { Config as OclifConfig } from "@oclif/core";
 import * as dotenv from "dotenv";
 import { readFile, rm } from "node:fs/promises";
 import * as YAML from "yaml";
+import { z } from "zod";
 
 import { FactoryResult } from "./command.js";
 import { USER_CONFIG_PATH } from "./constants.js";
@@ -13,8 +15,26 @@ import { DevNetDRENetwork } from "./network/index.js";
 
 dotenv.config({ path: '.env' });
 
-export const loadUserConfig = async () =>
-  YAML.parse(await readFile(USER_CONFIG_PATH, "utf-8"));
+// TODO make zod from json-schema
+const YamlConfig = z.object({
+  networks: z.array(
+    z.object({
+      name: z.string(),
+      chain: z.record(z.string(), z.any()).optional(),
+      lido: z.record(z.string(), z.any()).optional(),
+      csm: z.record(z.string(), z.any()).optional(),
+      walletMnemonic: z.string().optional(),
+    })
+  )
+});
+type YamlConfig = z.infer<typeof YamlConfig>;
+
+const loadUserYamlConfig = async (): Promise<YamlConfig> => {
+  const parsedYaml = YAML.parse(await readFile(USER_CONFIG_PATH, "utf-8"));
+
+  return YamlConfig.parse(parsedYaml);
+}
+
 
 export interface DevNetRuntimeEnvironmentInterface {
   clean(): Promise<void>;
@@ -43,8 +63,8 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
 
   private readonly registry: DevnetServiceRegistry;
 
-  constructor(
-    network: string,
+  protected constructor(
+    network: Network,
     rawConfig: unknown,
     registry: DevnetServiceRegistry,
     logger: DevNetLogger,
@@ -53,7 +73,8 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
     this.state = new State(
       rawConfig,
       registry.root,
-      registry.services.kurtosis.artifact.root,
+      // TODO make this dynamic (get rid of kurtosis knowledge here)
+      ChainRoot.parse(registry.services.kurtosis.artifact.root),
     );
     this.network = new DevNetDRENetwork(network, this.state, logger);
     this.services = registry.services;
@@ -66,17 +87,19 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
   }
 
   static async create(
-    network: string,
+    network: Network,
     commandName: string,
     oclifConfig: OclifConfig,
   ): Promise<DevNetRuntimeEnvironmentInterface> {
     const logger = new DevNetLogger(network, commandName);
-    const userConfig = await loadUserConfig().catch(() =>
+    const userConfig = await loadUserYamlConfig().catch(() =>
       console.log("User config not found, use empty object"),
     );
 
+    console.log('userConfig', userConfig);
+
     const networkConfig =
-      userConfig?.networks?.find((net: any) => net?.name === network) ?? {};
+      userConfig?.networks?.find((net) => net?.name === network) ?? {};
 
     const registry = await DevnetServiceRegistry.create(
       network,
