@@ -125,10 +125,10 @@ export class DevNetCommand extends BaseCommand {
 
   public async run(): Promise<void> {
     const ctor = this.constructor as typeof DevNetCommand;
-    await executeCommandWithLogging(
+    return await executeCommandWithLogging(
       async () => {
         await this.ctx.dre.runHooks();
-        await ctor.handler(this.ctx);
+        return await ctor.handler(this.ctx);
       },
       this.ctx,
       ctor.description!,
@@ -137,22 +137,23 @@ export class DevNetCommand extends BaseCommand {
 }
 
 export type InferredFlags<T> = T extends FlagInput<infer F> ? F : unknown;
+export type CmdReturn<CMD> = CMD extends FactoryResult<any, infer F> ? F : unknown;
 
-type CommandOptions<Params extends Record<string, any>> = {
+type CommandOptions<Params extends Record<string, any>, R> = {
   description: string;
   extensions?: CustomDevNetExtension[],
-  handler: (ctx: CustomDevNetContext<Params, typeof DevNetCommand>) => Promise<any>;
+  handler: (ctx: CustomDevNetContext<Params, typeof DevNetCommand>) => Promise<R>;
   params: Params;
 };
 
-export type FactoryResult<Params extends Record<string, any>> = {
-  exec(dre: DevNetRuntimeEnvironmentInterface, params: InferredFlags<Params>): Promise<any>;
+export type FactoryResult<Params extends Record<string, any>, R> = {
+  exec(dre: DevNetRuntimeEnvironmentInterface, params: InferredFlags<Params>): Promise<R>;
 } & { _internalParams: InferredFlags<Params> } & typeof DevNetCommand;
 
 const extensions: CustomDevNetExtension[] = [];
 
 const applyExtensions = (dre: DevNetRuntimeEnvironmentInterface) => {
-  dre.logger.log(`Applying extensions`);
+  // dre.logger.log(`Applying extensions`);
   extensions?.forEach(extension => {
     // if (!applyedExtensions.has(extension)) {
       extension(dre);
@@ -162,9 +163,9 @@ const applyExtensions = (dre: DevNetRuntimeEnvironmentInterface) => {
   });
 };
 
-function isomorphic<F extends Record<string, any>>(
-  options: CommandOptions<F>,
-): FactoryResult<F> {
+function isomorphic<F extends Record<string, any>, R>(
+  options: CommandOptions<F, R>,
+): FactoryResult<F, R> {
   extensions.push(...options.extensions ?? []);
 
   class WrappedCommand extends DevNetCommand {
@@ -186,7 +187,7 @@ function isomorphic<F extends Record<string, any>>(
       this: H,
       dre: DevNetRuntimeEnvironment,
       params: InferredFlags<F>,
-    ): Promise<void> {
+    ): Promise<R> {
       const paramsWithNetwork = {
         ...params,
         network: dre.network.name,
@@ -195,7 +196,7 @@ function isomorphic<F extends Record<string, any>>(
         dre: dre.clone(this.id),
         params: paramsWithNetwork,
       });
-      await executeCommandWithLogging(
+      return await executeCommandWithLogging(
         () => this.handler(context),
         context,
         this.description!,
@@ -204,15 +205,15 @@ function isomorphic<F extends Record<string, any>>(
 
     static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {
       applyExtensions(ctx.dre);
-      await options.handler(ctx);
+      return await options.handler(ctx);
     }
   }
-  return WrappedCommand as FactoryResult<F>;
+  return WrappedCommand as FactoryResult<F, R>;
 }
 
-function cli<F extends Record<string, any>>(
-  options: CommandOptions<F>,
-): FactoryResult<F> {
+function cli<F extends Record<string, any>, R>(
+  options: CommandOptions<F, R>,
+): FactoryResult<F, R> {
   extensions.push(...options.extensions ?? []);
 
   class WrappedCommand extends DevNetCommand {
@@ -234,7 +235,7 @@ function cli<F extends Record<string, any>>(
       this: H,
       dre: DevNetRuntimeEnvironment,
       params: InferredFlags<F>,
-    ): Promise<void> {
+    ): Promise<R> {
       const paramsWithNetwork = {
         ...params,
         network: dre.network.name,
@@ -243,7 +244,7 @@ function cli<F extends Record<string, any>>(
         dre: dre.clone(this.id),
         params: paramsWithNetwork,
       });
-      await executeCommandWithLogging(
+      return await executeCommandWithLogging(
         () => this.handler(context),
         context,
         this.description!,
@@ -253,15 +254,15 @@ function cli<F extends Record<string, any>>(
     static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {
       applyExtensions(ctx.dre);
 
-      await options.handler(ctx);
+      return await options.handler(ctx);
     }
   }
-  return WrappedCommand as FactoryResult<F>;
+  return WrappedCommand as FactoryResult<F, R>;
 }
 
-function hidden<F extends Record<string, any>>(
-  options: CommandOptions<F>,
-): FactoryResult<F> {
+function hidden<F extends Record<string, any>, R>(
+  options: CommandOptions<F, R>,
+): FactoryResult<F, R> {
   extensions.push(...options.extensions ?? []);
 
   class WrappedCommand extends DevNetCommand {
@@ -284,7 +285,7 @@ function hidden<F extends Record<string, any>>(
       this: H,
       dre: DevNetRuntimeEnvironment,
       params: InferredFlags<F>,
-    ): Promise<void> {
+    ): Promise<R> {
       const paramsWithNetwork = {
         ...params,
         network: dre.network.name,
@@ -293,7 +294,7 @@ function hidden<F extends Record<string, any>>(
         dre: dre.clone(this.id),
         params: paramsWithNetwork,
       });
-      await executeCommandWithLogging(
+      return await executeCommandWithLogging(
         () => this.handler(context),
         context,
         this.description!,
@@ -303,10 +304,10 @@ function hidden<F extends Record<string, any>>(
     static async handler(ctx: CustomDevNetContext<F, typeof DevNetCommand>) {
       applyExtensions(ctx.dre);
 
-      await options.handler(ctx);
+      return await options.handler(ctx);
     }
   }
-  return WrappedCommand as FactoryResult<F>;
+  return WrappedCommand as FactoryResult<F, R>;
 }
 
 export const command = { cli, hidden, isomorphic };

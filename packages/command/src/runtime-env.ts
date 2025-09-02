@@ -9,7 +9,7 @@ import { readFile, rm } from "node:fs/promises";
 import * as YAML from "yaml";
 import { z } from "zod";
 
-import { FactoryResult } from "./command.js";
+import { CmdReturn, FactoryResult } from "./command.js";
 import { USER_CONFIG_PATH } from "./constants.js";
 import { DevNetDRENetwork } from "./network/index.js";
 
@@ -43,8 +43,9 @@ export interface DevNetRuntimeEnvironmentInterface {
   readonly network: DevNetDRENetwork;
   runCommand<
     F extends Record<string, any>,
-    CMD extends FactoryResult<F>,
-  >(cmd: CMD, args: CMD["_internalParams"]): Promise<void>;
+    R,
+    CMD extends FactoryResult<F, R>,
+  >(cmd: CMD, args: CMD["_internalParams"]): Promise<R>;
 
   runHooks(): Promise<void>;
 
@@ -140,8 +141,9 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
 
   public runCommand<
     F extends Record<string, any>,
-    CMD extends FactoryResult<F>,
-  >(cmd: CMD, args: CMD["_internalParams"]): Promise<void> {
+    R,
+    CMD extends FactoryResult<F, R>,
+  >(cmd: CMD, args: CMD["_internalParams"]): Promise<R> {
     return cmd.exec(this, args);
   }
 
@@ -161,13 +163,13 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
       `You have specified a command that does not exist, invoked by ${invokedBy}`,
     );
 
-    const CommandClass = (await cmd.load()) as FactoryResult<any>;
+    const CommandClass = (await cmd.load()) as FactoryResult<any, any>;
 
     assert(
       CommandClass.exec !== undefined,
       `You have specified a command that cannot be invoked with the string, invoked by ${invokedBy}`,
     );
 
-    await CommandClass.exec(this.clone(commandName), {});
+    return await CommandClass.exec(this.clone(commandName), {});
   }
 }
