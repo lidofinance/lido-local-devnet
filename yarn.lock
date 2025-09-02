@@ -961,6 +961,7 @@ __metadata:
     "@devnet/logger": "workspace:*"
     "@devnet/service": "workspace:*"
     "@devnet/state": "workspace:*"
+    "@devnet/types": "workspace:*"
     "@devnet/ui": "workspace:*"
     "@fastify/swagger": "npm:^9.4.2"
     "@fastify/swagger-ui": "npm:^5.2.1"
@@ -1129,6 +1130,7 @@ __metadata:
   resolution: "@devnet/state@workspace:packages/state"
   dependencies:
     "@devnet/keygen": "workspace:*"
+    "@devnet/types": "workspace:*"
     "@types/dockerode": "npm:^3.3.34"
     "@types/node": "npm:^22.10.5"
     eslint: "npm:^8"
@@ -1139,6 +1141,24 @@ __metadata:
     prettier: "npm:^3.4.2"
     typescript: "npm:^5"
     zod: "npm:^3.24.1"
+  languageName: unknown
+  linkType: soft
+
+"@devnet/types@workspace:*, @devnet/types@workspace:packages/types":
+  version: 0.0.0-use.local
+  resolution: "@devnet/types@workspace:packages/types"
+  dependencies:
+    "@oclif/core": "npm:^4.0.37"
+    "@oclif/plugin-help": "npm:^6.2.19"
+    "@types/node": "npm:^22.10.5"
+    dotenv: "npm:^17.2.1"
+    eslint: "npm:^8"
+    eslint-config-oclif: "npm:^5"
+    eslint-config-oclif-typescript: "npm:^3"
+    eslint-config-prettier: "npm:^9"
+    eslint-plugin-prettier: "npm:^5.2.2"
+    prettier: "npm:^3.4.2"
+    typescript: "npm:^5"
   languageName: unknown
   linkType: soft
 

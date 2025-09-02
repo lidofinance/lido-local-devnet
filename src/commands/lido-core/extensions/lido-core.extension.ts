@@ -2,16 +2,8 @@ import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Config, StateInterface } from "@devnet/state";
 import { z } from "zod";
+import { isEmptyObject } from "@devnet/utils";
 
-const isEmpty = (obj: object): obj is Record<string, never> => {
-  for (const prop in obj) {
-    if (Object.hasOwn(obj, prop)) {
-      return false;
-    }
-  }
-
-  return true;
-}
 
 // augmenting the StateInterface
 declare module "@devnet/state" {
@@ -63,7 +55,7 @@ export const lidoCoreExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
 
   dre.state.isLidoDeployed = (async function () {
     const state = await dre.state.getLido(false);
-    return state && !isEmpty(state);
+    return state && !isEmptyObject(state);
   })
 
   dre.state.getLido = (async function<M extends boolean = true>(must: M = true as M) {

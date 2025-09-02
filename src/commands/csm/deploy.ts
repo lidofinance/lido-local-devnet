@@ -2,6 +2,7 @@ import { Params, command } from "@devnet/command";
 
 import { CSMInstall } from "./install.js";
 import { CSMUpdateState } from "./update-state.js";
+import { csmExtension } from "./extensions/csm.extension.js";
 
 type CSMENVConfig = {
   FOUNDRY_PROFILE: string;
@@ -37,6 +38,7 @@ export const DeployCSMContracts = command.cli({
       description: "Verify smart contracts",
     }),
   },
+  extensions: [csmExtension],
   async handler({ params, dre, dre: { logger } }) {
     const { state, services, network } = dre;
     const { csm, oracle } = services;

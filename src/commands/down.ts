@@ -1,7 +1,7 @@
 import { command } from "@devnet/command";
 
 import { BlockscoutDown } from "./blockscout/down.js";
-import { KurtosisCleanUp } from "./chain/down.js";
+import { ChainDown } from "./chain/down.js";
 import { CouncilDown } from "./council/down.js";
 import { DSMBotsDown } from "./dsm-bots/down.js";
 import { KapiDown } from "./kapi/down.js";
@@ -30,7 +30,7 @@ export const DevNetStop = command.cli({
       .catch((error) => logger.warn(error.message));
 
     await dre
-      .runCommand(KurtosisCleanUp, {})
+      .runCommand(ChainDown, {})
       .catch((error) => logger.warn(error.message));
 
     await dre.clean();

@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { KURTOSIS_DEFAULT_PRESET } from "./constants.js";
-
 export const PortSchema = z.object({
   publicPort: z.number().optional(),
   privatePort: z.number().optional(),
@@ -40,45 +38,24 @@ export const ParsedConsensusGenesisStateSchema = z.object({
   genesisTime: z.string(),
 });
 
-export const CSMConfigSchema = z.object({
-  accounting: z.string(),
-  earlyAdoption: z.string(),
-  feeDistributor: z.string(),
-  feeOracle: z.string(),
-  gateSeal: z.string(),
-  hashConsensus: z.string(),
-  lidoLocator: z.string(),
-  module: z.string(),
-  verifier: z.string(),
-  permissionlessGate: z.string(),
-});
-
 export const DataBusConfigSchema = z.object({
   address: z.string(),
 });
 
-export const CSMNewVerifierSchema = z.object({
-  CSVerifier: z.string(),
-});
+
 
 export const WalletSchema = z
   .array(z.object({ privateKey: z.string(), publicKey: z.string() }))
   .min(20, { message: "Wallet must have at least 20 items" });
 
-export const KurtosisSchema = z
-  .object({ preset: z.string() })
-  .default({ preset: KURTOSIS_DEFAULT_PRESET });
-
 export const WalletMnemonic = z.string();
 
 const ConfigSchema = z.object({
   chain: ChainState.partial().optional(),
-  csm: CSMConfigSchema.partial().optional(),
   wallet: WalletSchema.optional(),
   walletMnemonic: WalletMnemonic.optional(),
   parsedConsensusGenesisState:
     ParsedConsensusGenesisStateSchema.partial().optional(),
-  kurtosis: KurtosisSchema.optional(),
   dataBus: DataBusConfigSchema.optional(),
 });
 
@@ -86,9 +63,7 @@ export type ChainConfig = z.infer<typeof ChainState>;
 export type ParsedConsensusGenesisState = z.infer<
   typeof ParsedConsensusGenesisStateSchema
 >;
-export type CSMConfig = z.infer<typeof CSMConfigSchema>;
 export type WalletConfig = z.infer<typeof WalletSchema>;
-export type KurtosisConfig = z.infer<typeof KurtosisSchema>;
 
 export interface Config extends z.infer<typeof ConfigSchema> {
 

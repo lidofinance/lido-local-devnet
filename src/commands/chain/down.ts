@@ -1,37 +1,33 @@
 import { command } from "@devnet/command";
 
+import { BlockscoutDown } from "../blockscout/down.js";
 import { K8sDoraIngressDown } from "../k8s-dora-ingress/down.js";
+import { KurtosisStopPackage } from "../kurtosis/stop-package.js";
 import { K8sNodesIngressDown } from "./ingress-down.js";
 
-export const KurtosisCleanUp = command.isomorphic({
+export const ChainDown = command.isomorphic({
   description:
-    "Destroys the Kurtosis enclave, cleans the JSON database, and removes network artifacts.",
+    "Destroys the chain, cleans resources, and removes network artifacts.",
   params: {},
   async handler({
     dre,
     dre: {
       logger,
-      services: { kurtosis },
-      network,
+      state,
     },
   }) {
 
-    logger.log("Removing K8s Nodes Ingress...");
-
-    await dre.runCommand(K8sNodesIngressDown, {});
     await dre.runCommand(K8sDoraIngressDown, {});
+    await dre.runCommand(K8sNodesIngressDown, {});
+    await dre.runCommand(BlockscoutDown, {});
 
-    logger.log("Destroying Kurtosis enclave...");
+    await state.removeNodes();
+    await state.removeChain();
 
-    logger.log("Removing network artifacts...");
+    await dre.runCommand(KurtosisStopPackage, {});
 
-
-
-    await kurtosis.sh`kurtosis enclave rm -f ${network.name}`.catch((error) =>
-      logger.error(error.message),
-    );
-
-    await kurtosis.artifact.clean();
     logger.log("Cleanup completed successfully.");
+
+
   },
 });

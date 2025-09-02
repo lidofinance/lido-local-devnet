@@ -1,5 +1,6 @@
 /* eslint-disable valid-jsdoc */
 import { DevNetLogger } from "@devnet/logger";
+import { NetworkArtifactRoot, ServiceArtifactRoot } from "@devnet/types";
 import { execa } from "execa";
 import fs, { rm } from "node:fs/promises";
 import path from "node:path";
@@ -9,25 +10,25 @@ import { DevnetServiceConfig } from "./devnet-service-config.js";
 export class DevnetServiceArtifact {
   public config: DevnetServiceConfig;
   public emittedCommands: string[] = [];
-  public readonly root: string;
+  public readonly root: ServiceArtifactRoot;
 
   private logger: DevNetLogger;
   protected constructor(
-    artifactsRoot: string,
+    networkArtifactRoot: NetworkArtifactRoot,
     service: DevnetServiceConfig,
     logger: DevNetLogger,
   ) {
-    this.root = path.join(artifactsRoot, service.name);
+    this.root = ServiceArtifactRoot.parse(path.join(networkArtifactRoot, service.name));
     this.config = service;
     this.logger = logger;
   }
 
   static async create(
-    artifactsRoot: string,
+    networkArtifactRoot: NetworkArtifactRoot,
     serviceConfig: DevnetServiceConfig,
     logger: DevNetLogger,
   ) {
-    const artifact = new DevnetServiceArtifact(artifactsRoot, serviceConfig, logger);
+    const artifact = new DevnetServiceArtifact(networkArtifactRoot, serviceConfig, logger);
 
     // Check if the destination path already exists
     const destinationExists = await artifact.pathExists(artifact.root);

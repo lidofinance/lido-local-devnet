@@ -1,10 +1,10 @@
+import { DEFAULT_NETWORK_NAME, Network } from "@devnet/types";
 import { DevNetError } from "@devnet/utils";
 import { Command as BaseCommand } from "@oclif/core";
 import { FlagInput } from "@oclif/core/interfaces";
 import { ExecaError } from "execa";
 import { ZodError } from "zod";
 
-import { DEFAULT_NETWORK_NAME } from "./constants.js";
 import { CustomDevNetContext, DevNetContext } from "./context.js";
 import { CustomDevNetExtension } from "./extension.js";
 import { string } from "./params.js";
@@ -88,7 +88,7 @@ export class DevNetCommand extends BaseCommand {
   static baseFlags = {
     network: string({
       default: DEFAULT_NETWORK_NAME,
-      description: "Name of the network",
+      description: `Name of the network (default: '${DEFAULT_NETWORK_NAME}')`,
       required: false,
     }),
   };
@@ -113,7 +113,7 @@ export class DevNetCommand extends BaseCommand {
       strict: this.ctor.strict,
     });
     const dre = await DevNetRuntimeEnvironment.create(
-      params.network,
+      Network.parse(params.network),
       this.id ?? "anonymous",
       this.config,
     );
@@ -138,16 +138,16 @@ export class DevNetCommand extends BaseCommand {
 
 export type InferredFlags<T> = T extends FlagInput<infer F> ? F : unknown;
 
-type CommandOptions<F extends Record<string, any>> = {
+type CommandOptions<Params extends Record<string, any>> = {
   description: string;
   extensions?: CustomDevNetExtension[],
-  handler: (ctx: CustomDevNetContext<F, typeof DevNetCommand>) => Promise<void>;
-  params: F;
+  handler: (ctx: CustomDevNetContext<Params, typeof DevNetCommand>) => Promise<any>;
+  params: Params;
 };
 
-export type FactoryResult<F extends Record<string, any>> = {
-  exec(dre: DevNetRuntimeEnvironmentInterface, params: InferredFlags<F>): Promise<void>;
-} & { _internalParams: InferredFlags<F> } & typeof DevNetCommand;
+export type FactoryResult<Params extends Record<string, any>> = {
+  exec(dre: DevNetRuntimeEnvironmentInterface, params: InferredFlags<Params>): Promise<any>;
+} & { _internalParams: InferredFlags<Params> } & typeof DevNetCommand;
 
 const extensions: CustomDevNetExtension[] = [];
 

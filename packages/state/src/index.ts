@@ -1,13 +1,11 @@
 import { DepositData, DepositDataResult, Keystores } from "@devnet/keygen";
+import { ChainRoot, NetworkArtifactRoot } from "@devnet/types";
 
 import { BaseState } from "./base-state.js";
 import { WALLET_KEYS_COUNT } from "./constants.js";
 import {
-  CSMConfigSchema,
-  CSMNewVerifierSchema,
   ChainState,
   DataBusConfigSchema,
-  KurtosisSchema,
   ParsedConsensusGenesisStateSchema,
   WalletSchema,
 } from "./schemas.js";
@@ -21,35 +19,15 @@ export interface StateInterface extends State {
 }
 
 export class State extends BaseState {
-    async getChain<M extends boolean = true>(must: M = true as M) {
+  public constructor(rawConfig: unknown, networkArtifactsRoot: NetworkArtifactRoot, chainRoot: ChainRoot) {
+    super(rawConfig, networkArtifactsRoot, chainRoot);
+  }
+
+  async getChain<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
       "chain",
       "chain",
       ChainState,
-      must,
-    );
-  }
-
-  async updateChain(state: ChainState) {
-    await this.updateProperties("chain", state);
-  }
-
-  async getCSM<M extends boolean = true>(must: M = true as M) {
-    return this.getProperties(
-      {
-        accounting: "csm.CSAccounting",
-        earlyAdoption: "csm.CSEarlyAdoption",
-        feeDistributor: "csm.CSFeeDistributor",
-        feeOracle: "csm.CSFeeOracle",
-        gateSeal: "csm.GateSeal",
-        hashConsensus: "csm.HashConsensus",
-        lidoLocator: "csm.LidoLocator",
-        module: "csm.CSModule",
-        verifier: "csm.CSVerifier",
-        permissionlessGate: "csm.PermissionlessGate",
-      },
-      "csm",
-      CSMConfigSchema,
       must,
     );
   }
@@ -75,13 +53,6 @@ export class State extends BaseState {
     return currentState?.keystores as Keystores[];
   }
 
-  async getKurtosis() {
-    const { kurtosis } = this.config;
-    const loadConfig = await KurtosisSchema.parseAsync(kurtosis);
-
-    return loadConfig;
-  }
-
   async getNamedWallet() {
     const [
       deployer,
@@ -104,17 +75,6 @@ export class State extends BaseState {
       council2,
       councils: [council1, council2],
     };
-  }
-
-  async getNewVerifier<M extends boolean = true>(must: M = true as M) {
-    return this.getProperties(
-      {
-        CSVerifier: "electraVerifier.CSVerifier",
-      },
-      "csm",
-      CSMNewVerifierSchema,
-      must,
-    );
   }
 
   async getParsedConsensusGenesisState<M extends boolean = true>(
@@ -143,8 +103,14 @@ export class State extends BaseState {
     return WalletSchema.parseAsync(wallet ?? sharedWallet);
   }
 
-  async updateCSM(jsonData: unknown) {
-    await this.updateProperties("csm", jsonData);
+
+
+  async removeChain() {
+    await this.updateProperties("chain", {});
+  }
+
+  async updateChain(state: ChainState) {
+    await this.updateProperties("chain", state);
   }
 
   async updateDataBus(jsonData: unknown) {
@@ -160,9 +126,7 @@ export class State extends BaseState {
     await this.validators.update(updated);
   }
 
-  async updateElectraVerifier(jsonData: unknown) {
-    await this.appState.update({ electraVerifier: jsonData });
-  }
+
 
   async updateValidatorsData(newData: DepositDataResult) {
     const currentState = await this.validators.read();

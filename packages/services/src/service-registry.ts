@@ -1,5 +1,6 @@
 import { DevNetLogger } from "@devnet/logger";
 import { serviceConfigs } from "@devnet/service";
+import { Network, NetworkArtifactRoot } from "@devnet/types";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 
@@ -9,21 +10,22 @@ import { DevNetServicesConfigs } from "./services-configs.js";
 
 
 export class DevnetServiceRegistry {
-  protected network: string;
-  public readonly root: string;
+  protected readonly network: Network;
+  public readonly root: NetworkArtifactRoot;
   public readonly services: { [K in keyof DevNetServicesConfigs]: DevNetService<K> };
 
   protected constructor(
-    network: string,
+    network: Network,
+    root: NetworkArtifactRoot,
     services: { [K in keyof DevNetServicesConfigs]: DevNetService<K> },
   ) {
-    this.root = path.join(ARTIFACTS_ROOT, network);
+    this.root = root;
     this.network = network;
     this.services = services;
   }
 
   public static async create(
-    network: string,
+    network: Network,
     commandName: string,
     logger: DevNetLogger,
   ): Promise<DevnetServiceRegistry> {
@@ -45,22 +47,23 @@ export class DevnetServiceRegistry {
 
     return new DevnetServiceRegistry(
       network,
+      rootDir,
       Object.fromEntries(servicesList) as {
         [K in keyof DevNetServicesConfigs]: DevNetService<K>;
       },
     );
   }
 
-  protected static async createRootDir(network: string) {
+  protected static async createRootDir(network: Network) {
     await mkdir(this.getRoot(network), { recursive: true });
   }
 
-  protected static getRoot(network: string) {
-    return path.join(ARTIFACTS_ROOT, network);
+  protected static getRoot(network: Network): NetworkArtifactRoot {
+    return NetworkArtifactRoot.parse(path.join(ARTIFACTS_ROOT, network));
   }
 
   public async clean() {
-    if (this.root === '/') {
+    if (this.root === path.sep) {
       return;
     }
 
@@ -74,6 +77,6 @@ export class DevnetServiceRegistry {
         service.clone(commandName, logger),
       ])
     ) as { [K in keyof DevNetServicesConfigs]: DevNetService<K> };
-    return new DevnetServiceRegistry(this.network, clonedServices);
+    return new DevnetServiceRegistry(this.network, this.root, clonedServices);
   }
 }

@@ -1,6 +1,6 @@
 import { command } from "@devnet/command";
 
-export const DownloadKurtosisArtifacts = command.cli({
+export const KurtosisDownloadArtifacts = command.cli({
   description:
     "Downloads the genesis data for EL and CL nodes from the Kurtosis enclave.",
   params: {},
@@ -11,10 +11,10 @@ export const DownloadKurtosisArtifacts = command.cli({
       network,
     } = dre;
 
-    await kurtosis.sh`rm -rf network`
+    await kurtosis.sh`rm -rf network`; // TODO what?
 
     await kurtosis.sh`kurtosis files download ${network.name} el_cl_genesis_data network`;
-    
+
     logger.log("Genesis data downloaded successfully.");
   },
 });

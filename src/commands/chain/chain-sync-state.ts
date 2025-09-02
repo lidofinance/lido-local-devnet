@@ -1,13 +1,18 @@
 import {command} from "@devnet/command";
 
-export const SyncChainState = command.isomorphic({
+import { ChainSyncNodesStateFromK8s } from "./chain-sync-nodes-state-from-k8s.js";
+
+export const ChainSyncState = command.isomorphic({
   description:
-    "Updates the network configuration using a specific Ethereum package in Kurtosis and stores the configuration in the local JSON database.",
+    "Sync Chain state and place it in the state. Should be run after chain is up and nodes state synced",
   params: {},
-  async handler({ dre: { logger, state , network} }) {
+  async handler({ dre, dre: { logger, state , network} }) {
     logger.log(
       "Syncing network configuration state",
     );
+
+    // TODO check that devnet is in k8s
+    await dre.runCommand(ChainSyncNodesStateFromK8s, {});
 
     const nodes = await state.getNodes();
     const nodesIngress = await state.getNodesIngress();

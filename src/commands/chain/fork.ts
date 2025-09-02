@@ -1,7 +1,7 @@
 import { command } from "@devnet/command";
 import { execa } from "execa";
 
-export const StartAnvil = command.cli({
+export const ChainStartAnvilFork = command.cli({
   description:
     "Start Anvil in fork mode connected to a specified Ethereum node",
   params: {},
