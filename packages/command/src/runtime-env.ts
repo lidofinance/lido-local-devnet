@@ -97,8 +97,6 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
       console.log("User config not found, use empty object"),
     );
 
-    console.log('userConfig', userConfig);
-
     const networkConfig =
       userConfig?.networks?.find((net) => net?.name === network) ?? {};
 

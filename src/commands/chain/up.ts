@@ -27,7 +27,7 @@ export const ChainUp = command.isomorphic({
 
     await sleep(5000);
 
-    await dre.runCommand(K8sNodesIngressUp, {});
+
 
     await dre.runCommand(ChainSyncState, {});
 

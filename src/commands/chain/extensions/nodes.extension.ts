@@ -1,6 +1,7 @@
 import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Config, StateInterface } from "@devnet/state";
+import { isEmptyObject } from "@devnet/utils";
 import { z } from "zod";
 
 
@@ -8,6 +9,7 @@ import { z } from "zod";
 declare module "@devnet/state" {
   export interface StateInterface {
     getNodes<M extends boolean = true>(must?: M,): Promise<M extends true ? NodesState : Partial<NodesState>>;
+    isNodesDeployed(): Promise<boolean>;
     removeNodes(): Promise<void>;
     updateNodes(options: NodesState): Promise<void>;
   }
@@ -51,6 +53,11 @@ export const nodesExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
 
   dre.state.removeNodes = (async function () {
     await dre.state.updateProperties("nodes", {});
+  });
+
+  dre.state.isNodesDeployed = (async function () {
+    const state = await dre.state.getNodes(false);
+    return state && !isEmptyObject(state);
   });
 
   dre.state.getNodes = (async function <M extends boolean = true>(must: M = true as M) {

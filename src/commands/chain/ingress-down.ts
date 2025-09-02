@@ -20,6 +20,11 @@ export const K8sNodesIngressDown = command.cli({
       "Un-deploying K8s Ingress for EL, CL and VC...",
     );
 
+    if (!(await state.isNodesDeployed())) {
+      logger.log("Nodes are not deployed. Skipping ...");
+      return;
+    }
+
     const nodes = await state.getNodes();
     const kc = await getK8s();
     const k8sNetworkApi = kc.makeApiClient(k8s.NetworkingV1Api);

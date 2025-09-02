@@ -25,6 +25,7 @@ export const K8sDoraIngressDown = command.cli({
 
     if (!exists) {
       logger.log(`Ingress with name [${ingress.metadata.name}] already removed. Skipping ...`);
+      await state.removeDora();
       return;
     }
 
@@ -37,5 +38,7 @@ export const K8sDoraIngressDown = command.cli({
     );
 
     logger.log(`Successfully removed Ingress: ${result.status}`);
+
+    await state.removeDora();
   },
 });

@@ -1,6 +1,5 @@
 import { Params, command } from "@devnet/command";
 
-import { BlockscoutUp } from "../blockscout/up.js";
 import { ChainGetInfo } from "../chain/info.js";
 import { ChainUp } from "../chain/up.js";
 import { CouncilUp } from "../council/up.js";
