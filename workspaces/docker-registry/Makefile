@@ -5,12 +5,12 @@
 NAMESPACE ?= kt-my-devnet-docker-registry
 
 # Helm chart paths
-HELM_CHART_ROOT_PATH ?= ../../../helm/vendor
-HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/docker-registry-ui
+HELM_CHART_ROOT_PATH ?= ../../helm
+HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/lido/lido-docker-registry
 HELM_VALUES_PATH = ./values.yaml
 
 # Release names
-HELM_RELEASE = docker-registry-ui
+HELM_RELEASE = lido-docker-registry
 
 # Default Helm timeout
 TIMEOUT ?= 5m
@@ -40,9 +40,8 @@ DOCKER_REGISTRY_UI_INGRESS_HOSTNAME ?= docker-registry-ui.devnet.valset-02.testn
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
-	--set ui.ingress.host=$(DOCKER_REGISTRY_UI_INGRESS_HOSTNAME) \
-	--set registry.ingress.host=$(DOCKER_REGISTRY_INGRESS_HOSTNAME) \
-	--set ui.dockerRegistryUrl=http://$(DOCKER_REGISTRY_INGRESS_HOSTNAME)
+	--set lido.registryUiHostname="$(DOCKER_REGISTRY_UI_INGRESS_HOSTNAME)" \
+	--set lido.registryHostname="$(DOCKER_REGISTRY_INGRESS_HOSTNAME)"
 endef
 
 # Lint Helm chart
