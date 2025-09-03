@@ -5,8 +5,8 @@
 NAMESPACE ?= kt-my-devnet-blockscout
 
 # Helm chart paths
-HELM_CHART_ROOT_PATH ?= ../../../helm/vendor
-HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/blockscout-stack
+HELM_CHART_ROOT_PATH ?= ../../../helm
+HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/vendor/blockscout-stack
 HELM_VALUES_PATH = ./values.yaml
 
 # Release names
