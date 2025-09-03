@@ -30,6 +30,7 @@ type CSMENVConfig = {
   UPGRADE_CONFIG: string;
   VERIFIER_API_KEY: string;
   VERIFIER_URL: string;
+  FOUNDRY_BLOCK_GAS_LIMIT: string;
 };
 
 export const DeployCSMContracts = command.cli({
@@ -97,6 +98,7 @@ export const DeployCSMContracts = command.cli({
       VERIFIER_API_KEY: constants.VERIFIER_API_KEY,
 
       VERIFIER_URL: blockscoutConfig.api,
+      FOUNDRY_BLOCK_GAS_LIMIT: "1000000000"
     };
 
     logger.logJson(env);

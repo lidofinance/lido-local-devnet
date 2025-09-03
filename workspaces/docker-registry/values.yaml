@@ -1,5 +1,5 @@
-# Lido specific values
 global:
+  # Lido specific values
   lido:
     registryHostname: "registry.example.com"
     registryUiHostname: "registry-ui.example.com"

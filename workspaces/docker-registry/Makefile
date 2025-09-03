@@ -16,7 +16,7 @@ HELM_RELEASE = lido-docker-registry
 TIMEOUT ?= 5m
 
 # Default Helm flags
-HELM_DEBUG ?= false
+HELM_DEBUG ?= true
 ifeq ($(HELM_DEBUG), true)
 	HELM_DEBUG_FLAG = --debug
 else
@@ -40,14 +40,15 @@ DOCKER_REGISTRY_UI_INGRESS_HOSTNAME ?= docker-registry-ui.devnet.valset-02.testn
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
-	--set lido.registryUiHostname="$(DOCKER_REGISTRY_UI_INGRESS_HOSTNAME)" \
-	--set lido.registryHostname="$(DOCKER_REGISTRY_INGRESS_HOSTNAME)"
+	--set global.lido.registryUiHostname="$(DOCKER_REGISTRY_UI_INGRESS_HOSTNAME)" \
+	--set global.lido.registryHostname="$(DOCKER_REGISTRY_INGRESS_HOSTNAME)"
 endef
 
 # Lint Helm chart
 .PHONY: debug
 debug:
 	echo "\n" \
+	echo ${pwd} \
 	echo "HELM_CHART_PATH=[$(HELM_CHART_PATH)]\n" && \
 	echo "HELM_VALUES_PATH=[$(HELM_VALUES_PATH)]\n" && \
 	echo "HELM_CHART_VALUES_OVERRIDES=[$(HELM_CHART_VALUES_OVERRIDES)]\n"
@@ -61,7 +62,7 @@ lint:
 .PHONY: template
 template:
 	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) -f $(HELM_VALUES_PATH) --namespace $(NAMESPACE) \
-		$(HELM_CHART_VALUES_OVERRIDES)
+		$(HELM_CHART_VALUES_OVERRIDES) $(HELM_DEBUG_FLAG)
 
 # Dry-run Helm chart install into K8s
 .PHONY: dry-run

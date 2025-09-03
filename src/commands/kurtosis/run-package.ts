@@ -1,7 +1,12 @@
 import { Params, command } from "@devnet/command";
 import { DevNetError } from "@devnet/utils";
+import { execa } from 'execa';
+import psList from "ps-list";
 
 import { KURTOSIS_DEFAULT_PRESET, kurtosisExtension } from "./extensions/kurtosis.extension.js";
+import { KurtosisGetClusterInfo } from "./get-cluster-info.js";
+
+//let kurtosisGatewayProcess: ResultPromise<{ gracefulCancel: true}> | undefined = undefined;
 
 export const KurtosisRunPackage = command.isomorphic({
   description:
@@ -27,6 +32,26 @@ export const KurtosisRunPackage = command.isomorphic({
 
     logger.log(`Resolved kurtosis config: ${configFileName}`);
     logger.logJson(file);
+
+    const kurtosisClusterType = await dre.runCommand(KurtosisGetClusterInfo, {});
+
+    // TODO more different types
+    if (kurtosisClusterType !== 'cloud') {
+      throw new DevNetError(`Unsupported kurtosis cluster type [${kurtosisClusterType}]`);
+    }
+
+    logger.log(`Kurtosis cluster type [${kurtosisClusterType}]`);
+
+    if (kurtosisClusterType === 'cloud') {
+      const processes = await psList();
+      const kurtosisGateway = processes.find(p => p.name.match(/kurtosis\sgateway/));
+
+      if (!kurtosisGateway) {
+        logger.log(`Starting kurtosis gateway in the background`);
+        const kgw = execa({ gracefulCancel: true });
+        kgw`kurtosis gateway`;
+      }
+    }
 
     await kurtosis.sh`kurtosis run
                         --enclave ${dre.network.name}

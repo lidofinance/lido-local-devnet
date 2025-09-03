@@ -4,7 +4,6 @@ import { DevNetError, sleep } from "@devnet/utils";
 import { BlockscoutUp } from "../blockscout/up.js";
 import { K8sDoraIngressUp } from "../k8s-dora-ingress/up.js";
 import { KurtosisDownloadArtifacts } from "../kurtosis/download-artifacts.js";
-import { KurtosisGetClusterInfo } from "../kurtosis/get-cluster-info.js";
 import { KurtosisRunPackage } from "../kurtosis/run-package.js";
 import { ChainSyncNodesStateFromK8s } from "./chain-sync-nodes-state-from-k8s.js";
 import { ChainSyncState } from "./chain-sync-state.js";
@@ -15,14 +14,6 @@ export const ChainUp = command.isomorphic({
     "Starts the chain",
   params: { preset: Params.string({ description: "Kurtosis config name." }) },
   async handler({ dre, dre: { logger }, params: { preset,  } }) {
-
-
-    const kurtosisClusterType = await dre.runCommand(KurtosisGetClusterInfo, {});
-    if (kurtosisClusterType !== 'cloud') {
-      throw new DevNetError(`Unsupported kurtosis cluster type [${kurtosisClusterType}]`);
-    }
-
-    logger.log(`Kurtosis cluster type [${kurtosisClusterType}]`);
 
     await dre.runCommand(KurtosisRunPackage, { preset: preset ?? '' });
 

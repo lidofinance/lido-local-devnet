@@ -1,8 +1,10 @@
-# Lido specific values
 global:
+  # Lido specific values
   lido:
     registryHostname: "registry.example.com"
+    registryScheme: "https"
     registryUiHostname: "registry-ui.example.com"
+    registryUiScheme: "https"
 
 ## docker-registry-ui subchart configuration
 docker-registry-ui:
@@ -135,7 +137,7 @@ docker-registry-ui:
       # Enable the ingress for the user interface.
       enabled: true
       # Fully qualified domain name of a network host.
-      host: "{{ .Values.lido.registryUiHostname }}"
+      host: '{{ .Values.global.lido.registryUiHostname }}'
       # Path is matched against the path of an incoming request.
       path: /
       # Determines the interpretation of the Path matching, must be Prefix to serve assets.
@@ -143,12 +145,15 @@ docker-registry-ui:
       # The name of an IngressClass cluster resource.
       ingressClassName: nginx
       # TLS configuration
-      tls: []
+      tls:
+        - hosts:
+            - '{{ .Values.global.lido.registryUiHostname }}'
+          secretName: registry-ui-tls-cert
       # Annotations to apply to the user interface ingress.
       annotations:
         "nginx.ingress.kubernetes.io/enable-cors": "true"
         "nginx.ingress.kubernetes.io/cors-allow-credentials": "true"
-        "nginx.ingress.kubernetes.io/cors-allow-origin": "https://{{ .Values.lido.registryUiHostname }}"
+        "nginx.ingress.kubernetes.io/cors-allow-origin": '{{ printf "%s://%s" .Values.global.lido.registryUiScheme .Values.global.lido.registryUiHostname }}'
         "nginx.ingress.kubernetes.io/cors-allow-methods": "GET, POST, PUT, DELETE, OPTIONS"
         "nginx.ingress.kubernetes.io/cors-allow-headers": "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
       # If you want a custom path, you can try this example:
@@ -214,7 +219,7 @@ docker-registry-ui:
       # Enable the ingress for the registry server.
       enabled: true
       # Fully qualified domain name of a network host.
-      host: "{{ .Values.lido.registryHostname }}"
+      host: '{{ .Values.global.lido.registryHostname }}'
       # Path is matched against the path of an incoming request.
       path: /v2/
       # Determines the interpretation of the Path matching, must be Prefix to serve assets.
@@ -224,14 +229,14 @@ docker-registry-ui:
       # TLS configuration
       tls:
         - hosts:
-            - "{{ .Values.lido.registryHostname }}"
+            - '{{ .Values.global.lido.registryHostname }}'
           secretName: registry-tls-cert
       # Annotations to apply to the registry server ingress.
       annotations:
         "cert-manager.io/issuer": "letsencrypt"
         "nginx.ingress.kubernetes.io/enable-cors": "true"
         "nginx.ingress.kubernetes.io/cors-allow-credentials": "true"
-        "nginx.ingress.kubernetes.io/cors-allow-origin": "https://{{ .Values.lido.registryUiHostname }}"
+        "nginx.ingress.kubernetes.io/cors-allow-origin": '{{ printf "%s://%s" .Values.global.lido.registryUiScheme .Values.global.lido.registryUiHostname }}'
         "nginx.ingress.kubernetes.io/cors-allow-methods": "GET, POST, PUT, DELETE, OPTIONS"
         "nginx.ingress.kubernetes.io/cors-allow-headers": "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
       # If you want a custom path, you can try this example:
