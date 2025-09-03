@@ -35,6 +35,11 @@ export const DeployLidoContracts = command.cli({
     const { lidoCore } = services;
     const { constants } = lidoCore.config;
 
+    if (await state.isLidoDeployed()) {
+      logger.log("Lido contracts are already deployed.");
+      return;
+    }
+
     const { elPublic } = await state.getChain();
     await network.waitCL();
     const clClient = await network.getCLClient();

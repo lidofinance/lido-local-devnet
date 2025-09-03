@@ -10,11 +10,11 @@ declare module "@devnet/state" {
     getCSM<M extends boolean = true>(
       must?: M,
     ): Promise<M extends true ? CSMState : Partial<CSMState>>;
-    updateCSM(state: CSMState): Promise<void>;
-
-    getNewVerifier<M extends boolean = true>(
+    getElectraVerifier<M extends boolean = true>(
       must?: M,
     ): Promise<M extends true ? CSMNewVerifierState : Partial<CSMNewVerifierState>>;
+
+    updateCSM(state: CSMState): Promise<void>;
     updateElectraVerifier(state: CSMNewVerifierState): Promise<void>;
   }
 
@@ -70,7 +70,7 @@ export const csmExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
     );
   });
 
-  dre.state.getNewVerifier = (async function<M extends boolean = true>(must: M = true as M) {
+  dre.state.getElectraVerifier = (async function<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
       {
         CSVerifier: "electraVerifier.CSVerifier",

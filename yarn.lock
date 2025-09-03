@@ -6874,6 +6874,7 @@ __metadata:
     fastify: "npm:^5.2.1"
     oclif: "npm:^4.17.30"
     prettier: "npm:^3.4.2"
+    ps-list: "npm:^7.2.0"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5"
     yaml: "npm:^2.6.1"
@@ -8045,6 +8046,13 @@ __metadata:
   version: 1.1.0
   resolution: "proxy-from-env@npm:1.1.0"
   checksum: 10c0/fe7dd8b1bdbbbea18d1459107729c3e4a2243ca870d26d34c2c1bcd3e4425b7bcc5112362df2d93cc7fb9746f6142b5e272fd1cc5c86ddf8580175186f6ad42b
+  languageName: node
+  linkType: hard
+
+"ps-list@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "ps-list@npm:7.2.0"
+  checksum: 10c0/1c9dd310713a6f3c595acc329c71407069abcc15794fc0bd905de06ebc58af9907e409d7dc357c5d52dfe12e5d598f79f51ee7f9a36417c89f34588886fb57e9
   languageName: node
   linkType: hard
 

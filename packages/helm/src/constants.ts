@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
  */
 export const HELM_VENDOR_CHARTS_ROOT_PATH = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
-  `../../../helm/vendor`
+  `../../../helm`
 );
 
 

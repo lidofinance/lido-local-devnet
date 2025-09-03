@@ -40,7 +40,7 @@ export const PreparePectraVoting = command.cli({
       accounting: CS_ACCOUNTING_ADDRESS,
     } = await state.getCSM();
 
-    const { CSVerifier } = await state.getNewVerifier();
+    const { CSVerifier } = await state.getElectraVerifier();
 
     const config = {
       ACCOUNTING_ORACLE: accountingOracle,
