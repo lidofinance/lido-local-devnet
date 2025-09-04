@@ -1,8 +1,8 @@
 import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Config, StateInterface } from "@devnet/state";
-import { z } from "zod";
 import { isEmptyObject } from "@devnet/utils";
+import { z } from "zod";
 
 
 // augmenting the StateInterface
