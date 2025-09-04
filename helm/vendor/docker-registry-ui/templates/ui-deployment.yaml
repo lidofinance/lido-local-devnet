@@ -42,9 +42,9 @@ spec:
             - name: DELETE_IMAGES
               value: {{ .Values.ui.deleteImages | quote }}
             {{- if .Values.ui.proxy }}
-            {{- if .Values.ui.dockerRegistryUrl }}
+            {{- if tpl (.Values.ui.dockerRegistryUrl) $ }}
             - name: NGINX_PROXY_PASS_URL
-              value: {{ .Values.ui.dockerRegistryUrl | quote }}
+              value: {{ tpl (.Values.ui.dockerRegistryUrl) $ | quote }}
             {{- else if .Values.registry.enabled }}
             - name: NGINX_PROXY_PASS_URL
               value: {{ printf "http://%s-registry-server:%d" (include "docker-registry-ui.fullname" .) (.Values.registry.service.port | int) }}
@@ -60,7 +60,7 @@ spec:
             {{- end }}
             {{- else }}
             - name: REGISTRY_URL
-              value: {{ .Values.ui.dockerRegistryUrl | quote }}
+              value: {{  tpl (.Values.ui.dockerRegistryUrl) $ | quote }}
             {{- end }}
             - name: PULL_URL
               value: {{ .Values.ui.pullUrl | quote }}

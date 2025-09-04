@@ -8,7 +8,7 @@ metadata:
     {{- include "docker-registry-ui.labels" . | nindent 4 }}
   {{- with .Values.registry.ingress.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+    {{- tpl (toYaml .) $ | nindent 4 }}
   {{- end }}
 spec:
   {{- if .Values.registry.ingress.ingressClassName }}
@@ -33,6 +33,6 @@ spec:
             pathType: {{ .Values.registry.ingress.pathType }}
             {{- end }}
       {{- if .Values.registry.ingress.host }}
-      host: {{ .Values.registry.ingress.host | quote }}
+      host: {{ tpl (.Values.registry.ingress.host) $ | quote }}
       {{- end -}}
 {{- end }}

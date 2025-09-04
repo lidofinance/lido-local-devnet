@@ -27,7 +27,7 @@ docker-registry-ui:
     # UI behave as a proxy of the registry
     proxy: false
     # The URL of your docker registry, may be a service (when proxy is on) or an external URL.
-    dockerRegistryUrl: null
+    dockerRegistryUrl: '{{ printf "%s://%s" .Values.global.lido.registryScheme .Values.global.lido.registryHostname }}'
     # Override the pull URL
     pullUrl: null
     # Remove the menu that show the dialogs to add, remove and change the endpoint of your docker registry.
@@ -143,15 +143,17 @@ docker-registry-ui:
       # Determines the interpretation of the Path matching, must be Prefix to serve assets.
       pathType: Prefix
       # The name of an IngressClass cluster resource.
-      ingressClassName: nginx
+      ingressClassName: public
       # TLS configuration
       tls:
         - hosts:
             - '{{ .Values.global.lido.registryUiHostname }}'
-          secretName: registry-ui-tls-cert
+          secretName: container-registry-ui-tls-cert
       # Annotations to apply to the user interface ingress.
       annotations:
+        "cert-manager.io/cluster-issuer": "letsencrypt"
         "nginx.ingress.kubernetes.io/enable-cors": "true"
+        "nginx.ingress.kubernetes.io/proxy-body-size": "100m"
         "nginx.ingress.kubernetes.io/cors-allow-credentials": "true"
         "nginx.ingress.kubernetes.io/cors-allow-origin": '{{ printf "%s://%s" .Values.global.lido.registryUiScheme .Values.global.lido.registryUiHostname }}'
         "nginx.ingress.kubernetes.io/cors-allow-methods": "GET, POST, PUT, DELETE, OPTIONS"
@@ -221,19 +223,20 @@ docker-registry-ui:
       # Fully qualified domain name of a network host.
       host: '{{ .Values.global.lido.registryHostname }}'
       # Path is matched against the path of an incoming request.
-      path: /v2/
+      path: /
       # Determines the interpretation of the Path matching, must be Prefix to serve assets.
       pathType: Prefix
       # The name of an IngressClass cluster resource.
-      ingressClassName: nginx
+      ingressClassName: public
       # TLS configuration
       tls:
         - hosts:
             - '{{ .Values.global.lido.registryHostname }}'
-          secretName: registry-tls-cert
+          secretName: container-registry-tls-cert
       # Annotations to apply to the registry server ingress.
       annotations:
-        "cert-manager.io/issuer": "letsencrypt"
+        "cert-manager.io/cluster-issuer": "letsencrypt"
+        "nginx.ingress.kubernetes.io/proxy-body-size": "1024m"
         "nginx.ingress.kubernetes.io/enable-cors": "true"
         "nginx.ingress.kubernetes.io/cors-allow-credentials": "true"
         "nginx.ingress.kubernetes.io/cors-allow-origin": '{{ printf "%s://%s" .Values.global.lido.registryUiScheme .Values.global.lido.registryUiHostname }}'
