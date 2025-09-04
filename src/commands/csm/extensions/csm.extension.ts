@@ -1,6 +1,7 @@
 import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Config, StateInterface } from "@devnet/state";
+import { isEmptyObject } from "@devnet/utils";
 import { z } from "zod";
 
 
@@ -14,6 +15,7 @@ declare module "@devnet/state" {
       must?: M,
     ): Promise<M extends true ? CSMNewVerifierState : Partial<CSMNewVerifierState>>;
 
+    isCSMDeployed(): Promise<boolean>;
     updateCSM(state: CSMState): Promise<void>;
     updateElectraVerifier(state: CSMNewVerifierState): Promise<void>;
   }
@@ -68,6 +70,11 @@ export const csmExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
       CSMState,
       must,
     );
+  });
+
+  dre.state.isCSMDeployed = (async function () {
+    const state = await this.getCSM(false);
+    return state && !isEmptyObject(state);
   });
 
   dre.state.getElectraVerifier = (async function<M extends boolean = true>(must: M = true as M) {
