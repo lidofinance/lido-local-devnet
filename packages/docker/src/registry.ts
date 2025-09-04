@@ -19,18 +19,20 @@ export interface DockerPushOptions {
 export async function pushDockerImage(options: DockerPushOptions): Promise<void> {
   const { imageName, tag, registryUrl, username, password } = options;
 
+  const registryHostname = registryUrl.replace('http://','').replace('https://', '')
+
   try {
     // Build the full image name with registry URL and tag
-    const fullImageName = `${registryUrl}/${imageName}:${tag}`;
+    const fullImageName = `${registryHostname}/${imageName}:${tag}`;
 
     // First, login to the registry
-    console.log(`Logging in to Docker registry: ${registryUrl}`);
-    await execa("docker", ["login", registryUrl, "--username", username, "--password-stdin"], {
+    console.log(`Logging in to Docker registry: ${registryHostname}`);
+    await execa("docker", ["login", registryHostname, "--username", username, "--password-stdin"], {
       input: password,
       stdio: ["pipe", "inherit", "inherit"]
     });
 
-    console.log(`Successfully logged in to registry: ${registryUrl}`);
+    console.log(`Successfully logged in to registry: ${registryHostname}`);
 
     // Tag the local image with the registry URL if it's not already tagged
     console.log(`Tagging image: ${imageName}:${tag} as ${fullImageName}`);
@@ -49,7 +51,7 @@ export async function pushDockerImage(options: DockerPushOptions): Promise<void>
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new DevNetError(
-      `Failed to push Docker image ${imageName}:${tag} to registry ${registryUrl}: ${errorMessage}`
+      `Failed to push Docker image ${imageName}:${tag} to registry ${registryHostname}: ${errorMessage}`
     );
   }
 }

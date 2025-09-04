@@ -8,7 +8,7 @@ export const KapiBuild = command.cli({
     const dockerRegistry = await state.getDockerRegistry();
 
     const TAG = `kt-${network.name}`;
-    const IMAGE = 'keys-api';
+    const IMAGE = 'lido/keys-api';
 
     await buildAndPushDockerImage({
       cwd: services.kapi.artifact.root,
@@ -16,8 +16,8 @@ export const KapiBuild = command.cli({
       buildContext: '.',
       imageName: IMAGE,
       tag: TAG,
-      password: process.env.DOCKER_REGISTRY_USERNAME ?? '',
-      username: process.env.DOCKER_REGISTRY_PASSWORD ?? '',
+      password: process.env.DOCKER_REGISTRY_PASSWORD ?? '',
+      username: process.env.DOCKER_REGISTRY_USERNAME ?? '',
     })
 
     logger.log(`Kapi image pushed to ${dockerRegistry.registryUrl}/${IMAGE}:${TAG}`)
