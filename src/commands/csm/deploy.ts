@@ -20,6 +20,7 @@ type CSMENVConfig = {
   DEPLOYER_PRIVATE_KEY: string;
   DEVNET_CHAIN_ID: string;
   DEVNET_ELECTRA_EPOCH: string;
+  DEVNET_CAPELLA_EPOCH: string;
   DEVNET_GENESIS_TIME: string;
   DEVNET_SLOTS_PER_EPOCH: string;
   EVM_SCRIPT_EXECUTOR_ADDRESS: string;
@@ -27,6 +28,7 @@ type CSMENVConfig = {
   UPGRADE_CONFIG: string;
   VERIFIER_API_KEY: string;
   VERIFIER_URL: string;
+  FOUNDRY_BLOCK_GAS_LIMIT: string;
 };
 
 export const DeployCSMContracts = command.cli({
@@ -58,7 +60,7 @@ export const DeployCSMContracts = command.cli({
     } = await clClient.getGenesis();
 
     const {
-      data: { ELECTRA_FORK_EPOCH, SLOTS_PER_EPOCH },
+      data: { ELECTRA_FORK_EPOCH, SLOTS_PER_EPOCH, CAPELLA_FORK_EPOCH },
     } = await clClient.getConfig();
 
     const blockscoutConfig = await state.getBlockScout();
@@ -84,11 +86,12 @@ export const DeployCSMContracts = command.cli({
       DEVNET_ELECTRA_EPOCH: ELECTRA_FORK_EPOCH,
       DEVNET_GENESIS_TIME: genesis_time,
       DEVNET_SLOTS_PER_EPOCH: SLOTS_PER_EPOCH,
+      DEVNET_CAPELLA_EPOCH: CAPELLA_FORK_EPOCH,
       EVM_SCRIPT_EXECUTOR_ADDRESS: agent,
       RPC_URL: elPublic,
       UPGRADE_CONFIG: constants.UPGRADE_CONFIG,
       VERIFIER_API_KEY: constants.VERIFIER_API_KEY,
-
+      FOUNDRY_BLOCK_GAS_LIMIT: "1000000000",
       VERIFIER_URL: blockscoutConfig.api,
     };
 
@@ -99,7 +102,7 @@ export const DeployCSMContracts = command.cli({
 
     await dre.runCommand(CSMInstall, {});
 
-    const args = ["deploy-live-no-confirm", "-g", "200", "--legacy", "--private-key", "$DEPLOYER_PRIVATE_KEY"];
+    const args = ["deploy-live-no-confirm", "--slow", "--legacy", "--private-key", "$DEPLOYER_PRIVATE_KEY"];
     if (params.verify) {
       args.push("--verify", "--verifier", "blockscout", "--chain", "32382");
     }

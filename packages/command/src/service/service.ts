@@ -121,6 +121,7 @@ export class DevNetService<Name extends keyof DevNetServices> {
   > {
     const { labels } = this.config;
     // todo: make something with dora
+    delete labels['dora'];
     if (must) {
       return await getContainersByServiceLabels<DevNetServices[Name]["labels"]>(
         labels,
