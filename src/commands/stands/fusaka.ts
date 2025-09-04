@@ -63,6 +63,11 @@ export const FusakaDevNetUp = command.cli({
     await dre.runCommand(DeployCSMContracts, deployArgs);
     logger.log("✅ CSM contracts deployed.");
 
+    await dre.runCommand(GitCheckout, {
+      service: "lidoCLI",
+      ref: "fix/vroom-306-temp-fix-fusaka-1",
+    });
+
     logger.log("🚀 Activating Lido Core protocol...");
     await dre.runCommand(ActivateLidoProtocol, {});
     logger.log("✅ Lido Core protocol activated.");
