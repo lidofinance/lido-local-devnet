@@ -112,7 +112,7 @@ const kapi = new DevNetServiceConfig({
 const oracle = new DevNetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/lido-oracle.git",
-    branch: "feature/oracle-v6-testnet",
+    branch: "fix/vroom-306-temp-fix-fusaka-1",
   },
   workspace: "workspaces/oracle-v6",
   name: "oracle" as const,
