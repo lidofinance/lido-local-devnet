@@ -94,4 +94,4 @@ upgrade:
 # Helm chart uninstall
 .PHONY: uninstall
 uninstall:
-	helm uninstall $(HELM_RELEASE) --namespace $(NAMESPACE)
+	helm uninstall $(HELM_RELEASE) --namespace $(NAMESPACE) --ignore-not-found

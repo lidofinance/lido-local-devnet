@@ -7,7 +7,7 @@ participants_matrix:
     # - el_type: nimbus
     #   el_image: ethpandaops/nimbus-eth1:fusaka-devnet-3
     - el_type: geth
-      el_image: ethpandaops/geth:master
+      el_image: docker.ethquokkaops.io/dh/ethpandaops/geth:eip4844-transition-updatefraction-2d526d2
       el_extra_params: [ --rpc.gascap=16777215 --rpc.allow-unprotected-txs --syncmode=full --gcmode=archive ]
       el_min_cpu: 0
       el_max_cpu: 0
@@ -48,7 +48,7 @@ participants_matrix:
 
 network_params:
   network_id: "32382"
-  fulu_fork_epoch: 5
+  fulu_fork_epoch: 2
   bpo_1_epoch: 32
   bpo_1_max_blobs: 12
   bpo_1_target_blobs: 9
@@ -81,7 +81,7 @@ spamoor_params:
   spammers:
     - scenario: eoatx
       config:
-        throughput: 200
+        throughput: 5
     - scenario: blobs
       config:
-        throughput: 20
+        throughput: 5

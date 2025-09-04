@@ -19,7 +19,7 @@ export const ChainDown = command.isomorphic({
 
     await dre.runCommand(K8sDoraIngressDown, {});
     await dre.runCommand(K8sNodesIngressDown, {});
-    await dre.runCommand(BlockscoutDown, {});
+    await dre.runCommand(BlockscoutDown, { force: false });
 
     await state.removeNodes();
     await state.removeChain();

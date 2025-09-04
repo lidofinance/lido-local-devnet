@@ -43,14 +43,16 @@ export const KurtosisRunPackage = command.isomorphic({
     logger.log(`Kurtosis cluster type [${kurtosisClusterType}]`);
 
     if (kurtosisClusterType === 'cloud') {
-      const processes = await psList();
-      const kurtosisGateway = processes.find(p => p.name.match(/kurtosis\sgateway/));
+      // const processes = await psList();
+      // const kurtosisGateway = processes.find(p => p.name.match(/kurtosis\sgateway/));
 
-      if (!kurtosisGateway) {
-        logger.log(`Starting kurtosis gateway in the background`);
-        const kgw = execa({ gracefulCancel: true });
-        kgw`kurtosis gateway`;
-      }
+      // console.log(processes);
+
+      // if (!kurtosisGateway) {
+      //   logger.log(`Starting kurtosis gateway in the background`);
+      //   const kgw = execa({ gracefulCancel: true });
+      //   kgw`kurtosis gateway`;
+      // }
     }
 
     await kurtosis.sh`kurtosis run

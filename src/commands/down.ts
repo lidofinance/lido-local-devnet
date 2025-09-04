@@ -14,7 +14,7 @@ export const DevNetStop = command.cli({
     logger.log("Stopping DevNet...");
 
     await dre
-      .runCommand(BlockscoutDown, {})
+      .runCommand(BlockscoutDown, { force: false })
       .catch((error) => logger.warn(error.message));
     await dre
       .runCommand(KapiDown, {})

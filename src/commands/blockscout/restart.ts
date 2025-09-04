@@ -9,7 +9,7 @@ export const RestartNodes = command.isomorphic({
   async handler({ dre, dre: { logger } }) {
     logger.log("Restarting the blockscout...");
 
-    await dre.runCommand(BlockscoutDown, {});
+    await dre.runCommand(BlockscoutDown, { force: true });
     logger.log("blockscout successfully stopped.");
 
     await dre.runCommand(BlockscoutUp, {});
