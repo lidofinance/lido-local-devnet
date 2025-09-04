@@ -1,5 +1,6 @@
 import { DepositData, DepositDataResult, Keystores } from "@devnet/keygen";
 import { ChainRoot, NetworkArtifactRoot } from "@devnet/types";
+import { isEmptyObject } from "@devnet/utils";
 
 import { BaseState } from "./base-state.js";
 import { WALLET_KEYS_COUNT } from "./constants.js";
@@ -21,6 +22,11 @@ export interface StateInterface extends State {
 export class State extends BaseState {
   public constructor(rawConfig: unknown, networkArtifactsRoot: NetworkArtifactRoot, chainRoot: ChainRoot) {
     super(rawConfig, networkArtifactsRoot, chainRoot);
+  }
+
+  async isChainDeployed() {
+    const state = this.getChain(false);
+    return state && !isEmptyObject(state);
   }
 
   async getChain<M extends boolean = true>(must: M = true as M) {
