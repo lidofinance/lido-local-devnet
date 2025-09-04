@@ -1,5 +1,5 @@
 export const isEmptyObject = (obj: object | unknown): obj is Record<string, never> => {
-  if (typeof obj !== 'object' || obj === null) {
+  if (typeof obj === 'object' && obj === null) {
     return true;
   }
 

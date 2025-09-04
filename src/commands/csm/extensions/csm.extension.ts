@@ -74,7 +74,7 @@ export const csmExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
 
   dre.state.isCSMDeployed = (async function () {
     const state = await this.getCSM(false);
-    return state && !isEmptyObject(state);
+    return !isEmptyObject(state) && state.module !== undefined;
   });
 
   dre.state.getElectraVerifier = (async function<M extends boolean = true>(must: M = true as M) {
