@@ -17,6 +17,7 @@ type DeployEnvRequired = {
   NETWORK_STATE_FILE: string;
   RPC_URL: string;
   SLOTS_PER_EPOCH: string;
+  GAS_LIMIT?: string;
 };
 
 export const DeployLidoContracts = command.cli({
@@ -74,6 +75,7 @@ export const DeployLidoContracts = command.cli({
       GENESIS_TIME: genesis_time,
       RPC_URL: elPublic,
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,
+      GAS_LIMIT: '16000000',
     };
 
     await lidoCore.sh({ env: deployEnv })`bash -c scripts/dao-deploy.sh`;
