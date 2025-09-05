@@ -1,0 +1,153 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Lido Local Devnet Configuration",
+  "description": "Configuration schema for Lido local development network",
+  "type": "object",
+  "properties": {
+    "networks": {
+      "type": "array",
+      "description": "Array of network configurations",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Network identifier name"
+          },
+          "chain": {
+            "type": "object",
+            "description": "Chain configuration with execution and consensus layer endpoints",
+            "properties": {
+              "elPrivate": {
+                "type": "string",
+                "format": "uri",
+                "description": "Private execution layer endpoint URL"
+              },
+              "clPrivate": {
+                "type": "string",
+                "format": "uri",
+                "description": "Private consensus layer endpoint URL"
+              },
+              "elPublic": {
+                "type": "string",
+                "format": "uri",
+                "description": "Public execution layer endpoint URL"
+              },
+              "clPublic": {
+                "type": "string",
+                "format": "uri",
+                "description": "Public consensus layer endpoint URL"
+              }
+            },
+            "required": ["elPrivate", "clPrivate", "elPublic", "clPublic"],
+            "additionalProperties": false
+          },
+          "lido": {
+            "type": "object",
+            "description": "Lido protocol contract addresses",
+            "properties": {
+              "agent": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "Agent contract address"
+              },
+              "voting": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "Voting contract address"
+              },
+              "tokenManager": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "Token manager contract address"
+              },
+              "sanityChecker": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "Sanity checker contract address"
+              },
+              "accountingOracle": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "Accounting oracle contract address"
+              },
+              "validatorExitBus": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "Validator exit bus contract address"
+              },
+              "locator": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "Locator contract address"
+              }
+            },
+            "required": ["agent", "voting", "tokenManager", "sanityChecker", "accountingOracle", "validatorExitBus", "locator"],
+            "additionalProperties": false
+          },
+          "csm": {
+            "type": "object",
+            "description": "Community Staking Module configuration",
+            "properties": {
+              "accounting": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "CSM accounting contract address"
+              },
+              "earlyAdoption": {
+                "type": "boolean",
+                "description": "Early adoption flag"
+              },
+              "feeDistributor": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Fee distributor value"
+              },
+              "feeOracle": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "Fee oracle contract address"
+              },
+              "module": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "CSM module contract address"
+              },
+              "verifier": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "Verifier contract address"
+              },
+              "gateSeal": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "Gate seal contract address"
+              },
+              "hashConsensus": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "Hash consensus contract address"
+              },
+              "lidoLocator": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "Lido locator contract address"
+              }
+            },
+            "required": ["accounting", "earlyAdoption", "feeDistributor", "feeOracle", "module", "verifier", "gateSeal", "hashConsensus", "lidoLocator"],
+            "additionalProperties": false
+          },
+          "walletMnemonic": {
+            "type": "string",
+            "description": "Wallet mnemonic phrase for the network"
+          }
+        },
+        "required": ["name", "chain", "lido", "csm", "walletMnemonic"],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    }
+  },
+  "required": ["networks"],
+  "additionalProperties": false
+}
