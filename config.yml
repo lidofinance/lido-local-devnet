@@ -1,3 +1,7 @@
+# yaml-language-server: $schema=file://config.schema.json
+
+currentNetwork: devnet4
+
 networks:
   - name: devnet4
     chain:
