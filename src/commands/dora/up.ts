@@ -4,13 +4,13 @@ import { checkK8sIngressExists, getK8s, k8s } from "@devnet/k8s";
 import { doraExtension } from "./extensions/dora.extension.js";
 import { doraIngressTmpl } from "./templates/dora-ingress.template.js";
 
-export const K8sDoraIngressUp = command.cli({
+export const DoraK8sIngressUp = command.cli({
   description:
     "Deploy K8s Ingress for Dora",
   params: {},
   extensions: [doraExtension],
   async handler({ dre }) {
-    const { network, logger, state } = dre;
+    const { logger, state } = dre;
 
     logger.log(
       "Deploying K8s Ingress for Dora...",
@@ -27,7 +27,7 @@ export const K8sDoraIngressUp = command.cli({
       logger.log(`Ingress with name ${ingress.metadata.name} already exists. Dora URL: [${url}] . Skipping creation.`);
 
       await state.updateDora(
-        { url: ingress.spec.rules[0].host, k8sIngressName: ingress.metadata.name }
+        { url: `http://${ingress.spec.rules[0].host}`, k8sIngressName: ingress.metadata.name }
       );
       return;
     }

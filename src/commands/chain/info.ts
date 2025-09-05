@@ -1,14 +1,12 @@
 import { command } from "@devnet/command";
 
+import { BlockscoutGetInfo } from "../blockscout/info.js";
+import { DoraInfo } from "../dora/info.js";
+
 export const ChainGetInfo = command.cli({
   description: "Retrieves and displays information about the chain.",
   params: {},
-  async handler({
-    dre: {
-      logger,
-      state,
-    },
-  }) {
+  async handler({ dre, dre: { logger, state }}) {
     logger.log("");
     const chainServices = Object.entries(await state.getChain()).filter(
       ([k]) => !k.endsWith("Private"),
@@ -19,5 +17,8 @@ export const ChainGetInfo = command.cli({
         ...chainServices,
       ],
     );
+
+    await dre.runCommand(BlockscoutGetInfo, {});
+    await dre.runCommand(DoraInfo, {});
   },
 });
