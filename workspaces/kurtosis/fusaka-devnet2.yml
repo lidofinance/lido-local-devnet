@@ -62,7 +62,7 @@ participants:
 
 network_params:
   network_id: "32382"
-  fulu_fork_epoch: 2
+  fulu_fork_epoch: 5
   bpo_1_epoch: 32
   bpo_1_max_blobs: 12
   bpo_1_target_blobs: 9
