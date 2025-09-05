@@ -4,7 +4,7 @@ import { checkK8sIngressExists, getK8s, k8s } from "@devnet/k8s";
 import { doraExtension } from "./extensions/dora.extension.js";
 import { doraIngressTmpl } from "./templates/dora-ingress.template.js";
 
-export const K8sDoraIngressDown = command.cli({
+export const DoraK8sIngressDown = command.cli({
   description:
     "Undeploy K8s Ingress for Dora",
   params: {},

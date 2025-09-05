@@ -2,7 +2,7 @@ import { Params, command } from "@devnet/command";
 import { DevNetError, sleep } from "@devnet/utils";
 
 import { BlockscoutUp } from "../blockscout/up.js";
-import { K8sDoraIngressUp } from "../k8s-dora-ingress/up.js";
+import { DoraK8sIngressUp } from "../dora/up.js";
 import { KurtosisDownloadArtifacts } from "../kurtosis/download-artifacts.js";
 import { KurtosisRunPackage } from "../kurtosis/run-package.js";
 import { ChainSyncNodesStateFromK8s } from "./chain-sync-nodes-state-from-k8s.js";
@@ -25,7 +25,7 @@ export const ChainUp = command.isomorphic({
     await dre.runCommand(ChainSyncState, {});
 
     await dre.runCommand(KurtosisDownloadArtifacts, {});
-    await dre.runCommand(K8sDoraIngressUp, {});
+    await dre.runCommand(DoraK8sIngressUp, {});
     await dre.runCommand(BlockscoutUp, {});
   },
 });

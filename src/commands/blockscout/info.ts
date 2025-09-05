@@ -5,9 +5,8 @@ export const BlockscoutGetInfo = command.isomorphic({
     "Retrieves and displays information about the blockscout service.",
   params: {},
   async handler({ dre: { logger, state } }) {
-    const blockscoutDeployed = await state.isBlockscoutDeployed();
-    if (!blockscoutDeployed) {
-      logger.log(`Blockscout service is not enabled`);
+    if (!(await state.isBlockscoutDeployed())) {
+      logger.log(`Blockscout is not enabled`);
       return;
     }
 
