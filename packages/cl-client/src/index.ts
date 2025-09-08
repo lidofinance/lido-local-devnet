@@ -36,6 +36,7 @@ export type BeaconValidatorsResponse = z.infer<typeof BeaconValidatorsSchema>;
 export const BeaconConfigSchema = z.object({
   data: z.object({
     ELECTRA_FORK_EPOCH: z.string(),
+    CAPELLA_FORK_EPOCH: z.string(),
     SECONDS_PER_SLOT: z.string(),
     SLOTS_PER_EPOCH: z.string(),
     DEPOSIT_CONTRACT_ADDRESS: z.string(),

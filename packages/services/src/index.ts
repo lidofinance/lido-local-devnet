@@ -35,7 +35,7 @@ const lidoCore = new DevNetServiceConfig({
 const lidoCLI = new DevNetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/lido-cli.git",
-    branch: "feature/devnet-command",
+    branch: "fix/vroom-306-temp-fix-fusaka-1",
   },
   name: "lidoCLI" as const,
   constants: {
@@ -112,7 +112,7 @@ const kapi = new DevNetServiceConfig({
 const oracle = new DevNetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/lido-oracle.git",
-    branch: "feat/oracle-v6",
+    branch: "fix/vroom-306-temp-fix-fusaka-1",
   },
   workspace: "workspaces/oracle-v6",
   name: "oracle" as const,
@@ -161,7 +161,7 @@ const dsmBots = new DevNetServiceConfig({
 const csm = new DevNetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/community-staking-module.git",
-    branch: "tags/v1",
+    branch: "v1.1",
   },
   name: "csm" as const,
   constants: {
