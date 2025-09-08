@@ -37,30 +37,22 @@ async function executeCommandWithLogging<T>(
   }
 
   const start = performance.now();
-  let lastError = null;
+  // let lastError = null;
   try {
     depth += 1;
     return await fn();
   } catch (error: unknown) {
-    lastError = error;
+    // lastError = error;
 
     if (error instanceof ZodError) {
       formatZodErrors(error).forEach((err) => logger.error(err));
       return;
     }
 
-    if (error instanceof ExecaError) {
+    if (depth !== 0 && error instanceof ExecaError) {
       logger.error(
         "An error occurred while processing a nested shell command, read the logs above",
       );
-      return;
-    }
-
-    if (error instanceof DevNetError) {
-      logger.error(
-        "An error occurred during the processing of the main command:",
-      );
-      logger.error(error.message);
       return;
     }
 
@@ -76,10 +68,6 @@ async function executeCommandWithLogging<T>(
     const end = performance.now();
     logger.logFooter(`Execution time ${Math.floor(end - start)}ms`);
     depth -= 1;
-    // eslint-disable-next-line no-unsafe-finally
-    if (depth === 0) return;
-    // eslint-disable-next-line no-unsafe-finally
-    if (lastError) throw lastError;
   }
 }
 
