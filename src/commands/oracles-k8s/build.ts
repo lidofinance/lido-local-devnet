@@ -10,7 +10,7 @@ export const OracleK8sBuild = command.cli({
     const dockerRegistry = await state.getDockerRegistry();
 
     const TAG = `kt-${network.name}`;
-    const IMAGE = 'lido/oracle';
+    const IMAGE = `lido/oracle`;
 
     await dre.runCommand(GitCheckout, {
       service: "oracle",

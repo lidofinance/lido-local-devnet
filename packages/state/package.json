@@ -13,9 +13,9 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
-    "@devnet/utils": "workspace:*",
     "@devnet/keygen": "workspace:*",
     "@devnet/types": "workspace:*",
+    "@devnet/utils": "workspace:*",
     "@types/node": "^22.10.5",
     "typescript": "^5",
     "zod": "^3.24.1"

@@ -120,9 +120,9 @@ blockscout:
   ##
   env:
     ETHEREUM_JSONRPC_VARIANT: 'geth'
-    ETHEREUM_JSONRPC_WS_URL: 'http://el-1-geth-teku.kt-my-devnet.svc.cluster.local:8546'
-    ETHEREUM_JSONRPC_TRACE_URL: 'http://el-1-geth-teku.kt-my-devnet.svc.cluster.local:8545'
-    ETHEREUM_JSONRPC_HTTP_URL: 'http://el-1-geth-teku.kt-my-devnet.svc.cluster.local:8545'
+    ETHEREUM_JSONRPC_WS_URL: 'http://execution'
+    ETHEREUM_JSONRPC_TRACE_URL: 'http://execution'
+    ETHEREUM_JSONRPC_HTTP_URL: 'http://execution'
     DATABASE_URL: 'postgresql://admin:admin@postgresql:5432/blockscout?sslmode=disable'
     ECTO_USE_SSL: false
     MICROSERVICE_SC_VERIFIER_ENABLED: "true"

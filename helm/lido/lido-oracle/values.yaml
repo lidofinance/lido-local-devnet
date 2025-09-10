@@ -69,6 +69,7 @@ lido-backend:
     # Static environment variables
     variables:
       PROMETHEUS_PORT: 9000
+      HEALTHCHECK_SERVER_PORT: 9010
       EXECUTION_CLIENT_URI: ${EXECUTION_CLIENT_URI}
       CONSENSUS_CLIENT_URI: ${CONSENSUS_CLIENT_URI}
       KEYS_API_URI: ${KEYS_API_URI}
@@ -77,6 +78,7 @@ lido-backend:
       SUBMIT_DATA_DELAY_IN_SLOTS: ${SUBMIT_DATA_DELAY_IN_SLOTS}
       ALLOW_REPORTING_IN_BUNKER_MODE: false
       KUBO_HOST: false
+
 
     # Environment variables from secrets
     secrets: {}
@@ -123,7 +125,7 @@ lido-backend:
   # Liveness probe
   livenessProbe:
     httpGet:
-      path: /healthcheck
+      path: .
       port: http
     initialDelaySeconds: 30
     periodSeconds: 10
@@ -131,10 +133,10 @@ lido-backend:
   # Readiness probe
   readinessProbe:
     httpGet:
-      path: /healthcheck
+      path: /
       port: http
-    initialDelaySeconds: 5
-    periodSeconds: 5
+    initialDelaySeconds: 15
+    periodSeconds: 10
 
   # Additional labels
   additionalLabels: {}

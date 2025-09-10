@@ -26,8 +26,6 @@ export class State extends BaseState {
 
   async isChainDeployed() {
     const state = await this.getChain(false);
-    console.log('dfgdfg',state);
-
     return state && !isEmptyObject(state);
   }
 

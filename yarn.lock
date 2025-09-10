@@ -1131,6 +1131,7 @@ __metadata:
   dependencies:
     "@devnet/keygen": "workspace:*"
     "@devnet/types": "workspace:*"
+    "@devnet/utils": "workspace:*"
     "@types/dockerode": "npm:^3.3.34"
     "@types/node": "npm:^22.10.5"
     eslint: "npm:^8"
