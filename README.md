@@ -23,7 +23,7 @@ Lido Local DevNet is a powerful tool for deploying and testing the Lido protocol
 - **npm** ([Install npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm))
 - **Docker** 27+ ([Install Docker](https://www.docker.com/))  
 - **Docker Compose** V2 ([Install Docker Compose](https://docs.docker.com/compose/))  
-- **Kurtosis** ([Install Kurtosis](https://www.kurtosistech.com/))  
+- **Kurtosis 1.11.1+** ([Install Kurtosis](https://www.kurtosistech.com/))  
 - **Foundry tools** ([Install Foundry](https://book.getfoundry.sh/getting-started/installation))  
 - **Just** ([Install Just](https://github.com/casey/just))  
 - **Make** 4+  (Install Make - Linux: `sudo apt-get install build-essential`)
