@@ -57,7 +57,7 @@ export const KapiK8sUp = command.cli({
     };
 
     const KAPI_INGRESS_HOSTNAME = addPrefixToIngressHostname(
-      process.env.KAPI_HOSTNAME ??
+      process.env.KAPI_INGRESS_HOSTNAME ??
       "kapi.valset-02.testnet.fi"
     );
 

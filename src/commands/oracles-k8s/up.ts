@@ -5,6 +5,7 @@ import { DevNetError } from "@devnet/utils";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { OracleK8sBuild } from "./build.js";
 import { oraclesK8sExtension } from "./extensions/oracles-k8s.extension.js";
+import { NAMESPACE } from "./constants/index.js";
 
 export const OracleK8sUp = command.cli({
   description: "Start Oracle(s) in K8s with Helm",
@@ -23,11 +24,11 @@ export const OracleK8sUp = command.cli({
       throw new DevNetError("CSM is not deployed");
     }
 
-    // await dre.runCommand(OracleK8sBuild, {});
+    await dre.runCommand(OracleK8sBuild, {});
 
-    // if (!(await state.isOraclesK8sImageReady())) {
-    //   throw new DevNetError("Oracle image is not ready");
-    // }
+    if (!(await state.isOraclesK8sImageReady())) {
+      throw new DevNetError("Oracle image is not ready");
+    }
 
     const { elPrivate, clPrivate } = await state.getChain();
 
@@ -35,9 +36,9 @@ export const OracleK8sUp = command.cli({
     const { module: csmModule } = await state.getCSM();
     const { oracle1, oracle2, oracle3 } = await state.getNamedWallet();
     const { privateUrl: kapiPrivateUrl } = await state.getKapiK8sRunning();
-    const { image, tag, registryHostname } = { image: 'lidofinance/oracle', tag: 'dev', registryHostname: 'docker.io' };
+    const { image, tag, registryHostname } = await state.getOraclesK8sImage();
 
-    const NAMESPACE = `kt-${dre.network.name}-oracles`;
+    ;
     const env: Record<string, string> = {
       ...helmLidoOracle.config.constants,
 
@@ -75,7 +76,7 @@ export const OracleK8sUp = command.cli({
       const helmLidoOracleSh = helmLidoOracle.sh({
         env: {
           ...env,
-          NAMESPACE,
+          NAMESPACE: NAMESPACE(dre),
           HELM_RELEASE,
           HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
           IMAGE: image,
@@ -86,7 +87,7 @@ export const OracleK8sUp = command.cli({
         },
       });
 
-      await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace: NAMESPACE });
+      await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace: NAMESPACE(dre) });
 
       await helmLidoOracleSh`make debug`;
       await helmLidoOracleSh`make lint`;

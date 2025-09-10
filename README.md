@@ -36,7 +36,20 @@ Lido Local DevNet is a powerful tool for deploying and testing the Lido protocol
 
 Original docs are located in `https://docs.kurtosis.com/k8s/`
 
-### 1. Change kurtosis config to work with k8s the cluster
+### 1. Set the current context to the k8s cluster (if you have multiple clusters)
+```sh
+kubectl config use-context tooling-holesky-sandbox-0 # or whatever your k8s context is
+```
+
+### 2. Ensure that you are connected to the k8s cluster
+
+The cluster can be accessible via SSH Tunnel.
+
+```sh
+kubectl cluster-info
+```
+
+### 3. Change kurtosis config to work with the k8s cluster
 
 Update your kurtosis config at `echo $(kurtosis config path)` location
 
@@ -60,48 +73,46 @@ kurtosis-clusters:
       enclave-size-in-megabytes: 10
 ```
 
-### 2. Set current context to the cluster (if you have multiple clusters)
+### 4. Point kurtosis to the cluster
 ```sh
-kubectl config use-context tooling-holesky-sandbox-0 # or whatever your k8s context is
-```
-
-### 3. Point kurtosis to the cluster
-```sh
+# stop kurtosis engine if it is running
+kurtosis engine start
+# tell kurtosis to work with k8s cluster
 kurtosis cluster set cloud
 ```
 
-### 4. Start Kurtosis
+### 5. Start Kurtosis
 Kurtosis is required to launch Ethereum nodes
 ```sh
 kurtosis engine start
 ```
 
-### 5. Start kurtosis gateway
+### 6. Start kurtosis gateway (in a separate terminal)
 ```sh
 kurtosis gateway
 ```
 
-### 6. Install dependencies
+### 7. Install dependencies
 ```sh
 yarn && yarn build:all
 ```
 
-### 7. Launch the environment and deploy Lido smart contracts
+### 8. Launch the environment and deploy Lido smart contracts
 Below is an example for launching the `pectra` test stand. If you need a different setup, refer to the [test stands documentation](./docs/commands/stands.md).
 
 ```sh
-./bin/run.js stands pectra --full
+./bin/run.js stands fusaka
 ```
 For contract verification, use the `--verify` flag:
 ```sh
-./bin/run.js stands pectra --full --verify
+./bin/run.js stands fusaka --verify
 ```
 For a full DSM infrastructure deployment, add the `--dsm` flag:
 ```sh
-./bin/run.js stands pectra --full --verify --dsm
+./bin/run.js stands fusaka --verify --dsm
 ```
 
-### 8. Interaction with Voting scripts
+### 8. Interaction with Voting scripts (optional)
 
 
 Since voting scripts require Python and Brownie, install the necessary dependencies:

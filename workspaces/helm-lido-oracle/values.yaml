@@ -19,10 +19,8 @@ lido-backend:
     pullPolicy: Always
 
   # Image pull secrets for private registries
-  imagePullSecrets: []
-  # Example:
-  # imagePullSecrets:
-  #   - name: myregistrykey
+  imagePullSecrets:
+    - name: registry-secret
 
   # Service configuration
   service:
@@ -69,6 +67,7 @@ lido-backend:
     # Static environment variables
     variables:
       PROMETHEUS_PORT: 9000
+      HEALTHCHECK_SERVER_PORT: 9010
       EXECUTION_CLIENT_URI: ${EXECUTION_CLIENT_URI}
       CONSENSUS_CLIENT_URI: ${CONSENSUS_CLIENT_URI}
       KEYS_API_URI: ${KEYS_API_URI}
@@ -125,7 +124,7 @@ lido-backend:
   # Liveness probe
   livenessProbe:
     httpGet:
-      path: /healthcheck
+      path: .
       port: http
     initialDelaySeconds: 30
     periodSeconds: 10
@@ -133,10 +132,10 @@ lido-backend:
   # Readiness probe
   readinessProbe:
     httpGet:
-      path: /healthcheck
+      path: .
       port: http
-    initialDelaySeconds: 5
-    periodSeconds: 5
+    initialDelaySeconds: 15
+    periodSeconds: 10
 
   # Additional labels
   additionalLabels: {}
