@@ -16,7 +16,7 @@ image:
   # Image pull policy
   pullPolicy: IfNotPresent
 
-# Image pull secrets for private registries
+# Image pull secrets for private docker registries
 imagePullSecrets: []
 # Example:
 # imagePullSecrets:
