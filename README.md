@@ -55,7 +55,7 @@ kurtosis-clusters:
   cloud:
     type: "kubernetes"
     config:
-      kubernetes-cluster-name: "tooling-holesky-sandbox-0" # change cluster name if needed
+      kubernetes-cluster-name: "tooling-holesky-sandbox-0" # change the cluster name if needed
       storage-class: "ssd-hostpath"
       enclave-size-in-megabytes: 10
 ```

@@ -27,11 +27,11 @@ export const DockerRegistryUp = command.cli({
 
     const NAMESPACE = `kt-${dre.network.name}-docker-registry`;
     const DOCKER_REGISTRY_INGRESS_HOSTNAME = addPrefixToIngressHostname(
-      process.env.DOCKER_REGISTRY_HOSTNAME ??
+      process.env.DOCKER_REGISTRY_LOCAL_INGRESS_HOSTNAME ??
         "docker-registry.valset-02.testnet.fi"
     );
     const DOCKER_REGISTRY_UI_INGRESS_HOSTNAME = addPrefixToIngressHostname(
-      process.env.DOCKER_REGISTRY_UI_HOSTNAME ??
+      process.env.DOCKER_REGISTRY_LOCAL_INGRESS_UI_HOSTNAME ??
         "docker-registry-ui.valset-02.testnet.fi"
     );
 

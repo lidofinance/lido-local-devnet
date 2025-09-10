@@ -53,7 +53,7 @@ export const OracleK8sUp = command.cli({
     };
 
     const helmReleases = [
-      // { HELM_RELEASE: 'oracle-accounting-1', command: 'accounting', privateKey: oracle1 },
+      { HELM_RELEASE: 'oracle-accounting-1', command: 'accounting', privateKey: oracle1 },
       { HELM_RELEASE: 'oracle-accounting-2', command: 'accounting', privateKey: oracle2 },
       { HELM_RELEASE: 'oracle-ejector-1', command: 'ejector', privateKey: oracle1 },
       { HELM_RELEASE: 'oracle-ejector-2', command: 'ejector', privateKey: oracle2 },
