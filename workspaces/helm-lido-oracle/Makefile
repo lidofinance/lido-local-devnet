@@ -2,7 +2,7 @@
 # This Makefile provides convenient commands for managing Helm charts
 
 # Default namespace for Helm operations
-NAMESPACE ?= kt-my-devnet-kapi
+NAMESPACE ?= kt-my-devnet-oracles
 
 # Helm chart paths
 HELM_CHART_ROOT_PATH ?= ../../helm
@@ -10,7 +10,7 @@ HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/lido/lido-oracle
 HELM_VALUES_PATH = ./values.yaml
 
 # Release names
-HELM_RELEASE = lido-oracle
+HELM_RELEASE ?= oracle-accounting-1
 
 # Default Helm timeout
 TIMEOUT ?= 5m
@@ -34,7 +34,6 @@ else
 endif
 
 # Default ENV Variables specific to chart
-KAPI_INGRESS_HOSTNAME ?= kapi.devnet.valset-02.testnet.fi
 IMAGE ?= lidofinance/oracle
 TAG ?= dev
 REGISTRY_HOSTNAME ?= docker.io
@@ -48,22 +47,15 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-backend.image.repository="${IMAGE}" \
 	--set lido-backend.image.tag="${TAG}" \
 	--set lido-backend.image.registry="${REGISTRY_HOSTNAME}" \
-	--set lido-backend.env.variables.CORS_WHITELIST_REGEXP="${CORS_WHITELIST_REGEXP}" \
-	--set lido-backend.env.variables.GLOBAL_THROTTLE_TTL="${GLOBAL_THROTTLE_TTL}" \
-	--set lido-backend.env.variables.GLOBAL_THROTTLE_LIMIT="${GLOBAL_THROTTLE_LIMIT}" \
-	--set lido-backend.env.variables.GLOBAL_CACHE_TTL="${GLOBAL_CACHE_TTL}" \
-	--set lido-backend.env.variables.PROVIDERS_URLS="${PROVIDERS_URLS}" \
-	--set lido-backend.env.variables.CL_API_URLS="${CL_API_URLS}" \
-	--set lido-backend.env.variables.IS_DEVNET_MODE="${IS_DEVNET_MODE}" \
-	--set lido-backend.env.variables.CHAIN_ID="${CHAIN_ID}" \
-	--set lido-backend.env.variables.JOB_INTERVAL_REGISTRY="${JOB_INTERVAL_REGISTRY}" \
-	--set lido-backend.env.variables.VALIDATOR_REGISTRY_ENABLE="${VALIDATOR_REGISTRY_ENABLE}" \
-	--set lido-backend.env.variables.JOB_INTERVAL_VALIDATORS_REGISTRY="${JOB_INTERVAL_VALIDATORS_REGISTRY}" \
-	--set lido-backend.env.variables.LIDO_LOCATOR_DEVNET_ADDRESS="${LIDO_LOCATOR_DEVNET_ADDRESS}" \
-	--set lido-backend.env.variables.CURATED_MODULE_DEVNET_ADDRESS="${CURATED_MODULE_DEVNET_ADDRESS}" \
-	--set lido-backend.env.variables.CSM_MODULE_DEVNET_ADDRESS="${CSM_MODULE_DEVNET_ADDRESS}" \
-	--set lido-backend.env.variables.STAKING_ROUTER_DEVNET_ADDRESS="${STAKING_ROUTER_DEVNET_ADDRESS}" \
-	--set lido-backend.ingress.hosts[0].host="${KAPI_INGRESS_HOSTNAME}"
+	--set "lido-backend.args={${COMMAND}}" \
+	--set lido-backend.env.variables.EXECUTION_CLIENT_URI="${EXECUTION_CLIENT_URI}" \
+    --set lido-backend.env.variables.CONSENSUS_CLIENT_URI="${CONSENSUS_CLIENT_URI}" \
+    --set lido-backend.env.variables.KEYS_API_URI="${KEYS_API_URI}" \
+    --set lido-backend.env.variables.MEMBER_PRIV_KEY="${MEMBER_PRIV_KEY}" \
+    --set lido-backend.env.variables.LIDO_LOCATOR_ADDRESS="${LIDO_LOCATOR_ADDRESS}" \
+    --set lido-backend.env.variables.CSM_MODULE_ADDRESS="${CSM_MODULE_ADDRESS}" \
+    --set lido-backend.env.variables.SUBMIT_DATA_DELAY_IN_SLOTS="${SUBMIT_DATA_DELAY_IN_SLOTS}" \
+    --set lido-backend.serviceAccount.name="${HELM_RELEASE}"
 endef
 
 # Lint Helm chart

@@ -5,9 +5,9 @@ export const helmLidoOracle = new DevnetServiceConfig({
   name: "helmLidoOracle" as const,
   exposedPorts: [],
   constants: {
-    HASH_CONSENSUS_AO_EPOCHS_PER_FRAME: 8,
-    HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME: 8,
-    HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME: 24
+    HASH_CONSENSUS_AO_EPOCHS_PER_FRAME: "8",
+    HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME: "8",
+    HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME: "24"
   },
   labels: {},
   getters: {},

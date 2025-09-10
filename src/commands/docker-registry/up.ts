@@ -20,6 +20,10 @@ export const DockerRegistryUp = command.cli({
       return;
     }
 
+    if ((await dre.state.getDockerRegistryType()) === 'external') {
+      logger.log("Docker registry is external. Skipping deployment.");
+    }
+
 
     const NAMESPACE = `kt-${dre.network.name}-docker-registry`;
     const DOCKER_REGISTRY_INGRESS_HOSTNAME = addPrefixToIngressHostname(

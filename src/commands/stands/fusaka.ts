@@ -11,6 +11,7 @@ import { DataBusDeploy } from "../data-bus/deploy.js";
 import { DSMBotsUp } from "../dsm-bots/up.js";
 import { GitCheckout } from "../git/checkout.js";
 import { KapiUp } from "../kapi/up.js";
+import { KapiK8sUp } from "../kapi-k8s/up.js";
 import { ActivateLidoProtocol } from "../lido-core/activate.js";
 import { LidoAddKeys } from "../lido-core/add-keys.js";
 import { LidoAddOperator } from "../lido-core/add-operator.js";
@@ -21,8 +22,8 @@ import { UseLidoDevNetKeys } from "../lido-core/keys/use.js";
 import { ReplaceDSM } from "../lido-core/replace-dsm.js";
 import { LidoSetStakingLimit } from "../lido-core/set-staking-limit.js";
 import { OracleUp } from "../oracles/up.js";
+import { OracleK8sUp } from "../oracles-k8s/up.js";
 import { ValidatorAdd } from "../validator/add.js";
-import { KapiK8sUp } from "../kapi-k8s/up.js";
 
 export const FusakaDevNetUp = command.cli({
   description: "Base Fusaka test stand.",
@@ -118,11 +119,11 @@ export const FusakaDevNetUp = command.cli({
     });
     logger.log(`✅ Keys for operator ${CSM_DEVNET_OPERATOR} added.`);
 
-    logger.log("🚀 Run KAPI service.");
+    logger.log("🚀 Run KAPI service in K8s.");
     await dre.runCommand(KapiK8sUp, {});
 
-    logger.log("🚀 Run Oracle service.");
-    await dre.runCommand(OracleUp, {});
+    logger.log("🚀 Run Oracle service in K8s.");
+    await dre.runCommand(OracleK8sUp, {});
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");

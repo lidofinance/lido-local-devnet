@@ -14,7 +14,7 @@ export const OracleK8sBuild = command.cli({
 
     await dre.runCommand(GitCheckout, {
       service: "oracle",
-      ref: "feat/oracle-v6", // TODO make configurable from global yaml config
+      ref: "fix/vroom-306-temp-fix-fusaka-1", // TODO make configurable from global yaml config
     });
 
     await buildAndPushDockerImage({
@@ -27,9 +27,9 @@ export const OracleK8sBuild = command.cli({
       username: process.env.DOCKER_REGISTRY_USERNAME ?? 'changeme',
     });
 
-    logger.log(`Kapi image pushed to ${dockerRegistry.registryUrl}/${IMAGE}:${TAG}`);
+    logger.log(`Oracle image pushed to ${dockerRegistry.registryUrl}/${IMAGE}:${TAG}`);
 
-    await state.updateKapiK8sImage({
+    await state.updateOraclesK8sImage({
       tag: TAG,
       image: IMAGE,
       registryHostname: dockerRegistry.registryHostname,

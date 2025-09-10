@@ -21,6 +21,8 @@ declare module "@devnet/state" {
     isKapiK8sImageReady(): Promise<boolean>;
     isKapiK8sRunning(): Promise<boolean>;
 
+    removeKapiK8s(): Promise<void>;
+
     updateKapiK8sImage(state: KapiK8sStateImage): Promise<void>;
     updateKapiK8sRunning(state: KapiK8sStateRunning): Promise<void>;
   }
@@ -41,6 +43,7 @@ export type KapiK8sStateImage = z.infer<typeof KapiK8sStateImage>;
 export const KapiK8sStateRunning = z.object({
   publicUrl: z.string().url(),
   privateUrl: z.string().url(),
+  helmRelease: z.string(),
 });
 
 export type KapiK8sStateRunning = z.infer<typeof KapiK8sStateRunning>;
@@ -61,6 +64,10 @@ export const kapiK8sExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
   dre.state.updateKapiK8sRunning = (async function (stateRunning: KapiK8sStateRunning) {
     const state = await dre.state.getKapiK8sState(false);
     await dre.state.updateProperties("kapiK8s", { ...state, running: stateRunning });
+  });
+
+  dre.state.removeKapiK8s = (async function () {
+    await dre.state.updateProperties("kapiK8s", {});
   });
 
   dre.state.isKapiK8sImageReady = (async function () {
@@ -91,6 +98,7 @@ export const kapiK8sExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
       {
         publicUrl: "kapiK8s.running.publicUrl",
         privateUrl: "kapiK8s.running.privateUrl",
+        helmRelease: "kapiK8s.running.helmRelease",
       },
       "kapiK8s",
       KapiK8sStateRunning,

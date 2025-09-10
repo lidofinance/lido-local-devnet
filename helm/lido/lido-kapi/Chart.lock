@@ -1,9 +1,9 @@
 dependencies:
 - name: lido-backend
   repository: file://../lido-backend
-  version: 0.1.0
+  version: 0.4.0
 - name: postgresql
   repository: file://../../vendor/postgresql
   version: 16.7.26
-digest: sha256:7f7c54c4f1ef89ec94423482b32f66bd1b252981a828011127db3da9e019e806
-generated: "2025-09-10T03:34:03.947901736+03:00"
+digest: sha256:07d7475beeab1d1a579393b33958b499398416ce1ebd207807f2746070407d3a
+generated: "2025-09-10T12:47:41.485269319+03:00"
