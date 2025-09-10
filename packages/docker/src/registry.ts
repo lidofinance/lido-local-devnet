@@ -4,7 +4,7 @@ import { execa } from "execa";
 export interface DockerPushOptions {
   imageName: string;
   password: string;
-  registryUrl: string;
+  registryHostname: string;
   tag: string;
   username: string;
 }
@@ -17,9 +17,7 @@ export interface DockerPushOptions {
  * @throws DevNetError if login or push operations fail
  */
 export async function pushDockerImage(options: DockerPushOptions): Promise<void> {
-  const { imageName, tag, registryUrl, username, password } = options;
-
-  const registryHostname = registryUrl.replace('http://','').replace('https://', '')
+  const { imageName, tag, registryHostname, username, password } = options;
 
   try {
     // Build the full image name with registry URL and tag
@@ -66,7 +64,7 @@ export async function pushDockerImage(options: DockerPushOptions): Promise<void>
 export async function buildAndPushDockerImage(
   options: { buildContext: string, cwd: string; dockerfile?: string } & DockerPushOptions
 ): Promise<void> {
-  const { imageName, tag, registryUrl, username, password, buildContext, dockerfile } = options;
+  const { imageName, tag, registryHostname, username, password, buildContext, dockerfile } = options;
 
   try {
     // Build the Docker image
@@ -87,7 +85,7 @@ export async function buildAndPushDockerImage(
     console.log(`Successfully built image: ${imageName}:${tag}`);
 
     // Push the built image
-    await pushDockerImage({ imageName, tag, registryUrl, username, password });
+    await pushDockerImage({ imageName, tag, registryHostname, username, password });
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

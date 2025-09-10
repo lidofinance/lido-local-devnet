@@ -14,6 +14,9 @@ declare module "@devnet/state" {
     getKapiK8sRunning<M extends boolean = true>(must?: M,): Promise<M extends true
       ? KapiK8sStateRunning
       : Partial<KapiK8sStateRunning>>;
+    getKapiK8sState<M extends boolean = true>(must?: M,): Promise<M extends true
+      ? KapiK8sState
+      : Partial<KapiK8sState>>;
 
     isKapiK8sImageReady(): Promise<boolean>;
     isKapiK8sRunning(): Promise<boolean>;
@@ -36,7 +39,8 @@ export const KapiK8sStateImage = z.object({
 export type KapiK8sStateImage = z.infer<typeof KapiK8sStateImage>;
 
 export const KapiK8sStateRunning = z.object({
-  url: z.string(),
+  publicUrl: z.string().url(),
+  privateUrl: z.string().url(),
 });
 
 export type KapiK8sStateRunning = z.infer<typeof KapiK8sStateRunning>;
@@ -49,18 +53,24 @@ export const KapiK8sState = z.object({
 export type KapiK8sState = z.infer<typeof KapiK8sState>;
 
 export const kapiK8sExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
-  dre.state.updateKapiK8sImage = (async function (state: KapiK8sStateImage) {
-    await dre.state.updateProperties("kapiK8s", { image: state });
+  dre.state.updateKapiK8sImage = (async function (stateImage: KapiK8sStateImage) {
+    const state = await dre.state.getKapiK8sState(false);
+    await dre.state.updateProperties("kapiK8s", { ...state, image: stateImage });
+  });
+
+  dre.state.updateKapiK8sRunning = (async function (stateRunning: KapiK8sStateRunning) {
+    const state = await dre.state.getKapiK8sState(false);
+    await dre.state.updateProperties("kapiK8s", { ...state, running: stateRunning });
   });
 
   dre.state.isKapiK8sImageReady = (async function () {
     const state = await dre.state.getKapiK8sImage(false);
-    return state && !isEmptyObject(state);
+    return state && !isEmptyObject(state) && (state.image !== undefined);
   });
 
   dre.state.isKapiK8sRunning = (async function () {
     const state = await dre.state.getKapiK8sRunning(false);
-    return state && !isEmptyObject(state);
+    return state && !isEmptyObject(state) && (state.privateUrl !== undefined);
   });
 
   dre.state.getKapiK8sImage = (async function <M extends boolean = true>(must: M = true as M) {
@@ -79,10 +89,20 @@ export const kapiK8sExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
   dre.state.getKapiK8sRunning = (async function <M extends boolean = true>(must: M = true as M) {
     return dre.state.getProperties(
       {
-        url: "kapiK8s.running.url",
+        publicUrl: "kapiK8s.running.publicUrl",
+        privateUrl: "kapiK8s.running.privateUrl",
       },
       "kapiK8s",
       KapiK8sStateRunning,
+      must,
+    );
+  });
+
+  dre.state.getKapiK8sState = (async function <M extends boolean = true>(must: M = true as M) {
+    return dre.state.getProperties(
+      'kapiK8s',
+      "kapiK8s",
+      KapiK8sState,
       must,
     );
   });

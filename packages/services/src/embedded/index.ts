@@ -5,7 +5,8 @@ import { csm } from "./csm.js";
 import { dataBus } from "./data-bus.js";
 import { dockerRegistry } from "./docker-registry.js";
 import { dsmBots } from "./dsm-bots.js";
-import { helmLidoBackend } from "./helm-lido-backend.js";
+import { helmLidoKapi } from "./helm-lido-kapi.js";
+import { helmLidoOracle } from "./helm-lido-oracle.js";
 import { kapi } from "./kapi.js";
 import { kurtosis } from "./kurtosis.js";
 import { lidoCLI } from "./lido-cli.js";
@@ -27,7 +28,8 @@ export const serviceConfigs = {
   dataBus,
   dsmBots,
   dockerRegistry,
-  helmLidoBackend
+  helmLidoKapi,
+  helmLidoOracle,
 };
 
 export type EmbeddedServicesConfigs = typeof serviceConfigs;

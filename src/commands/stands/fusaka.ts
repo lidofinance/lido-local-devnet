@@ -22,6 +22,7 @@ import { ReplaceDSM } from "../lido-core/replace-dsm.js";
 import { LidoSetStakingLimit } from "../lido-core/set-staking-limit.js";
 import { OracleUp } from "../oracles/up.js";
 import { ValidatorAdd } from "../validator/add.js";
+import { KapiK8sUp } from "../kapi-k8s/up.js";
 
 export const FusakaDevNetUp = command.cli({
   description: "Base Fusaka test stand.",
@@ -118,7 +119,7 @@ export const FusakaDevNetUp = command.cli({
     logger.log(`✅ Keys for operator ${CSM_DEVNET_OPERATOR} added.`);
 
     logger.log("🚀 Run KAPI service.");
-    await dre.runCommand(KapiUp, {});
+    await dre.runCommand(KapiK8sUp, {});
 
     logger.log("🚀 Run Oracle service.");
     await dre.runCommand(OracleUp, {});

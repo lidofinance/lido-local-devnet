@@ -15,7 +15,7 @@ export const DockerRegistryUp = command.cli({
       services: { dockerRegistry },
     } = dre;
 
-    if (await dre.state.isDockerRegistryDeployed()) {
+    if (await dre.state.isDockerRegistryAvailable()) {
       logger.log("Docker registry already deployed.");
       return;
     }
@@ -23,15 +23,13 @@ export const DockerRegistryUp = command.cli({
 
     const NAMESPACE = `kt-${dre.network.name}-docker-registry`;
     const DOCKER_REGISTRY_INGRESS_HOSTNAME = addPrefixToIngressHostname(
-      process.env.DOCKER_REGISTRY_INGRESS_HOSTNAME ??
+      process.env.DOCKER_REGISTRY_HOSTNAME ??
         "docker-registry.valset-02.testnet.fi"
     );
     const DOCKER_REGISTRY_UI_INGRESS_HOSTNAME = addPrefixToIngressHostname(
-      process.env.DOCKER_REGISTRY_UI_INGRESS_HOSTNAME ??
+      process.env.DOCKER_REGISTRY_UI_HOSTNAME ??
         "docker-registry-ui.valset-02.testnet.fi"
     );
-
-    console.log(DOCKER_REGISTRY_INGRESS_HOSTNAME, DOCKER_REGISTRY_UI_INGRESS_HOSTNAME);
 
     // Create and deploy registry authentication secret
     logger.log("Creating registry authentication secret...");
@@ -43,7 +41,6 @@ export const DockerRegistryUp = command.cli({
       // Secret doesn't exist, create it
       await k8sCoreApi.createNamespacedSecret({ namespace: authSecret.metadata.namespace, body: authSecret });
       logger.log(`Successfully created registry authentication secret: ${authSecret.metadata.name}`);
-
     } catch (error: unknown) {
       logger.log(`Secret ${authSecret.metadata.name} already exists. Skipping creation.`);
     }
@@ -63,12 +60,13 @@ export const DockerRegistryUp = command.cli({
     await dockerRegistrySh`make lint`;
     await dockerRegistrySh`make install`;
 
+    const registryHostname = DOCKER_REGISTRY_INGRESS_HOSTNAME;
     const registryUrl = `http://${DOCKER_REGISTRY_INGRESS_HOSTNAME}`;
     const uiUrl = `http://${DOCKER_REGISTRY_UI_INGRESS_HOSTNAME}`;
 
     logger.log(`Docker registry UI started on URL: ${uiUrl}`);
     logger.log(`Docker registry started on URL: ${registryUrl}`);
 
-    await state.updateDockerRegistry({ registryUrl, uiUrl  });
+    await state.updateDockerRegistry({ registryUrl, uiUrl, registryHostname  });
   },
 });

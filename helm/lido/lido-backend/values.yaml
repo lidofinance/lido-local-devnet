@@ -59,6 +59,9 @@ ingress:
   #     hosts:
   #       - backend.local
 
+# Command
+command: ""
+
 # Environment variables
 env:
   # Static environment variables
@@ -139,4 +142,4 @@ serviceAccount:
   # Service account annotations
   annotations: {}
   # Service account name (if not created, must exist)
-  name: ""
+  name: "lido-backend"
