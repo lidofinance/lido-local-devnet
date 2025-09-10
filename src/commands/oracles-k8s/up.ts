@@ -66,8 +66,8 @@ export const OracleK8sUp = command.cli({
     for (const release of helmReleases) {
       const { HELM_RELEASE, privateKey, command } = release;
 
-      const { helmReleases: alreadyDeployedHelmReleases } = await state.getOraclesK8sRunning();
-      if (alreadyDeployedHelmReleases.includes(HELM_RELEASE)) {
+      const { helmReleases: alreadyDeployedHelmReleases } = await state.getOraclesK8sRunning(false);
+      if (alreadyDeployedHelmReleases?.includes(HELM_RELEASE)) {
         logger.log(`Oracles release ${HELM_RELEASE} already running`);
         return;
       }
