@@ -97,8 +97,14 @@ kurtosis gateway
 yarn && yarn build:all
 ```
 
-### 8. Launch the environment and deploy Lido smart contracts
-Below is an example for launching the `pectra` test stand. If you need a different setup, refer to the [test stands documentation](./docs/commands/stands.md).
+### 8. Create `.env` file and fill it with the required values
+```sh
+cp .env.sample .env
+```
+
+### 9. Launch the environment and deploy Lido smart contracts
+Below is an example for launching the `fusaka` test stand. 
+If you need a different setup, refer to the [test stands documentation](./docs/commands/stands.md).
 
 ```sh
 ./bin/run.js stands fusaka
@@ -112,7 +118,7 @@ For a full DSM infrastructure deployment, add the `--dsm` flag:
 ./bin/run.js stands fusaka --verify --dsm
 ```
 
-### 8. Interaction with Voting scripts (optional)
+### 10. Interaction with Voting scripts (optional)
 
 
 Since voting scripts require Python and Brownie, install the necessary dependencies:
@@ -138,7 +144,7 @@ After adding an account, proceed with the voting process. See the [voting docume
 ./bin/run.js voting enact-after-pectra
 ```
 
-### 9. Done!
+### 11. Done!
 The network, infrastructure, and protocol have been successfully launched.
 
 ---
