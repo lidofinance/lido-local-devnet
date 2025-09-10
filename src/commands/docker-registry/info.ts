@@ -5,7 +5,7 @@ export const DockerRegistryGetInfo = command.isomorphic({
     "Retrieves and displays information about the docker registry service.",
   params: {},
   async handler({ dre: { logger, state } }) {
-    const dockerRegistryDeployed = await state.isDockerRegistryDeployed();
+    const dockerRegistryDeployed = await state.isDockerRegistryAvailable();
     if (!dockerRegistryDeployed) {
       logger.log(`Docker registry service is not enabled`);
       return;

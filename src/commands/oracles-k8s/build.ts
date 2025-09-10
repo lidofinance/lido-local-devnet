@@ -3,22 +3,22 @@ import { buildAndPushDockerImage } from "@devnet/docker";
 
 import { GitCheckout } from "../git/checkout.js";
 
-export const KapiK8sBuild = command.cli({
-  description: "Build KAPI and push to Docker registry",
+export const OracleK8sBuild = command.cli({
+  description: "Build Oracle and push to Docker registry",
   params: {},
   async handler({ dre, dre: { state, network, services, logger } }) {
     const dockerRegistry = await state.getDockerRegistry();
 
     const TAG = `kt-${network.name}`;
-    const IMAGE = 'lido/keys-api';
+    const IMAGE = 'lido/oracle';
 
     await dre.runCommand(GitCheckout, {
-      service: "kapi",
-      ref: "feat/devnet", // TODO make configurable from global yaml config
+      service: "oracle",
+      ref: "feat/oracle-v6", // TODO make configurable from global yaml config
     });
 
     await buildAndPushDockerImage({
-      cwd: services.kapi.artifact.root,
+      cwd: services.oracle.artifact.root,
       registryHostname: dockerRegistry.registryHostname,
       buildContext: '.',
       imageName: IMAGE,

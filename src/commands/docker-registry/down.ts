@@ -17,7 +17,7 @@ export const DockerRegistryDown = command.cli({
       services: { dockerRegistry },
     } = dre;
 
-    if (!(await dre.state.isDockerRegistryDeployed()) && !(params.force)) {
+    if (!(await dre.state.isDockerRegistryAvailable()) && !(params.force)) {
       logger.log("Docker registry already stopped.");
       return;
     }

@@ -8,7 +8,7 @@ participants:
   #   el_image: ethpandaops/nimbus-eth1:fusaka-devnet-3
   - el_type: geth
     el_image: ethpandaops/geth:master
-    el_extra_params: [ --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive ]
+    el_extra_params: [ --rpc.gascap=16777215 --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive ]
   #  el_extra_params: [ --rpc.gascap=16777215 --rpc.allow-unprotected-txs --syncmode=full --gcmode=archive ]
     el_min_cpu: 0
     el_max_cpu: 0

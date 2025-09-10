@@ -9,6 +9,7 @@ import { z } from "zod";
 declare module "@devnet/state" {
   export interface StateInterface {
     getLido<M extends boolean = true>(must?: M,): Promise<M extends true ? LidoCoreState : Partial<LidoCoreState>>;
+    isLidoActivated(): Promise<boolean>;
     isLidoDeployed(): Promise<boolean>;
     removeLido(): Promise<void>;
     updateLido(state: LidoCoreState): Promise<void>;
@@ -56,6 +57,11 @@ export const lidoCoreExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
   dre.state.isLidoDeployed = (async function () {
     const state = await dre.state.getLido(false);
     console.log('state', state);
+    return !isEmptyObject(state) && state.locator !== undefined;
+  });
+
+  dre.state.isLidoActivated = (async function () {
+    const state = await dre.state.getLido(false);
     return !isEmptyObject(state) && state.locator !== undefined;
   });
 

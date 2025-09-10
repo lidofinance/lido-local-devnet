@@ -1,0 +1,11 @@
+apiVersion: v2
+name: lido-oracle
+description: Lido Oracle Helm chart
+type: application
+version: 0.1.0
+appVersion: "2.5.2"
+kubeVersion: '>=1.19.0-0'
+dependencies:
+  - name: "lido-backend"
+    version: "0.1.0"
+    repository: "file://../lido-backend"
