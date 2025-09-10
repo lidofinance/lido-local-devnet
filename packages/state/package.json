@@ -13,6 +13,7 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
+    "@devnet/utils": "workspace:*",
     "@devnet/keygen": "workspace:*",
     "@devnet/types": "workspace:*",
     "@types/node": "^22.10.5",
