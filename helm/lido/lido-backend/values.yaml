@@ -59,8 +59,11 @@ ingress:
   #     hosts:
   #       - backend.local
 
-# Command
-command: ""
+# Container command
+command: []
+
+# Container args
+args: []
 
 # Environment variables
 env:

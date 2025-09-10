@@ -1,43 +1,107 @@
 import { command } from "@devnet/command";
+import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
+import { DevNetError } from "@devnet/utils";
 
-import { GitCheckout } from "../git/checkout.js";
+import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
+import { OracleK8sBuild } from "./build.js";
+import { oraclesK8sExtension } from "./extensions/oracles-k8s.extension.js";
 
 export const OracleK8sUp = command.cli({
   description: "Start Oracle(s) in K8s with Helm",
   params: {},
-  async handler({ dre: { state, network, services }, dre }) {
-    const { oracle } = services;
-    await dre.runCommand(GitCheckout, {
-      service: "oracle",
-      ref: "feat/oracle-v6",
-    });
+  extensions: [oraclesK8sExtension],
+  async handler({ dre: { logger, state, network, services: { helmLidoOracle } }, dre }) {
+    if (!(await state.isChainDeployed())) {
+      throw new DevNetError("Chain is not deployed");
+    }
+
+    if (!(await state.isLidoDeployed())) {
+      throw new DevNetError("Lido is not deployed");
+    }
+
+    if (!(await state.isCSMDeployed())) {
+      throw new DevNetError("CSM is not deployed");
+    }
+
+    // await dre.runCommand(OracleK8sBuild, {});
+
+    // if (!(await state.isOraclesK8sImageReady())) {
+    //   throw new DevNetError("Oracle image is not ready");
+    // }
 
     const { elPrivate, clPrivate } = await state.getChain();
 
-    const { locator } = await state.getLido();
+    const { locator, stakingRouter, curatedModule } = await state.getLido();
     const { module: csmModule } = await state.getCSM();
     const { oracle1, oracle2, oracle3 } = await state.getNamedWallet();
+    const { privateUrl: kapiPrivateUrl } = await state.getKapiK8sRunning();
+    const { image, tag, registryHostname } = { image: 'lidofinance/oracle', tag: 'dev', registryHostname: 'docker.io' };
 
-    const env = {
+    const NAMESPACE = `kt-${dre.network.name}-oracles`;
+    const env: Record<string, string> = {
+      ...helmLidoOracle.config.constants,
+
       CHAIN_ID: "32382",
-      EXECUTION_CLIENT_URI_1: elPrivate,
-      EXECUTION_CLIENT_URI_2: elPrivate,
-      EXECUTION_CLIENT_URI_3: elPrivate,
-      CONSENSUS_CLIENT_URI_1: clPrivate,
-      CONSENSUS_CLIENT_URI_2: clPrivate,
-      CONSENSUS_CLIENT_URI_3: clPrivate,
+      EXECUTION_CLIENT_URI: elPrivate,
+      CONSENSUS_CLIENT_URI: clPrivate,
       LIDO_LOCATOR_ADDRESS: locator,
+      KEYS_API_URI: kapiPrivateUrl,
       CSM_MODULE_ADDRESS: csmModule,
-      MEMBER_PRIV_KEY_1: oracle1.privateKey,
-      MEMBER_PRIV_KEY_2: oracle2.privateKey,
-      MEMBER_PRIV_KEY_3: oracle3.privateKey,
+      CSM_ORACLE_MAX_CONCURRENCY: "1",
+      SUBMIT_DATA_DELAY_IN_SLOTS: "1",
       PINATA_JWT: process.env.CSM_ORACLE_PINATA_JWT ?? "",
-      DOCKER_NETWORK_NAME: `kt-${network.name}`,
-      COMPOSE_PROJECT_NAME: `oracles-${network.name}`,
     };
 
-    await oracle.writeENV(".env", env);
+    const helmReleases = [
+      // { HELM_RELEASE: 'oracle-accounting-1', command: 'accounting', privateKey: oracle1 },
+      { HELM_RELEASE: 'oracle-accounting-2', command: 'accounting', privateKey: oracle2 },
+      { HELM_RELEASE: 'oracle-ejector-1', command: 'ejector', privateKey: oracle1 },
+      { HELM_RELEASE: 'oracle-ejector-2', command: 'ejector', privateKey: oracle2 },
+      { HELM_RELEASE: 'oracle-csm-1', command: 'csm', privateKey: oracle1 },
+      { HELM_RELEASE: 'oracle-csm-2', command: 'csm', privateKey: oracle2 },
+    ];
 
-    await oracle.sh`docker compose -f docker-compose.devnet.yml up --build -d`;
+    const deployedReleases: string[] = [];
+
+    for (const release of helmReleases) {
+      const { HELM_RELEASE, privateKey, command } = release;
+
+      const { helmReleases: alreadyDeployedHelmReleases } = await state.getOraclesK8sRunning();
+      if (alreadyDeployedHelmReleases.includes(HELM_RELEASE)) {
+        logger.log(`Oracles release ${HELM_RELEASE} already running`);
+        return;
+      }
+
+      const helmLidoOracleSh = helmLidoOracle.sh({
+        env: {
+          ...env,
+          NAMESPACE,
+          HELM_RELEASE,
+          HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
+          IMAGE: image,
+          TAG: tag,
+          REGISTRY_HOSTNAME: registryHostname,
+          MEMBER_PRIV_KEY: privateKey.privateKey,
+          COMMAND: command,
+        },
+      });
+
+      await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace: NAMESPACE });
+
+      await helmLidoOracleSh`make debug`;
+      await helmLidoOracleSh`make lint`;
+
+      try {
+        await helmLidoOracleSh`make install`;
+        deployedReleases.push(HELM_RELEASE);
+      } catch {
+        // rollback changes
+        await helmLidoOracleSh`make uninstall`;
+      }
+    }
+
+    await state.updateOraclesK8sRunning({
+      helmReleases: deployedReleases,
+    });
   },
 });

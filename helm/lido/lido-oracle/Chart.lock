@@ -1,6 +1,6 @@
 dependencies:
 - name: lido-backend
   repository: file://../lido-backend
-  version: 0.1.0
-digest: sha256:47b1a19ac80f9a0a35647ba560f410866a5f9937af91eb0439d80fb27ea60a63
-generated: "2025-09-10T03:37:51.662577581+03:00"
+  version: 0.4.0
+digest: sha256:2b2b606f81613e43d07150ce2243010ad98e0b89f28581934f849d05f76faaef
+generated: "2025-09-10T12:47:46.07950043+03:00"

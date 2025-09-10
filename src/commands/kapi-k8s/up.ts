@@ -11,9 +11,7 @@ export const KapiK8sUp = command.cli({
   description: "Start Kapi on K8s with Helm",
   params: {},
   extensions: [kapiK8sExtension],
-  async handler({ dre, dre: { state, network, services, logger } }) {
-    const { helmLidoKapi } = services;
-
+  async handler({ dre, dre: { state, network, services: { helmLidoKapi }, logger } }) {
     if (await state.isKapiK8sRunning()) {
       logger.log("KAPI already running");
       return;
@@ -63,11 +61,12 @@ export const KapiK8sUp = command.cli({
       "kapi.valset-02.testnet.fi"
     );
 
+    const HELM_RELEASE = 'kapi';
     const helmLidoKapiSh = helmLidoKapi.sh({
       env: {
         ...env,
         NAMESPACE,
-        HELM_RELEASE: 'kapi',
+        HELM_RELEASE,
         HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
         IMAGE: image,
         TAG: tag,
@@ -83,8 +82,9 @@ export const KapiK8sUp = command.cli({
     await helmLidoKapiSh`make install`;
 
     await state.updateKapiK8sRunning({
+      helmRelease: HELM_RELEASE,
       publicUrl: `http://${KAPI_INGRESS_HOSTNAME}`,
-      privateUrl: `http://lido-kapi-lido-backend.kt-${network.name}.svc.cluster.local:3000`
+      privateUrl: `http://lido-kapi-lido-backend.${NAMESPACE}.svc.cluster.local:3000`
     });
   },
 });
