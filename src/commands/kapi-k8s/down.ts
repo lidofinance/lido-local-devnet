@@ -6,6 +6,11 @@ export const KapiK8sDown = command.cli({
   description: "Stop Kapi in K8s with Helm",
   params: {},
   async handler({ dre, dre: { services: { helmLidoKapi }, logger, state },  }) {
+    if (!(await state.isKapiK8sRunning())) {
+      logger.log("KAPI not running. Skipping");
+      return;
+    }
+
     const NAMESPACE = `kt-${dre.network.name}-kapi`;
 
     const kapiRunning = await state.getKapiK8sRunning();

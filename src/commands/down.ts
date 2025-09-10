@@ -4,8 +4,8 @@ import { BlockscoutDown } from "./blockscout/down.js";
 import { ChainDown } from "./chain/down.js";
 import { CouncilDown } from "./council/down.js";
 import { DSMBotsDown } from "./dsm-bots/down.js";
-import { KapiDown } from "./kapi/down.js";
-import { OracleDown } from "./oracles/down.js";
+import { KapiK8sDown } from "./kapi-k8s/down.js";
+import { OracleK8sDown } from "./oracles-k8s/down.js";
 
 export const DevNetStop = command.cli({
   description: "Stop full DevNet",
@@ -17,10 +17,10 @@ export const DevNetStop = command.cli({
       .runCommand(BlockscoutDown, { force: false })
       .catch((error) => logger.warn(error.message));
     await dre
-      .runCommand(KapiDown, {})
+      .runCommand(KapiK8sDown, {})
       .catch((error) => logger.warn(error.message));
     await dre
-      .runCommand(OracleDown, {})
+      .runCommand(OracleK8sDown, {})
       .catch((error) => logger.warn(error.message));
     await dre
       .runCommand(CouncilDown, {})
