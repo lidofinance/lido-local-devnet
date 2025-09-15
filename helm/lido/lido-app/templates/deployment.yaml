@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "backend.fullname" . }}
+  name: {{ include "app.fullname" . }}
   labels:
     {{- include "backend.labels" . | nindent 4 }}
     {{- with .Values.additionalLabels }}
@@ -28,7 +28,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- with .Values.image.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -74,20 +74,27 @@ spec:
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
-            {{- range $key, $config := .Values.env.secrets }}
-            - name: {{ $key }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $config.secretName }}
-                  key: {{ $config.key }}
+          {{- if .Values.pvcs }}
+          volumeMounts:
+            {{- range .Values.pvcs }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              {{- if .subPath }}
+              subPath: {{ .subPath }}
+              {{- end }}
+              {{- if .readOnly }}
+              readOnly: {{ .readOnly }}
+              {{- end }}
             {{- end }}
-            {{- range $key, $config := .Values.env.configMaps }}
-            - name: {{ $key }}
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ $config.configMapName }}
-                  key: {{ $config.key }}
-            {{- end }}
+          {{- end }}
+      {{- if .Values.pvcs }}
+      volumes:
+        {{- range .Values.pvcs }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            claimName: {{ include "app.fullname" $ }}-{{ .name }}
+        {{- end }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -1,7 +1,0 @@
-apiVersion: v2
-name: lido-backend
-description: Basic Lido backend application Helm chart
-type: application
-version: 0.4.0
-appVersion: "2.5.2"
-kubeVersion: '>=1.19.0-0'
