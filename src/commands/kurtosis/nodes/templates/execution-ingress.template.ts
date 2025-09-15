@@ -4,13 +4,14 @@ import * as k8s from "@kubernetes/client-node";
 import {
   ETH_NODE_INGRESS_LABEL,
   EXECUTION_INGRESS_LABEL,
-} from "../constants/nodes-ingress.constants.js";
+} from "../../../chain/constants/nodes-ingress.constants.js";
 
 export const executionIngressTmpl =  async (
   dre: DevNetRuntimeEnvironmentInterface,
   serviceName: string,
   port: number,
-  index: number
+  index: number,
+  hostname: string,
 ) => ({
     apiVersion: "networking.k8s.io/v1",
     kind: "Ingress",
@@ -30,7 +31,7 @@ export const executionIngressTmpl =  async (
       ingressClassName: "public",
       rules: [
         {
-          host: `${process.env.GLOBAL_INGRESS_HOST_PREFIX}-execution${index > 0 ? index : ''}.${dre.network.name}.valset-02.testnet.fi`,
+          host: hostname,
           http: {
             paths: [
               {
