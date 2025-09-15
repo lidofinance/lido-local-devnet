@@ -1,14 +1,16 @@
 import { Params, command } from "@devnet/command";
 import { DevNetError } from "@devnet/utils";
-import { execa } from 'execa';
-import psList from "ps-list";
 
-import { KURTOSIS_DEFAULT_PRESET, kurtosisExtension } from "./extensions/kurtosis.extension.js";
-import { KurtosisGetClusterInfo } from "./get-cluster-info.js";
+import {
+  KURTOSIS_DEFAULT_PRESET,
+  getKurtosisClusterType,
+  kurtosisExtension,
+  startKurtosisGateway,
+  isSupportedClusterType,
+  stopKurtosisGateway,
+} from "./extensions/kurtosis.extension.js";
 
-//let kurtosisGatewayProcess: ResultPromise<{ gracefulCancel: true}> | undefined = undefined;
 
-const SUPPORTED_CLUSTER_TYPES = ['cloud', 'valset-sandbox3'];
 
 export const KurtosisRunPackage = command.isomorphic({
   description:
@@ -35,28 +37,15 @@ export const KurtosisRunPackage = command.isomorphic({
     logger.log(`Resolved kurtosis config: ${configFileName}`);
     logger.logJson(file);
 
-    const kurtosisClusterType: string = await dre.runCommand(KurtosisGetClusterInfo, {});
+    const kurtosisClusterType = await getKurtosisClusterType(dre);
 
-    // TODO more different types
-    if (!SUPPORTED_CLUSTER_TYPES.includes(kurtosisClusterType)) {
+    if (!isSupportedClusterType(kurtosisClusterType)) {
       throw new DevNetError(`Unsupported kurtosis cluster type [${kurtosisClusterType}]`);
     }
 
     logger.log(`Kurtosis cluster type [${kurtosisClusterType}]`);
 
-    if (SUPPORTED_CLUSTER_TYPES.includes(kurtosisClusterType)) {
-      // TODO run gateway on demand
-      // const processes = await psList();
-      // const kurtosisGateway = processes.find(p => p.name.match(/kurtosis\sgateway/));
-
-      // console.log(processes);
-
-      // if (!kurtosisGateway) {
-      //   logger.log(`Starting kurtosis gateway in the background`);
-      //   const kgw = execa({ gracefulCancel: true });
-      //   kgw`kurtosis gateway`;
-      // }
-    }
+    await startKurtosisGateway(dre);
 
     await kurtosis.sh`kurtosis run
                         --enclave ${dre.network.name}
@@ -67,5 +56,7 @@ export const KurtosisRunPackage = command.isomorphic({
     await state.updateKurtosis({ preset });
 
     logger.log(`Kurtosis started with preset [${preset}]`);
+
+    await stopKurtosisGateway(dre);
   },
 });

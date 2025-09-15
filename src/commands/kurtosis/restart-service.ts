@@ -1,7 +1,11 @@
 import { Params, command } from "@devnet/command";
 import { DevNetError, sleep } from "@devnet/utils";
 
-import { kurtosisExtension } from "./extensions/kurtosis.extension.js";
+import {
+  kurtosisExtension,
+  startKurtosisGateway,
+  stopKurtosisGateway,
+} from "./extensions/kurtosis.extension.js";
 
 export const KurtosisRestartService = command.isomorphic({
   description:
@@ -16,6 +20,8 @@ export const KurtosisRestartService = command.isomorphic({
       throw new DevNetError(`Kurtosis service not defined`);
     }
 
+    await startKurtosisGateway(dre);
+
     await kurtosis.sh`kurtosis service stop ${dre.network.name} ${service}`;
 
     await sleep(2000);
@@ -23,5 +29,7 @@ export const KurtosisRestartService = command.isomorphic({
     await kurtosis.sh`kurtosis service start ${dre.network.name} ${service}`;
 
     logger.log(`Kurtosis service [${service}] updated`);
+
+    await stopKurtosisGateway(dre);
   },
 });
