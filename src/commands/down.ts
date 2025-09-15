@@ -17,10 +17,10 @@ export const DevNetStop = command.cli({
       .runCommand(BlockscoutDown, { force: false })
       .catch((error) => logger.warn(error.message));
     await dre
-      .runCommand(KapiK8sDown, {})
+      .runCommand(KapiK8sDown, { force: false })
       .catch((error) => logger.warn(error.message));
     await dre
-      .runCommand(OracleK8sDown, {})
+      .runCommand(OracleK8sDown, { force: false })
       .catch((error) => logger.warn(error.message));
     await dre
       .runCommand(CouncilDown, {})
