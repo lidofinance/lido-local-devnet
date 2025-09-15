@@ -19,7 +19,7 @@ lido-backend:
 
   # Image pull secrets for private registries
   imagePullSecrets:
-    - name: registry-secret
+    - name: registry-pull-secret
 
   # Service configuration
   service:

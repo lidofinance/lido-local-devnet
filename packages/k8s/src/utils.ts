@@ -55,17 +55,23 @@ export const getK8sService = async (
 
 export const getK8sIngress = async (
   dre: DevNetRuntimeEnvironmentInterface,
-  filter?: { label?: string, name?: RegExp | string },
+  filter?: { label?: Record<string, string> | string, name?: RegExp | string },
   namespace: string = `kt-${dre.network.name}`,
 ) => {
   const kc = await getK8s();
   const k8sNetworkApi = kc.makeApiClient(k8s.NetworkingV1Api);
 
   const labelSelector = filter?.label;
+
+  const formattedLabelSelector = typeof labelSelector === 'string'
+    ? labelSelector
+    : typeof labelSelector === 'object'
+      ? toLabelSelector(labelSelector) : undefined;
+
   const k8sNamespaceIngresses = await k8sNetworkApi.listNamespacedIngress(
     {
       namespace,
-      ...(labelSelector? { labelSelector } : {})
+      ...(formattedLabelSelector ? { labelSelector: formattedLabelSelector } : {})
     },
   );
 
@@ -104,3 +110,6 @@ export const addPrefixToIngressHostname = (
 
   return `${GLOBAL_INGRESS_HOST_PREFIX}-${hostname}`;
 }
+
+export const toLabelSelector = (label: Record<string, string>) =>
+  Object.entries(label).map(([k, v]) => `${k}=${v}`).join(',');

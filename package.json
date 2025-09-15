@@ -18,6 +18,7 @@
   ],
   "dependencies": {
     "@devnet/command": "workspace:*",
+    "@devnet/fp": "workspace:*",
     "@devnet/k8s": "workspace:*",
     "@devnet/key-manager-api": "workspace:*",
     "@devnet/keygen": "workspace:*",
@@ -56,7 +57,7 @@
       "strategy": "pattern",
       "globPatterns": [
         "**/*.+(js|cjs|mjs|ts|tsx|mts|cts)",
-        "!**/*.+(d.*|extension.*|template.*|helpers.*)?(x)"
+        "!**/*.+(d.*|extension.*|template.*|helpers.*|constants.*)?(x)"
       ],
       "target": "./dist/commands"
     },

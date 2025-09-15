@@ -1,6 +1,6 @@
 import { command } from "@devnet/command";
 import * as keyManager from "@devnet/key-manager-api";
-import { assert } from "@devnet/utils";
+import { assert, sleep } from "@devnet/utils";
 
 import { ValidatorRestart } from "./restart.js";
 
@@ -21,6 +21,8 @@ export const ValidatorAdd = command.cli({
       keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
     );
 
+    console.log(keystoresResponse.data);
+
     const existingPubKeys = new Set(
       keystoresResponse.data.map((p) => p.validating_pubkey.replace("0x", "")),
     );
@@ -39,6 +41,8 @@ export const ValidatorAdd = command.cli({
 
     logger.log(`Detected new keystores: ${actualKeystores.length}`);
 
+    await sleep(5000);
+
     const keystoresStrings = actualKeystores.map((v) => JSON.stringify(v));
     const keystoresPasswords = actualKeystores.map((_) => "12345678");
     const res = await keyManager.importKeystores(
@@ -50,6 +54,7 @@ export const ValidatorAdd = command.cli({
 
     logger.logJson(res);
 
-    await dre.runCommand(ValidatorRestart, {});
+    // TODO
+    // await dre.runCommand(ValidatorRestart, {});
   },
 });

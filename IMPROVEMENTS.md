@@ -16,4 +16,6 @@
     * constants
 * Add the ability to patch docker images with files, having special `pathes` folder
 * Add the ability to patch git repos with files, having special `pathes` folder
+* Improve artifact store to use NFS or S3 or Minio
+* Improve artifact store to upload it to the k8s storage with password-credentials
 * Look at cdk8s

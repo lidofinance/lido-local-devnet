@@ -1008,6 +1008,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@devnet/fp@workspace:*, @devnet/fp@workspace:packages/fp":
+  version: 0.0.0-use.local
+  resolution: "@devnet/fp@workspace:packages/fp"
+  dependencies:
+    "@oclif/core": "npm:^4.0.37"
+    "@oclif/plugin-help": "npm:^6.2.19"
+    "@types/node": "npm:^22.10.5"
+    eslint: "npm:^8"
+    eslint-config-oclif: "npm:^5"
+    eslint-config-oclif-typescript: "npm:^3"
+    eslint-config-prettier: "npm:^9"
+    eslint-plugin-prettier: "npm:^5.2.2"
+    fp-ts: "npm:^2.16.11"
+    prettier: "npm:^3.4.2"
+    typescript: "npm:^5"
+  languageName: unknown
+  linkType: soft
+
 "@devnet/helm@workspace:packages/helm":
   version: 0.0.0-use.local
   resolution: "@devnet/helm@workspace:packages/helm"
@@ -5614,6 +5632,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fp-ts@npm:^2.16.11":
+  version: 2.16.11
+  resolution: "fp-ts@npm:2.16.11"
+  checksum: 10c0/9a263a577964adbb754221c48449a64a6962c91fa6af136e73b043ee70ee41c7b856fe1e6cc21fb4f0264dd9a75c53bd381b1bb486b6caa99a71f33d1bb24c2a
+  languageName: node
+  linkType: hard
+
 "fs-constants@npm:^1.0.0":
   version: 1.0.0
   resolution: "fs-constants@npm:1.0.0"
@@ -6851,6 +6876,7 @@ __metadata:
   resolution: "lido-local-devnet@workspace:."
   dependencies:
     "@devnet/command": "workspace:*"
+    "@devnet/fp": "workspace:*"
     "@devnet/k8s": "workspace:*"
     "@devnet/key-manager-api": "workspace:*"
     "@devnet/keygen": "workspace:*"

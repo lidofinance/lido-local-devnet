@@ -1,10 +1,15 @@
-import { command } from "@devnet/command";
+import {
+  DEFAULT_NETWORK_NAME,
+  NETWORK_NAME_SUBSTITUTION,
+  command,
+} from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { addPrefixToIngressHostname } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { KapiK8sBuild } from "./build.js";
+import { NAMESPACE } from "./constants/kapi-k8s.constants.js";
 import { kapiK8sExtension } from "./extensions/kapi-k8s.extension.js";
 
 export const KapiK8sUp = command.cli({
@@ -41,7 +46,6 @@ export const KapiK8sUp = command.cli({
     const { module: csmModule } = await state.getCSM();
     const { image, tag, registryHostname } = await state.getKapiK8sImage();
 
-    const NAMESPACE = `kt-${dre.network.name}-kapi`;
     const env: Record<string, string> = {
       ...helmLidoKapi.config.constants,
 
@@ -56,16 +60,20 @@ export const KapiK8sUp = command.cli({
       COMPOSE_PROJECT_NAME: `kapi-${network.name}`,
     };
 
-    const KAPI_INGRESS_HOSTNAME = addPrefixToIngressHostname(
-      process.env.KAPI_INGRESS_HOSTNAME ??
-      "kapi.valset-02.testnet.fi"
-    );
+    const kapiHostname = process.env.KAPI_INGRESS_HOSTNAME?.
+      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+
+    if (!kapiHostname) {
+      throw new DevNetError(`KAPI_INGRESS_HOSTNAME env variable is not set`);
+    }
+
+    const KAPI_INGRESS_HOSTNAME = addPrefixToIngressHostname(kapiHostname);
 
     const HELM_RELEASE = 'kapi';
     const helmLidoKapiSh = helmLidoKapi.sh({
       env: {
         ...env,
-        NAMESPACE,
+        NAMESPACE: NAMESPACE(dre),
         HELM_RELEASE,
         HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
         IMAGE: image,
@@ -75,7 +83,7 @@ export const KapiK8sUp = command.cli({
       },
     });
 
-    await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace: NAMESPACE });
+    await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace: NAMESPACE(dre) });
 
     await helmLidoKapiSh`make debug`;
     await helmLidoKapiSh`make lint`;

@@ -1,7 +1,9 @@
-import { command, Params } from "@devnet/command";
+import { Params, command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { getK8s, k8s } from "@devnet/k8s";
 import path from "node:path";
+
+import { NAMESPACE } from "./constants/blockscout.constants.js";
 
 export const BlockscoutDown = command.cli({
   description: "Down Blockscout in k8s",
@@ -23,12 +25,11 @@ export const BlockscoutDown = command.cli({
       return;
     }
 
-    const NAMESPACE = `kt-${dre.network.name}-blockscout`;
 
     const blockScoutPostgresqlSh = blockscout.sh({
       cwd: path.join(blockscout.artifact.root, 'blockscout-postgresql'),
       env: {
-        NAMESPACE,
+        NAMESPACE: NAMESPACE(dre),
         HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
       },
     });
@@ -42,7 +43,7 @@ export const BlockscoutDown = command.cli({
     const blockScoutStackSh = blockscout.sh({
       cwd: path.join(blockscout.artifact.root, 'blockscout-stack'),
       env: {
-        NAMESPACE,
+        NAMESPACE: NAMESPACE(dre),
         HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
       },
     });
@@ -57,7 +58,7 @@ export const BlockscoutDown = command.cli({
 
     logger.log("Removing persistent volume claim for postgress");
     await k8sStorageApi.deleteNamespacedPersistentVolumeClaim({
-      namespace: NAMESPACE,
+      namespace: NAMESPACE(dre),
       name: 'data-postgresql-0', // hardcoded for now
     });
 

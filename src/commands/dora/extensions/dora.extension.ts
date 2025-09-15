@@ -20,8 +20,7 @@ declare module "@devnet/state" {
 }
 
 export const DoraState = z.object({
-  url: z.string().url(),
-  k8sIngressName: z.string(),
+  publicUrl: z.string().url()
 });
 
 export type DoraState = z.infer<typeof DoraState>;

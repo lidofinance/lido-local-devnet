@@ -1,7 +1,7 @@
 import { command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 
-import { NAMESPACE } from "./constants/index.js";
+import { NAMESPACE } from "./constants/oracles-k8s.constants.js";
 
 export const OracleK8sDown = command.cli({
   description: "Stop Oracle(s) in K8s with Helm",

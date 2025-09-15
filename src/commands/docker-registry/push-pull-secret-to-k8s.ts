@@ -1,6 +1,7 @@
 import { Params, command } from "@devnet/command";
 import { getK8s, k8s } from "@devnet/k8s";
 
+import { NAMESPACE } from "./constants/docker-registry.constants.js";
 import { registryPullSecretTmpl } from "./templates/registry-pull-secret.template.js";
 
 export const DockerRegistryPushPullSecretToK8s = command.cli({
@@ -18,22 +19,22 @@ export const DockerRegistryPushPullSecretToK8s = command.cli({
       return;
     }
 
-    const NAMESPACE = params.namespace && params.namespace !== ''
+    const CUSTOM_NAMESPACE = params.namespace && params.namespace !== ''
       ? params.namespace
-      : `kt-${dre.network.name}-docker-registry`;
+      : NAMESPACE(dre);
 
     logger.log("Creating registry pull secret...");
     const kc = await getK8s();
 
     const k8sCoreApi = kc.makeApiClient(k8s.CoreV1Api);
-    const pullSecret = await registryPullSecretTmpl(dre, NAMESPACE);
+    const pullSecret = await registryPullSecretTmpl(dre, CUSTOM_NAMESPACE);
 
     try {
       // Secret doesn't exist, create it
       await k8sCoreApi.createNamespacedSecret({ namespace: pullSecret.metadata.namespace, body: pullSecret });
-      logger.log(`Successfully created registry authentication secret: ${pullSecret.metadata.name}`);
+      logger.log(`Successfully created registry authentication pull secret: ${pullSecret.metadata.name}`);
     } catch {
-      logger.log(`Secret ${pullSecret.metadata.name} already exists in namespace [${NAMESPACE}]. Skipping creation.`);
+      logger.log(`Pull secret ${pullSecret.metadata.name} already exists in namespace [${CUSTOM_NAMESPACE}]. Skipping creation.`);
     }
   },
 });

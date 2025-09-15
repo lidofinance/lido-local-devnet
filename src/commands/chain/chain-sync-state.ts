@@ -6,9 +6,9 @@ export const ChainSyncState = command.isomorphic({
   params: {},
   async handler({ dre: { logger, state , network} }) {
     logger.log(
-      "Syncing network configuration state",
+      "Syncing chain nodes state form k8s",
     );
-    // TODO check that devnet is in k8s
+    // TODO check that devnet is in k8s or in docker
 
     const nodes = await state.getNodes();
     const nodesIngress = await state.getNodesIngress();

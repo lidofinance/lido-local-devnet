@@ -34,8 +34,8 @@ else
 endif
 
 # Default ENV Variables specific to chart
-DOCKER_REGISTRY_INGRESS_HOSTNAME ?= docker-registry.devnet.valset-02.testnet.fi
-DOCKER_REGISTRY_UI_INGRESS_HOSTNAME ?= docker-registry-ui.devnet.valset-02.testnet.fi
+DOCKER_REGISTRY_INGRESS_HOSTNAME ?= docker-registry.devnet.testnet.fi
+DOCKER_REGISTRY_UI_INGRESS_HOSTNAME ?= docker-registry-ui.devnet.testnet.fi
 
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file

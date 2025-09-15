@@ -174,7 +174,7 @@ registry:
   auth:
     basic:
       # Enable basic auth for Registry.
-      enabled: false
+      enabled: true
       # Basic auth realm.
       realm: Docker registry
       # Full path for htpasswd file. Note that filename should match the secret key.

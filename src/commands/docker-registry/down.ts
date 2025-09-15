@@ -1,6 +1,7 @@
-import { command, Params } from "@devnet/command";
+import { Params, command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
-import path from "node:path";
+
+import { NAMESPACE } from "./constants/docker-registry.constants.js";
 
 export const DockerRegistryDown = command.cli({
   description: "Down Docker registry in k8s",
@@ -17,16 +18,9 @@ export const DockerRegistryDown = command.cli({
       services: { dockerRegistry },
     } = dre;
 
-    if (!(await dre.state.isDockerRegistryAvailable()) && !(params.force)) {
-      logger.log("Docker registry already stopped.");
-      return;
-    }
-
-    const NAMESPACE = `kt-${dre.network.name}-docker-registry`;
-
     const dockerRegistrySh = dockerRegistry.sh({
       env: {
-        NAMESPACE,
+        NAMESPACE: NAMESPACE(dre),
         HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
       },
     });

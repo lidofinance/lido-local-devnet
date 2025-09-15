@@ -2,6 +2,7 @@ import { command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { addPrefixToIngressHostname, getK8s, k8s } from "@devnet/k8s";
 
+import { NAMESPACE } from "./constants/docker-registry.constants.js";
 import { dockerRegistryExtension } from "./extensions/docker-registry.extension.js";
 import { registryAuthSecretTmpl } from "./templates/registry-auth-secret.template.js";
 
@@ -25,15 +26,18 @@ export const DockerRegistryUp = command.cli({
     }
 
 
-    const NAMESPACE = `kt-${dre.network.name}-docker-registry`;
-    const DOCKER_REGISTRY_INGRESS_HOSTNAME = addPrefixToIngressHostname(
-      process.env.DOCKER_REGISTRY_LOCAL_INGRESS_HOSTNAME ??
-        "docker-registry.valset-02.testnet.fi"
-    );
-    const DOCKER_REGISTRY_UI_INGRESS_HOSTNAME = addPrefixToIngressHostname(
-      process.env.DOCKER_REGISTRY_LOCAL_INGRESS_UI_HOSTNAME ??
-        "docker-registry-ui.valset-02.testnet.fi"
-    );
+    const DOCKER_REGISTRY_INGRESS_HOSTNAME =
+      process.env.DOCKER_REGISTRY_LOCAL_INGRESS_HOSTNAME;
+    const DOCKER_REGISTRY_UI_INGRESS_HOSTNAME =
+      process.env.DOCKER_REGISTRY_LOCAL_INGRESS_UI_HOSTNAME;
+
+    if (!DOCKER_REGISTRY_INGRESS_HOSTNAME) {
+      throw new Error(`DOCKER_REGISTRY_LOCAL_INGRESS_HOSTNAME env variable is not set`);
+    }
+
+    if (!DOCKER_REGISTRY_UI_INGRESS_HOSTNAME) {
+      throw new Error(`DOCKER_REGISTRY_LOCAL_INGRESS_UI_HOSTNAME env variable is not set`);
+    }
 
     // Create and deploy registry authentication secret
     logger.log("Creating registry authentication secret...");
@@ -45,13 +49,13 @@ export const DockerRegistryUp = command.cli({
       // Secret doesn't exist, create it
       await k8sCoreApi.createNamespacedSecret({ namespace: authSecret.metadata.namespace, body: authSecret });
       logger.log(`Successfully created registry authentication secret: ${authSecret.metadata.name}`);
-    } catch (error: unknown) {
+    } catch {
       logger.log(`Secret ${authSecret.metadata.name} already exists. Skipping creation.`);
     }
 
     const dockerRegistrySh = dockerRegistry.sh({
       env: {
-        NAMESPACE,
+        NAMESPACE: NAMESPACE(dre),
         HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
         // Makefile-related ENV vars for Helm charts overrides
         // see workspaces/dockerRegistry/Makefile

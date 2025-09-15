@@ -1,10 +1,11 @@
 import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
 import * as k8s from "@kubernetes/client-node";
-import bcrypt from "bcryptjs";
+
+import { NAMESPACE } from "../constants/docker-registry.constants.js";
 
 export const registryPullSecretTmpl = async (
   dre: DevNetRuntimeEnvironmentInterface,
-  namespace: string = `kt-${dre.network.name}-docker-registry`,
+  namespace: string = NAMESPACE(dre),
 ) => {
   const username = process.env.DOCKER_REGISTRY_USERNAME;
   const password = process.env.DOCKER_REGISTRY_PASSWORD;
@@ -15,19 +16,15 @@ export const registryPullSecretTmpl = async (
 
   const registry = await dre.state.getDockerRegistry();
 
-  // Generate htpasswd entry using system htpasswd command
-  const saltRounds = 12;
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-  const htpasswdEntry = `${username}:${password}`;
-
   return {
     apiVersion: "v1",
     kind: "Secret",
     metadata: {
-      name: "registry-secret",
+      name: "registry-pull-secret",
       namespace: `${namespace}`,
       labels: {
         "com.lido.devnet": "true",
+        "com.lido.devnet.docker-registry": "pull-secret",
       },
     },
     type: "kubernetes.io/dockerconfigjson",
