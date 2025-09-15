@@ -1,7 +1,8 @@
 import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Config, StateInterface } from "@devnet/state";
-import { isEmptyObject } from "@devnet/utils";
+import { DevNetError, isEmptyObject } from "@devnet/utils";
+import { execa, ResultPromise } from "execa";
 import { z } from "zod";
 
 export const KURTOSIS_DEFAULT_PRESET = "pectra-devnet4";
@@ -53,3 +54,66 @@ export const kurtosisExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
     return kurtosis;
   });
 };
+
+let kurtosisGatewayProcess: ResultPromise<{
+  detached: true
+  stdio: "ignore"
+}> | undefined = undefined;
+
+export const startKurtosisGateway = async (dre: DevNetRuntimeEnvironmentInterface) => {
+  if (kurtosisGatewayProcess) {
+    dre.logger.log(`Kurtosis gateway already started`);
+    return true;
+  }
+
+  const kurtosisClusterType = await getKurtosisClusterType(dre);
+
+  if (!isSupportedClusterType(kurtosisClusterType)) {
+    return;
+  }
+
+  dre.logger.log(`Starting kurtosis gateway in the background`);
+  kurtosisGatewayProcess = execa('kurtosis', ['gateway'], { detached: true, stdio: 'ignore' });
+  dre.logger.log(`Started kurtosis gateway`);
+
+  // unref so it doesn’t keep the parent alive
+  //kurtosisGatewayProcess.unref();
+
+  // Make sure to kill it when this script ends
+  const cleanup = () => {
+    kurtosisGatewayProcess?.kill();
+  };
+
+  process.on('exit', cleanup);
+  process.on('SIGINT', () => { cleanup(); });
+  process.on('SIGTERM', () => { cleanup(); });
+};
+
+export const stopKurtosisGateway = async (dre: DevNetRuntimeEnvironmentInterface) => {
+  if (!kurtosisGatewayProcess) {
+    return;
+  }
+
+  dre.logger.log(`Kurtosis gateway will be killed`);
+  kurtosisGatewayProcess?.kill();
+  kurtosisGatewayProcess = undefined;
+}
+
+export const getKurtosisClusterType = async (dre: DevNetRuntimeEnvironmentInterface) => {
+  const result = await dre.services.kurtosis.sh({
+    stdout: ["pipe"],
+    stderr: ["pipe"],
+    verbose() {},
+  })`kurtosis cluster get`
+    .catch((error) => dre.logger.error(error.message));
+
+  const kurtosisClusterType = result?.stdout.trim();
+
+  if (!kurtosisClusterType) {
+    throw new DevNetError('Unable to detect kurtosis cluster type');
+  }
+
+  return kurtosisClusterType;
+}
+
+export const isSupportedClusterType = (clusterType: string) => ['cloud', 'valset-sandbox3'].includes(clusterType);

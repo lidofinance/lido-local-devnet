@@ -64,13 +64,13 @@ kurtosis-clusters:
     config:
       kubernetes-cluster-name: "minikube"
       storage-class: "standard"
-      enclave-size-in-megabytes: 10
+      enclave-size-in-megabytes: 256
   cloud:
     type: "kubernetes"
     config:
       kubernetes-cluster-name: "tooling-holesky-sandbox-0" # change the cluster name if needed
       storage-class: "ssd-hostpath"
-      enclave-size-in-megabytes: 10
+      enclave-size-in-megabytes: 256
 ```
 
 ### 4. Point kurtosis to the cluster
@@ -85,22 +85,17 @@ Kurtosis is required to launch Ethereum nodes
 kurtosis engine start
 ```
 
-### 6. Start kurtosis gateway (in a separate terminal)
-```sh
-kurtosis gateway
-```
-
-### 7. Install dependencies
+### 6. Install dependencies
 ```sh
 yarn && yarn build:all
 ```
 
-### 8. Create `.env` file and fill it with the required values
+### 7. Create `.env` file and fill it with the required values
 ```sh
 cp .env.sample .env
 ```
 
-### 9. Launch the environment and deploy Lido smart contracts
+### 8. Launch the environment and deploy Lido smart contracts
 Below is an example for launching the `fusaka` test stand. 
 If you need a different setup, refer to the [test stands documentation](./docs/commands/stands.md).
 
@@ -116,7 +111,7 @@ For a full DSM infrastructure deployment, add the `--dsm` flag:
 ./bin/run.js stands fusaka --verify --dsm
 ```
 
-### 10. Interaction with Voting scripts (optional)
+### 9. Interaction with Voting scripts (optional)
 
 
 Since voting scripts require Python and Brownie, install the necessary dependencies:
@@ -142,7 +137,7 @@ After adding an account, proceed with the voting process. See the [voting docume
 ./bin/run.js voting enact-after-pectra
 ```
 
-### 11. Done!
+### 10. Done!
 The network, infrastructure, and protocol have been successfully launched.
 
 ---
