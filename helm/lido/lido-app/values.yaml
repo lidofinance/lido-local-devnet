@@ -1,6 +1,7 @@
 # Default values for backend.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+fullnameOverride: OVERRIDE-ME
 
 # Number of replicas for the backend deployment
 replicaCount: 1
@@ -10,33 +11,42 @@ image:
   # Docker registry to pull the image from
   registry: docker.io
   # Repository/image name
-  repository: lido/backend
+  repository: OVERRIDE-ME
   # Image tag (can be overridden)
   tag: "latest"
   # Image pull policy
   pullPolicy: IfNotPresent
+  # Image pull secrets for private docker registries
+  imagePullSecrets: []
+  # Example:
+  # imagePullSecrets:
+  #   - name: myregistrykey
 
-# Image pull secrets for private docker registries
-imagePullSecrets: []
-# Example:
-# imagePullSecrets:
-#   - name: myregistrykey
+
 
 # Service configuration
 service:
   # Service type
   type: ClusterIP
-  # Service port
-  port: 3000
-  # Target port on the container
-  targetPort: 3000
+  # Multiple ports configuration
+  ports: []
+  # Example multiple ports:
+  # ports:
+  #   - name: http
+  #     port: 3000
+  #     targetPort: 3000
+  #     protocol: TCP
+  #   - name: metrics
+  #     port: 9090
+  #     targetPort: 9090
+  #     protocol: TCP
 
 # Ingress configuration
 ingress:
   # Enable/disable ingress
   enabled: false
   # Ingress class name
-  className: "nginx"
+  className: "public"
   # Ingress annotations
   annotations: {}
   # Example annotations:
@@ -46,7 +56,7 @@ ingress:
 
   # Ingress hosts configuration
   hosts:
-    - host: backend.local
+    - host: OVERRIDE-ME.local
       paths:
         - path: /
           pathType: Prefix
@@ -73,22 +83,6 @@ env:
   # variables:
   #   NODE_ENV: production
   #   API_URL: https://api.example.com
-
-  # Environment variables from secrets
-  secrets: {}
-  # Example:
-  # secrets:
-  #   DATABASE_PASSWORD:
-  #     secretName: backend-secrets
-  #     key: db-password
-
-  # Environment variables from config maps
-  configMaps: {}
-  # Example:
-  # configMaps:
-  #   APP_CONFIG:
-  #     configMapName: backend-config
-  #     key: app-config
 
 # Resource limits and requests
 resources: {}
@@ -138,11 +132,28 @@ additionalLabels: {}
 # Additional annotations
 additionalAnnotations: {}
 
+# Persistent Volume Claims configuration
+pvcs: []
+# Example PVC configuration:
+# pvcs:
+#   - name: data-storage
+#     storageClassName: "ssh-hostpath"
+#     accessModes:
+#       - ReadWriteOnce
+#     size: 10Gi
+#     mountPath: /data
+#   - name: logs-storage
+#     storageClassName: "ssh-hostpath"
+#     accessModes:
+#       - ReadWriteOnce
+#     size: 5Gi
+#     mountPath: /logs
+
 # Service account
 serviceAccount:
   # Create service account
-  create: true
+  create: false
   # Service account annotations
   annotations: {}
   # Service account name (if not created, must exist)
-  name: "lido-backend"
+  name: "lido-app"

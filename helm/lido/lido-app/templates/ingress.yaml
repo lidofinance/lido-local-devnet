@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "backend.fullname" . }}
+  name: {{ include "app.fullname" . }}
   labels:
     {{- include "backend.labels" . | nindent 4 }}
     {{- with .Values.additionalLabels }}
@@ -36,7 +36,7 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ include "backend.fullname" $ }}
+                name: {{ include "app.fullname" $ }}
                 port:
                   number: {{ $.Values.service.port }}
           {{- end }}
