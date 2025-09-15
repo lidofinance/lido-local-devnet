@@ -1,14 +1,20 @@
-import { command } from "@devnet/command";
+import { command, Params } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 
 import { NAMESPACE } from "./constants/oracles-k8s.constants.js";
 
 export const OracleK8sDown = command.cli({
   description: "Stop Oracle(s) in K8s with Helm",
-  params: {},
-  async handler({ dre, dre: { state, services: { helmLidoOracle }, logger } }) {
+  params: {
+    force: Params.boolean({
+      description: "Do not check that the Oracles was already stopped",
+      default: false,
+      required: false,
+    }),
+  },
+  async handler({ dre, dre: { state, services: { helmLidoOracle }, logger }, params }) {
 
-    if (!(await state.isOraclesK8sRunning())) {
+    if (!(await state.isOraclesK8sRunning()) && !(params.force)) {
       logger.log("Oracles are not running. Skipping");
       return;
     }

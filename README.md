@@ -75,10 +75,8 @@ kurtosis-clusters:
 
 ### 4. Point kurtosis to the cluster
 ```sh
-# stop kurtosis engine if it is running
-kurtosis engine start
 # tell kurtosis to work with k8s cluster
-kurtosis cluster set cloud
+kurtosis cluster set cloud # or whatever your kurtosis cluster is
 ```
 
 ### 5. Start Kurtosis

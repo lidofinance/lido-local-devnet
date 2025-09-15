@@ -8,6 +8,8 @@ import { KurtosisGetClusterInfo } from "./get-cluster-info.js";
 
 //let kurtosisGatewayProcess: ResultPromise<{ gracefulCancel: true}> | undefined = undefined;
 
+const SUPPORTED_CLUSTER_TYPES = ['cloud', 'valset-sandbox3'];
+
 export const KurtosisRunPackage = command.isomorphic({
   description:
     "Runs a specific Ethereum package in Kurtosis and updates local JSON database with the network information.",
@@ -33,16 +35,17 @@ export const KurtosisRunPackage = command.isomorphic({
     logger.log(`Resolved kurtosis config: ${configFileName}`);
     logger.logJson(file);
 
-    const kurtosisClusterType = await dre.runCommand(KurtosisGetClusterInfo, {});
+    const kurtosisClusterType: string = await dre.runCommand(KurtosisGetClusterInfo, {});
 
     // TODO more different types
-    if (kurtosisClusterType !== 'cloud') {
+    if (!SUPPORTED_CLUSTER_TYPES.includes(kurtosisClusterType)) {
       throw new DevNetError(`Unsupported kurtosis cluster type [${kurtosisClusterType}]`);
     }
 
     logger.log(`Kurtosis cluster type [${kurtosisClusterType}]`);
 
-    if (kurtosisClusterType === 'cloud') {
+    if (SUPPORTED_CLUSTER_TYPES.includes(kurtosisClusterType)) {
+      // TODO run gateway on demand
       // const processes = await psList();
       // const kurtosisGateway = processes.find(p => p.name.match(/kurtosis\sgateway/));
 

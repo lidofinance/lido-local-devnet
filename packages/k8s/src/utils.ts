@@ -9,9 +9,14 @@ dotenv.config({ path: '.env' });
 const DEFAULT_LIMIT = 1000;
 
 export async function getK8s() {
+  if (!process.env.K8S_KUBECTL_DEFAULT_CONTEXT) {
+    throw new DevNetError(`Unable to connect to the k8s cluster.
+      Ensure 'K8S_KUBECTL_DEFAULT_CONTEXT' env variable in '.env' is set.`);
+  }
+
   const kc = new k8s.KubeConfig();
   kc.loadFromDefault();
-  kc.setCurrentContext(process.env.K8S_KUBECTL_DEFAULT_CONTEXT || "default");
+  kc.setCurrentContext(process.env.K8S_KUBECTL_DEFAULT_CONTEXT);
 
   return kc;
 }
