@@ -4,13 +4,14 @@ import * as k8s from "@kubernetes/client-node";
 import {
   CONSENSUS_INGRESS_LABEL,
   ETH_NODE_INGRESS_LABEL,
-} from "../constants/nodes-ingress.constants.js";
+} from "../../../chain/constants/nodes-ingress.constants.js";
 
 export const consensusIngressTmpl =  async (
   dre: DevNetRuntimeEnvironmentInterface,
   serviceName: string,
   port: number,
   index: number,
+  hostname: string,
   ) => ({
     apiVersion: "networking.k8s.io/v1",
     kind: "Ingress",
@@ -30,7 +31,7 @@ export const consensusIngressTmpl =  async (
       ingressClassName: "public",
       rules: [
         {
-          host: `${process.env.GLOBAL_INGRESS_HOST_PREFIX}-consensus${index > 0 ? index : ''}.${dre.network.name}.valset-02.testnet.fi`,
+          host: hostname,
           http: {
             paths: [
               {
