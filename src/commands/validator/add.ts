@@ -21,7 +21,7 @@ export const ValidatorAdd = command.cli({
       keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
     );
 
-    console.log(keystoresResponse.data);
+    logger.log(`Total keystores: ${keystoresResponse.data.length}`);
 
     const existingPubKeys = new Set(
       keystoresResponse.data.map((p) => p.validating_pubkey.replace("0x", "")),
@@ -41,7 +41,7 @@ export const ValidatorAdd = command.cli({
 
     logger.log(`Detected new keystores: ${actualKeystores.length}`);
 
-    await sleep(5000);
+    await sleep(25_000);
 
     const keystoresStrings = actualKeystores.map((v) => JSON.stringify(v));
     const keystoresPasswords = actualKeystores.map((_) => "12345678");
