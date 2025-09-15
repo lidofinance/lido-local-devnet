@@ -1,6 +1,6 @@
 import { command } from "@devnet/command";
 
-export const DoraInfo = command.cli({
+export const KurtosisDoraK8sInfo = command.cli({
   description: "Retrieves and displays information about the Dora.",
   params: {},
   async handler({
@@ -14,7 +14,7 @@ export const DoraInfo = command.cli({
     logger.table(
       ["Service", "URL"],
       [
-        ["dora-ui", (chainServices?.url ?? '')],
+        ["dora-ui", (chainServices?.publicUrl ?? '')],
       ],
     );
   },

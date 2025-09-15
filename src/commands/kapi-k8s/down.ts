@@ -2,6 +2,8 @@ import { command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { getK8s, k8s } from "@devnet/k8s";
 
+import { NAMESPACE } from "./constants/kapi-k8s.constants.js";
+
 export const KapiK8sDown = command.cli({
   description: "Stop Kapi in K8s with Helm",
   params: {},
@@ -11,13 +13,11 @@ export const KapiK8sDown = command.cli({
       return;
     }
 
-    const NAMESPACE = `kt-${dre.network.name}-kapi`;
-
     const kapiRunning = await state.getKapiK8sRunning();
     const HELM_RELEASE = kapiRunning.helmRelease ?? 'kapi';
     const helmLidoKapiSh = helmLidoKapi.sh({
       env: {
-        NAMESPACE,
+        NAMESPACE: NAMESPACE(dre),
         HELM_RELEASE,
         HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
       },
@@ -34,7 +34,7 @@ export const KapiK8sDown = command.cli({
     // TODO delegate to helm
     logger.log("Removing persistent volume claim for postgress");
     await k8sStorageApi.deleteNamespacedPersistentVolumeClaim({
-      namespace: NAMESPACE,
+      namespace: NAMESPACE(dre),
       name: 'data-lido-kapi-postgresql-0', // hardcoded for now
     });
 

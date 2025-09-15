@@ -34,7 +34,7 @@ else
 endif
 
 # Default ENV Variables specific to chart
-KAPI_INGRESS_HOSTNAME ?= kapi.devnet.valset-02.testnet.fi
+KAPI_INGRESS_HOSTNAME ?= kapi.devnet.testnet.fi
 IMAGE ?= lidofinance/lido-keys-api
 TAG ?= dev
 REGISTRY_HOSTNAME ?= docker.io

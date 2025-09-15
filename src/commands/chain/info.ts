@@ -1,7 +1,7 @@
 import { command } from "@devnet/command";
 
 import { BlockscoutGetInfo } from "../blockscout/info.js";
-import { DoraInfo } from "../dora/info.js";
+import { KurtosisDoraK8sInfo } from "../kurtosis/dora/info.js";
 
 export const ChainGetInfo = command.cli({
   description: "Retrieves and displays information about the chain.",
@@ -19,6 +19,6 @@ export const ChainGetInfo = command.cli({
     );
 
     await dre.runCommand(BlockscoutGetInfo, {});
-    await dre.runCommand(DoraInfo, {});
+    await dre.runCommand(KurtosisDoraK8sInfo, {});
   },
 });

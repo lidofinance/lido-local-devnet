@@ -5,7 +5,7 @@ import { DevNetError } from "@devnet/utils";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { OracleK8sBuild } from "./build.js";
 import { oraclesK8sExtension } from "./extensions/oracles-k8s.extension.js";
-import { NAMESPACE } from "./constants/index.js";
+import { NAMESPACE } from "./constants/oracles-k8s.constants.js";
 
 export const OracleK8sUp = command.cli({
   description: "Start Oracle(s) in K8s with Helm",

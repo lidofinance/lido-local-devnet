@@ -1,32 +1,30 @@
-import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
+import { DevNetRuntimeEnvironmentInterface, } from "@devnet/command";
 import * as k8s from "@kubernetes/client-node";
 
+import { DORA_INGRESS_LABEL, NAMESPACE } from "../constants/dora.constants.js";
+
 export const doraIngressTmpl =  async (
-  dre: DevNetRuntimeEnvironmentInterface
+  dre: DevNetRuntimeEnvironmentInterface,
+  doraHostname: string
 ) => ({
     apiVersion: "networking.k8s.io/v1",
     kind: "Ingress",
     metadata: {
       name: "dora-devnet-ingress",
-      namespace: `kt-${dre.network.name}`,
+      namespace: NAMESPACE(dre),
       annotations: {
         "traefik.ingress.kubernetes.io/router.entrypoints": "web",
       },
       labels: {
         "com.lido.devnet": "true",
-        "kurtosis_enclave_uuid": "dd228369dff74436b4d34de541ee5105",
-        "kurtosistech.com/app-id": "kurtosis",
-        "kurtosistech.com/enclave-id": "dd228369dff74436b4d34de541ee5105",
-        "kurtosistech.com/guid": "769d6d4a4cd44bc39c649ba7774b2ec1",
-        "kurtosistech.com/id": "dora",
-        "kurtosistech.com/resource-type": "user-service",
+        ...DORA_INGRESS_LABEL,
       },
     },
     spec: {
       ingressClassName: "public",
       rules: [
         {
-          host: `${process.env.GLOBAL_INGRESS_HOST_PREFIX}-dora.fusaka-devnet.valset-02.testnet.fi`,
+          host: doraHostname,
           http: {
             paths: [
               {

@@ -8,7 +8,7 @@ import { z } from "zod";
 // augmenting the StateInterface
 declare module "@devnet/state" {
   export interface StateInterface {
-    getNodes<M extends boolean = true>(must?: M,): Promise<M extends true ? NodesState : Partial<NodesState>>;
+    getNodes<M extends boolean = true>(must?: M): Promise<M extends true ? NodesState : Partial<NodesState>>;
     isNodesDeployed(): Promise<boolean>;
     removeNodes(): Promise<void>;
     updateNodes(options: NodesState): Promise<void>;

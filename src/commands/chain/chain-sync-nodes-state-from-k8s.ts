@@ -11,7 +11,11 @@ import {
 import { nodesExtension } from "./extensions/nodes.extension.js";
 
 const SUPPORTED_CL = ["lighthouse", "teku", "prysm"];
-const SUPPORTED_EL = ["geth", "reth", "lodestar"];
+const SUPPORTED_EL = ["geth", "reth", "lodestar", "erigon"];
+const RPC_PORTS = new Set(['rpc', 'ws-rpc']);
+const WS_PORTS = new Set(['ws-rpc', 'ws']);
+const CL_HTTP_PORTS = ['http']; // TODO add support
+const VC_PORTS = ['http-validator'];
 
 const elRegex = new RegExp(`^el-[1-9]-(${SUPPORTED_EL.join('|')})-(${SUPPORTED_CL.join('|')})$`);
 const clRegex = new RegExp(`^cl-[1-9]-(${SUPPORTED_CL.join("|")})-(${SUPPORTED_EL.join('|')})$`);
@@ -41,16 +45,18 @@ export const ChainSyncNodesStateFromK8s = command.cli({
     const elNodes = elServices.map((elService) => {
       logger.log(`Found execution node service: [${elService.metadata?.name}]`);
 
-      const elRpcPort = elService
-        .spec?.ports?.find((p) => p.name === 'rpc')?.port;
-      const elWsPort = elService
-        .spec?.ports?.find((p) => p.name === 'ws')?.port;
+      const servicePorts = elService.spec?.ports;
+
+      const elRpcPort = servicePorts?.find(p => RPC_PORTS.has(p.name ?? ''))?.port;
+      const elWsPort = servicePorts?.find(p => WS_PORTS.has(p.name ?? ''))?.port;
 
       if (!elRpcPort) {
+        logger.warn(`Execution node service [rpc] port not found [${String(servicePorts?.map(p => p.name).join(','))}]`);
         return new DevNetError("❌ Execution node service [rpc] port not found");
       }
 
       if (!elWsPort) {
+        logger.warn(`Execution node service [ws] port not found [${String(servicePorts?.map(p => p.name).join(','))}]`);
         return new DevNetError("❌ Execution node service [ws] port not found");
       }
 

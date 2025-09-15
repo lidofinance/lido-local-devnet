@@ -1,6 +1,7 @@
 import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
 import * as k8s from "@kubernetes/client-node";
 import bcrypt from "bcryptjs";
+import { NAMESPACE } from "../constants/docker-registry.constants.js";
 
 export const registryAuthSecretTmpl = async (
   dre: DevNetRuntimeEnvironmentInterface
@@ -22,9 +23,10 @@ export const registryAuthSecretTmpl = async (
     kind: "Secret",
     metadata: {
       name: "registry-auth-secret",
-      namespace: `kt-${dre.network.name}-docker-registry`,
+      namespace: NAMESPACE(dre),
       labels: {
         "com.lido.devnet": "true",
+        "com.lido.devnet.docker-registry": "secret",
       },
     },
     type: "Opaque",
