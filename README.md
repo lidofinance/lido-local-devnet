@@ -36,12 +36,17 @@ Lido Local DevNet is a powerful tool for deploying and testing the Lido protocol
 
 Original docs are located in `https://docs.kurtosis.com/k8s/`
 
-### 1. Set the current context to the k8s cluster (if you have multiple clusters)
+### 1. Install dependencies
 ```sh
-kubectl config use-context tooling-holesky-sandbox-0 # or whatever your k8s context is
+yarn && yarn build:all
 ```
 
-### 2. Ensure that you are connected to the k8s cluster
+### 2. Set the current context to the k8s cluster (if you have multiple clusters)
+```sh
+kubectl config use-context <cluster context> # or whatever your k8s context is
+```
+
+### 3. Ensure that you are connected to the k8s cluster
 
 The cluster can be accessible via SSH Tunnel.
 
@@ -49,9 +54,9 @@ The cluster can be accessible via SSH Tunnel.
 kubectl cluster-info
 ```
 
-### 3. Change kurtosis config to work with the k8s cluster
+### 4. Change kurtosis config to work with the k8s cluster
 
-Update your kurtosis config at `echo $(kurtosis config path)` location
+Update once your kurtosis config at `echo $(kurtosis config path)` location
 
 ```yaml
 config-version: 6
@@ -68,26 +73,21 @@ kurtosis-clusters:
   cloud:
     type: "kubernetes"
     config:
-      kubernetes-cluster-name: "tooling-holesky-sandbox-0" # change the cluster name if needed
+      kubernetes-cluster-name: "<cluster name from kubectl>" # change the cluster name if needed
       storage-class: "ssd-hostpath"
       enclave-size-in-megabytes: 256
 ```
 
-### 4. Point kurtosis to the cluster
+### 5. Point kurtosis to the cluster
 ```sh
 # tell kurtosis to work with k8s cluster
 kurtosis cluster set cloud # or whatever your kurtosis cluster is
 ```
 
-### 5. Start Kurtosis
+### 6. Start Kurtosis
 Kurtosis is required to launch Ethereum nodes
 ```sh
 kurtosis engine start
-```
-
-### 6. Install dependencies
-```sh
-yarn && yarn build:all
 ```
 
 ### 7. Create `.env` file and fill it with the required values
@@ -100,19 +100,18 @@ Below is an example for launching the `fusaka` test stand.
 If you need a different setup, refer to the [test stands documentation](./docs/commands/stands.md).
 
 ```sh
-./bin/run.js stands fusaka
+./bin/run.js stands fusaka # or any other test stand name
 ```
 For contract verification, use the `--verify` flag:
 ```sh
-./bin/run.js stands fusaka --verify
+./bin/run.js stands <stand-name> --verify
 ```
 For a full DSM infrastructure deployment, add the `--dsm` flag:
 ```sh
-./bin/run.js stands fusaka --verify --dsm
+./bin/run.js stands <stand-name> --verify --dsm
 ```
 
-### 9. Interaction with Voting scripts (optional)
-
+### 9. (Optional) Interaction with Voting scripts 
 
 Since voting scripts require Python and Brownie, install the necessary dependencies:
 ```sh

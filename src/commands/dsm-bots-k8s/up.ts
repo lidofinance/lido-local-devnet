@@ -37,7 +37,7 @@ export const DSMBotsK8sUp = command.cli({
     const { elPrivate } = await state.getChain();
     const { locator } = await state.getLido();
     const { deployer } = await state.getNamedWallet();
-    const { image, tag, registryHostname } = await state.getCouncilK8sImage();
+    const { image, tag, registryHostname } = await state.getDsmBotsK8sImage();
 
     const { address: dataBusAddress } = await state.getDataBus();
 
@@ -55,7 +55,7 @@ export const DSMBotsK8sUp = command.cli({
       RABBIT_MQ_USERNAME: "guest",
       RABBIT_MQ_PASSWORD: "guest",
       CREATE_TRANSACTIONS: "true",
-      DEPOSIT_MODULES_WHITELIST: "1,2,3",
+      DEPOSIT_MODULES_WHITELIST: "1\\,2\\,3", // necessary wrapping for helm
       PROMETHEUS_PREFIX: "depositor_bot",
     };
 
