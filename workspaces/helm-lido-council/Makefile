@@ -2,15 +2,15 @@
 # This Makefile provides convenient commands for managing Helm charts
 
 # Default namespace for Helm operations
-NAMESPACE ?= kt-my-devnet-lido-backend
+NAMESPACE ?= test-namespace
 
 # Helm chart paths
 HELM_CHART_ROOT_PATH ?= ../../helm
-HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/lido/lido-backend
+HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/lido/lido-council
 HELM_VALUES_PATH = ./values.yaml
 
 # Release names
-HELM_RELEASE = lido-backend
+HELM_RELEASE ?= council-1
 
 # Default Helm timeout
 TIMEOUT ?= 5m
@@ -34,16 +34,23 @@ else
 endif
 
 # Default ENV Variables specific to chart
-DOCKER_REGISTRY_INGRESS_HOSTNAME ?= docker-registry.devnet.valset-02.testnet.fi
-DOCKER_REGISTRY_UI_INGRESS_HOSTNAME ?= docker-registry-ui.devnet.valset-02.testnet.fi
 
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
-	--set image.registry="$(DOCKER_REGISTRY_UI_INGRESS_HOSTNAME)" \
-	--set image.repository="$(DOCKER_REGISTRY_UI_INGRESS_HOSTNAME)" \
-	--set image.tag="$(DOCKER_REGISTRY_UI_INGRESS_HOSTNAME)" \
-	--set global.lido.registryHostname="$(DOCKER_REGISTRY_INGRESS_HOSTNAME)"
+	--set lido-app.image.repository="${IMAGE}" \
+	--set lido-app.image.tag="${TAG}" \
+	--set lido-app.image.registry="${REGISTRY_HOSTNAME}" \
+	--set lido-app.env.variables.PORT="${PORT}" \
+	--set lido-app.env.variables.LOG_LEVEL="${LOG_LEVEL}" \
+	--set lido-app.env.variables.LOG_FORMAT="${LOG_FORMAT}" \
+	--set lido-app.env.variables.RPC_URL="${RPC_URL}" \
+	--set lido-app.env.variables.WALLET_PRIVATE_KEY="${WALLET_PRIVATE_KEY}" \
+	--set lido-app.env.variables.KEYS_API_HOST="${KEYS_API_HOST}" \
+	--set lido-app.env.variables.KEYS_API_PORT="${KEYS_API_PORT}" \
+	--set lido-app.env.variables.PUBSUB_SERVICE="${PUBSUB_SERVICE}" \
+	--set lido-app.env.variables.EVM_CHAIN_DATA_BUS_ADDRESS="${EVM_CHAIN_DATA_BUS_ADDRESS}" \
+	--set lido-app.env.variables.EVM_CHAIN_DATA_BUS_PROVIDER_URL="${EVM_CHAIN_DATA_BUS_PROVIDER_URL}"
 endef
 
 # Lint Helm chart
