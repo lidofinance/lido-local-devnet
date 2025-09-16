@@ -7,13 +7,11 @@ lido-app:
   # Image configuration
   image:
     registry: docker.io
-    repository: lidofinance/depositor
+    repository: lidofinance/OVERRIDE-ME
     tag: "dev"
     pullPolicy: Always
-    imagePullSecrets: []
-    # Example:
-    # imagePullSecrets:
-    #   - name: myregistrykey
+    imagePullSecrets:
+      - name: registry-pull-secret
 
   service:
     type: ClusterIP

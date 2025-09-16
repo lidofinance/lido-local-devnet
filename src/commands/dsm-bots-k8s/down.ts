@@ -19,7 +19,7 @@ export const DSMBotsK8sDown = command.cli({
       return;
     }
 
-    const {helmReleases} = await state.getOraclesK8sRunning();
+    const {helmReleases} = await state.getDsmBotsK8sRunning();
 
     for (const release of helmReleases) {
       const helmLidoDsmBotSh = helmLidoDsmBot.sh({
