@@ -44,7 +44,7 @@ export const ActivateCSM = command.cli({
     const csmState = await dre.state.getCSM();
     const clClient = await network.getCLClient();
 
-    if (!(await state.isCSMActivated())) {
+    if (await state.isCSMActivated()) {
       logger.log("CSM already activated");
       return;
     }
