@@ -2,7 +2,7 @@
 # This Makefile provides convenient commands for managing Helm charts
 
 # Default namespace for Helm operations
-NAMESPACE ?= kt-my-devnet-kapi
+NAMESPACE ?= test-namespace
 
 # Helm chart paths
 HELM_CHART_ROOT_PATH ?= ../../helm
@@ -45,26 +45,28 @@ CHAIN_ID ?= 32382
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
-	--set lido-backend.image.repository="${IMAGE}" \
-	--set lido-backend.image.tag="${TAG}" \
-	--set lido-backend.image.registry="${REGISTRY_HOSTNAME}" \
-	--set lido-backend.env.variables.CORS_WHITELIST_REGEXP="${CORS_WHITELIST_REGEXP}" \
-	--set lido-backend.env.variables.GLOBAL_THROTTLE_TTL="${GLOBAL_THROTTLE_TTL}" \
-	--set lido-backend.env.variables.GLOBAL_THROTTLE_LIMIT="${GLOBAL_THROTTLE_LIMIT}" \
-	--set lido-backend.env.variables.GLOBAL_CACHE_TTL="${GLOBAL_CACHE_TTL}" \
-	--set lido-backend.env.variables.PROVIDERS_URLS="${PROVIDERS_URLS}" \
-	--set lido-backend.env.variables.CL_API_URLS="${CL_API_URLS}" \
-	--set lido-backend.env.variables.IS_DEVNET_MODE="${IS_DEVNET_MODE}" \
-	--set lido-backend.env.variables.CHAIN_ID="${CHAIN_ID}" \
-	--set lido-backend.env.variables.JOB_INTERVAL_REGISTRY="${JOB_INTERVAL_REGISTRY}" \
-	--set lido-backend.env.variables.VALIDATOR_REGISTRY_ENABLE="${VALIDATOR_REGISTRY_ENABLE}" \
-	--set lido-backend.env.variables.JOB_INTERVAL_VALIDATORS_REGISTRY="${JOB_INTERVAL_VALIDATORS_REGISTRY}" \
-	--set lido-backend.env.variables.LIDO_LOCATOR_DEVNET_ADDRESS="${LIDO_LOCATOR_DEVNET_ADDRESS}" \
-	--set lido-backend.env.variables.CURATED_MODULE_DEVNET_ADDRESS="${CURATED_MODULE_DEVNET_ADDRESS}" \
-	--set lido-backend.env.variables.CSM_MODULE_DEVNET_ADDRESS="${CSM_MODULE_DEVNET_ADDRESS}" \
-	--set lido-backend.env.variables.STAKING_ROUTER_DEVNET_ADDRESS="${STAKING_ROUTER_DEVNET_ADDRESS}" \
-	--set lido-backend.ingress.hosts[0].host="${KAPI_INGRESS_HOSTNAME}"
+	--set lido-app.image.repository="${IMAGE}" \
+	--set lido-app.image.tag="${TAG}" \
+	--set lido-app.image.registry="${REGISTRY_HOSTNAME}" \
+	--set lido-app.env.variables.CORS_WHITELIST_REGEXP="${CORS_WHITELIST_REGEXP}" \
+	--set lido-app.env.variables.GLOBAL_THROTTLE_TTL="${GLOBAL_THROTTLE_TTL}" \
+	--set lido-app.env.variables.GLOBAL_THROTTLE_LIMIT="${GLOBAL_THROTTLE_LIMIT}" \
+	--set lido-app.env.variables.GLOBAL_CACHE_TTL="${GLOBAL_CACHE_TTL}" \
+	--set lido-app.env.variables.PROVIDERS_URLS="${PROVIDERS_URLS}" \
+	--set lido-app.env.variables.CL_API_URLS="${CL_API_URLS}" \
+	--set lido-app.env.variables.IS_DEVNET_MODE="${IS_DEVNET_MODE}" \
+	--set lido-app.env.variables.CHAIN_ID="${CHAIN_ID}" \
+	--set lido-app.env.variables.JOB_INTERVAL_REGISTRY="${JOB_INTERVAL_REGISTRY}" \
+	--set lido-app.env.variables.VALIDATOR_REGISTRY_ENABLE="${VALIDATOR_REGISTRY_ENABLE}" \
+	--set lido-app.env.variables.JOB_INTERVAL_VALIDATORS_REGISTRY="${JOB_INTERVAL_VALIDATORS_REGISTRY}" \
+	--set lido-app.env.variables.LIDO_LOCATOR_DEVNET_ADDRESS="${LIDO_LOCATOR_DEVNET_ADDRESS}" \
+	--set lido-app.env.variables.CURATED_MODULE_DEVNET_ADDRESS="${CURATED_MODULE_DEVNET_ADDRESS}" \
+	--set lido-app.env.variables.CSM_MODULE_DEVNET_ADDRESS="${CSM_MODULE_DEVNET_ADDRESS}" \
+	--set lido-app.env.variables.STAKING_ROUTER_DEVNET_ADDRESS="${STAKING_ROUTER_DEVNET_ADDRESS}" \
+	--set-json lido-app.ingress.hosts='[{ "host": "${KAPI_INGRESS_HOSTNAME}", "paths": [{ "path": "/", "pathType": "Prefix", "port": "http"}]}]'
 endef
+
+
 
 # Lint Helm chart
 .PHONY: debug

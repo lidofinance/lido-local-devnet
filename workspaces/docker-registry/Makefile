@@ -2,7 +2,7 @@
 # This Makefile provides convenient commands for managing Helm charts
 
 # Default namespace for Helm operations
-NAMESPACE ?= kt-my-devnet-docker-registry
+NAMESPACE ?= test-namespace
 
 # Helm chart paths
 HELM_CHART_ROOT_PATH ?= ../../helm

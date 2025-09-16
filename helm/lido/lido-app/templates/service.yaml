@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ include "app.fullname" . }}
   labels:
-    {{- include "backend.labels" . | nindent 4 }}
+    {{- include "app.labels" . | nindent 4 }}
     {{- with .Values.additionalLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -32,4 +32,4 @@ spec:
       name: http
     {{- end }}
   selector:
-    {{- include "backend.selectorLabels" . | nindent 4 }}
+    {{- include "app.selectorLabels" . | nindent 4 }}

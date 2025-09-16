@@ -1,65 +1,37 @@
-lido-backend:
-  # Default values for backend.
-  # This is a YAML-formatted file.
-  # Declare variables to be passed into your templates.
+lido-app:
+  nameOverride: lido-oracle
 
   # Number of replicas for the backend deployment
   replicaCount: 1
 
-
   # Image configuration
   image:
-    # Docker registry to pull the image from
     registry: docker.io
-    # Repository/image name
     repository: lidofinance/oracle
-    # Image tag (can be overridden)
     tag: "dev"
-    # Image pull policy
     pullPolicy: Always
+    imagePullSecrets:
+      - name: registry-pull-secret
+    # Example:
+    # imagePullSecrets:
+    #   - name: myregistrykey
 
-  # Image pull secrets for private registries
-  imagePullSecrets:
-    - name: registry-pull-secret
-
-  # Service configuration
   service:
-    # Service type
     type: ClusterIP
-    # Service port
-    port: 9010
-    # Target port on the container
-    targetPort: 9010
+    ports:
+      - name: metrics
+        port: 9000
+        targetPort: 9000
+        protocol: TCP
+      - name: http-health
+        port: 9010
+        targetPort: 9010
+        protocol: TCP
 
-  # Ingress configuration
-  ingress:
-    # Enable/disable ingress
-    enabled: false
-    # Ingress class name
-    className: "public"
-    # Ingress annotations
-    annotations: {}
-    # Example annotations:
-    # annotations:
-    #   nginx.ingress.kubernetes.io/rewrite-target: /
-    #   cert-manager.io/cluster-issuer: letsencrypt-prod
+  # Container command
+  command: [ ]
 
-    # Ingress hosts configuration
-    hosts:
-      - host: backend.local
-        paths:
-          - path: /
-            pathType: Prefix
-
-    # TLS configuration
-    tls: []
-    # Example TLS:
-    # tls:
-    #   - secretName: backend-tls
-    #     hosts:
-    #       - backend.local
-
-  # Args
+  # Container args
   args: ["accounting"]
 
   # Environment variables
@@ -79,24 +51,8 @@ lido-backend:
       CSM_ORACLE_MAX_CONCURRENCY: "1"
       KUBO_HOST: false
 
-    # Environment variables from secrets
-    secrets: {}
-    # Example:
-    # secrets:
-    #   DATABASE_PASSWORD:
-    #     secretName: backend-secrets
-    #     key: db-password
-
-    # Environment variables from config maps
-    configMaps: {}
-    # Example:
-    # configMaps:
-    #   APP_CONFIG:
-    #     configMapName: backend-config
-    #     key: app-config
-
   # Resource limits and requests
-  resources: {}
+  resources: { }
   # Example:
   # resources:
   #   limits:
@@ -107,48 +63,56 @@ lido-backend:
   #     memory: 256Mi
 
   # Node selector
-  nodeSelector: {}
+  nodeSelector: { }
 
   # Tolerations
-  tolerations: []
+  tolerations: [ ]
 
   # Affinity rules
-  affinity: {}
+  affinity: { }
 
   # Security context
-  securityContext: {}
+  securityContext: { }
 
   # Pod security context
-  podSecurityContext: {}
+  podSecurityContext: { }
 
   # Liveness probe
   livenessProbe:
     httpGet:
-      path: .
-      port: http
+      path: /
+      port: http-health
     initialDelaySeconds: 30
     periodSeconds: 10
 
   # Readiness probe
   readinessProbe:
     httpGet:
-      path: .
-      port: http
-    initialDelaySeconds: 15
-    periodSeconds: 10
+      path: /
+      port: http-health
+    initialDelaySeconds: 5
+    periodSeconds: 5
 
   # Additional labels
-  additionalLabels: {}
+  additionalLabels: { }
 
   # Additional annotations
-  additionalAnnotations: {}
+  additionalAnnotations: { }
 
-  # Service account
-  serviceAccount:
-    # Create service account
-    create: true
-    # Service account annotations
-    annotations: {}
-    # Service account name (if not created, must exist)
-    name: "lido-oracle"
+  # Persistent Volume Claims configuration
+  pvcs: [ ]
+  # Example PVC configuration:
+  # pvcs:
+  #   - name: data-storage
+  #     storageClassName: "ssh-hostpath"
+  #     accessModes:
+  #       - ReadWriteOnce
+  #     size: 10Gi
+  #     mountPath: /data
+  #   - name: logs-storage
+  #     storageClassName: "ssh-hostpath"
+  #     accessModes:
+  #       - ReadWriteOnce
+  #     size: 5Gi
+  #     mountPath: /logs
 

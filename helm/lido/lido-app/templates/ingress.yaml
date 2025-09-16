@@ -4,7 +4,7 @@ kind: Ingress
 metadata:
   name: {{ include "app.fullname" . }}
   labels:
-    {{- include "backend.labels" . | nindent 4 }}
+    {{- include "app.labels" . | nindent 4 }}
     {{- with .Values.additionalLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -38,7 +38,7 @@ spec:
               service:
                 name: {{ include "app.fullname" $ }}
                 port:
-                  number: {{ $.Values.service.port }}
+                  name: {{ .port }}
           {{- end }}
     {{- end }}
 {{- end }}
