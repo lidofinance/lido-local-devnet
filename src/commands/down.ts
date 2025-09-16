@@ -1,4 +1,4 @@
-import { command } from "@devnet/command";
+import { command, Params } from "@devnet/command";
 
 import { BlockscoutDown } from "./blockscout/down.js";
 import { ChainDown } from "./chain/down.js";
@@ -9,29 +9,34 @@ import { OracleK8sDown } from "./oracles-k8s/down.js";
 
 export const DevNetStop = command.cli({
   description: "Stop full DevNet",
-  params: {},
-  async handler({ dre, dre: { logger } }) {
+  params: {
+    force: Params.boolean({
+      description: "Do not check that services were already stopped",
+      default: false,
+      required: false,
+    }),
+    silent: Params.boolean({
+      description: "Do not stop on errors",
+      default: false,
+      required: false,
+    }),
+  },
+  async handler({ dre, dre: { logger }, params }) {
     logger.log("Stopping DevNet...");
 
-    await dre
-      .runCommand(BlockscoutDown, { force: false })
-      .catch((error) => logger.warn(error.message));
-    await dre
-      .runCommand(KapiK8sDown, { force: false })
-      .catch((error) => logger.warn(error.message));
-    await dre
-      .runCommand(OracleK8sDown, { force: false })
-      .catch((error) => logger.warn(error.message));
-    await dre
-      .runCommand(CouncilK8sDown, { force: false })
-      .catch((error) => logger.warn(error.message));
-    await dre
-      .runCommand(DSMBotsK8sDown, { force: false })
-      .catch((error) => logger.warn(error.message));
+    const results = [
+      () => dre.runCommand(BlockscoutDown, { force: params.force }),
+      () => dre.runCommand(KapiK8sDown, { force: params.force }),
+      () => dre.runCommand(OracleK8sDown, { force: params.force }),
+      () => dre.runCommand(CouncilK8sDown, { force: params.force }),
+      () => dre.runCommand(DSMBotsK8sDown, { force: params.force }),
+      () => dre.runCommand(ChainDown, {})
+    ];
 
-    await dre
-      .runCommand(ChainDown, {})
-      .catch((error) => logger.warn(error.message));
+    await Promise.all(results.map(async (fn) =>
+      params.silent
+        ? fn()
+        : fn().catch((error) => logger.warn(error.message))));
 
     await dre.clean();
 
