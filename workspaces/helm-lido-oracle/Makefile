@@ -2,7 +2,7 @@
 # This Makefile provides convenient commands for managing Helm charts
 
 # Default namespace for Helm operations
-NAMESPACE ?= kt-my-devnet-oracles
+NAMESPACE ?= test-namespace
 
 # Helm chart paths
 HELM_CHART_ROOT_PATH ?= ../../helm
@@ -44,18 +44,17 @@ CHAIN_ID ?= 32382
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
-	--set lido-backend.image.repository="${IMAGE}" \
-	--set lido-backend.image.tag="${TAG}" \
-	--set lido-backend.image.registry="${REGISTRY_HOSTNAME}" \
-	--set "lido-backend.args={${COMMAND}}" \
-	--set lido-backend.env.variables.EXECUTION_CLIENT_URI="${EXECUTION_CLIENT_URI}" \
-    --set lido-backend.env.variables.CONSENSUS_CLIENT_URI="${CONSENSUS_CLIENT_URI}" \
-    --set lido-backend.env.variables.KEYS_API_URI="${KEYS_API_URI}" \
-    --set lido-backend.env.variables.MEMBER_PRIV_KEY="${MEMBER_PRIV_KEY}" \
-    --set lido-backend.env.variables.LIDO_LOCATOR_ADDRESS="${LIDO_LOCATOR_ADDRESS}" \
-    --set lido-backend.env.variables.CSM_MODULE_ADDRESS="${CSM_MODULE_ADDRESS}" \
-    --set lido-backend.env.variables.SUBMIT_DATA_DELAY_IN_SLOTS="${SUBMIT_DATA_DELAY_IN_SLOTS}" \
-    --set lido-backend.serviceAccount.name="${HELM_RELEASE}"
+	--set lido-app.image.repository="${IMAGE}" \
+	--set lido-app.image.tag="${TAG}" \
+	--set lido-app.image.registry="${REGISTRY_HOSTNAME}" \
+	--set "lido-app.args={${COMMAND}}" \
+	--set lido-app.env.variables.EXECUTION_CLIENT_URI="${EXECUTION_CLIENT_URI}" \
+	--set lido-app.env.variables.CONSENSUS_CLIENT_URI="${CONSENSUS_CLIENT_URI}" \
+	--set lido-app.env.variables.KEYS_API_URI="${KEYS_API_URI}" \
+	--set lido-app.env.variables.MEMBER_PRIV_KEY="${MEMBER_PRIV_KEY}" \
+	--set lido-app.env.variables.LIDO_LOCATOR_ADDRESS="${LIDO_LOCATOR_ADDRESS}" \
+	--set lido-app.env.variables.CSM_MODULE_ADDRESS="${CSM_MODULE_ADDRESS}" \
+	--set lido-app.env.variables.SUBMIT_DATA_DELAY_IN_SLOTS="${SUBMIT_DATA_DELAY_IN_SLOTS}"
 endef
 
 # Lint Helm chart

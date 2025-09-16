@@ -5,7 +5,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ include "app.fullname" $ }}-{{ .name }}
   labels:
-    {{- include "backend.labels" $ | nindent 4 }}
+    {{- include "app.labels" $ | nindent 4 }}
     {{- with $.Values.additionalLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}

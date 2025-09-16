@@ -1,43 +1,34 @@
-lido-backend:
-  # Default values for backend.
-  # This is a YAML-formatted file.
-  # Declare variables to be passed into your templates.
+lido-app:
+  nameOverride: keys-api
 
   # Number of replicas for the backend deployment
   replicaCount: 1
 
   # Image configuration
   image:
-    # Docker registry to pull the image from
     registry: docker.io
-    # Repository/image name
     repository: lidofinance/lido-keys-api
-    # Image tag (can be overridden)
     tag: "dev"
-    # Image pull policy
     pullPolicy: Always
+    imagePullSecrets: [ ]
+    # Example:
+    # imagePullSecrets:
+    #   - name: myregistrykey
 
-  # Image pull secrets for private registries
-  imagePullSecrets: []
-  # Example:
-  # imagePullSecrets:
-  #   - name: myregistrykey
-
-  # Service configuration
   service:
-    # Service type
     type: ClusterIP
-    # Service port
-    port: 3000
-    # Target port on the container
-    targetPort: 3000
+    ports:
+      - name: http
+        port: 3000
+        targetPort: 3000
+        protocol: TCP
 
   # Ingress configuration
   ingress:
     # Enable/disable ingress
-    enabled: false
+    enabled: true
     # Ingress class name
-    className: "nginx"
+    className: "public"
     # Ingress annotations
     annotations: {}
     # Example annotations:
@@ -47,10 +38,12 @@ lido-backend:
 
     # Ingress hosts configuration
     hosts:
-      - host: backend.local
+      - host: lido-app.local
         paths:
           - path: /
-            pathType: Prefix
+            pathTyppe: Prefix
+            port: http
+
 
     # TLS configuration
     tls: []
@@ -59,6 +52,12 @@ lido-backend:
     #   - secretName: backend-tls
     #     hosts:
     #       - backend.local
+
+  # Container command
+  command: [ ]
+
+  # Container args
+  args: [ ]
 
   # Environment variables
   env:
@@ -70,7 +69,7 @@ lido-backend:
       GLOBAL_THROTTLE_TTL: ${GLOBAL_THROTTLE_TTL}
       GLOBAL_THROTTLE_LIMIT: ${GLOBAL_THROTTLE_LIMIT}
       GLOBAL_CACHE_TTL: ${GLOBAL_CACHE_TTL}
-      LOG_LEVEL: info
+      LOG_LEVEL: ${LOG_LEVEL}
       LOG_FORMAT: json
       PROVIDERS_URLS: ${PROVIDERS_URLS}
       CL_API_URLS: ${CL_API_URLS}
@@ -88,24 +87,8 @@ lido-backend:
       CSM_MODULE_DEVNET_ADDRESS: ${CSM_MODULE_DEVNET_ADDRESS}
       STAKING_ROUTER_DEVNET_ADDRESS: ${STAKING_ROUTER_DEVNET_ADDRESS}
 
-    # Environment variables from secrets
-    secrets: {}
-    # Example:
-    # secrets:
-    #   DATABASE_PASSWORD:
-    #     secretName: backend-secrets
-    #     key: db-password
-
-    # Environment variables from config maps
-    configMaps: {}
-    # Example:
-    # configMaps:
-    #   APP_CONFIG:
-    #     configMapName: backend-config
-    #     key: app-config
-
   # Resource limits and requests
-  resources: {}
+  resources: { }
   # Example:
   # resources:
   #   limits:
@@ -116,19 +99,19 @@ lido-backend:
   #     memory: 256Mi
 
   # Node selector
-  nodeSelector: {}
+  nodeSelector: { }
 
   # Tolerations
-  tolerations: []
+  tolerations: [ ]
 
   # Affinity rules
-  affinity: {}
+  affinity: { }
 
   # Security context
-  securityContext: {}
+  securityContext: { }
 
   # Pod security context
-  podSecurityContext: {}
+  podSecurityContext: { }
 
   # Liveness probe
   livenessProbe:
@@ -147,19 +130,27 @@ lido-backend:
     periodSeconds: 5
 
   # Additional labels
-  additionalLabels: {}
+  additionalLabels: { }
 
   # Additional annotations
-  additionalAnnotations: {}
+  additionalAnnotations: { }
 
-  # Service account
-  serviceAccount:
-    # Create service account
-    create: true
-    # Service account annotations
-    annotations: {}
-    # Service account name (if not created, must exist)
-    name: "lido-keys-api"
+  # Persistent Volume Claims configuration
+  pvcs: [ ]
+  # Example PVC configuration:
+  # pvcs:
+  #   - name: data-storage
+  #     storageClassName: "ssh-hostpath"
+  #     accessModes:
+  #       - ReadWriteOnce
+  #     size: 10Gi
+  #     mountPath: /data
+  #   - name: logs-storage
+  #     storageClassName: "ssh-hostpath"
+  #     accessModes:
+  #       - ReadWriteOnce
+  #     size: 5Gi
+  #     mountPath: /logs
 
 
 postgresql:

@@ -1,4 +1,4 @@
-lido-backend:
+lido-app:
   # Default values for backend.
   # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
@@ -16,19 +16,17 @@ lido-backend:
     tag: "dev"
     # Image pull policy
     pullPolicy: Always
+    # Image pull secrets for private registries
+    imagePullSecrets:
+      - name: registry-pull-secret
 
-  # Image pull secrets for private registries
-  imagePullSecrets:
-    - name: registry-pull-secret
-
-  # Service configuration
   service:
-    # Service type
     type: ClusterIP
-    # Service port
-    port: 3000
-    # Target port on the container
-    targetPort: 3000
+    ports:
+      - name: http
+        port: 3000
+        targetPort: 3000
+        protocol: TCP
 
   # Ingress configuration
   ingress:
@@ -49,6 +47,7 @@ lido-backend:
         paths:
           - path: /
             pathType: Prefix
+            port: http
 
     # TLS configuration
     tls: []
@@ -86,22 +85,6 @@ lido-backend:
       CURATED_MODULE_DEVNET_ADDRESS: ${CURATED_MODULE_DEVNET_ADDRESS}
       CSM_MODULE_DEVNET_ADDRESS: ${CSM_MODULE_DEVNET_ADDRESS}
       STAKING_ROUTER_DEVNET_ADDRESS: ${STAKING_ROUTER_DEVNET_ADDRESS}
-
-    # Environment variables from secrets
-    secrets: {}
-    # Example:
-    # secrets:
-    #   DATABASE_PASSWORD:
-    #     secretName: backend-secrets
-    #     key: db-password
-
-    # Environment variables from config maps
-    configMaps: {}
-    # Example:
-    # configMaps:
-    #   APP_CONFIG:
-    #     configMapName: backend-config
-    #     key: app-config
 
   # Resource limits and requests
   resources: {}
@@ -150,15 +133,6 @@ lido-backend:
 
   # Additional annotations
   additionalAnnotations: {}
-
-  # Service account
-  serviceAccount:
-    # Create service account
-    create: true
-    # Service account annotations
-    annotations: {}
-    # Service account name (if not created, must exist)
-    name: "lido-keys-api"
 
 
 postgresql:

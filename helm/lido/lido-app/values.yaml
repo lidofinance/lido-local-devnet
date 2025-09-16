@@ -1,7 +1,7 @@
 # Default values for backend.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-fullnameOverride: OVERRIDE-ME
+nameOverride: ""
 
 # Number of replicas for the backend deployment
 replicaCount: 1
@@ -11,7 +11,7 @@ image:
   # Docker registry to pull the image from
   registry: docker.io
   # Repository/image name
-  repository: OVERRIDE-ME
+  repository: busybox
   # Image tag (can be overridden)
   tag: "latest"
   # Image pull policy
@@ -29,17 +29,11 @@ service:
   # Service type
   type: ClusterIP
   # Multiple ports configuration
-  ports: []
-  # Example multiple ports:
-  # ports:
-  #   - name: http
-  #     port: 3000
-  #     targetPort: 3000
-  #     protocol: TCP
-  #   - name: metrics
-  #     port: 9090
-  #     targetPort: 9090
-  #     protocol: TCP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
 
 # Ingress configuration
 ingress:
@@ -56,10 +50,11 @@ ingress:
 
   # Ingress hosts configuration
   hosts:
-    - host: OVERRIDE-ME.local
+    - host: lido-app.local
       paths:
         - path: /
           pathType: Prefix
+          port: http
 
   # TLS configuration
   tls: []
@@ -152,8 +147,8 @@ pvcs: []
 # Service account
 serviceAccount:
   # Create service account
-  create: false
+  create: true
   # Service account annotations
   annotations: {}
   # Service account name (if not created, must exist)
-  name: "lido-app"
+  name: ""
