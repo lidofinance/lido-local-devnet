@@ -1,5 +1,6 @@
-import { command, Params } from "@devnet/command";
+import { Params, command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
+import { deleteNamespace } from "@devnet/k8s";
 
 import { NAMESPACE } from "./constants/oracles-k8s.constants.js";
 
@@ -19,9 +20,23 @@ export const OracleK8sDown = command.cli({
       return;
     }
 
-    const {helmReleases} = await state.getOraclesK8sRunning();
+    // TODO get from k8s namespace
+    const defaultReleases = [
+      'oracle-accounting-1',
+      'oracle-accounting-2',
+      'oracle-ejector-1',
+      'oracle-ejector-2',
+      'oracle-csm-1',
+      'oracle-csm-2',
+    ];
 
-    for (const release of helmReleases) {
+    const { helmReleases } = await state.getOraclesK8sRunning(false);
+
+    const releases = helmReleases && helmReleases.length > 0
+      ? helmReleases
+      : defaultReleases;
+
+    for (const release of releases) {
       const helmLidoOracleSh = helmLidoOracle.sh({
         env: {
           NAMESPACE: NAMESPACE(dre),
@@ -35,6 +50,8 @@ export const OracleK8sDown = command.cli({
       await helmLidoOracleSh`make uninstall`;
       logger.log(`Oracles [${release}] stopped.`);
     }
+
+    await deleteNamespace(NAMESPACE(dre));
 
     await state.removeOraclesK8s();
   },

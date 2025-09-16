@@ -1,6 +1,11 @@
 import { Params, command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
-import { getK8s, k8s } from "@devnet/k8s";
+import {
+  deleteNamespace,
+  deleteNamespacedPersistentVolumeClaimIfExists,
+  getK8s,
+  k8s,
+} from "@devnet/k8s";
 import path from "node:path";
 
 import { NAMESPACE } from "./constants/blockscout.constants.js";
@@ -53,16 +58,15 @@ export const BlockscoutDown = command.cli({
     await blockScoutStackSh`make uninstall`;
 
     // removing postgress persistent volume claim
-    const kc = await getK8s();
-    const k8sStorageApi = kc.makeApiClient(k8s.CoreV1Api);
-
     logger.log("Removing persistent volume claim for postgress");
-    await k8sStorageApi.deleteNamespacedPersistentVolumeClaim({
-      namespace: NAMESPACE(dre),
-      name: 'data-postgresql-0', // hardcoded for now
-    });
+    await deleteNamespacedPersistentVolumeClaimIfExists(
+      NAMESPACE(dre),
+      'data-postgresql-0', // hardcoded for now
+    );
 
     logger.log("Blockscout stopped.");
+
+    await deleteNamespace(NAMESPACE(dre));
 
     await state.removeBlockscout();
   },

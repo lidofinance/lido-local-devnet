@@ -1,6 +1,5 @@
-import { command, Params } from "@devnet/command";
+import { Params, command } from "@devnet/command";
 
-import { BlockscoutDown } from "./blockscout/down.js";
 import { ChainDown } from "./chain/down.js";
 import { CouncilK8sDown } from "./council-k8s/down.js";
 import { DSMBotsK8sDown } from "./dsm-bots-k8s/down.js";
@@ -25,7 +24,6 @@ export const DevNetStop = command.cli({
     logger.log("Stopping DevNet...");
 
     const downFns = [
-      () => dre.runCommand(BlockscoutDown, { force: params.force }),
       () => dre.runCommand(KapiK8sDown, { force: params.force }),
       () => dre.runCommand(OracleK8sDown, { force: params.force }),
       () => dre.runCommand(CouncilK8sDown, { force: params.force }),

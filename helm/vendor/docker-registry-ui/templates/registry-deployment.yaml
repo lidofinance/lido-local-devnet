@@ -68,7 +68,10 @@ spec:
             {{- toYaml .Values.registry.resources | nindent 12 }}
       volumes:
         - name: data
-          {{- if .Values.registry.dataVolume }}
+          {{- if .Values.registry.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "docker-registry-ui.fullname" . }}-registry-data
+          {{- else if .Values.registry.dataVolume }}
             {{- toYaml .Values.registry.dataVolume | nindent 10 }}
           {{- else }}
           emptyDir: {}
