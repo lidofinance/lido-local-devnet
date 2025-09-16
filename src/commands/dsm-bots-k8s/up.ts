@@ -5,11 +5,13 @@ import { DevNetError } from "@devnet/utils";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { DSMBotsK8sBuild } from "./build.js";
 import { NAMESPACE } from "./constants/dsm-bots-k8s.constants.js";
+import { dsmBotsK8sExtension } from "./extensions/dsm-bots-k8s.extension.js";
 
 
 export const DSMBotsK8sUp = command.cli({
   description: "Start DSM bots in K8s",
   params: {},
+  extensions: [dsmBotsK8sExtension],
   async handler({ dre, dre: { services, state, network, logger } }) {
     const { helmLidoDsmBot } = services;
 
