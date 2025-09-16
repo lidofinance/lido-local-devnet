@@ -175,6 +175,21 @@ docker-registry-ui:
     imagePullPolicy: "-"
     # Configuration for the data directory.  When null it will create an emptyDir.
     dataVolume: null
+    # Persistence configuration for registry data
+    persistence:
+      # Enable persistence for registry data
+      enabled: true
+      # Storage class to use for the PVC. Use "-" to disable dynamic provisioning
+      storageClass: "ssd-hostpath"
+      # Access modes for the PVC
+      accessModes:
+        - ReadWriteOnce
+      # Size of the persistent volume
+      size: 50Gi
+      # Annotations for the PVC
+      annotations: { }
+      # Selector for existing PV (optional)
+      selector: { }
     # The resource settings for registry server pod.
     resources: { }
     # Optional YAML string to specify a nodeSelector config.

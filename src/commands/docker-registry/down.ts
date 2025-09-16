@@ -1,5 +1,6 @@
 import { Params, command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
+import { deleteNamespace } from "@devnet/k8s";
 
 import { NAMESPACE } from "./constants/docker-registry.constants.js";
 
@@ -30,6 +31,8 @@ export const DockerRegistryDown = command.cli({
     await dockerRegistrySh`make uninstall`;
 
     logger.log("Docker registry stopped.");
+
+    await deleteNamespace(NAMESPACE(dre));
 
     await state.removeDockerRegistry();
   },

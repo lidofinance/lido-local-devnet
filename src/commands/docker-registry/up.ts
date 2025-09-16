@@ -1,4 +1,4 @@
-import { command } from "@devnet/command";
+import { command, Params } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { addPrefixToIngressHostname, getK8s, k8s } from "@devnet/k8s";
 
@@ -8,20 +8,26 @@ import { registryAuthSecretTmpl } from "./templates/registry-auth-secret.templat
 
 export const DockerRegistryUp = command.cli({
   description: "Start Docker registry in k8s",
-  params: {},
+  params: {
+    force: Params.boolean({
+      description: "Do not check that the registry was already deployed",
+      default: false,
+      required: false,
+    }),
+  },
   extensions: [dockerRegistryExtension],
-  async handler({ dre, dre: { logger } }) {
+  async handler({ dre, dre: { logger }, params }) {
     const {
       state,
       services: { dockerRegistry },
     } = dre;
 
-    if (await dre.state.isDockerRegistryAvailable()) {
+    if (await dre.state.isDockerRegistryAvailable() && !(params.force)) {
       logger.log("Docker registry already deployed.");
       return;
     }
 
-    if ((await dre.state.getDockerRegistryType()) === 'external') {
+    if ((await dre.state.getDockerRegistryType()) === 'external' && !(params.force)) {
       logger.log("Docker registry is external. Skipping deployment.");
     }
 
@@ -46,11 +52,15 @@ export const DockerRegistryUp = command.cli({
     const authSecret = await registryAuthSecretTmpl(dre);
 
     try {
+      await k8sCoreApi.createNamespace({ body: { metadata: { name: authSecret.metadata.namespace } } });
+    } catch {}
+
+    try {
       // Secret doesn't exist, create it
       await k8sCoreApi.createNamespacedSecret({ namespace: authSecret.metadata.namespace, body: authSecret });
       logger.log(`Successfully created registry authentication secret: ${authSecret.metadata.name}`);
-    } catch {
-      logger.log(`Secret ${authSecret.metadata.name} already exists. Skipping creation.`);
+    } catch (error: unknown) {
+      logger.log(`Secret ${authSecret.metadata.name} already exists. Skipping creation. [${String(error)}]`);
     }
 
     const dockerRegistrySh = dockerRegistry.sh({

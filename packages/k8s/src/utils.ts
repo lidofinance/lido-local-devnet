@@ -118,3 +118,50 @@ export const addPrefixToIngressHostname = (
 
 export const toLabelSelector = (label: Record<string, string>) =>
   Object.entries(label).map(([k, v]) => `${k}=${v}`).join(',');
+
+export const deleteNamespace = async (name: string) => {
+  const kc = await getK8s();
+  const k8sCoreApi = kc.makeApiClient(k8s.CoreV1Api);
+
+  const namespaces = await k8sCoreApi.listNamespace({ limit: DEFAULT_LIMIT });
+
+  if (namespaces.items.map(n => n.metadata?.name).includes(name)) {
+    await k8sCoreApi.deleteNamespace({ name, propagationPolicy: "Background" });
+  }
+}
+
+export const deleteNamespacedPersistentVolumeClaimIfExists = async (
+  namespace: string,
+  name: string
+) => {
+  const kc = await getK8s();
+  const k8sStorageApi = kc.makeApiClient(k8s.CoreV1Api);
+
+  const pvcs = await k8sStorageApi.listNamespacedPersistentVolumeClaim({
+    namespace,
+    limit: DEFAULT_LIMIT,
+  });
+
+  if (pvcs.items.map((pvc) => pvc.metadata?.name).includes(name)) {
+    await k8sStorageApi.deleteNamespacedPersistentVolumeClaim({
+      namespace,
+      name,
+    });
+  }
+}
+
+export const getNamespacedDeployedHelmReleases = async (namespace: string) => {
+  const kc = await getK8s();
+  const k8sAppsApi = kc.makeApiClient(k8s.AppsV1Api);
+
+  const deployments = await k8sAppsApi.listNamespacedDeployment({ namespace, limit: DEFAULT_LIMIT });
+
+  const helmReleases = (
+      deployments.items?.map(
+        (deployment) =>
+          deployment.metadata?.annotations?.["meta.helm.sh/release-name"],
+      ) ?? []
+    ).filter((x) => typeof x === "string");
+
+  return helmReleases;
+}
