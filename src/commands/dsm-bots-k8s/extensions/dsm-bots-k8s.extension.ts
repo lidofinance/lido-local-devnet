@@ -21,7 +21,7 @@ declare module "@devnet/state" {
     isDsmBotsK8sImageReady(): Promise<boolean>;
     isDsmBotsK8sRunning(): Promise<boolean>;
 
-    removeDsmBotsK8s(): Promise<void>;
+    removeDsmBotsK8sState(): Promise<void>;
 
     updateDsmBotsK8sImage(state: DsmBotsK8sStateImage): Promise<void>;
     updateDsmBotsK8sRunning(state: DsmBotsK8sStateRunning): Promise<void>;
@@ -64,7 +64,7 @@ export const dsmBotsK8sExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
     await dre.state.updateProperties("dsmBotsK8s", { ...state, running: stateRunning });
   });
 
-  dre.state.removeDsmBotsK8s = (async function () {
+  dre.state.removeDsmBotsK8sState = (async function () {
     await dre.state.updateProperties("dsmBotsK8s", {});
   });
 

@@ -36,6 +36,6 @@ export const DSMBotsK8sDown = command.cli({
       logger.log(`DSM Bot [${release}] stopped.`);
     }
 
-    await state.removeDsmBotsK8s();
+    await state.removeDsmBotsK8sState();
   },
 });
