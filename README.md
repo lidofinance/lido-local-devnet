@@ -42,6 +42,9 @@ yarn && yarn build:all
 ```
 
 ### 2. Set the current context to the k8s cluster (if you have multiple clusters)
+
+Contexts can be found by running: `kubectl config get-contexts`
+
 ```sh
 kubectl config use-context <cluster context> # or whatever your k8s context is
 ```

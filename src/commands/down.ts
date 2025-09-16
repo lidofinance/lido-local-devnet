@@ -24,7 +24,7 @@ export const DevNetStop = command.cli({
   async handler({ dre, dre: { logger }, params }) {
     logger.log("Stopping DevNet...");
 
-    const results = [
+    const downFns = [
       () => dre.runCommand(BlockscoutDown, { force: params.force }),
       () => dre.runCommand(KapiK8sDown, { force: params.force }),
       () => dre.runCommand(OracleK8sDown, { force: params.force }),
@@ -33,10 +33,9 @@ export const DevNetStop = command.cli({
       () => dre.runCommand(ChainDown, {})
     ];
 
-    await Promise.all(results.map(async (fn) =>
-      params.silent
-        ? fn()
-        : fn().catch((error) => logger.warn(error.message))));
+    for (const fn of downFns) {
+      await (params.silent ? fn() : fn().catch((error) => logger.warn(error.message)));
+    }
 
     await dre.clean();
 
