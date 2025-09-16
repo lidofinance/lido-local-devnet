@@ -44,6 +44,11 @@ export const ActivateCSM = command.cli({
     const csmState = await dre.state.getCSM();
     const clClient = await network.getCLClient();
 
+    if (!(await state.isCSMActivated())) {
+      logger.log("CSM already activated");
+      return;
+    }
+
     await dre.network.waitEL();
 
     const { HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME } = oracle.config.constants;
@@ -72,5 +77,7 @@ export const ActivateCSM = command.cli({
     logger.log("Deploying and configuring csm components...");
 
     await lidoCLI.sh({ env })`./run.sh omnibus script devnetCSMStart`;
+
+    await state.updateCSMActivated({ active: true });
   },
 });

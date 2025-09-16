@@ -49,6 +49,11 @@ export const DeployCSMContracts = command.cli({
       config: { constants },
     } = csm;
 
+    if (await state.isCSMDeployed()) {
+      logger.log("CSM contracts are already deployed.");
+      return;
+    }
+
     await dre.network.waitEL();
 
     const { agent, locator, treasury } = await state.getLido();

@@ -9,14 +9,17 @@ import { z } from "zod";
 declare module "@devnet/state" {
   export interface StateInterface {
     getLido<M extends boolean = true>(must?: M,): Promise<M extends true ? LidoCoreState : Partial<LidoCoreState>>;
+    getLidoActivated<M extends boolean = true>(must?: M,): Promise<M extends true ? LidoCoreActiveState : Partial<LidoCoreActiveState>>;
     isLidoActivated(): Promise<boolean>;
     isLidoDeployed(): Promise<boolean>;
     removeLido(): Promise<void>;
     updateLido(state: LidoCoreState): Promise<void>;
+    updateLidoActivated(state: LidoCoreActiveState): Promise<void>;
   }
 
   export interface Config {
     lidoCore: LidoCoreState;
+    lidoCoreActive: LidoCoreActiveState;
   }
 }
 
@@ -45,9 +48,19 @@ export const LidoCoreState = z.object({
 
 export type LidoCoreState = z.infer<typeof LidoCoreState>;
 
+export const LidoCoreActiveState = z.object({
+  active: z.boolean(),
+});
+
+export type LidoCoreActiveState = z.infer<typeof LidoCoreActiveState>;
+
 export const lidoCoreExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
   dre.state.updateLido = (async function (state: LidoCoreState) {
     await this.updateProperties("lidoCore", state);
+  });
+
+  dre.state.updateLidoActivated = (async function (state: LidoCoreActiveState) {
+    await this.updateProperties("lidoCoreActive", state);
   });
 
   dre.state.removeLido = (async function () {
@@ -60,8 +73,8 @@ export const lidoCoreExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
   });
 
   dre.state.isLidoActivated = (async function () {
-    const state = await dre.state.getLido(false);
-    return !isEmptyObject(state) && state.locator !== undefined;
+    const state = await dre.state.getLidoActivated(false);
+    return !isEmptyObject(state) && state.active === true;
   });
 
   dre.state.getLido = (async function<M extends boolean = true>(must: M = true as M) {
@@ -92,5 +105,14 @@ export const lidoCoreExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
       LidoCoreState,
       must,
     );
-  })
+  });
+
+  dre.state.getLidoActivated = (async function<M extends boolean = true>(must: M = true as M) {
+    return this.getProperties(
+      "lidoCoreActive",
+      "lidoCoreActive",
+      LidoCoreActiveState,
+      must,
+    );
+  });
 };
