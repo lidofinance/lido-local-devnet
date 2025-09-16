@@ -1,0 +1,11 @@
+apiVersion: v2
+name: lido-dsm-bot
+description: Lido Dsm Bot (depositor, pause, unvetter) chart
+type: application
+version: 1.0.0
+appVersion: "2.5.2"
+kubeVersion: '>=1.19.0-0'
+dependencies:
+  - name: "lido-app"
+    version: "1.0.0"
+    repository: "file://../lido-app"

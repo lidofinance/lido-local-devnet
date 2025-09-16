@@ -3,12 +3,14 @@ import { Params, command } from "@devnet/command";
 import { ChainGetInfo } from "../chain/info.js";
 import { ChainUp } from "../chain/up.js";
 import { CouncilUp } from "../council/up.js";
+import { CouncilK8sUp } from "../council-k8s/up.js";
 import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
 import { DeployCSVerifier } from "../csm/add-verifier.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
 import { DataBusDeploy } from "../data-bus/deploy.js";
 import { DSMBotsUp } from "../dsm-bots/up.js";
+import { DSMBotsK8sUp } from "../dsm-bots-k8s/up.js";
 import { GitCheckout } from "../git/checkout.js";
 import { KapiUp } from "../kapi/up.js";
 import { KapiK8sUp } from "../kapi-k8s/up.js";
@@ -131,11 +133,11 @@ export const FusakaDevNetUp = command.cli({
       logger.log("✅ Data-bus deployed.");
 
       logger.log("🚀 Running Council service...");
-      await dre.runCommand(CouncilUp, {});
+      await dre.runCommand(CouncilK8sUp, {});
       logger.log("✅ Council service started.");
 
       logger.log("🚀 Running DSM-bots service...");
-      await dre.runCommand(DSMBotsUp, {});
+      await dre.runCommand(DSMBotsK8sUp, {});
       logger.log("✅ DSM-bots service started.");
     }
 
