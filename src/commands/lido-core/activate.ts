@@ -11,7 +11,7 @@ export const ActivateLidoProtocol = command.cli({
       network,
     } = dre;
 
-    if (!(await state.isLidoActivated())) {
+    if (await state.isLidoActivated()) {
       logger.log("Lido already activated");
       return;
     }
