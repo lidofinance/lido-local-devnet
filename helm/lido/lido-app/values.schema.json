@@ -387,7 +387,7 @@
             "type": "string"
           }
         },
-        "required": ["name", "storageClassName", "accessModes", "size", "mountPath"]
+        "required": ["name", "accessModes", "size", "mountPath"]
       },
       "description": "Persistent Volume Claims configuration"
     },
