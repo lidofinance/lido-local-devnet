@@ -16,7 +16,7 @@ export const KuboK8sUp = command.cli({
   description: "Start Kubo on K8s with Helm",
   params: {},
   extensions: [kuboK8sExtension],
-  async handler({ dre, dre: { state, network, services: { helmLidoKapi }, logger } }) {
+  async handler({ dre, dre: { state, network, services: { helmLidoKubo }, logger } }) {
     if (await state.isKuboK8sRunning()) {
       logger.log("KUbo already running");
       return;
@@ -47,7 +47,7 @@ export const KuboK8sUp = command.cli({
     const { image, tag, registryHostname } = await state.getKuboK8sImage();
 
     const env: Record<string, string> = {
-      ...helmLidoKapi.config.constants,
+      ...helmLidoKubo.config.constants,
 
       IS_DEVNET_MODE: "1",
       CHAIN_ID: "32382",
@@ -57,7 +57,6 @@ export const KuboK8sUp = command.cli({
       PROVIDERS_URLS: elPrivate,
       CL_API_URLS: clPrivate,
       STAKING_ROUTER_DEVNET_ADDRESS: stakingRouter,
-      COMPOSE_PROJECT_NAME: `kapi-${network.name}`,
     };
 
     const kapiHostname = process.env.KUBO_INGRESS_HOSTNAME?.
@@ -70,7 +69,7 @@ export const KuboK8sUp = command.cli({
     const KUBO_INGRESS_HOSTNAME = addPrefixToIngressHostname(kapiHostname);
 
     const HELM_RELEASE = 'kubo';
-    const helmLidoKapiSh = helmLidoKapi.sh({
+    const helmLidoKuboSh = helmLidoKubo.sh({
       env: {
         ...env,
         NAMESPACE: NAMESPACE(dre),
@@ -85,14 +84,14 @@ export const KuboK8sUp = command.cli({
 
     await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace: NAMESPACE(dre) });
 
-    await helmLidoKapiSh`make debug`;
-    await helmLidoKapiSh`make lint`;
-    await helmLidoKapiSh`make install`;
+    await helmLidoKuboSh`make debug`;
+    await helmLidoKuboSh`make lint`;
+    await helmLidoKuboSh`make install`;
 
     await state.updateKuboK8sRunning({
       helmRelease: HELM_RELEASE,
       publicUrl: `http://${KUBO_INGRESS_HOSTNAME}`,
-      privateUrl: `http://lido-kapi-keys-api.${NAMESPACE(dre)}.svc.cluster.local:3000`
+      privateUrl: `http://lido-kubo-lido-kubo.${NAMESPACE(dre)}.svc.cluster.local:3000`
     });
   },
 });

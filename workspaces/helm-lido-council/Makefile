@@ -50,7 +50,11 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.KEYS_API_PORT="${KEYS_API_PORT}" \
 	--set lido-app.env.variables.PUBSUB_SERVICE="${PUBSUB_SERVICE}" \
 	--set lido-app.env.variables.EVM_CHAIN_DATA_BUS_ADDRESS="${EVM_CHAIN_DATA_BUS_ADDRESS}" \
-	--set lido-app.env.variables.EVM_CHAIN_DATA_BUS_PROVIDER_URL="${EVM_CHAIN_DATA_BUS_PROVIDER_URL}"
+	--set lido-app.env.variables.EVM_CHAIN_DATA_BUS_PROVIDER_URL="${EVM_CHAIN_DATA_BUS_PROVIDER_URL}" \
+	--set lido-app.env.variables.LOCATOR_DEVNET_ADDRESS="${LOCATOR_DEVNET_ADDRESS}" \
+	--set lido-app.env.variables.RABBITMQ_PASSCODE="${RABBITMQ_PASSCODE}" \
+	--set lido-app.env.variables.RABBITMQ_LOGIN="${RABBITMQ_LOGIN}" \
+	--set lido-app.env.variables.RABBITMQ_URL="${RABBITMQ_URL}"
 endef
 
 # Lint Helm chart
