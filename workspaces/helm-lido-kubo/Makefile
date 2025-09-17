@@ -9,8 +9,14 @@ HELM_CHART_ROOT_PATH ?= ../../helm
 HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/lido/lido-kubo
 HELM_VALUES_PATH ?=
 
+ifneq ($(HELM_VALUES_PATH),)
+	HELM_VALUES = -f $(HELM_VALUES_PATH)
+else
+	HELM_VALUES =
+endif
+
 # Release names
-HELM_RELEASE = lido-kubo
+HELM_RELEASE ?= lido-kubo
 
 # Default Helm timeout
 TIMEOUT ?= 5m
@@ -34,7 +40,7 @@ else
 endif
 
 # Default ENV Variables specific to chart
-CHAIN ?= 32382
+CHAIN ?= artifact
 
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
@@ -42,7 +48,8 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.image.repository="${IMAGE}" \
 	--set lido-app.image.tag="${TAG}" \
 	--set lido-app.image.registry="${REGISTRY_HOSTNAME}" \
-	--set lido-app.env.variables.CHAIN="${CHAIN}"
+	--set lido-app.env.variables.CHAIN="${CHAIN}" \
+	--set-json lido-app.ingress.hosts='[{ "host": "${KUBO_INGRESS_HOSTNAME}", "paths": [{ "path": "/", "pathType": "Prefix", "port": "http-api"}]}]'
 endef
 
 
@@ -59,18 +66,18 @@ debug:
 # Lint Helm chart
 .PHONY: lint
 lint:
-	helm lint $(HELM_CHART_PATH) -f $(HELM_VALUES_PATH) $(HELM_CHART_VALUES_OVERRIDES)
+	helm lint $(HELM_CHART_PATH) $(HELM_VALUES) $(HELM_CHART_VALUES_OVERRIDES)
 
 # Print rendered Helm chart templates to stdout
 .PHONY: template
 template:
-	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) -f $(HELM_VALUES_PATH) --namespace $(NAMESPACE) \
+	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) $(HELM_VALUES) --namespace $(NAMESPACE) \
 		$(HELM_CHART_VALUES_OVERRIDES) $(HELM_DEBUG_FLAG)
 
 # Dry-run Helm chart install into K8s
 .PHONY: dry-run
 dry-run:
-	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) -f $(HELM_VALUES_PATH) --namespace $(NAMESPACE) \
+	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) $(HELM_VALUES) --namespace $(NAMESPACE) \
 		$(HELM_CHART_VALUES_OVERRIDES) \
 	| kubectl apply --dry-run=client -f -
 
@@ -78,7 +85,7 @@ dry-run:
 .PHONY: install
 install:
 	helm install $(HELM_RELEASE) $(HELM_CHART_PATH) \
-		-f $(HELM_VALUES_PATH) \
+		$(HELM_VALUES) \
 		$(HELM_CHART_VALUES_OVERRIDES) \
 		--namespace $(NAMESPACE) \
 		--create-namespace \
@@ -90,7 +97,7 @@ install:
 .PHONY: upgrade
 upgrade:
 	helm upgrade $(HELM_RELEASE) $(HELM_CHART_PATH) \
-		-f $(HELM_VALUES_PATH) \
+		$(HELM_VALUES) \
 		$(HELM_CHART_VALUES_OVERRIDES) \
 		--namespace $(NAMESPACE) \
 		--timeout $(TIMEOUT) \

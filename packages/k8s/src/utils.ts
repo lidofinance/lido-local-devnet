@@ -165,3 +165,12 @@ export const getNamespacedDeployedHelmReleases = async (namespace: string) => {
 
   return helmReleases;
 }
+
+export const createNamespaceIfNotExists = async (name: string) => {
+  // TODO more better way to check if namespace exists
+  try {
+    const kc = await getK8s();
+    const k8sCoreApi = kc.makeApiClient(k8s.CoreV1Api);
+    await k8sCoreApi.createNamespace({ body: { metadata: { name } } });
+  } catch {}
+}

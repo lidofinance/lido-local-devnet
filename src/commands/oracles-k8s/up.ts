@@ -1,5 +1,6 @@
 import { command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
+import { createNamespaceIfNotExists } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
@@ -85,6 +86,8 @@ export const OracleK8sUp = command.cli({
           COMMAND: command,
         },
       });
+
+      await createNamespaceIfNotExists(NAMESPACE(dre));
 
       await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace: NAMESPACE(dre) });
 

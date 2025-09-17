@@ -1,5 +1,5 @@
 lido-app:
-  nameOverride: lido-kibo
+  nameOverride: lido-kubo
 
   # Number of replicas for the backend deployment
   replicaCount: 1
@@ -10,10 +10,8 @@ lido-app:
     repository: lidofinance/kubo
     tag: "dev"
     pullPolicy: Always
-    imagePullSecrets: []
-    # Example:
-    # imagePullSecrets:
-    #   - name: myregistrykey
+    imagePullSecrets:
+      - name: registry-pull-secret
 
   service:
     type: ClusterIP
@@ -89,7 +87,7 @@ lido-app:
   # Liveness probe
   livenessProbe:
     httpGet:
-      path: /
+      path: /api/v0/version
       port: http-api
     initialDelaySeconds: 30
     periodSeconds: 10
@@ -97,7 +95,7 @@ lido-app:
   # Readiness probe
   readinessProbe:
     httpGet:
-      path: /
+      path: /api/v0/id
       port: http-api
     initialDelaySeconds: 5
     periodSeconds: 5

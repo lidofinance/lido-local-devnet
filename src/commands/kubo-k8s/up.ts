@@ -4,7 +4,7 @@ import {
   command,
 } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
-import { addPrefixToIngressHostname } from "@devnet/k8s";
+import { addPrefixToIngressHostname, createNamespaceIfNotExists, getK8s, k8s } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
@@ -49,14 +49,7 @@ export const KuboK8sUp = command.cli({
     const env: Record<string, string> = {
       ...helmLidoKubo.config.constants,
 
-      IS_DEVNET_MODE: "1",
-      CHAIN_ID: "32382",
-      CSM_MODULE_DEVNET_ADDRESS: csmModule,
-      CURATED_MODULE_DEVNET_ADDRESS: curatedModule,
-      LIDO_LOCATOR_DEVNET_ADDRESS: locator,
-      PROVIDERS_URLS: elPrivate,
-      CL_API_URLS: clPrivate,
-      STAKING_ROUTER_DEVNET_ADDRESS: stakingRouter,
+      CHAIN: "artifact",
     };
 
     const kapiHostname = process.env.KUBO_INGRESS_HOSTNAME?.
@@ -82,16 +75,19 @@ export const KuboK8sUp = command.cli({
       },
     });
 
+    await createNamespaceIfNotExists(NAMESPACE(dre));
+
     await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace: NAMESPACE(dre) });
 
     await helmLidoKuboSh`make debug`;
     await helmLidoKuboSh`make lint`;
     await helmLidoKuboSh`make install`;
 
+    // TODO get service name from helm release
     await state.updateKuboK8sRunning({
       helmRelease: HELM_RELEASE,
       publicUrl: `http://${KUBO_INGRESS_HOSTNAME}`,
-      privateUrl: `http://lido-kubo-lido-kubo.${NAMESPACE(dre)}.svc.cluster.local:3000`
+      privateUrl: `http://kubo-lido-kubo.${NAMESPACE(dre)}.svc.cluster.local:3000`
     });
   },
 });
