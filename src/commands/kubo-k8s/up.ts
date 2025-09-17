@@ -4,7 +4,7 @@ import {
   command,
 } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
-import { addPrefixToIngressHostname, createNamespaceIfNotExists, getK8s, k8s } from "@devnet/k8s";
+import { addPrefixToIngressHostname, createNamespaceIfNotExists } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
@@ -16,22 +16,10 @@ export const KuboK8sUp = command.cli({
   description: "Start Kubo on K8s with Helm",
   params: {},
   extensions: [kuboK8sExtension],
-  async handler({ dre, dre: { state, network, services: { helmLidoKubo }, logger } }) {
+  async handler({ dre, dre: { state, services: { helmLidoKubo }, logger } }) {
     if (await state.isKuboK8sRunning()) {
       logger.log("KUbo already running");
       return;
-    }
-
-    if (!(await state.isChainDeployed())) {
-      throw new DevNetError("Chain is not deployed");
-    }
-
-    if (!(await state.isLidoDeployed())) {
-      throw new DevNetError("Lido is not deployed");
-    }
-
-    if (!(await state.isCSMDeployed())) {
-      throw new DevNetError("CSM is not deployed");
     }
 
     await dre.runCommand(KuboK8sBuild, {});
@@ -40,10 +28,6 @@ export const KuboK8sUp = command.cli({
       throw new DevNetError("KUBO image is not ready");
     }
 
-    const { elPrivate, clPrivate } = await state.getChain();
-
-    const { locator, stakingRouter, curatedModule } = await state.getLido();
-    const { module: csmModule } = await state.getCSM();
     const { image, tag, registryHostname } = await state.getKuboK8sImage();
 
     const env: Record<string, string> = {
@@ -52,14 +36,14 @@ export const KuboK8sUp = command.cli({
       CHAIN: "artifact",
     };
 
-    const kapiHostname = process.env.KUBO_INGRESS_HOSTNAME?.
+    const kuboHostname = process.env.KUBO_INGRESS_HOSTNAME?.
       replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
 
-    if (!kapiHostname) {
+    if (!kuboHostname) {
       throw new DevNetError(`KUBO_INGRESS_HOSTNAME env variable is not set`);
     }
 
-    const KUBO_INGRESS_HOSTNAME = addPrefixToIngressHostname(kapiHostname);
+    const KUBO_INGRESS_HOSTNAME = addPrefixToIngressHostname(kuboHostname);
 
     const HELM_RELEASE = 'lido-kubo-1';
     const helmLidoKuboSh = helmLidoKubo.sh({
@@ -87,7 +71,7 @@ export const KuboK8sUp = command.cli({
     await state.updateKuboK8sRunning({
       helmRelease: HELM_RELEASE,
       publicUrl: `http://${KUBO_INGRESS_HOSTNAME}`,
-      privateUrl: `http://kubo-lido-kubo.${NAMESPACE(dre)}.svc.cluster.local:5001`
+      privateUrl: `http://lido-kubo-1.${NAMESPACE(dre)}.svc.cluster.local:5001`
     });
   },
 });

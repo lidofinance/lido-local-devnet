@@ -97,7 +97,7 @@ export const KapiK8sUp = command.cli({
     await state.updateKapiK8sRunning({
       helmRelease: HELM_RELEASE,
       publicUrl: `http://${KAPI_INGRESS_HOSTNAME}`,
-      privateUrl: `http://lido-kapi-lido-kapi.${NAMESPACE(dre)}.svc.cluster.local:3000`
+      privateUrl: `http://lido-kapi.${NAMESPACE(dre)}.svc.cluster.local:3000`
     });
   },
 });
