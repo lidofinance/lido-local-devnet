@@ -1,6 +1,9 @@
 import { command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
-import { createNamespaceIfNotExists } from "@devnet/k8s";
+import {
+  createNamespaceIfNotExists,
+  getNamespacedDeployedHelmReleases,
+} from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
@@ -15,11 +18,6 @@ export const DSMBotsK8sUp = command.cli({
   extensions: [dsmBotsK8sExtension],
   async handler({ dre, dre: { services, state, network, logger } }) {
     const { helmLidoDsmBot } = services;
-
-    if (await state.isDsmBotsK8sRunning()) {
-      logger.log("DSM Bots already running");
-      return;
-    }
 
     if (!(await state.isChainDeployed())) {
       throw new DevNetError("Chain is not deployed");
@@ -66,15 +64,13 @@ export const DSMBotsK8sUp = command.cli({
       { HELM_RELEASE: 'unvetter-bot', command: 'unvetter', privateKey: deployer.privateKey, },
     ];
 
-    const deployedReleases: string[] = [];
-
     for (const release of helmReleases) {
       const { HELM_RELEASE, command, privateKey } = release;
 
-      const { helmReleases: alreadyDeployedHelmReleases } = await state.getCouncilK8sRunning(false);
+      const alreadyDeployedHelmReleases = await getNamespacedDeployedHelmReleases(NAMESPACE(dre));
       if (alreadyDeployedHelmReleases?.includes(HELM_RELEASE)) {
         logger.log(`DSM Bot release ${HELM_RELEASE} already running`);
-        return;
+        continue;
       }
 
       const helmLidoDsmBotSh = helmLidoDsmBot.sh({
@@ -100,7 +96,6 @@ export const DSMBotsK8sUp = command.cli({
 
       try {
         await helmLidoDsmBotSh`make install`;
-        deployedReleases.push(HELM_RELEASE);
       } catch {
         // rollback changes
         await helmLidoDsmBotSh`make uninstall`;
@@ -108,7 +103,7 @@ export const DSMBotsK8sUp = command.cli({
     }
 
     await state.updateDsmBotsK8sRunning({
-      helmReleases: deployedReleases,
+      helmReleases: ['active'],
     });
   },
 });

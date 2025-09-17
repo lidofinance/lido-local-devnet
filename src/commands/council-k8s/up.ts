@@ -1,6 +1,9 @@
 import { command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
-import { createNamespaceIfNotExists } from "@devnet/k8s";
+import {
+  createNamespaceIfNotExists,
+  getNamespacedDeployedHelmReleases,
+} from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
@@ -14,11 +17,6 @@ export const CouncilK8sUp = command.cli({
   extensions: [councilK8sExtension],
   async handler({ dre, dre: { logger, services, state } }) {
     const { helmLidoCouncil } = services;
-
-    if (await state.isCouncilK8sRunning()) {
-      logger.log("Council already running");
-      return;
-    }
 
     if (!(await state.isChainDeployed())) {
       throw new DevNetError("Chain is not deployed");
@@ -67,15 +65,13 @@ export const CouncilK8sUp = command.cli({
       { HELM_RELEASE: 'lido-council-2',  privateKey: council2.privateKey },
     ];
 
-    const deployedReleases: string[] = [];
-
     for (const release of helmReleases) {
       const { HELM_RELEASE, privateKey } = release;
 
-      const { helmReleases: alreadyDeployedHelmReleases } = await state.getCouncilK8sRunning(false);
+      const alreadyDeployedHelmReleases = await getNamespacedDeployedHelmReleases(NAMESPACE(dre));
       if (alreadyDeployedHelmReleases?.includes(HELM_RELEASE)) {
         logger.log(`Council release ${HELM_RELEASE} already running`);
-        return;
+        continue;
       }
 
       const helmLidoCouncilSh = helmLidoCouncil.sh({
@@ -100,7 +96,6 @@ export const CouncilK8sUp = command.cli({
 
       try {
         await helmLidoCouncilSh`make install`;
-        deployedReleases.push(HELM_RELEASE);
       } catch {
         // rollback changes
         await helmLidoCouncilSh`make uninstall`;
@@ -108,7 +103,7 @@ export const CouncilK8sUp = command.cli({
     }
 
     await state.updateCouncilK8sRunning({
-      helmReleases: deployedReleases,
+      helmReleases: ['active'],
     });
   },
 });
