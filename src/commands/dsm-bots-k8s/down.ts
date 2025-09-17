@@ -1,6 +1,9 @@
 import { Params, command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
-import { deleteNamespace } from "@devnet/k8s";
+import {
+  deleteNamespace,
+  getNamespacedDeployedHelmReleases,
+} from "@devnet/k8s";
 
 import { NAMESPACE } from "./constants/dsm-bots-k8s.constants.js";
 
@@ -20,18 +23,12 @@ export const DSMBotsK8sDown = command.cli({
       return;
     }
 
-    // TODO get from k8s namespace
-    const defaultReleases = [
-      'depositor-bot',
-      'pause-bot',
-      'unvetter-bot',
-    ];
+    const releases = await getNamespacedDeployedHelmReleases(NAMESPACE(dre));
 
-    const { helmReleases } = await state.getDsmBotsK8sRunning(false);
-
-    const releases = helmReleases && helmReleases.length > 0
-      ? helmReleases
-      : defaultReleases;
+    if (releases.length === 0) {
+      logger.log(`No DSM Bots releases found in namespace [${NAMESPACE(dre)}]. Skipping...`);
+      return;
+    }
 
     for (const release of releases) {
       const helmLidoDsmBotSh = helmLidoDsmBot.sh({

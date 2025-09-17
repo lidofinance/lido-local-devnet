@@ -21,7 +21,7 @@ declare module "@devnet/state" {
     isOraclesK8sImageReady(): Promise<boolean>;
     isOraclesK8sRunning(): Promise<boolean>;
 
-    removeOraclesK8s(): Promise<void>;
+    removeOraclesK8sState(): Promise<void>;
 
     updateOraclesK8sImage(state: OraclesK8sStateImage): Promise<void>;
     updateOraclesK8sRunning(state: OraclesK8sStateRunning): Promise<void>;
@@ -64,7 +64,7 @@ export const oraclesK8sExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
     await dre.state.updateProperties("oraclesK8s", { ...state, running: stateRunning });
   });
 
-  dre.state.removeOraclesK8s = (async function () {
+  dre.state.removeOraclesK8sState = (async function () {
     await dre.state.updateProperties("oraclesK8s", {});
   });
 

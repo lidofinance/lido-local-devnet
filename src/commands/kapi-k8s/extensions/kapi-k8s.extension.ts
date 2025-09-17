@@ -21,7 +21,7 @@ declare module "@devnet/state" {
     isKapiK8sImageReady(): Promise<boolean>;
     isKapiK8sRunning(): Promise<boolean>;
 
-    removeKapiK8s(): Promise<void>;
+    removeKapiK8sState(): Promise<void>;
 
     updateKapiK8sImage(state: KapiK8sStateImage): Promise<void>;
     updateKapiK8sRunning(state: KapiK8sStateRunning): Promise<void>;
@@ -66,7 +66,7 @@ export const kapiK8sExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
     await dre.state.updateProperties("kapiK8s", { ...state, running: stateRunning });
   });
 
-  dre.state.removeKapiK8s = (async function () {
+  dre.state.removeKapiK8sState = (async function () {
     await dre.state.updateProperties("kapiK8s", {});
   });
 

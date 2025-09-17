@@ -1,19 +1,25 @@
 lido-app:
-  nameOverride: keys-api
+  nameOverride: lido-kapi
+  # Default values for backend.
+  # This is a YAML-formatted file.
+  # Declare variables to be passed into your templates.
 
   # Number of replicas for the backend deployment
   replicaCount: 1
 
   # Image configuration
   image:
+    # Docker registry to pull the image from
     registry: docker.io
+    # Repository/image name
     repository: lidofinance/lido-keys-api
+    # Image tag (can be overridden)
     tag: "dev"
+    # Image pull policy
     pullPolicy: Always
-    imagePullSecrets: [ ]
-    # Example:
-    # imagePullSecrets:
-    #   - name: myregistrykey
+    # Image pull secrets for private registries
+    imagePullSecrets:
+      - name: registry-pull-secret
 
   service:
     type: ClusterIP
@@ -38,12 +44,11 @@ lido-app:
 
     # Ingress hosts configuration
     hosts:
-      - host: lido-app.local
+      - host: kapi.local
         paths:
           - path: /
-            pathTyppe: Prefix
+            pathType: Prefix
             port: http
-
 
     # TLS configuration
     tls: []
@@ -52,12 +57,6 @@ lido-app:
     #   - secretName: backend-tls
     #     hosts:
     #       - backend.local
-
-  # Container command
-  command: [ ]
-
-  # Container args
-  args: [ ]
 
   # Environment variables
   env:
@@ -69,15 +68,16 @@ lido-app:
       GLOBAL_THROTTLE_TTL: ${GLOBAL_THROTTLE_TTL}
       GLOBAL_THROTTLE_LIMIT: ${GLOBAL_THROTTLE_LIMIT}
       GLOBAL_CACHE_TTL: ${GLOBAL_CACHE_TTL}
-      LOG_LEVEL: ${LOG_LEVEL}
+      LOG_LEVEL: info
       LOG_FORMAT: json
       PROVIDERS_URLS: ${PROVIDERS_URLS}
       CL_API_URLS: ${CL_API_URLS}
+      IS_DEVNET_MODE: ${IS_DEVNET_MODE}
       CHAIN_ID: ${CHAIN_ID}
       DB_NAME: kapi-db
       DB_PORT: 5432
-      DB_HOST: db
-      DB_USER: admin
+      DB_HOST: lido-kapi-postgresql
+      DB_USER: postgres
       DB_PASSWORD: changemeasap
       JOB_INTERVAL_REGISTRY: ${JOB_INTERVAL_REGISTRY}
       VALIDATOR_REGISTRY_ENABLE: ${VALIDATOR_REGISTRY_ENABLE}
@@ -88,7 +88,7 @@ lido-app:
       STAKING_ROUTER_DEVNET_ADDRESS: ${STAKING_ROUTER_DEVNET_ADDRESS}
 
   # Resource limits and requests
-  resources: { }
+  resources: {}
   # Example:
   # resources:
   #   limits:
@@ -99,19 +99,19 @@ lido-app:
   #     memory: 256Mi
 
   # Node selector
-  nodeSelector: { }
+  nodeSelector: {}
 
   # Tolerations
-  tolerations: [ ]
+  tolerations: []
 
   # Affinity rules
-  affinity: { }
+  affinity: {}
 
   # Security context
-  securityContext: { }
+  securityContext: {}
 
   # Pod security context
-  podSecurityContext: { }
+  podSecurityContext: {}
 
   # Liveness probe
   livenessProbe:
@@ -126,31 +126,14 @@ lido-app:
     httpGet:
       path: /v1/status
       port: http
-    initialDelaySeconds: 5
-    periodSeconds: 5
+    initialDelaySeconds: 15
+    periodSeconds: 10
 
   # Additional labels
-  additionalLabels: { }
+  additionalLabels: {}
 
   # Additional annotations
-  additionalAnnotations: { }
-
-  # Persistent Volume Claims configuration
-  pvcs: [ ]
-  # Example PVC configuration:
-  # pvcs:
-  #   - name: data-storage
-  #     storageClassName: "ssh-hostpath"
-  #     accessModes:
-  #       - ReadWriteOnce
-  #     size: 10Gi
-  #     mountPath: /data
-  #   - name: logs-storage
-  #     storageClassName: "ssh-hostpath"
-  #     accessModes:
-  #       - ReadWriteOnce
-  #     size: 5Gi
-  #     mountPath: /logs
+  additionalAnnotations: {}
 
 
 postgresql:

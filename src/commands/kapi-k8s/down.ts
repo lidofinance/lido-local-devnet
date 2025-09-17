@@ -3,8 +3,7 @@ import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import {
   deleteNamespace,
   deleteNamespacedPersistentVolumeClaimIfExists,
-  getK8s,
-  k8s,
+  getNamespacedDeployedHelmReleases,
 } from "@devnet/k8s";
 
 import { NAMESPACE } from "./constants/kapi-k8s.constants.js";
@@ -24,8 +23,14 @@ export const KapiK8sDown = command.cli({
       return;
     }
 
-    const kapiRunning = await state.getKapiK8sRunning(false);
-    const HELM_RELEASE = kapiRunning.helmRelease ?? 'kapi';
+    const releases = await getNamespacedDeployedHelmReleases(NAMESPACE(dre));
+
+    if (releases.length === 0) {
+      logger.log(`No KAPI releases found in namespace [${NAMESPACE(dre)}]. Skipping...`);
+      return;
+    }
+
+    const HELM_RELEASE = releases[0];
     const helmLidoKapiSh = helmLidoKapi.sh({
       env: {
         NAMESPACE: NAMESPACE(dre),
@@ -50,6 +55,6 @@ export const KapiK8sDown = command.cli({
 
     await deleteNamespace(NAMESPACE(dre));
 
-    await state.removeKapiK8s();
+    await state.removeKapiK8sState();
   },
 });

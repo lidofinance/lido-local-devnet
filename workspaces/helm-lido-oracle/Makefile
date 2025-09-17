@@ -7,7 +7,13 @@ NAMESPACE ?= test-namespace
 # Helm chart paths
 HELM_CHART_ROOT_PATH ?= ../../helm
 HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/lido/lido-oracle
-HELM_VALUES_PATH = ./values.yaml
+HELM_VALUES_PATH ?=
+
+ifneq ($(HELM_VALUES_PATH),)
+	HELM_VALUES = -f $(HELM_VALUES_PATH)
+else
+	HELM_VALUES =
+endif
 
 # Release names
 HELM_RELEASE ?= oracle-accounting-1
@@ -54,7 +60,10 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.MEMBER_PRIV_KEY="${MEMBER_PRIV_KEY}" \
 	--set lido-app.env.variables.LIDO_LOCATOR_ADDRESS="${LIDO_LOCATOR_ADDRESS}" \
 	--set lido-app.env.variables.CSM_MODULE_ADDRESS="${CSM_MODULE_ADDRESS}" \
-	--set lido-app.env.variables.SUBMIT_DATA_DELAY_IN_SLOTS="${SUBMIT_DATA_DELAY_IN_SLOTS}"
+	--set lido-app.env.variables.CSM_ORACLE_MAX_CONCURRENCY="${CSM_ORACLE_MAX_CONCURRENCY}" \
+	--set lido-app.env.variables.SUBMIT_DATA_DELAY_IN_SLOTS="${SUBMIT_DATA_DELAY_IN_SLOTS}" \
+	--set lido-app.env.variables.ALLOW_REPORTING_IN_BUNKER_MODE="${ALLOW_REPORTING_IN_BUNKER_MODE}" \
+	--set lido-app.env.variables.PINATA_JWT="${PINATA_JWT}"
 endef
 
 # Lint Helm chart
@@ -69,18 +78,18 @@ debug:
 # Lint Helm chart
 .PHONY: lint
 lint:
-	helm lint $(HELM_CHART_PATH) -f $(HELM_VALUES_PATH) $(HELM_CHART_VALUES_OVERRIDES)
+	helm lint $(HELM_CHART_PATH) $(HELM_VALUES) $(HELM_CHART_VALUES_OVERRIDES)
 
 # Print rendered Helm chart templates to stdout
 .PHONY: template
 template:
-	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) -f $(HELM_VALUES_PATH) --namespace $(NAMESPACE) \
+	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) $(HELM_VALUES) --namespace $(NAMESPACE) \
 		$(HELM_CHART_VALUES_OVERRIDES) $(HELM_DEBUG_FLAG)
 
 # Dry-run Helm chart install into K8s
 .PHONY: dry-run
 dry-run:
-	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) -f $(HELM_VALUES_PATH) --namespace $(NAMESPACE) \
+	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) $(HELM_VALUES) --namespace $(NAMESPACE) \
 		$(HELM_CHART_VALUES_OVERRIDES) \
 	| kubectl apply --dry-run=client -f -
 
@@ -88,7 +97,7 @@ dry-run:
 .PHONY: install
 install:
 	helm install $(HELM_RELEASE) $(HELM_CHART_PATH) \
-		-f $(HELM_VALUES_PATH) \
+		$(HELM_VALUES) \
 		$(HELM_CHART_VALUES_OVERRIDES) \
 		--namespace $(NAMESPACE) \
 		--create-namespace \
@@ -100,7 +109,7 @@ install:
 .PHONY: upgrade
 upgrade:
 	helm upgrade $(HELM_RELEASE) $(HELM_CHART_PATH) \
-		-f $(HELM_VALUES_PATH) \
+		$(HELM_VALUES) \
 		$(HELM_CHART_VALUES_OVERRIDES) \
 		--namespace $(NAMESPACE) \
 		--timeout $(TIMEOUT) \

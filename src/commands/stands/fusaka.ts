@@ -2,17 +2,14 @@ import { Params, command } from "@devnet/command";
 
 import { ChainGetInfo } from "../chain/info.js";
 import { ChainUp } from "../chain/up.js";
-import { CouncilUp } from "../council/up.js";
 import { CouncilK8sUp } from "../council-k8s/up.js";
 import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
 import { DeployCSVerifier } from "../csm/add-verifier.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
 import { DataBusDeploy } from "../data-bus/deploy.js";
-import { DSMBotsUp } from "../dsm-bots/up.js";
 import { DSMBotsK8sUp } from "../dsm-bots-k8s/up.js";
 import { GitCheckout } from "../git/checkout.js";
-import { KapiUp } from "../kapi/up.js";
 import { KapiK8sUp } from "../kapi-k8s/up.js";
 import { ActivateLidoProtocol } from "../lido-core/activate.js";
 import { LidoAddKeys } from "../lido-core/add-keys.js";
@@ -23,7 +20,6 @@ import { GenerateLidoDevNetKeys } from "../lido-core/keys/generate.js";
 import { UseLidoDevNetKeys } from "../lido-core/keys/use.js";
 import { ReplaceDSM } from "../lido-core/replace-dsm.js";
 import { LidoSetStakingLimit } from "../lido-core/set-staking-limit.js";
-import { OracleUp } from "../oracles/up.js";
 import { OracleK8sUp } from "../oracles-k8s/up.js";
 import { ValidatorAdd } from "../validator/add.js";
 

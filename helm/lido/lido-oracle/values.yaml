@@ -10,7 +10,8 @@ lido-app:
     repository: lidofinance/oracle
     tag: "dev"
     pullPolicy: Always
-    imagePullSecrets: []
+    imagePullSecrets:
+      - name: registry-pull-secret
     # Example:
     # imagePullSecrets:
     #   - name: myregistrykey
@@ -18,14 +19,14 @@ lido-app:
   service:
     type: ClusterIP
     ports:
-     - name: metrics
-       port: 9000
-       targetPort: 9000
-       protocol: TCP
-     - name: http-health
-       port: 9010
-       targetPort: 9010
-       protocol: TCP
+      - name: metrics
+        port: 9000
+        targetPort: 9000
+        protocol: TCP
+      - name: http-health
+        port: 9010
+        targetPort: 9010
+        protocol: TCP
 
   # Container command
   command: [ ]
@@ -44,9 +45,11 @@ lido-app:
       KEYS_API_URI: ${KEYS_API_URI}
       MEMBER_PRIV_KEY: ${MEMBER_PRIV_KEY}
       LIDO_LOCATOR_ADDRESS: ${LIDO_LOCATOR_ADDRESS}
+      CSM_MODULE_ADDRESS: ${CSM_MODULE_ADDRESS}
       SUBMIT_DATA_DELAY_IN_SLOTS: ${SUBMIT_DATA_DELAY_IN_SLOTS}
       ALLOW_REPORTING_IN_BUNKER_MODE: false
-      KUBO_HOST: ${KUBO_HOST}
+      CSM_ORACLE_MAX_CONCURRENCY: "1"
+      KUBO_HOST: http://kubo:5001
 
   # Resource limits and requests
   resources: { }
@@ -112,3 +115,4 @@ lido-app:
   #       - ReadWriteOnce
   #     size: 5Gi
   #     mountPath: /logs
+

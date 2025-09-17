@@ -72,7 +72,7 @@ export const KapiK8sUp = command.cli({
 
     const KAPI_INGRESS_HOSTNAME = addPrefixToIngressHostname(kapiHostname);
 
-    const HELM_RELEASE = 'kapi';
+    const HELM_RELEASE = 'lido-kapi-1';
     const helmLidoKapiSh = helmLidoKapi.sh({
       env: {
         ...env,
@@ -97,7 +97,7 @@ export const KapiK8sUp = command.cli({
     await state.updateKapiK8sRunning({
       helmRelease: HELM_RELEASE,
       publicUrl: `http://${KAPI_INGRESS_HOSTNAME}`,
-      privateUrl: `http://lido-kapi-keys-api.${NAMESPACE(dre)}.svc.cluster.local:3000`
+      privateUrl: `http://lido-kapi-lido-kapi.${NAMESPACE(dre)}.svc.cluster.local:3000`
     });
   },
 });

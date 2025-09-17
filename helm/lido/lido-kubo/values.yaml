@@ -87,7 +87,7 @@ lido-app:
   # Liveness probe
   livenessProbe:
     httpGet:
-      path: /api/v0/version
+      path: /debug/metrics/prometheus
       port: http-api
     initialDelaySeconds: 30
     periodSeconds: 10
@@ -95,7 +95,7 @@ lido-app:
   # Readiness probe
   readinessProbe:
     httpGet:
-      path: /api/v0/id
+      path: /debug/metrics/prometheus
       port: http-api
     initialDelaySeconds: 5
     periodSeconds: 5
