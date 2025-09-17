@@ -1,13 +1,13 @@
 import { command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
-import { createNamespaceIfNotExists } from "@devnet/k8s";
+import { createNamespaceIfNotExists, getNamespacedDeployedHelmReleases } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
+import { KuboK8sUp } from "../kubo-k8s/up.js";
 import { OracleK8sBuild } from "./build.js";
 import { NAMESPACE } from "./constants/oracles-k8s.constants.js";
 import { oraclesK8sExtension } from "./extensions/oracles-k8s.extension.js";
-import { KuboK8sUp } from "../kubo-k8s/up.js";
 
 export const OracleK8sUp = command.cli({
   description: "Start Oracle(s) in K8s with Helm",
@@ -73,15 +73,13 @@ export const OracleK8sUp = command.cli({
       { HELM_RELEASE: 'oracle-csm-2', command: 'csm', privateKey: oracle2 },
     ];
 
-    const deployedReleases: string[] = [];
-
     for (const release of helmReleases) {
       const { HELM_RELEASE, privateKey, command } = release;
 
-      const { helmReleases: alreadyDeployedHelmReleases } = await state.getOraclesK8sRunning(false);
+      const alreadyDeployedHelmReleases = await getNamespacedDeployedHelmReleases(NAMESPACE(dre));
       if (alreadyDeployedHelmReleases?.includes(HELM_RELEASE)) {
         logger.log(`Oracles release ${HELM_RELEASE} already running`);
-        return;
+        continue;
       }
 
       const helmLidoOracleSh = helmLidoOracle.sh({
@@ -107,7 +105,6 @@ export const OracleK8sUp = command.cli({
 
       try {
         await helmLidoOracleSh`make install`;
-        deployedReleases.push(HELM_RELEASE);
       } catch {
         // rollback changes
         await helmLidoOracleSh`make uninstall`;
@@ -115,7 +112,7 @@ export const OracleK8sUp = command.cli({
     }
 
     await state.updateOraclesK8sRunning({
-      helmReleases: deployedReleases,
+      helmReleases: ['active'],
     });
   },
 });
