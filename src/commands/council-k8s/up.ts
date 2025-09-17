@@ -46,7 +46,7 @@ export const CouncilK8sUp = command.cli({
       LOG_LEVEL: "debug",
       LOG_FORMAT: "json",
       RPC_URL: elPrivate,
-      KEYS_API_HOST: privateUrl,
+      KEYS_API_HOST: privateUrl.replace(":3000", ""), // TODO make more beautiful
       KEYS_API_PORT: "3000",
       PUBSUB_SERVICE: "evm-chain",
       EVM_CHAIN_DATA_BUS_ADDRESS: dataBusAddress,
@@ -54,7 +54,7 @@ export const CouncilK8sUp = command.cli({
       RABBITMQ_URL: "ws://dsm_rabbit:15674/ws", // not really used
       RABBITMQ_LOGIN: "guest",
       RABBITMQ_PASSCODE: "guest",
-      LOCATOR_DEVNET_ADDRESS: `"${locator}"`,
+      LOCATOR_DEVNET_ADDRESS: locator,
     };
 
     const helmReleases = [
