@@ -31,9 +31,6 @@ export const PectraContractsOnlyDevNetUp = command.cli({
     await dre.runCommand(ChainUp, { preset: params.preset });
     logger.log("✅ Network initialized.");
 
-    await dre.runCommand(BlockscoutUp, {});
-    logger.log("✅ BlockScout launched for transaction visualization.");
-
     const deployArgs = { verify: params.verify };
 
     logger.log("🚀 Deploying Lido Core contracts...");

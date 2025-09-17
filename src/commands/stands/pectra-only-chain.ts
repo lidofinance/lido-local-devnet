@@ -21,9 +21,6 @@ export const PectraChainUp = command.cli({
     await dre.runCommand(ChainUp, { preset: params.preset });
     logger.log("✅ Chain network initialized.");
 
-    await dre.runCommand(BlockscoutUp, {});
-    logger.log("✅ BlockScout launched for transaction visualization.");
-
     logger.log("✅ Pectra chain environment is ready.");
   },
 });

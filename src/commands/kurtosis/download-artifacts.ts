@@ -12,7 +12,8 @@ export const KurtosisDownloadArtifacts = command.cli({
   async handler({ dre, dre: { logger, services: { kurtosis } },  }) {
     await startKurtosisGateway(dre);
 
-    await kurtosis.sh`rm -rf network`; // TODO what is this?
+    // removing network folder to avoid conflicts
+    await kurtosis.sh`rm -rf network`;
 
     await kurtosis.sh`kurtosis files download ${dre.network.name} el_cl_genesis_data network`;
 

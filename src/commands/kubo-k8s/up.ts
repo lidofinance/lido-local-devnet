@@ -61,7 +61,7 @@ export const KuboK8sUp = command.cli({
 
     const KUBO_INGRESS_HOSTNAME = addPrefixToIngressHostname(kapiHostname);
 
-    const HELM_RELEASE = 'kubo';
+    const HELM_RELEASE = 'lido-kubo-1';
     const helmLidoKuboSh = helmLidoKubo.sh({
       env: {
         ...env,
@@ -87,7 +87,7 @@ export const KuboK8sUp = command.cli({
     await state.updateKuboK8sRunning({
       helmRelease: HELM_RELEASE,
       publicUrl: `http://${KUBO_INGRESS_HOSTNAME}`,
-      privateUrl: `http://kubo-lido-kubo.${NAMESPACE(dre)}.svc.cluster.local:3000`
+      privateUrl: `http://kubo-lido-kubo.${NAMESPACE(dre)}.svc.cluster.local:5001`
     });
   },
 });

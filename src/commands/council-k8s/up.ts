@@ -32,6 +32,10 @@ export const CouncilK8sUp = command.cli({
       throw new DevNetError("CSM is not deployed");
     }
 
+    if (!(await state.isKapiK8sRunning())) {
+      throw new DevNetError("KAPI is not deployed");
+    }
+
     await dre.runCommand(CouncilK8sBuild, {});
 
     const { council1, council2 } = await state.getNamedWallet();

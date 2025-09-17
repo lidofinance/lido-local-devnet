@@ -4,6 +4,7 @@ import {
   deleteNamespace,
   deleteNamespacedPersistentVolumeClaimIfExists,
   getK8s,
+  getNamespacedDeployedHelmReleases,
   k8s,
 } from "@devnet/k8s";
 
@@ -24,8 +25,14 @@ export const KuboK8sDown = command.cli({
       return;
     }
 
-    const kuboRunning = await state.getKuboK8sRunning(false);
-    const HELM_RELEASE = kuboRunning.helmRelease ?? 'kubo';
+    const releases = await getNamespacedDeployedHelmReleases(NAMESPACE(dre));
+
+    if (releases.length === 0) {
+      logger.log(`No Kubo releases found in namespace [${NAMESPACE(dre)}]. Skipping...`);
+      return;
+    }
+
+    const HELM_RELEASE = releases[0];
     const helmLidoKuboSh = helmLidoKubo.sh({
       env: {
         NAMESPACE: NAMESPACE(dre),

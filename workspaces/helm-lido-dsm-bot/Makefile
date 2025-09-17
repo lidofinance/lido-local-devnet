@@ -16,7 +16,7 @@ else
 endif
 
 # Release names
-HELM_RELEASE ?= bot
+HELM_RELEASE ?= dsm-bot
 
 # Default Helm timeout
 TIMEOUT ?= 5m

@@ -4,9 +4,9 @@ import { DevNetError } from "@devnet/utils";
 import {
   KURTOSIS_DEFAULT_PRESET,
   getKurtosisClusterType,
+  isSupportedClusterType,
   kurtosisExtension,
   startKurtosisGateway,
-  isSupportedClusterType,
   stopKurtosisGateway,
 } from "./extensions/kurtosis.extension.js";
 

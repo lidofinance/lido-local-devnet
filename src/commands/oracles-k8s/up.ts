@@ -7,6 +7,7 @@ import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-
 import { OracleK8sBuild } from "./build.js";
 import { NAMESPACE } from "./constants/oracles-k8s.constants.js";
 import { oraclesK8sExtension } from "./extensions/oracles-k8s.extension.js";
+import { KuboK8sUp } from "../kubo-k8s/up.js";
 
 export const OracleK8sUp = command.cli({
   description: "Start Oracle(s) in K8s with Helm",
@@ -24,6 +25,14 @@ export const OracleK8sUp = command.cli({
     if (!(await state.isCSMDeployed())) {
       throw new DevNetError("CSM is not deployed");
     }
+
+    if (!(await state.isKapiK8sRunning())) {
+      throw new DevNetError("KAPI is not deployed");
+    }
+
+    await dre.runCommand(KuboK8sUp, {});
+
+    const { privateUrl: kuboPrivateUrl } = await state.getKuboK8sRunning();
 
     await dre.runCommand(OracleK8sBuild, {});
 
@@ -50,7 +59,9 @@ export const OracleK8sUp = command.cli({
       CSM_MODULE_ADDRESS: csmModule,
       CSM_ORACLE_MAX_CONCURRENCY: "1",
       SUBMIT_DATA_DELAY_IN_SLOTS: "1",
+      ALLOW_REPORTING_IN_BUNKER_MODE: "false",
       PINATA_JWT: process.env.CSM_ORACLE_PINATA_JWT ?? "",
+      KUBO_HOST: kuboPrivateUrl,
     };
 
     const helmReleases = [

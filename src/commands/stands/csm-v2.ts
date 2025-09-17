@@ -3,21 +3,21 @@ import { Params, command } from "@devnet/command";
 import { BlockscoutUp } from "../blockscout/up.js";
 import { ChainGetInfo } from "../chain/info.js";
 import { ChainUp } from "../chain/up.js";
-import { CouncilUp } from "../council/up.js";
+import { CouncilK8sUp } from "../council-k8s/up.js";
 import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
 import { DataBusDeploy } from "../data-bus/deploy.js";
-import { DSMBotsUp } from "../dsm-bots/up.js";
+import { DSMBotsK8sUp } from "../dsm-bots-k8s/up.js";
 import { GitCheckout } from "../git/checkout.js";
-import { KapiUp } from "../kapi/up.js";
+import { KapiK8sUp } from "../kapi-k8s/up.js";
 import { ActivateLidoProtocol } from "../lido-core/activate.js";
 import { DeployLidoContracts } from "../lido-core/deploy.js";
 import { LidoDeposit } from "../lido-core/deposit.js";
 import { GenerateLidoDevNetKeys } from "../lido-core/keys/generate.js";
 import { UseLidoDevNetKeys } from "../lido-core/keys/use.js";
 import { ReplaceDSM } from "../lido-core/replace-dsm.js";
-import { OracleUp } from "../oracles/up.js";
+import { OracleK8sUp } from "../oracles-k8s/up.js";
 import { ValidatorAdd } from "../validator/add.js";
 import { CSMUpdateState } from "../csm/update-state.js";
 
@@ -59,9 +59,6 @@ export const PectraDevNetUp = command.cli({
 
     await dre.runCommand(ChainUp, { preset: "csm-v2" });
     logger.log("✅ Network initialized.");
-
-    await dre.runCommand(BlockscoutUp, {});
-    logger.log("✅ BlockScout launched for transaction visualization.");
 
     // if (!params.full) {
     //   await dre.runCommand(KurtosisGetInfo, {});
@@ -120,10 +117,10 @@ export const PectraDevNetUp = command.cli({
     }
 
     logger.log("🚀 Run KAPI service.");
-    await dre.runCommand(KapiUp, {});
+    await dre.runCommand(KapiK8sUp, {});
 
     logger.log("🚀 Run Oracle service.");
-    await dre.runCommand(OracleUp, {});
+    await dre.runCommand(OracleK8sUp, {});
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");
@@ -131,11 +128,11 @@ export const PectraDevNetUp = command.cli({
       logger.log("✅ Data-bus deployed.");
 
       logger.log("🚀 Running Council service...");
-      await dre.runCommand(CouncilUp, {});
+      await dre.runCommand(CouncilK8sUp, {});
       logger.log("✅ Council service started.");
 
       logger.log("🚀 Running DSM-bots service...");
-      await dre.runCommand(DSMBotsUp, {});
+      await dre.runCommand(DSMBotsK8sUp, {});
       logger.log("✅ DSM-bots service started.");
     }
 

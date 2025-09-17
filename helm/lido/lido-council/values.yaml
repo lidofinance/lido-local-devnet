@@ -10,18 +10,16 @@ lido-app:
     repository: lidofinance/lido-council-daemon
     tag: "dev"
     pullPolicy: Always
-    imagePullSecrets: []
-    # Example:
-    # imagePullSecrets:
-    #   - name: myregistrykey
+    imagePullSecrets:
+      - name: registry-pull-secret
 
   service:
     type: ClusterIP
     ports:
-     - name: http
-       port: 3000
-       targetPort: 3000
-       protocol: TCP
+      - name: http
+        port: 9040
+        targetPort: 9040
+        protocol: TCP
 
   # Container command
   command: [ ]
@@ -94,8 +92,8 @@ lido-app:
 
   # Persistent Volume Claims configuration
   pvcs:
-   - name: council-cache
-     accessModes:
-       - ReadWriteOnce
-     size: 16Gi
-     mountPath: /council/cache/
+    - name: council-cache
+      accessModes:
+        - ReadWriteOnce
+      size: 16Gi
+      mountPath: /council/cache/
