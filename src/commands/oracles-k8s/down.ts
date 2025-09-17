@@ -2,6 +2,7 @@ import { Params, command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { deleteNamespace, getNamespacedDeployedHelmReleases } from "@devnet/k8s";
 
+import { KuboK8sDown } from "../kubo-k8s/down.js";
 import { NAMESPACE } from "./constants/oracles-k8s.constants.js";
 
 export const OracleK8sDown = command.cli({
@@ -45,5 +46,7 @@ export const OracleK8sDown = command.cli({
     await deleteNamespace(NAMESPACE(dre));
 
     await state.removeOraclesK8sState();
+
+    await dre.runCommand(KuboK8sDown, { force: false });
   },
 });
