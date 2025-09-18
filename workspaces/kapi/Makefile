@@ -54,6 +54,7 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.image.repository="${IMAGE}" \
 	--set lido-app.image.tag="${TAG}" \
 	--set lido-app.image.registry="${REGISTRY_HOSTNAME}" \
+	--set lido-app.env.variables.DB_HOST="${DB_HOST}" \
 	--set lido-app.env.variables.CORS_WHITELIST_REGEXP="${CORS_WHITELIST_REGEXP}" \
 	--set lido-app.env.variables.GLOBAL_THROTTLE_TTL="${GLOBAL_THROTTLE_TTL}" \
 	--set lido-app.env.variables.GLOBAL_THROTTLE_LIMIT="${GLOBAL_THROTTLE_LIMIT}" \

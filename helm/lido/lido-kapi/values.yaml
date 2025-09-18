@@ -76,7 +76,7 @@ lido-app:
       CHAIN_ID: ${CHAIN_ID}
       DB_NAME: kapi-db
       DB_PORT: 5432
-      DB_HOST: lido-kapi-postgresql
+      DB_HOST: lido-kapi-1-postgresql
       DB_USER: postgres
       DB_PASSWORD: changemeasap
       JOB_INTERVAL_REGISTRY: ${JOB_INTERVAL_REGISTRY}

@@ -82,6 +82,7 @@ export const KapiK8sUp = command.cli({
         TAG: tag,
         REGISTRY_HOSTNAME: registryHostname,
         INGRESS_HOSTNAME,
+        DB_HOST: `${HELM_RELEASE}-postgresql`,
       },
     });
 
@@ -96,7 +97,7 @@ export const KapiK8sUp = command.cli({
     await state.updateKapiK8sRunning({
       helmRelease: HELM_RELEASE,
       publicUrl: `http://${INGRESS_HOSTNAME}`,
-      privateUrl: `http://lido-kapi.${NAMESPACE(dre)}.svc.cluster.local:3000`
+      privateUrl: `http://${HELM_RELEASE}.${NAMESPACE(dre)}.svc.cluster.local:3000`
     });
 
     logger.log(`${SERVICE_NAME} started.`);

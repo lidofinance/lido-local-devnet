@@ -71,7 +71,7 @@ export const KuboK8sUp = command.cli({
     await state.updateKuboK8sRunning({
       helmRelease: HELM_RELEASE,
       publicUrl: `http://${KUBO_INGRESS_HOSTNAME}`,
-      privateUrl: `http://lido-kubo-1.${NAMESPACE(dre)}.svc.cluster.local:5001`
+      privateUrl: `http://${HELM_RELEASE}.${NAMESPACE(dre)}.svc.cluster.local:5001`
     });
   },
 });
