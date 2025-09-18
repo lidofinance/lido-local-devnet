@@ -97,14 +97,12 @@ Kurtosis is required to launch Ethereum nodes
 kurtosis engine start
 ```
 
-
-
 ### 9. Launch the environment and deploy Lido smart contracts
 Below is an example for launching the `fusaka` test stand. 
 If you need a different setup, refer to the [test stands documentation](./docs/commands/stands.md).
 
 ```sh
-./bin/run.js stands fusaka # or any other test stand name
+./bin/run.js stands <stand-name>  # (fusaka) or any other test stand name
 ```
 For contract verification, use the `--verify` flag:
 ```sh
@@ -155,13 +153,15 @@ To stop the DevNet and remove all services, run:
 
 ## Running Multiple Environments
 
-To run multiple environments on a single machine, use the `--network <custom-network-name>` flag:
-```sh
-./bin/run.js stands pectra --full --network test-pectra1
-```
-> **Note:** The `--network test-pectra1` flag must be used with all subsequent commands to interact with the specified environment.
-
+To run multiple devnets on a single cluster, change the `DEVNET_NAME=<another_devnet>` variable in `.env` file
+All the commands will be executed in the context of the current devnet.
 ---
+
+## DevNet info
+To get the latest information on available services, run:
+```sh
+./bin/run.js chain info
+```
 
 ## Available Services
 To get the latest information on available services, run:
