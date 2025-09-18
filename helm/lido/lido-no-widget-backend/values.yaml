@@ -107,7 +107,7 @@ api:
   # Liveness probe
   livenessProbe:
     httpGet:
-      path: /
+      path: /v1/status
       port: http
     initialDelaySeconds: 30
     periodSeconds: 10
@@ -115,9 +115,9 @@ api:
   # Readiness probe
   readinessProbe:
     httpGet:
-      path: /
+      path: /v1/status
       port: http
-    initialDelaySeconds: 5
+    initialDelaySeconds: 15
     periodSeconds: 5
 
   # Additional labels
@@ -217,6 +217,8 @@ worker:
       KEYS_API_HOST: ${KEYS_API_HOST}
       EL_API_URLS: ${EL_API_URLS}
       CHAIN_ID: ${CHAIN_ID}
+      DEVNET_GENESIS_FORK_VERSION: ${DEVNET_GENESIS_FORK_VERSION}
+      LIDO_DEVNET_ADDRESS: ${LIDO_DEVNET_ADDRESS}
       PG_HOST: lido-no-widget-backend-postgresql
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: changemeasap
@@ -252,7 +254,7 @@ worker:
   # Liveness probe
   livenessProbe:
     httpGet:
-      path: /
+      path: /v1/status
       port: http
     initialDelaySeconds: 30
     periodSeconds: 10
@@ -260,9 +262,9 @@ worker:
   # Readiness probe
   readinessProbe:
     httpGet:
-      path: /
+      path: /v1/status
       port: http
-    initialDelaySeconds: 5
+    initialDelaySeconds: 10
     periodSeconds: 5
 
   # Additional labels

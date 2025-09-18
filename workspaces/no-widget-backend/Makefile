@@ -52,6 +52,7 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set api.image.repository="${IMAGE}" \
 	--set api.image.tag="${TAG}" \
 	--set api.image.registry="${REGISTRY_HOSTNAME}" \
+    --set api.env.variables.PG_HOST="${PG_HOST}" \
     --set api.env.variables.NODE_ENV="${NODE_ENV}" \
     --set api.env.variables.PORT="${PORT}" \
     --set api.env.variables.CORS_WHITELIST_REGEXP="${CORS_WHITELIST_REGEXP}" \
@@ -64,10 +65,13 @@ define HELM_CHART_VALUES_OVERRIDES
     --set api.env.variables.KEYS_API_HOST="${KEYS_API_HOST}" \
     --set api.env.variables.EL_API_URLS="${EL_API_URLS}" \
     --set api.env.variables.CHAIN_ID="${CHAIN_ID}" \
+    --set api.env.variables.DEVNET_GENESIS_FORK_VERSION="${DEVNET_GENESIS_FORK_VERSION}" \
+    --set api.env.variables.LIDO_DEVNET_ADDRESS="${LIDO_DEVNET_ADDRESS}" \
     --set-json api.ingress.hosts='[{ "host": "${INGRESS_HOSTNAME}", "paths": [{ "path": "/", "pathType": "Prefix", "port": "http"}]}]' \
     --set worker.image.repository="${IMAGE}" \
 	--set worker.image.tag="${TAG}" \
 	--set worker.image.registry="${REGISTRY_HOSTNAME}" \
+	--set worker.env.variables.PG_HOST="${PG_HOST}" \
 	--set worker.env.variables.NODE_ENV="${NODE_ENV}" \
 	--set worker.env.variables.PORT="${PORT}" \
 	--set worker.env.variables.CORS_WHITELIST_REGEXP="${CORS_WHITELIST_REGEXP}" \
@@ -79,7 +83,9 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set worker.env.variables.LOG_FORMAT="${LOG_FORMAT}" \
 	--set worker.env.variables.KEYS_API_HOST="${KEYS_API_HOST}" \
 	--set worker.env.variables.EL_API_URLS="${EL_API_URLS}" \
-	--set worker.env.variables.CHAIN_ID="${CHAIN_ID}"
+	--set worker.env.variables.CHAIN_ID="${CHAIN_ID}" \
+	--set worker.env.variables.DEVNET_GENESIS_FORK_VERSION="${DEVNET_GENESIS_FORK_VERSION}" \
+	--set worker.env.variables.LIDO_DEVNET_ADDRESS="${LIDO_DEVNET_ADDRESS}"
 endef
 
 
