@@ -1,0 +1,315 @@
+api:
+  nameOverride: lido-no-widget-backend-api
+
+  # Number of replicas for the backend deployment
+  replicaCount: 1
+
+  # Image configuration
+  image:
+    registry: docker.io
+    repository: lido/no-widget-backend
+    tag: "dev"
+    pullPolicy: Always
+    imagePullSecrets:
+      - name: registry-pull-secret
+
+  service:
+    type: ClusterIP
+    ports:
+     - name: http
+       port: 3000
+       targetPort: 3000
+       protocol: TCP
+
+  # Container command
+  command: [ ]
+
+  # Container args
+  args: []
+
+  # Ingress configuration
+  ingress:
+    # Enable/disable ingress
+    enabled: true
+    # Ingress class name
+    className: "public"
+    # Ingress annotations
+    annotations: {}
+    # Example annotations:
+    # annotations:
+    #   nginx.ingress.kubernetes.io/rewrite-target: /
+    #   cert-manager.io/cluster-issuer: letsencrypt-prod
+
+    # Ingress hosts configuration
+    hosts:
+      - host: no-widget-backend-api.local
+        paths:
+          - path: /
+            pathType: Prefix
+            port: http
+
+    # TLS configuration
+    tls: []
+    # Example TLS:
+    # tls:
+    #   - secretName: backend-tls
+    #     hosts:
+    #       - backend.local
+
+  # Environment variables
+  env:
+    # Static environment variables
+    variables:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3000}
+      CORS_WHITELIST_REGEXP: ${CORS_WHITELIST_REGEXP}
+      GLOBAL_THROTTLE_TTL: ${GLOBAL_THROTTLE_TTL:-5}
+      GLOBAL_THROTTLE_LIMIT: ${GLOBAL_THROTTLE_LIMIT:-100}
+      GLOBAL_CACHE_TTL: ${GLOBAL_CACHE_TTL:-1}
+      SENTRY_DSN: ${SENTRY_DSN}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      KEYS_API_HOST: ${KEYS_API_HOST}
+      EL_API_URLS: ${EL_API_URLS}
+      CHAIN_ID: ${CHAIN_ID}
+      PG_HOST: lido-no-widget-backend-postgresql
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changemeasap
+      POSTGRES_DB: no-widget-backend-db
+      PG_PORT: 5432
+
+  # Resource limits and requests
+  resources: { }
+  # Example:
+  # resources:
+  #   limits:
+  #     cpu: 500m
+  #     memory: 512Mi
+  #   requests:
+  #     cpu: 250m
+  #     memory: 256Mi
+
+  # Node selector
+  nodeSelector: { }
+
+  # Tolerations
+  tolerations: [ ]
+
+  # Affinity rules
+  affinity: { }
+
+  # Security context
+  securityContext: { }
+
+  # Pod security context
+  podSecurityContext: { }
+
+  # Liveness probe
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  # Readiness probe
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+  # Additional labels
+  additionalLabels: { }
+
+  # Additional annotations
+  additionalAnnotations: { }
+
+  # Persistent Volume Claims configuration
+  pvcs: [ ]
+  # Example PVC configuration:
+  # pvcs:
+  #   - name: data-storage
+  #     storageClassName: "ssh-hostpath"
+  #     accessModes:
+  #       - ReadWriteOnce
+  #     size: 10Gi
+  #     mountPath: /data
+  #   - name: logs-storage
+  #     storageClassName: "ssh-hostpath"
+  #     accessModes:
+  #       - ReadWriteOnce
+  #     size: 5Gi
+  #     mountPath: /logs
+
+worker:
+  nameOverride: lido-no-widget-backend-worker
+
+  # Number of replicas for the backend deployment
+  replicaCount: 1
+
+  # Image configuration
+  image:
+    registry: docker.io
+    repository: lido/no-widget-backend
+    tag: "dev"
+    pullPolicy: Always
+    imagePullSecrets:
+      - name: registry-pull-secret
+
+  service:
+    type: ClusterIP
+    ports:
+      - name: http
+        port: 3000
+        targetPort: 3000
+        protocol: TCP
+
+  # Container command
+  command: ["yarn", "start:worker"]
+
+  # Container args
+  args: []
+
+  # Ingress configuration
+  ingress:
+    # Enable/disable ingress
+    enabled: false
+    # Ingress class name
+    className: "public"
+    # Ingress annotations
+    annotations: {}
+    # Example annotations:
+    # annotations:
+    #   nginx.ingress.kubernetes.io/rewrite-target: /
+    #   cert-manager.io/cluster-issuer: letsencrypt-prod
+
+    # Ingress hosts configuration
+    hosts:
+      - host: no-widget-backend-worker.local
+        paths:
+          - path: /
+            pathType: Prefix
+            port: http
+
+    # TLS configuration
+    tls: []
+    # Example TLS:
+    # tls:
+    #   - secretName: backend-tls
+    #     hosts:
+    #       - backend.local
+
+  # Environment variables
+  env:
+    # Static environment variables
+    variables:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3000}
+      CORS_WHITELIST_REGEXP: ${CORS_WHITELIST_REGEXP}
+      GLOBAL_THROTTLE_TTL: ${GLOBAL_THROTTLE_TTL:-5}
+      GLOBAL_THROTTLE_LIMIT: ${GLOBAL_THROTTLE_LIMIT:-100}
+      GLOBAL_CACHE_TTL: ${GLOBAL_CACHE_TTL:-1}
+      SENTRY_DSN: ${SENTRY_DSN}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      KEYS_API_HOST: ${KEYS_API_HOST}
+      EL_API_URLS: ${EL_API_URLS}
+      CHAIN_ID: ${CHAIN_ID}
+      PG_HOST: lido-no-widget-backend-postgresql
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changemeasap
+      POSTGRES_DB: no-widget-backend-db
+      PG_PORT: 5432
+
+  # Resource limits and requests
+  resources: { }
+  # Example:
+  # resources:
+  #   limits:
+  #     cpu: 500m
+  #     memory: 512Mi
+  #   requests:
+  #     cpu: 250m
+  #     memory: 256Mi
+
+  # Node selector
+  nodeSelector: { }
+
+  # Tolerations
+  tolerations: [ ]
+
+  # Affinity rules
+  affinity: { }
+
+  # Security context
+  securityContext: { }
+
+  # Pod security context
+  podSecurityContext: { }
+
+  # Liveness probe
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  # Readiness probe
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+  # Additional labels
+  additionalLabels: { }
+
+  # Additional annotations
+  additionalAnnotations: { }
+
+  # Persistent Volume Claims configuration
+  pvcs: [ ]
+  # Example PVC configuration:
+  # pvcs:
+  #   - name: data-storage
+  #     storageClassName: "ssh-hostpath"
+  #     accessModes:
+  #       - ReadWriteOnce
+  #     size: 10Gi
+  #     mountPath: /data
+  #   - name: logs-storage
+  #     storageClassName: "ssh-hostpath"
+  #     accessModes:
+  #       - ReadWriteOnce
+  #     size: 5Gi
+  #     mountPath: /logs
+
+postgresql:
+  global:
+    postgresql:
+      auth:
+        postgresPassword: "changemeasap"
+        username: "admin"
+        password: "changemeasap"
+        database: "no-widget-backend-db"
+        existingSecret: ""
+        secretKeys:
+          adminPasswordKey: ""
+          userPasswordKey: ""
+          replicationPasswordKey: ""
+      service:
+        ports:
+          postgresql: ""
+  image:
+    registry: docker.io
+    repository: bitnami/postgresql
+    tag: 17.6.0-debian-12-r0
+    digest: ""
+    pullPolicy: IfNotPresent
+  primary:
+    resourcesPreset: "2xlarge"
+    resources: { }

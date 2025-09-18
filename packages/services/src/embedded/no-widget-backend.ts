@@ -7,7 +7,17 @@ export const noWidgetBackend = new DevnetServiceConfig({
   },
   workspace: "workspaces/no-widget-backend",
   name: "noWidgetBackend" as const,
-  constants: {},
+  constants: {
+    PORT: "3000",
+    NODE_ENV: "production",
+    LOG_FORMAT: "simple",
+    LOG_LEVEL: "debug",
+    CORS_WHITELIST_REGEXP: "",
+    GLOBAL_THROTTLE_TTL: "5",
+    GLOBAL_THROTTLE_LIMIT: "100",
+    GLOBAL_CACHE_TTL: "1",
+    SENTRY_DSN: "",
+  },
   labels: {},
   getters: {},
 });

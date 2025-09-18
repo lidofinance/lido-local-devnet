@@ -66,7 +66,7 @@ export const BlockscoutDown = command.cli({
 
     logger.log("Blockscout stopped.");
 
-    await deleteNamespace(NAMESPACE(dre));
+    // await deleteNamespace(NAMESPACE(dre));
 
     await state.removeBlockscout();
   },
