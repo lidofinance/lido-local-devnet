@@ -1,0 +1,132 @@
+web:
+  nameOverride: lido-no-widget
+
+  # Number of replicas for the backend deployment
+  replicaCount: 1
+
+  # Image configuration
+  image:
+    registry: docker.io
+    repository: lido/no-widget
+    tag: "dev"
+    pullPolicy: Always
+    imagePullSecrets:
+      - name: registry-pull-secret
+
+  service:
+    type: ClusterIP
+    ports:
+     - name: http
+       port: 3000
+       targetPort: 3000
+       protocol: TCP
+
+  # Container command
+  command: [ ]
+
+  # Container args
+  args: []
+
+  # Ingress configuration
+  ingress:
+    # Enable/disable ingress
+    enabled: true
+    # Ingress class name
+    className: "public"
+    # Ingress annotations
+    annotations: {}
+    # Example annotations:
+    # annotations:
+    #   nginx.ingress.kubernetes.io/rewrite-target: /
+    #   cert-manager.io/cluster-issuer: letsencrypt-prod
+
+    # Ingress hosts configuration
+    hosts:
+      - host: no-widget.local
+        paths:
+          - path: /
+            pathType: Prefix
+            port: http
+
+    # TLS configuration
+    tls: []
+    # Example TLS:
+    # tls:
+    #   - secretName: backend-tls
+    #     hosts:
+    #       - backend.local
+
+  # Environment variables
+  env:
+    # Static environment variables
+    variables:
+      NODE_ENV: ${NODE_ENV:-development}
+      EL_RPC_URLS_17000: <URL for EL node on devnet>
+      BACKEND_URL_17000: <URL for NO Widget Backend on devent>
+      SUPPORTED_CHAINS: 17000 # for any devnet, ignore real devnet chain ID
+      DEFAULT_CHAIN: 17000 # for any devnet
+
+  # Resource limits and requests
+  resources: { }
+  # Example:
+  # resources:
+  #   limits:
+  #     cpu: 500m
+  #     memory: 512Mi
+  #   requests:
+  #     cpu: 250m
+  #     memory: 256Mi
+
+  # Node selector
+  nodeSelector: { }
+
+  # Tolerations
+  tolerations: [ ]
+
+  # Affinity rules
+  affinity: { }
+
+  # Security context
+  securityContext: { }
+
+  # Pod security context
+  podSecurityContext: { }
+
+  # Liveness probe
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  # Readiness probe
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 15
+    periodSeconds: 5
+
+  # Additional labels
+  additionalLabels: { }
+
+  # Additional annotations
+  additionalAnnotations: { }
+
+  # Persistent Volume Claims configuration
+  pvcs: [ ]
+  # Example PVC configuration:
+  # pvcs:
+  #   - name: data-storage
+  #     storageClassName: "ssh-hostpath"
+  #     accessModes:
+  #       - ReadWriteOnce
+  #     size: 10Gi
+  #     mountPath: /data
+  #   - name: logs-storage
+  #     storageClassName: "ssh-hostpath"
+  #     accessModes:
+  #       - ReadWriteOnce
+  #     size: 5Gi
+  #     mountPath: /logs
