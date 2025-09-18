@@ -17,7 +17,7 @@ export const NoWidgetBackendDown = command.cli({
     }),
   },
   async handler({ dre, dre: { services: { noWidgetBackend }, logger, state }, params  }) {
-    if (!(await state.isKapiK8sRunning()) && !(params.force)) {
+    if (!(await state.isNoWidgetBackendRunning()) && !(params.force)) {
       logger.log(`${SERVICE_NAME} not running. Skipping`);
       return;
     }

@@ -24,10 +24,16 @@ export const NoWidgetBackendBuild = command.cli({
 
     logger.log(`${SERVICE_NAME} image pushed to ${dockerRegistry.registryUrl}/${IMAGE}:${TAG}`);
 
-    await state.updateKapiK8sImage({
+    await state.updateNoWidgetBackendImage({
       tag: TAG,
       image: IMAGE,
       registryHostname: dockerRegistry.registryHostname,
     });
+
+    return {
+      tag: TAG,
+      image: IMAGE,
+      registryHostname: dockerRegistry.registryHostname,
+    }
   },
 });

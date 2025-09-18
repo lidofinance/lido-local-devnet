@@ -41,7 +41,7 @@ export const NoWidgetBackendUp = command.cli({
       throw new DevNetError("KAPI is not deployed");
     }
 
-    await dre.runCommand(NoWidgetBackendBuild, {});
+    const result = await dre.runCommand(NoWidgetBackendBuild, {});
 
     if (!(await state.isNoWidgetBackendImageReady())) {
       throw new DevNetError(`${SERVICE_NAME} image is not ready`);
@@ -81,7 +81,7 @@ export const NoWidgetBackendUp = command.cli({
         IMAGE: image,
         TAG: tag,
         REGISTRY_HOSTNAME: registryHostname,
-        INGRESS_HOSTNAME: INGRESS_HOSTNAME,
+        INGRESS_HOSTNAME,
       },
     });
 
