@@ -37,6 +37,10 @@ export const NoWidgetBackendUp = command.cli({
       throw new DevNetError("CSM is not deployed");
     }
 
+    if (!(await state.isKapiK8sRunning())) {
+      throw new DevNetError("KAPI is not deployed");
+    }
+
     await dre.runCommand(NoWidgetBackendBuild, {});
 
     if (!(await state.isNoWidgetBackendImageReady())) {
@@ -47,19 +51,15 @@ export const NoWidgetBackendUp = command.cli({
 
     const { locator, stakingRouter, curatedModule } = await state.getLido();
     const { module: csmModule } = await state.getCSM();
-    const { image, tag, registryHostname } = await state.getKapiK8sImage();
+    const { privateUrl } = await state.getKapiK8sRunning();
+    const { image, tag, registryHostname } = await state.getNoWidgetBackendImage();
 
     const env: Record<string, number | string> = {
       ...noWidgetBackend.config.constants,
-
       IS_DEVNET_MODE: "1",
       CHAIN_ID: "32382",
-      CSM_MODULE_DEVNET_ADDRESS: csmModule,
-      CURATED_MODULE_DEVNET_ADDRESS: curatedModule,
-      LIDO_LOCATOR_DEVNET_ADDRESS: locator,
-      PROVIDERS_URLS: elPrivate,
-      CL_API_URLS: clPrivate,
-      STAKING_ROUTER_DEVNET_ADDRESS: stakingRouter,
+      KEYS_API_HOST: privateUrl,
+      EL_API_URLS: elPrivate,
     };
 
     const hostname = process.env.NO_WIDGET_BACKEND_INGRESS_HOSTNAME?.
@@ -81,7 +81,7 @@ export const NoWidgetBackendUp = command.cli({
         IMAGE: image,
         TAG: tag,
         REGISTRY_HOSTNAME: registryHostname,
-        INGRESS_HOSTNAME,
+        INGRESS_HOSTNAME: INGRESS_HOSTNAME,
       },
     });
 
