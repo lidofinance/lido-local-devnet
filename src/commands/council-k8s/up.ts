@@ -16,7 +16,7 @@ export const CouncilK8sUp = command.cli({
   params: {},
   extensions: [councilK8sExtension],
   async handler({ dre, dre: { logger, services, state } }) {
-    const { helmLidoCouncil } = services;
+    const { council } = services;
 
     if (!(await state.isChainDeployed())) {
       throw new DevNetError("Chain is not deployed");
@@ -74,7 +74,7 @@ export const CouncilK8sUp = command.cli({
         continue;
       }
 
-      const helmLidoCouncilSh = helmLidoCouncil.sh({
+      const helmLidoCouncilSh = council.sh({
         env: {
           ...env,
           NAMESPACE: NAMESPACE(dre),

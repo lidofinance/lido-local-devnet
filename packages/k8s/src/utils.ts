@@ -28,7 +28,7 @@ export async function pingCluster(): Promise<void> {
     await k8sCoreApi.listNamespace();
   } catch (error: unknown) {
     throw new DevNetError(`Unable to connect to the cluster.
-      Ensure 'K8S_KUBECTL_DEFAULT_CONTEXT' env variable in '.env' is set.
+      Ensure 'K8S_KUBECTL_DEFAULT_CONTEXT' env variable in '.env' is set and the cluster is reachable.
       Original error: ${error instanceof Error ? error.message : String(error)}`);
   }
 }

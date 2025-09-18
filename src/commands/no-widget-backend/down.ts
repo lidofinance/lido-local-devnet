@@ -2,13 +2,12 @@ import { Params, command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import {
   deleteNamespace,
-  deleteNamespacedPersistentVolumeClaimIfExists,
   getNamespacedDeployedHelmReleases,
 } from "@devnet/k8s";
 
-import { NAMESPACE, SERVICE_NAME } from "./constants/kapi-k8s.constants.js";
+import { NAMESPACE, SERVICE_NAME } from "./constants/no-widget-backend.constants.js";
 
-export const KapiK8sDown = command.cli({
+export const NoWidgetBackendDown = command.cli({
   description: `Stop ${SERVICE_NAME} in K8s with Helm`,
   params: {
     force: Params.boolean({
@@ -17,7 +16,7 @@ export const KapiK8sDown = command.cli({
       required: false,
     }),
   },
-  async handler({ dre, dre: { services: { kapi }, logger, state }, params  }) {
+  async handler({ dre, dre: { services: { noWidgetBackend }, logger, state }, params  }) {
     if (!(await state.isKapiK8sRunning()) && !(params.force)) {
       logger.log(`${SERVICE_NAME} not running. Skipping`);
       return;
@@ -31,7 +30,7 @@ export const KapiK8sDown = command.cli({
     }
 
     const HELM_RELEASE = releases[0];
-    const helmSh = kapi.sh({
+    const helmSh = noWidgetBackend.sh({
       env: {
         NAMESPACE: NAMESPACE(dre),
         HELM_RELEASE,
@@ -43,18 +42,10 @@ export const KapiK8sDown = command.cli({
     await helmSh`make lint`;
     await helmSh`make uninstall`;
 
-    // removing postgress persistent volume claim
-    // TODO delegate to helm
-    logger.log("Removing persistent volume claim for postgress");
-    await deleteNamespacedPersistentVolumeClaimIfExists(
-      NAMESPACE(dre),
-      'data-lido-kapi-postgresql-0', // hardcoded for now
-    );
-
     logger.log(`${SERVICE_NAME} stopped.`);
 
     await deleteNamespace(NAMESPACE(dre));
 
-    await state.removeKapiK8sState();
+    await state.removeNoWidgetBackendState();
   },
 });

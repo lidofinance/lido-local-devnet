@@ -19,7 +19,7 @@ export const KuboK8sDown = command.cli({
       required: false,
     }),
   },
-  async handler({ dre, dre: { services: { helmLidoKubo }, logger, state }, params  }) {
+  async handler({ dre, dre: { services: { kubo }, logger, state }, params  }) {
     if (!(await state.isKuboK8sRunning()) && !(params.force)) {
       logger.log("Kubo not running. Skipping");
       return;
@@ -33,7 +33,7 @@ export const KuboK8sDown = command.cli({
     }
 
     const HELM_RELEASE = releases[0];
-    const helmLidoKuboSh = helmLidoKubo.sh({
+    const helmLidoKuboSh = kubo.sh({
       env: {
         NAMESPACE: NAMESPACE(dre),
         HELM_RELEASE,
@@ -44,14 +44,6 @@ export const KuboK8sDown = command.cli({
     await helmLidoKuboSh`make debug`;
     await helmLidoKuboSh`make lint`;
     await helmLidoKuboSh`make uninstall`;
-
-    // removing postgress persistent volume claim
-    // TODO delegate to helm
-    // logger.log("Removing persistent volume claim for kubo");
-    // await deleteNamespacedPersistentVolumeClaimIfExists(
-    //   NAMESPACE(dre),
-    //   'data-kubo', // hardcoded for now
-    // );
 
     logger.log("Kubo stopped.");
 

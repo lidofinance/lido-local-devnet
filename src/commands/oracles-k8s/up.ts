@@ -13,7 +13,7 @@ export const OracleK8sUp = command.cli({
   description: "Start Oracle(s) in K8s with Helm",
   params: {},
   extensions: [oraclesK8sExtension],
-  async handler({ dre: { logger, state, services: { helmLidoOracle } }, dre }) {
+  async handler({ dre: { logger, state, services: { oracle } }, dre }) {
     if (!(await state.isChainDeployed())) {
       throw new DevNetError("Chain is not deployed");
     }
@@ -48,8 +48,8 @@ export const OracleK8sUp = command.cli({
     const { privateUrl: kapiPrivateUrl } = await state.getKapiK8sRunning();
     const { image, tag, registryHostname } = await state.getOraclesK8sImage();
 
-    const env: Record<string, string> = {
-      ...helmLidoOracle.config.constants,
+    const env: Record<string, number | string> = {
+      ...oracle.config.constants,
 
       CHAIN_ID: "32382",
       EXECUTION_CLIENT_URI: elPrivate,
@@ -82,7 +82,7 @@ export const OracleK8sUp = command.cli({
         continue;
       }
 
-      const helmLidoOracleSh = helmLidoOracle.sh({
+      const helmLidoOracleSh = oracle.sh({
         env: {
           ...env,
           NAMESPACE: NAMESPACE(dre),

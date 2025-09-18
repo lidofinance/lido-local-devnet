@@ -5,15 +5,13 @@ import { csm } from "./csm.js";
 import { dataBus } from "./data-bus.js";
 import { dockerRegistry } from "./docker-registry.js";
 import { dsmBots } from "./dsm-bots.js";
-import { helmLidoCouncil } from "./helm-lido-council.js";
-import { helmLidoDsmBot } from "./helm-lido-dsm-bot.js";
-import { helmLidoKapi } from "./helm-lido-kapi.js";
-import { helmLidoKubo } from "./helm-lido-kubo.js";
-import { helmLidoOracle } from "./helm-lido-oracle.js";
 import { kapi } from "./kapi.js";
+import { kubo } from "./kubo.js";
 import { kurtosis } from "./kurtosis.js";
 import { lidoCLI } from "./lido-cli.js";
 import { lidoCore } from "./lido-core.js";
+import { noWidget } from "./no-widget.js";
+import { noWidgetBackend } from "./no-widget-backend.js";
 import { oracle } from "./oracle.js";
 import { voting } from "./voting.js";
 
@@ -31,11 +29,9 @@ export const serviceConfigs = {
   dataBus,
   dsmBots,
   dockerRegistry,
-  helmLidoKapi,
-  helmLidoOracle,
-  helmLidoCouncil,
-  helmLidoDsmBot,
-  helmLidoKubo,
+  kubo,
+  noWidgetBackend,
+  noWidget,
 };
 
 export type EmbeddedServicesConfigs = typeof serviceConfigs;

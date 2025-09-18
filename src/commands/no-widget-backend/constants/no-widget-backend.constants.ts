@@ -1,6 +1,7 @@
 import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
 
 export const NAMESPACE = (dre: DevNetRuntimeEnvironmentInterface) =>
-  `kt-${dre.network.name}-kapi`;
+  `kt-${dre.network.name}-no-widget-backend`;
 
-export const SERVICE_NAME = "Keys API";
+
+export const SERVICE_NAME = "NO Widget Backend";

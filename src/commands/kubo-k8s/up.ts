@@ -16,7 +16,7 @@ export const KuboK8sUp = command.cli({
   description: "Start Kubo on K8s with Helm",
   params: {},
   extensions: [kuboK8sExtension],
-  async handler({ dre, dre: { state, services: { helmLidoKubo }, logger } }) {
+  async handler({ dre, dre: { state, services: { kubo }, logger } }) {
     if (await state.isKuboK8sRunning()) {
       logger.log("KUbo already running");
       return;
@@ -31,7 +31,7 @@ export const KuboK8sUp = command.cli({
     const { image, tag, registryHostname } = await state.getKuboK8sImage();
 
     const env: Record<string, string> = {
-      ...helmLidoKubo.config.constants,
+      ...kubo.config.constants,
 
       CHAIN: "artifact",
     };
@@ -46,7 +46,7 @@ export const KuboK8sUp = command.cli({
     const KUBO_INGRESS_HOSTNAME = addPrefixToIngressHostname(kuboHostname);
 
     const HELM_RELEASE = 'lido-kubo-1';
-    const helmLidoKuboSh = helmLidoKubo.sh({
+    const helmLidoKuboSh = kubo.sh({
       env: {
         ...env,
         NAMESPACE: NAMESPACE(dre),
