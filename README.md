@@ -41,7 +41,17 @@ Original docs are located in `https://docs.kurtosis.com/k8s/`
 yarn && yarn build:all
 ```
 
-### 2. Set the current context to the k8s cluster (if you have multiple clusters)
+### 2. Create `.env` file and fill it with the required values
+```sh
+cp .env.sample .env
+```
+
+### 3. (Optional) Turn on SSH Tunnel to the machine with k8s cluster
+```sh
+./bin/run.js ssh tunnel
+```
+
+### 4. Set the current context to the k8s cluster (if you have multiple clusters)
 
 Contexts can be found by running: `kubectl config get-contexts`
 
@@ -49,7 +59,7 @@ Contexts can be found by running: `kubectl config get-contexts`
 kubectl config use-context <cluster context> # or whatever your k8s context is
 ```
 
-### 3. Ensure that you are connected to the k8s cluster
+### 5. Ensure that you are connected to the k8s cluster
 
 The cluster can be accessible via SSH Tunnel.
 
@@ -57,7 +67,7 @@ The cluster can be accessible via SSH Tunnel.
 kubectl cluster-info
 ```
 
-### 4. Change kurtosis config to work with the k8s cluster
+### 6. Change kurtosis config to work with the k8s cluster
 
 Update once your kurtosis config at `echo $(kurtosis config path)` location
 
@@ -67,12 +77,6 @@ should-send-metrics: false
 kurtosis-clusters:
   docker:
     type: "docker"
-  minikube:
-    type: "kubernetes"
-    config:
-      kubernetes-cluster-name: "minikube"
-      storage-class: "standard"
-      enclave-size-in-megabytes: 256
   cloud:
     type: "kubernetes"
     config:
@@ -81,24 +85,21 @@ kurtosis-clusters:
       enclave-size-in-megabytes: 256
 ```
 
-### 5. Point kurtosis to the cluster
+### 7. Point kurtosis to the cluster
 ```sh
 # tell kurtosis to work with k8s cluster
 kurtosis cluster set cloud # or whatever your kurtosis cluster is
 ```
 
-### 6. Start Kurtosis
+### 8. Start Kurtosis
 Kurtosis is required to launch Ethereum nodes
 ```sh
 kurtosis engine start
 ```
 
-### 7. Create `.env` file and fill it with the required values
-```sh
-cp .env.sample .env
-```
 
-### 8. Launch the environment and deploy Lido smart contracts
+
+### 9. Launch the environment and deploy Lido smart contracts
 Below is an example for launching the `fusaka` test stand. 
 If you need a different setup, refer to the [test stands documentation](./docs/commands/stands.md).
 
@@ -114,7 +115,7 @@ For a full DSM infrastructure deployment, add the `--dsm` flag:
 ./bin/run.js stands <stand-name> --verify --dsm
 ```
 
-### 9. (Optional) Interaction with Voting scripts 
+### 10. (Optional) Interaction with Voting scripts 
 
 Since voting scripts require Python and Brownie, install the necessary dependencies:
 ```sh
@@ -139,7 +140,7 @@ After adding an account, proceed with the voting process. See the [voting docume
 ./bin/run.js voting enact-after-pectra
 ```
 
-### 10. Done!
+### 11. Done!
 The network, infrastructure, and protocol have been successfully launched.
 
 ---
