@@ -1,0 +1,12 @@
+apiVersion: v2
+name: lido-no-widget
+description: Lido Node Operators Widget chart
+type: application
+version: 1.0.0
+appVersion: "2.5.2"
+kubeVersion: '>=1.19.0-0'
+dependencies:
+  - name: "lido-app"
+    alias: "web"
+    version: "1.0.0"
+    repository: "file://../lido-app"
