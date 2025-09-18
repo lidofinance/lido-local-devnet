@@ -23,6 +23,11 @@ export const kurtosis = new DevnetServiceConfig({
       const json = await service.readJson('network/genesis.json');
 
       return Number(json.timestamp as number);
+    },
+    async GENESIS_FORK_VERSION(service) {
+      const yaml = await service.readYaml('network/config.yaml');
+
+      return toHex(yaml.GENESIS_FORK_VERSION as number);
     }
   }
 });

@@ -49,15 +49,19 @@ export const NoWidgetBackendUp = command.cli({
 
     const { elPrivate, clPrivate } = await state.getChain();
 
-    const { locator, stakingRouter, curatedModule } = await state.getLido();
+    const { locator, lido, stakingRouter, curatedModule } = await state.getLido();
     const { module: csmModule } = await state.getCSM();
     const { privateUrl } = await state.getKapiK8sRunning();
     const { image, tag, registryHostname } = await state.getNoWidgetBackendImage();
+
+    const GENESIS_FORK_VERSION = await dre.services.kurtosis.config.getters.GENESIS_FORK_VERSION(dre.services.kurtosis);
 
     const env: Record<string, number | string> = {
       ...noWidgetBackend.config.constants,
       IS_DEVNET_MODE: "1",
       CHAIN_ID: "32382",
+      LIDO_DEVNET_ADDRESS: lido,
+      DEVNET_GENESIS_FORK_VERSION: GENESIS_FORK_VERSION,
       KEYS_API_HOST: privateUrl,
       EL_API_URLS: elPrivate,
     };
@@ -82,6 +86,7 @@ export const NoWidgetBackendUp = command.cli({
         TAG: tag,
         REGISTRY_HOSTNAME: registryHostname,
         INGRESS_HOSTNAME,
+        PG_HOST: `${HELM_RELEASE}-postgresql`,
       },
     });
 
