@@ -1,14 +1,13 @@
 import { Params, command } from "@devnet/command";
 
-import { ChainDown } from "./chain/down.js";
 import { CouncilK8sDown } from "./council-k8s/down.js";
 import { DSMBotsK8sDown } from "./dsm-bots-k8s/down.js";
 import { K8sPing } from "./k8s/ping.js";
 import { KapiK8sDown } from "./kapi-k8s/down.js";
 import { OracleK8sDown } from "./oracles-k8s/down.js";
 
-export const DevNetStop = command.cli({
-  description: "Stop full DevNet",
+export const DevNetStopOffchain = command.cli({
+  description: "Stop offchain apps in DevNet",
   params: {
     force: Params.boolean({
       description: "Do not check that services were already stopped",
@@ -22,7 +21,7 @@ export const DevNetStop = command.cli({
     }),
   },
   async handler({ dre, dre: { logger }, params }) {
-    logger.log("Stopping DevNet...");
+    logger.log("Stopping DevNet offchain services...");
 
     await dre.runCommand(K8sPing, {});
 
@@ -31,15 +30,13 @@ export const DevNetStop = command.cli({
       () => dre.runCommand(OracleK8sDown, { force: params.force }),
       () => dre.runCommand(CouncilK8sDown, { force: params.force }),
       () => dre.runCommand(DSMBotsK8sDown, { force: params.force }),
-      () => dre.runCommand(ChainDown, {})
     ];
 
     for (const fn of downFns) {
       await (params.silent ? fn() : fn().catch((error) => logger.warn(error.message)));
     }
 
-    await dre.clean();
 
-    logger.log("DevNet stopped successfully.");
+    logger.log("DevNet offchain services stopped successfully.");
   },
 });

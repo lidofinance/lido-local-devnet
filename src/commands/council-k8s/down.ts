@@ -16,7 +16,7 @@ export const CouncilK8sDown = command.cli({
       required: false,
     }),
   },
-  async handler({ dre, dre: { logger, services: { helmLidoCouncil }, state }, params }) {
+  async handler({ dre, dre: { logger, services: { council }, state }, params }) {
     if (!(await state.isCouncilK8sRunning()) && !(params.force)) {
       logger.log("Council not running. Skipping");
       return;
@@ -30,7 +30,7 @@ export const CouncilK8sDown = command.cli({
     }
 
     for (const release of releases) {
-      const helmLidoCouncilSh = helmLidoCouncil.sh({
+      const helmLidoCouncilSh = council.sh({
         env: {
           NAMESPACE: NAMESPACE(dre),
           HELM_RELEASE: release,

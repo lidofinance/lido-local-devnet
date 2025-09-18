@@ -5,7 +5,7 @@ export const oracle = new DevnetServiceConfig({
     url: "https://github.com/lidofinance/lido-oracle.git",
     branch: "fix/vroom-306-temp-fix-fusaka-1",
   },
-  workspace: "workspaces/oracle-v6",
+  workspace: "workspaces/oracle",
   name: "oracle" as const,
   constants: {
     HASH_CONSENSUS_AO_EPOCHS_PER_FRAME: 8,

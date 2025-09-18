@@ -69,7 +69,7 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.CURATED_MODULE_DEVNET_ADDRESS="${CURATED_MODULE_DEVNET_ADDRESS}" \
 	--set lido-app.env.variables.CSM_MODULE_DEVNET_ADDRESS="${CSM_MODULE_DEVNET_ADDRESS}" \
 	--set lido-app.env.variables.STAKING_ROUTER_DEVNET_ADDRESS="${STAKING_ROUTER_DEVNET_ADDRESS}" \
-	--set-json lido-app.ingress.hosts='[{ "host": "${KAPI_INGRESS_HOSTNAME}", "paths": [{ "path": "/", "pathType": "Prefix", "port": "http"}]}]'
+	--set-json lido-app.ingress.hosts='[{ "host": "${INGRESS_HOSTNAME}", "paths": [{ "path": "/", "pathType": "Prefix", "port": "http"}]}]'
 endef
 
 

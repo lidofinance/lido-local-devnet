@@ -1,25 +1,19 @@
 import { command } from "@devnet/command";
 import { buildAndPushDockerImage } from "@devnet/docker";
 
-import { GitCheckout } from "../git/checkout.js";
-import { SERVICE_NAME } from "./constants/kapi-k8s.constants.js";
+import { SERVICE_NAME } from "./constants/no-widget-backend.constants.js";
 
-export const KapiK8sBuild = command.cli({
+export const NoWidgetBackendBuild = command.cli({
   description: `Build ${SERVICE_NAME} and push to Docker registry`,
   params: {},
-  async handler({ dre, dre: { state, network, services, logger } }) {
+  async handler({ dre: { state, network, services, logger } }) {
     const dockerRegistry = await state.getDockerRegistry();
 
     const TAG = `kt-${network.name}`;
-    const IMAGE = 'lido/keys-api';
-
-    await dre.runCommand(GitCheckout, {
-      service: "kapi",
-      ref: "feat/devnet", // TODO make configurable from global yaml config
-    });
+    const IMAGE = 'lido/no-widget-backend';
 
     await buildAndPushDockerImage({
-      cwd: services.kapi.artifact.root,
+      cwd: services.noWidgetBackend.artifact.root,
       registryHostname: dockerRegistry.registryHostname,
       buildContext: '.',
       imageName: IMAGE,
@@ -34,6 +28,6 @@ export const KapiK8sBuild = command.cli({
       tag: TAG,
       image: IMAGE,
       registryHostname: dockerRegistry.registryHostname,
-    })
+    });
   },
 });

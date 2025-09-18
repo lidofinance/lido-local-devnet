@@ -17,7 +17,7 @@ export const DSMBotsK8sUp = command.cli({
   params: {},
   extensions: [dsmBotsK8sExtension],
   async handler({ dre, dre: { services, state, network, logger } }) {
-    const { helmLidoDsmBot } = services;
+    const { dsmBots } = services;
 
     if (!(await state.isChainDeployed())) {
       throw new DevNetError("Chain is not deployed");
@@ -73,7 +73,7 @@ export const DSMBotsK8sUp = command.cli({
         continue;
       }
 
-      const helmLidoDsmBotSh = helmLidoDsmBot.sh({
+      const helmLidoDsmBotSh = dsmBots.sh({
         env: {
           ...env,
           NAMESPACE: NAMESPACE(dre),

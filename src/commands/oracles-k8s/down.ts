@@ -14,7 +14,7 @@ export const OracleK8sDown = command.cli({
       required: false,
     }),
   },
-  async handler({ dre, dre: { state, services: { helmLidoOracle }, logger }, params }) {
+  async handler({ dre, dre: { state, services: { oracle }, logger }, params }) {
 
     if (!(await state.isOraclesK8sRunning()) && !(params.force)) {
       logger.log("Oracles are not running. Skipping");
@@ -29,7 +29,7 @@ export const OracleK8sDown = command.cli({
     }
 
     for (const release of releases) {
-      const helmLidoOracleSh = helmLidoOracle.sh({
+      const helmLidoOracleSh = oracle.sh({
         env: {
           NAMESPACE: NAMESPACE(dre),
           HELM_RELEASE: release,

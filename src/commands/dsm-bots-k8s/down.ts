@@ -16,7 +16,7 @@ export const DSMBotsK8sDown = command.cli({
       required: false,
     }),
   },
-  async handler({ dre, dre: { services: { helmLidoDsmBot }, state, logger }, params }) {
+  async handler({ dre, dre: { services: { dsmBots }, state, logger }, params }) {
 
     if (!(await state.isDsmBotsK8sRunning()) && !(params.force)) {
       logger.log("DSM Bots are not running. Skipping");
@@ -31,7 +31,7 @@ export const DSMBotsK8sDown = command.cli({
     }
 
     for (const release of releases) {
-      const helmLidoDsmBotSh = helmLidoDsmBot.sh({
+      const helmLidoDsmBotSh = dsmBots.sh({
         env: {
           NAMESPACE: NAMESPACE(dre),
           HELM_RELEASE: release,
