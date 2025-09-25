@@ -8,5 +8,5 @@ kubeVersion: '>=1.19.0-0'
 dependencies:
   - name: "lido-app"
     alias: "web"
-    version: "1.0.0"
+    version: "1.0.1"
     repository: "file://../lido-app"
