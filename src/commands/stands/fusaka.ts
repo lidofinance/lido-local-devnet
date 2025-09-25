@@ -41,7 +41,7 @@ export const FusakaDevNetUp = command.cli({
   async handler({ params, dre, dre: { logger } }) {
     await dre.runCommand(GitCheckout, {
       service: "lidoCore",
-      ref: "develop",
+      ref: "fix/scratch-deploy-tw",
     });
 
     await dre.runCommand(GitCheckout, {
