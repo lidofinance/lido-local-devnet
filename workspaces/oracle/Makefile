@@ -63,7 +63,8 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.CSM_ORACLE_MAX_CONCURRENCY="${CSM_ORACLE_MAX_CONCURRENCY}" \
 	--set lido-app.env.variables.SUBMIT_DATA_DELAY_IN_SLOTS="${SUBMIT_DATA_DELAY_IN_SLOTS}" \
 	--set lido-app.env.variables.ALLOW_REPORTING_IN_BUNKER_MODE="${ALLOW_REPORTING_IN_BUNKER_MODE}" \
-	--set lido-app.env.variables.PINATA_JWT="${PINATA_JWT}"
+	--set lido-app.env.variables.PINATA_JWT="${PINATA_JWT}" \
+	--set lido-app.env.variables.KUBO_HOST="${KUBO_HOST}"
 endef
 
 # Lint Helm chart
