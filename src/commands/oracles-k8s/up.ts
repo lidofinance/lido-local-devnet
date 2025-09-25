@@ -1,4 +1,4 @@
-import { command } from "@devnet/command";
+import { command, Params } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { createNamespaceIfNotExists, getNamespacedDeployedHelmReleases } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
@@ -11,9 +11,20 @@ import { oraclesK8sExtension } from "./extensions/oracles-k8s.extension.js";
 
 export const OracleK8sUp = command.cli({
   description: "Start Oracle(s) in K8s with Helm",
-  params: {},
+  params: {
+    tag: Params.string({
+      description: "Oracle image tag",
+      default: '6.0.1',
+      required: false,
+    }),
+    build: Params.boolean({
+      description: "Build oracle image from branch instead of tag",
+      default: false,
+      required: false,
+    }),
+  },
   extensions: [oraclesK8sExtension],
-  async handler({ dre: { logger, state, services: { oracle } }, dre }) {
+  async handler({ dre: { logger, state, services: { oracle } }, dre, params }) {
     if (!(await state.isChainDeployed())) {
       throw new DevNetError("Chain is not deployed");
     }
@@ -34,11 +45,23 @@ export const OracleK8sUp = command.cli({
 
     const { privateUrl: kuboPrivateUrl } = await state.getKuboK8sRunning();
 
-    await dre.runCommand(OracleK8sBuild, {});
+    const buildAndGetImage = async () => {
+      await dre.runCommand(OracleK8sBuild, {});
+      if (!(await state.isOraclesK8sImageReady())) {
+        throw new DevNetError("Oracle image is not ready");
+      }
 
-    if (!(await state.isOraclesK8sImageReady())) {
-      throw new DevNetError("Oracle image is not ready");
+      return await state.getOraclesK8sImage()
     }
+
+    const { image, tag, registryHostname } = params.build
+      ? await buildAndGetImage()
+      : {
+        tag: params.tag,
+        image: 'lidofinance/oracle',
+        registryHostname: 'docker.io'
+      };
+
 
     const { elPrivate, clPrivate } = await state.getChain();
 
@@ -46,7 +69,6 @@ export const OracleK8sUp = command.cli({
     const { module: csmModule } = await state.getCSM();
     const { oracle1, oracle2, oracle3 } = await state.getNamedWallet();
     const { privateUrl: kapiPrivateUrl } = await state.getKapiK8sRunning();
-    const { image, tag, registryHostname } = await state.getOraclesK8sImage();
 
     const env: Record<string, number | string> = {
       ...oracle.config.constants,

@@ -120,7 +120,7 @@ export const PectraDevNetUp = command.cli({
     await dre.runCommand(KapiK8sUp, {});
 
     logger.log("🚀 Run Oracle service.");
-    await dre.runCommand(OracleK8sUp, {});
+    await dre.runCommand(OracleK8sUp, { tag: '6.0.1', build: false });
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");
