@@ -106,20 +106,20 @@ securityContext: {}
 podSecurityContext: {}
 
 # Liveness probe
-livenessProbe:
-  httpGet:
-    path: /health
-    port: http
-  initialDelaySeconds: 30
-  periodSeconds: 10
+livenessProbe: {}
+#  httpGet:
+#    path: /health
+#    port: http
+#  initialDelaySeconds: 30
+#  periodSeconds: 10
 
 # Readiness probe
-readinessProbe:
-  httpGet:
-    path: /ready
-    port: http
-  initialDelaySeconds: 5
-  periodSeconds: 5
+readinessProbe: {}
+#  httpGet:
+#    path: /ready
+#    port: http
+#  initialDelaySeconds: 5
+#  periodSeconds: 5
 
 # Additional labels
 additionalLabels: {}

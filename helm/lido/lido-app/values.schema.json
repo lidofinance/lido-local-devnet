@@ -284,6 +284,18 @@
           },
           "required": ["path", "port"]
         },
+        "exec": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["command"]
+        },
         "initialDelaySeconds": {
           "type": "integer",
           "minimum": 0
@@ -324,6 +336,18 @@
             }
           },
           "required": ["path", "port"]
+        },
+        "exec": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["command"]
         },
         "initialDelaySeconds": {
           "type": "integer",

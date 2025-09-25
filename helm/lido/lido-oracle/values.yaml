@@ -11,7 +11,7 @@ lido-app:
     tag: "dev"
     pullPolicy: Always
     imagePullSecrets:
-      - name: registry-pull-secret
+    - name: registry-pull-secret
     # Example:
     # imagePullSecrets:
     #   - name: myregistrykey
@@ -79,17 +79,15 @@ lido-app:
 
   # Liveness probe
   livenessProbe:
-    httpGet:
-      path: /
-      port: http-health
+    exec:
+      command: ["curl", "-f", "http://localhost:9010/healthcheck"]
     initialDelaySeconds: 30
     periodSeconds: 10
 
   # Readiness probe
   readinessProbe:
-    httpGet:
-      path: /
-      port: http-health
+    exec:
+      command: ["curl", "-f", "http://localhost:9010/healthcheck"]
     initialDelaySeconds: 5
     periodSeconds: 5
 
