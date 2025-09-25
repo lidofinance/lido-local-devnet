@@ -44,6 +44,13 @@ export class DevNetDRENetwork {
     this.logger.log("Consensus node is ready.");
   }
 
+  public async waitCLFinalizedEpoch(epoch: number) {
+    const { clPublic } = await this.state.getChain();
+    this.logger.log(`Waiting for consensus node at ${clPublic} to reach epoch ${epoch}...`);
+    await this.waitForFinalizedEpochWithRetry(epoch);
+    this.logger.log(`Consensus node has reached epoch ${epoch}.`);
+  }
+
   public async waitEL() {
     const { elPublic } = await this.state.getChain();
     this.logger.log(`Ensuring the execution node at ${elPublic} is ready...`);
@@ -67,6 +74,33 @@ export class DevNetDRENetwork {
     };
 
     return attemptToFetchGenesis();
+  }
+
+  private async waitForFinalizedEpochWithRetry(targetEpoch: number): Promise<void> {
+    const clClient = await this.getCLClient();
+
+    const attemptToWaitForEpoch = async (): Promise<void> => {
+      try {
+        const currentEpoch = await clClient.getFinalizedEpoch();
+        if (currentEpoch >= targetEpoch) {
+          return;
+        }
+
+        this.logger.log(
+          `Current epoch is ${currentEpoch}, waiting for epoch ${targetEpoch}... Retrying in 5 seconds`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        return attemptToWaitForEpoch();
+      } catch (error: any) {
+        this.logger.log(
+          `Error checking epoch: ${error.message}... Retrying in 10 seconds`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        return attemptToWaitForEpoch();
+      }
+    };
+
+    return attemptToWaitForEpoch();
   }
 
   private async sendTransactionWithRetry(

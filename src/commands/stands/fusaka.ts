@@ -20,6 +20,8 @@ import { GenerateLidoDevNetKeys } from "../lido-core/keys/generate.js";
 import { UseLidoDevNetKeys } from "../lido-core/keys/use.js";
 import { ReplaceDSM } from "../lido-core/replace-dsm.js";
 import { LidoSetStakingLimit } from "../lido-core/set-staking-limit.js";
+import { NoWidgetUp } from "../no-widget/up.js";
+import { NoWidgetBackendUp } from "../no-widget-backend/up.js";
 import { OracleK8sUp } from "../oracles-k8s/up.js";
 import { ValidatorAdd } from "../validator/add.js";
 
@@ -67,6 +69,8 @@ export const FusakaDevNetUp = command.cli({
       service: "lidoCLI",
       ref: "fix/vroom-306-temp-fix-fusaka-1",
     });
+
+    await dre.network.waitCLFinalizedEpoch(1);
 
     logger.log("🚀 Activating Lido Core protocol...");
     await dre.runCommand(ActivateLidoProtocol, {});
@@ -150,5 +154,11 @@ export const FusakaDevNetUp = command.cli({
     logger.log("✅ Validator keys added.");
 
     await dre.runCommand(ChainGetInfo, {});
+
+    logger.log("🚀 Run No Widget Backend");
+    await dre.runCommand(NoWidgetBackendUp, { });
+
+    logger.log("🚀 Run No Widget");
+    await dre.runCommand(NoWidgetUp, { });
   },
 });

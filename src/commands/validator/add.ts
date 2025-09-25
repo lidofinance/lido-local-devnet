@@ -1,6 +1,7 @@
 import { command } from "@devnet/command";
 import * as keyManager from "@devnet/key-manager-api";
 import { assert, sleep } from "@devnet/utils";
+import { pipe, A, RA, TE, NEA, E } from "@devnet/fp";
 
 import { ValidatorRestart } from "./restart.js";
 
@@ -44,15 +45,28 @@ export const ValidatorAdd = command.cli({
     await sleep(25_000);
 
     const keystoresStrings = actualKeystores.map((v) => JSON.stringify(v));
-    const keystoresPasswords = actualKeystores.map((_) => "12345678");
-    const res = await keyManager.importKeystores(
-      validatorsApiPublic,
+
+    await pipe(
       keystoresStrings,
-      keystoresPasswords,
-      keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
+      A.chunksOf(10),
+      A.mapWithIndex((index, keystoresChunk) => {
+        logger.log(`Chunk ${index} of keystores`);
+
+        const keystoresChunkPasswords = keystoresChunk.map((_) => "12345678");
+
+        return TE.tryCatch(async () => {
+          await keyManager.importKeystores(
+            validatorsApiPublic,
+            keystoresChunk,
+            keystoresChunkPasswords,
+            keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
+          );
+        }, E.toError);
+      }),
+      A.sequence(TE.ApplicativeSeq), // sequential execution
+      TE.execute
     );
 
-    logger.logJson(res);
 
     // TODO
     // await dre.runCommand(ValidatorRestart, {});
