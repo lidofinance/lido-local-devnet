@@ -43,6 +43,8 @@ export const SSHTunnel = command.cli({
       '-L', `${sshTunnelLocalPort}:${sshTunnelRemoteAddress}`,
       '-N', // Don't execute a remote command
       '-T', // Disable pseudo-terminal allocation
+      '-o', 'ServerAliveInterval=30',
+      '-o', 'ServerAliveCountMax=3',
       `${sshUser}@${sshHost}`
     ];
 

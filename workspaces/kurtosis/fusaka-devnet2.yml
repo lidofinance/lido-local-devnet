@@ -1,11 +1,4 @@
 participants:
-
-  #- el_type: besu
-  #  el_image: ethpandaops/besu:fusaka-devnet-3
-  # - el_type: reth
-  #   el_image: ethpandaops/reth:fusaka-devnet-3
-  # - el_type: nimbus
-  #   el_image: ethpandaops/nimbus-eth1:fusaka-devnet-3
   - el_type: geth
     el_image: ethereum/client-go:v1.16.4
     el_extra_params: [ --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive ]
@@ -26,7 +19,6 @@ participants:
     cl_min_cpu: 4000
     cl_max_cpu: 8000
     cl_min_mem: 16384
-    cl_max_mem: 32768
     cl_volume_size: 51200
     count: 1
 
@@ -38,26 +30,28 @@ participants:
     el_max_mem: 0
     el_volume_size: 51200
     # CL
-    cl_type: prysm
-    cl_image: gcr.io/offchainlabs/prysm/beacon-chain:v6.1.0
+    cl_type: lighthouse
+    cl_image: ethpandaops/lighthouse:unstable
+    cl_extra_params: [ '--hierarchy-exponents=5,7,11', --reconstruct-historic-states ]
     supernode: true
     cl_volume_size: 51200
     count: 1
-  # - el_type: nethermind
-  #   el_image: ethpandaops/nethermind:fusaka-devnet-3
-  #- cl_type: lighthouse
-  #  cl_image: docker.ethquokkaops.io/dh/ethpandaops/lighthouse:fusaka-devnet-3
-  #  supernode: true
-  #  use_separate_vc: true
-#    - cl_type: prysm
-#      cl_image: ethpandaops/prysm-beacon-chain:fusaka-devnet-3
-#      supernode: true
-  # - cl_type: grandine
-  #   cl_image: ethpandaops/grandine:fusaka-devnet-3
-  #   supernode: true
-  # - cl_type: lodestar
-  #   cl_image: ethpandaops/lodestar:fusaka-devnet-3
-  #   supernode: true
+
+  - el_type: geth
+    el_image: ethereum/client-go:v1.16.4
+    el_extra_params: [ --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive ]
+    el_min_cpu: 0
+    el_max_cpu: 0
+    el_min_mem: 0
+    el_max_mem: 0
+    el_volume_size: 51200
+    # CL
+    cl_type: lighthouse
+    cl_image: ethpandaops/lighthouse:unstable
+    cl_extra_params: [ '--hierarchy-exponents=5,7,11', --reconstruct-historic-states ]
+    supernode: true
+    cl_volume_size: 51200
+    count: 1
 
 
 network_params:
