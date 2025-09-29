@@ -18,7 +18,7 @@ export const OracleK8sUp = command.cli({
       required: false,
     }),
     build: Params.boolean({
-      description: "Build oracle image from branch instead of tag",
+      description: "Build oracle image from git repo instead of tag",
       default: false,
       required: false,
     }),
@@ -83,7 +83,7 @@ export const OracleK8sUp = command.cli({
       SUBMIT_DATA_DELAY_IN_SLOTS: "1",
       ALLOW_REPORTING_IN_BUNKER_MODE: "false",
       PINATA_JWT: process.env.CSM_ORACLE_PINATA_JWT ?? "",
-      KUBO_HOST: kuboPrivateUrl,
+      KUBO_HOST: kuboPrivateUrl.replace(":5001", ""),
     };
 
     const helmReleases = [

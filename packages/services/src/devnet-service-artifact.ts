@@ -36,8 +36,9 @@ export class DevnetServiceArtifact {
       return artifact;
     }
 
-    if (artifact.config.hooks?.install)
+    if (artifact.config.hooks?.install) {
       artifact.emittedCommands.push(artifact.config.hooks?.install);
+    }
 
     await artifact.gitInit(serviceConfig);
 

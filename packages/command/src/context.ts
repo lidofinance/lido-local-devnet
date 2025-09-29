@@ -1,7 +1,6 @@
 import { Command as BaseCommand, Interfaces } from "@oclif/core";
 
 import {
-  DevNetRuntimeEnvironment,
   DevNetRuntimeEnvironmentInterface,
 } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
@@ -11,7 +10,7 @@ export class DevNetContext<T extends typeof BaseCommand> {
   public params: ExtractFlags<T>;
   // public runCommand: (id: string, argv?: string[]) => Promise<void>;
 
-  constructor(options: {
+  public constructor(options: {
     // args: ExtractArgs<T>;
     dre: DevNetRuntimeEnvironmentInterface;
     params: ExtractFlags<T>;

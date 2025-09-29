@@ -1,3 +1,4 @@
+import { EmbeddedServicesConfigs } from "@devnet/service";
 import { DEFAULT_NETWORK_NAME, Network } from "@devnet/types";
 import { DevNetError } from "@devnet/utils";
 import { Command as BaseCommand } from "@oclif/core";
@@ -153,13 +154,8 @@ export type FactoryResult<Params extends Record<string, any>, R> = {
 const extensions: CustomDevNetExtension[] = [];
 
 const applyExtensions = (dre: DevNetRuntimeEnvironmentInterface) => {
-  // dre.logger.log(`Applying extensions`);
   extensions?.forEach(extension => {
-    // if (!applyedExtensions.has(extension)) {
       extension(dre);
-      // applyedExtensions.set(extension, true);
-      // dre.logger.log(`  [${extension.name}] applied`);
-    // }
   });
 };
 
