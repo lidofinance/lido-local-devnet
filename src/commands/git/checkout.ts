@@ -49,9 +49,13 @@ export const GitCheckout = command.cli({
       await sh`git reset --hard && git clean -fd`;
     }
 
+    // fetching all branches
+    await sh`git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"`;
+    await sh`git fetch origin --prune`;
+
     // Check if the branch exists locally
     const localBranchExists =
-      await silentSh`git rev-parse --verify refs/heads/${branch}`
+      await sh`git rev-parse --verify refs/heads/${branch}`
         .then(() => true)
         .catch(() => false);
 
@@ -67,8 +71,8 @@ export const GitCheckout = command.cli({
 
       if (remoteBranchExists) {
         logger.log(`🔄 Remote branch ${branch} found. Fetching...`);
-        await sh`git fetch origin ${branch}`;
-        await sh`git checkout -b ${branch} origin/${branch}`;
+        await sh`git fetch origin ${branch}:${branch}`;
+        await sh`git checkout ${branch}`;
       } else {
         throw new DevNetError(
           `❌ Branch ${branch} does not exist locally or remotely.`,
