@@ -78,6 +78,9 @@ export const DeployLidoContracts = command.cli({
       GAS_LIMIT: '16000000',
     };
 
+    // print git branch information
+    await lidoCore.sh`git status`;
+
     await lidoCore.sh({ env: deployEnv })`bash -c scripts/dao-deploy.sh`;
 
     await dre.runCommand(LidoCoreUpdateState, {});
