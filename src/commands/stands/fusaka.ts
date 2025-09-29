@@ -51,6 +51,11 @@ export const FusakaDevNetUp = command.cli({
       ref: "main",
     });
 
+    await dre.runCommand(GitCheckout, {
+      service: "lidoCLI",
+      ref: "fix/vroom-306-temp-fix-fusaka-1",
+    });
+
     await dre.runCommand(ChainUp, { preset: params.preset });
     logger.log("✅ Network initialized.");
 
@@ -64,11 +69,6 @@ export const FusakaDevNetUp = command.cli({
     logger.log("🚀 Deploying CSM contracts...");
     await dre.runCommand(DeployCSMContracts, deployArgs);
     logger.log("✅ CSM contracts deployed.");
-
-    await dre.runCommand(GitCheckout, {
-      service: "lidoCLI",
-      ref: "fix/vroom-306-temp-fix-fusaka-1",
-    });
 
     await dre.network.waitCLFinalizedEpoch(1);
 

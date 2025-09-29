@@ -1,8 +1,6 @@
 import { command } from "@devnet/command";
 import { buildAndPushDockerImage } from "@devnet/docker";
 
-import { GitCheckout } from "../git/checkout.js";
-
 export const OracleK8sBuild = command.cli({
   description: "Build Oracle and push to Docker registry",
   params: {},
@@ -11,11 +9,6 @@ export const OracleK8sBuild = command.cli({
 
     const TAG = `kt-${network.name}`;
     const IMAGE = `lido/oracle`;
-
-    await dre.runCommand(GitCheckout, {
-      service: "oracle",
-      ref: "fix/vroom-306-temp-fix-fusaka-1", // TODO make configurable from global yaml config
-    });
 
     await buildAndPushDockerImage({
       cwd: services.oracle.artifact.root,

@@ -2,7 +2,7 @@ import { DevnetServiceConfig } from "../devnet-service-config.js";
 
 export const lidoCore = new DevnetServiceConfig({
   repository: {
-    url: "https://github.com/lidofinance/core.git",
+    url: "git@github.com:lidofinance/core.git",
     branch: "develop",
   },
   name: "lidoCore" as const,

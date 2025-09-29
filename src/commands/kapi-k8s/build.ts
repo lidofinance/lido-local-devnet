@@ -1,7 +1,6 @@
 import { command } from "@devnet/command";
 import { buildAndPushDockerImage } from "@devnet/docker";
 
-import { GitCheckout } from "../git/checkout.js";
 import { SERVICE_NAME } from "./constants/kapi-k8s.constants.js";
 
 export const KapiK8sBuild = command.cli({
@@ -12,11 +11,6 @@ export const KapiK8sBuild = command.cli({
 
     const TAG = `kt-${network.name}`;
     const IMAGE = 'lido/keys-api';
-
-    await dre.runCommand(GitCheckout, {
-      service: "kapi",
-      ref: "feat/devnet", // TODO make configurable from global yaml config
-    });
 
     await buildAndPushDockerImage({
       cwd: services.kapi.artifact.root,

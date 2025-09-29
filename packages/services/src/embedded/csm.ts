@@ -2,8 +2,8 @@ import { DevnetServiceConfig } from "../devnet-service-config.js";
 
 export const csm = new DevnetServiceConfig({
   repository: {
-    url: "https://github.com/lidofinance/community-staking-module.git",
-    branch: "v1.1",
+    url: "git@github.com:lidofinance/community-staking-module.git",
+    branch: "main",
   },
   name: "csm" as const,
   constants: {
