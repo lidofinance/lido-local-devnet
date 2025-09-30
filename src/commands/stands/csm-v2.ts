@@ -71,8 +71,16 @@ export const PectraDevNetUp = command.cli({
     logger.log("🚀 Deploying Lido Core contracts...");
     await dre.runCommand(DeployLidoContracts, {
       ...deployArgs,
-      configFile:
-        dre.services.lidoCore.config.constants.NETWORK_STATE_DEFAULTS_FILE,
+      configFile: dre.services.lidoCore.config.constants.NETWORK_STATE_DEFAULTS_FILE,
+      normalizedClRewardPerEpoch: 64,
+      normalizedClRewardMistakeRateBp: 1000,
+      rebaseCheckNearestEpochDistance: 1,
+      rebaseCheckDistantEpochDistance: 2,
+      validatorDelayedTimeoutInSlots: 7200,
+      validatorDelinquentTimeoutInSlots: 28_800,
+      nodeOperatorNetworkPenetrationThresholdBp: 100,
+      predictionDurationInSlots: 50_400,
+      finalizationMaxNegativeRebaseEpochShift: 1350,
     });
     logger.log("✅ Lido contracts deployed.");
 
@@ -88,8 +96,8 @@ export const PectraDevNetUp = command.cli({
 
     logger.log("🚀 Activating CSM module...");
     await dre.runCommand(ActivateCSM, {
-      stakeShareLimitBP: 10000,
-      priorityExitShareThresholdBP: 10000,
+      stakeShareLimitBP: 10_000,
+      priorityExitShareThresholdBP: 10_000,
       maxDepositsPerBlock: 100,
     });
     logger.log("✅ CSM module activated.");

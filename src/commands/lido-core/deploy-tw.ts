@@ -28,7 +28,7 @@ export const DeployTWContracts = command.cli({
       required: true,
     }),
   },
-  async handler({ dre, dre: { logger }, params }) {
+  async handler({ dre, dre: { logger } }) {
     const { state, services, network } = dre;
     const { lidoCore } = services;
     const { constants } = lidoCore.config;
@@ -64,7 +64,7 @@ export const DeployTWContracts = command.cli({
     };
 
     await dre.runCommand(PrepareLidoCore, {
-      configFile: params.configFile,
+      configFile: undefined,
       objectionPhaseDuration: 5,
       voteDuration: 60,
       vesting: "820000000000000000000000",
