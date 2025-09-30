@@ -111,6 +111,8 @@ export const PrepareLidoCore = command.cli({
       throw new Error(`Unsupported file extension: ${fileExtension}. Supported formats: .json, .toml`);
     }
 
+    console.log(`📄 Config file parsed (${filePath}):`, JSON.stringify(configObj, null, 2));
+
     const vestingParams = configObj.vesting || {};
     const daoObj = configObj.dao || {};
     const initialSettings = daoObj.initialSettings || {};
@@ -147,7 +149,7 @@ export const PrepareLidoCore = command.cli({
     daoVoting.voteDuration = voteDuration;
     daoVoting.objectionPhaseDuration = objectionPhaseDuration;
 
-    oracleDaemonConfig.deployParameters = {
+    const deployParameters = {
       NORMALIZED_CL_REWARD_PER_EPOCH: normalizedClRewardPerEpoch,
       NORMALIZED_CL_REWARD_MISTAKE_RATE_BP: normalizedClRewardMistakeRateBp,
       REBASE_CHECK_NEAREST_EPOCH_DISTANCE: rebaseCheckNearestEpochDistance,
@@ -162,20 +164,38 @@ export const PrepareLidoCore = command.cli({
       EXIT_EVENTS_LOOKBACK_WINDOW_IN_SLOTS: exitEventsLookbackWindowInSlots,
     };
 
+    if (fileExtension === "toml") {
+      // For TOML files, write parameters directly to oracleDaemonConfig
+      Object.assign(oracleDaemonConfig, deployParameters);
+    } else {
+      // For JSON files, write parameters to deployParameters object
+      oracleDaemonConfig.deployParameters = deployParameters;
+    }
+
     const {
       HASH_CONSENSUS_AO_EPOCHS_PER_FRAME,
       HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME,
     } = oracle.config.constants;
 
-    hashConsensusAO.deployParameters = {
+    const hashConsensusAOParams = {
       fastLaneLengthSlots: 10,
       epochsPerFrame: HASH_CONSENSUS_AO_EPOCHS_PER_FRAME,
     };
 
-    hashConsensusVEBO.deployParameters = {
+    const hashConsensusVEBOParams = {
       fastLaneLengthSlots: 10,
       epochsPerFrame: HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME,
     };
+
+    if (fileExtension === "toml") {
+      // For TOML files, write parameters directly to objects
+      Object.assign(hashConsensusAO, hashConsensusAOParams);
+      Object.assign(hashConsensusVEBO, hashConsensusVEBOParams);
+    } else {
+      // For JSON files, write parameters to deployParameters objects
+      hashConsensusAO.deployParameters = hashConsensusAOParams;
+      hashConsensusVEBO.deployParameters = hashConsensusVEBOParams;
+    }
 
     configObj.vesting = vestingParams;
     configObj.dao = daoObj;
