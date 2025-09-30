@@ -19,10 +19,68 @@ export const PrepareLidoCore = command.cli({
       default: 5,
       required: false,
     }),
+    normalizedClRewardPerEpoch: Params.integer({
+      description: "Normalized CL reward per epoch",
+      default: 64,
+      required: false,
+    }),
+    normalizedClRewardMistakeRateBp: Params.integer({
+      description: "Normalized CL reward mistake rate in basis points",
+      default: 1000,
+      required: false,
+    }),
+    rebaseCheckNearestEpochDistance: Params.integer({
+      description: "Rebase check nearest epoch distance",
+      default: 1,
+      required: false,
+    }),
+    rebaseCheckDistantEpochDistance: Params.integer({
+      description: "Rebase check distant epoch distance",
+      default: 2,
+      required: false,
+    }),
+    validatorDelayedTimeoutInSlots: Params.integer({
+      description: "Validator delayed timeout in slots",
+      default: 7200,
+      required: false,
+    }),
+    validatorDelinquentTimeoutInSlots: Params.integer({
+      description: "Validator delinquent timeout in slots",
+      default: 28_800,
+      required: false,
+    }),
+    nodeOperatorNetworkPenetrationThresholdBp: Params.integer({
+      description: "Node operator network penetration threshold in basis points",
+      default: 100,
+      required: false,
+    }),
+    predictionDurationInSlots: Params.integer({
+      description: "Prediction duration in slots",
+      default: 50_400,
+      required: false,
+    }),
+    finalizationMaxNegativeRebaseEpochShift: Params.integer({
+      description: "Finalization max negative rebase epoch shift",
+      default: 1350,
+      required: false,
+    }),
   },
   async handler({
     dre,
-    params: { voteDuration, objectionPhaseDuration, vesting },
+    params: { 
+      voteDuration, 
+      objectionPhaseDuration, 
+      vesting,
+      normalizedClRewardPerEpoch,
+      normalizedClRewardMistakeRateBp,
+      rebaseCheckNearestEpochDistance,
+      rebaseCheckDistantEpochDistance,
+      validatorDelayedTimeoutInSlots,
+      validatorDelinquentTimeoutInSlots,
+      nodeOperatorNetworkPenetrationThresholdBp,
+      predictionDurationInSlots,
+      finalizationMaxNegativeRebaseEpochShift,
+    },
   }) {
     const { state, services } = dre;
     const { lidoCore, oracle } = services;
@@ -63,15 +121,15 @@ export const PrepareLidoCore = command.cli({
 
     Object.assign(oracleDaemonConfig, {
       deployParameters: {
-        NORMALIZED_CL_REWARD_PER_EPOCH: 64,
-        NORMALIZED_CL_REWARD_MISTAKE_RATE_BP: 1000,
-        REBASE_CHECK_NEAREST_EPOCH_DISTANCE: 1,
-        REBASE_CHECK_DISTANT_EPOCH_DISTANCE: 2,
-        VALIDATOR_DELAYED_TIMEOUT_IN_SLOTS: 7200,
-        VALIDATOR_DELINQUENT_TIMEOUT_IN_SLOTS: 28_800,
-        NODE_OPERATOR_NETWORK_PENETRATION_THRESHOLD_BP: 100,
-        PREDICTION_DURATION_IN_SLOTS: 50_400,
-        FINALIZATION_MAX_NEGATIVE_REBASE_EPOCH_SHIFT: 1350,
+        NORMALIZED_CL_REWARD_PER_EPOCH: normalizedClRewardPerEpoch,
+        NORMALIZED_CL_REWARD_MISTAKE_RATE_BP: normalizedClRewardMistakeRateBp,
+        REBASE_CHECK_NEAREST_EPOCH_DISTANCE: rebaseCheckNearestEpochDistance,
+        REBASE_CHECK_DISTANT_EPOCH_DISTANCE: rebaseCheckDistantEpochDistance,
+        VALIDATOR_DELAYED_TIMEOUT_IN_SLOTS: validatorDelayedTimeoutInSlots,
+        VALIDATOR_DELINQUENT_TIMEOUT_IN_SLOTS: validatorDelinquentTimeoutInSlots,
+        NODE_OPERATOR_NETWORK_PENETRATION_THRESHOLD_BP: nodeOperatorNetworkPenetrationThresholdBp,
+        PREDICTION_DURATION_IN_SLOTS: predictionDurationInSlots,
+        FINALIZATION_MAX_NEGATIVE_REBASE_EPOCH_SHIFT: finalizationMaxNegativeRebaseEpochShift,
       },
     });
 

@@ -62,6 +62,15 @@ export const DeployTWContracts = command.cli({
       objectionPhaseDuration: 5,
       voteDuration: 60,
       vesting: "820000000000000000000000",
+      normalizedClRewardPerEpoch: 64,
+      normalizedClRewardMistakeRateBp: 1000,
+      rebaseCheckNearestEpochDistance: 1,
+      rebaseCheckDistantEpochDistance: 2,
+      validatorDelayedTimeoutInSlots: 7200,
+      validatorDelinquentTimeoutInSlots: 28_800,
+      nodeOperatorNetworkPenetrationThresholdBp: 100,
+      predictionDurationInSlots: 50_400,
+      finalizationMaxNegativeRebaseEpochShift: 1350,
     });
 
     await lidoCore.sh({
