@@ -46,6 +46,7 @@ export const PectraContractsOnlyDevNetUp = command.cli({
       nodeOperatorNetworkPenetrationThresholdBp: 100,
       predictionDurationInSlots: 50_400,
       finalizationMaxNegativeRebaseEpochShift: 1350,
+      exitEventsLookbackWindowInSlots: 7200,
     });
     logger.log("✅ Lido contracts deployed.");
 
