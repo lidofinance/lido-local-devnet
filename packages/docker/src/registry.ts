@@ -68,7 +68,7 @@ export async function buildAndPushDockerImage(
 
   try {
     // Build the Docker image
-    const buildArgs = ["build", "-t", `${imageName}:${tag}`];
+    const buildArgs = ["build", "--platform", "linux/amd64", "-t", `${imageName}:${tag}`];
 
     if (dockerfile) {
       buildArgs.push("-f", dockerfile);
