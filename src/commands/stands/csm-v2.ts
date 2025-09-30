@@ -69,7 +69,11 @@ export const PectraDevNetUp = command.cli({
     const depositArgs = { dsm: params.dsm };
 
     logger.log("🚀 Deploying Lido Core contracts...");
-    await dre.runCommand(DeployLidoContracts, deployArgs);
+    await dre.runCommand(DeployLidoContracts, {
+      ...deployArgs,
+      configFile:
+        dre.services.lidoCore.config.constants.NETWORK_STATE_DEFAULTS_FILE,
+    });
     logger.log("✅ Lido contracts deployed.");
 
     logger.log("🚀 Deploying CSM contracts...");
@@ -120,7 +124,7 @@ export const PectraDevNetUp = command.cli({
     await dre.runCommand(KapiK8sUp, {});
 
     logger.log("🚀 Run Oracle service.");
-    await dre.runCommand(OracleK8sUp, { tag: '6.0.1', build: false });
+    await dre.runCommand(OracleK8sUp, { tag: "6.0.1", build: false });
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");

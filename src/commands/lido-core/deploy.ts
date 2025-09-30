@@ -25,6 +25,10 @@ export const DeployLidoContracts = command.cli({
   description:
     "Deploys lido-core smart contracts using configured deployment scripts.",
   params: {
+    configFile: Params.string({
+      description: "Path to configuration file (supports .toml and .json)",
+      required: true,
+    }),
     verify: Params.boolean({
       description: "Verify smart contracts",
       default: false,
@@ -55,6 +59,7 @@ export const DeployLidoContracts = command.cli({
     await dre.network.waitEL();
 
     await dre.runCommand(PrepareLidoCore, {
+      configFile: params.configFile,
       objectionPhaseDuration: 5,
       voteDuration: 60,
       vesting: "820000000000000000000000",

@@ -1,4 +1,4 @@
-import { command } from "@devnet/command";
+import { Params, command } from "@devnet/command";
 
 import { PrepareLidoCore } from "./prepare-repository.js";
 import { LidoCoreUpdateState } from "./update-state.js";
@@ -22,8 +22,13 @@ type DeployEnvRequired = {
 export const DeployTWContracts = command.cli({
   description:
     "Deploys lido-core smart contracts using configured deployment scripts.",
-  params: {},
-  async handler({ dre, dre: { logger } }) {
+  params: {
+    configFile: Params.string({
+      description: "Path to configuration file (supports .toml and .json)",
+      required: true,
+    }),
+  },
+  async handler({ dre, dre: { logger }, params }) {
     const { state, services, network } = dre;
     const { lidoCore } = services;
     const { constants } = lidoCore.config;
@@ -59,6 +64,7 @@ export const DeployTWContracts = command.cli({
     };
 
     await dre.runCommand(PrepareLidoCore, {
+      configFile: params.configFile,
       objectionPhaseDuration: 5,
       voteDuration: 60,
       vesting: "820000000000000000000000",

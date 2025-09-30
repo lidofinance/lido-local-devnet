@@ -4,6 +4,10 @@ import { assert } from "@devnet/utils";
 export const PrepareLidoCore = command.cli({
   description: "Prepare lido core repository.",
   params: {
+    configFile: Params.string({
+      description: "Path to configuration file (supports .toml and .json)",
+      required: false,
+    }),
     vesting: Params.string({
       description: "Vesting LDO amount",
       default: "820000000000000000000000",
@@ -69,6 +73,7 @@ export const PrepareLidoCore = command.cli({
   async handler({
     dre,
     params: {
+      configFile,
       voteDuration,
       objectionPhaseDuration,
       vesting,
@@ -88,17 +93,26 @@ export const PrepareLidoCore = command.cli({
     const { constants } = lidoCore.config;
     const { deployer, secondDeployer } = await state.getNamedWallet();
 
-    const filePath = constants.NETWORK_STATE_DEFAULTS_FILE;
-    const tomlObj: any = await lidoCore.readToml(filePath);
+    const filePath = configFile || constants.NETWORK_STATE_DEFAULTS_FILE;
+    const fileExtension = filePath.split(".").pop()?.toLowerCase();
 
-    const vestingParams = tomlObj.vesting || {};
-    const daoObj = tomlObj.dao || {};
+    let configObj: any;
+    if (fileExtension === "json") {
+      configObj = await lidoCore.readJson(filePath);
+    } else if (fileExtension === "toml") {
+      configObj = await lidoCore.readToml(filePath);
+    } else {
+      throw new Error(`Unsupported file extension: ${fileExtension}. Supported formats: .json, .toml`);
+    }
+
+    const vestingParams = configObj.vesting || {};
+    const daoObj = configObj.dao || {};
     const initialSettings = daoObj.initialSettings || {};
     const daoVoting = initialSettings.voting || {};
-    const oracleDaemonConfig = tomlObj.oracleDaemonConfig || {};
-    const hashConsensusAO = tomlObj.hashConsensusForAccountingOracle || {};
+    const oracleDaemonConfig = configObj.oracleDaemonConfig || {};
+    const hashConsensusAO = configObj.hashConsensusForAccountingOracle || {};
     const hashConsensusVEBO =
-      tomlObj.hashConsensusForValidatorsExitBusOracle || {};
+      configObj.hashConsensusForValidatorsExitBusOracle || {};
 
     assert(
       vestingParams.holders !== undefined,
@@ -156,14 +170,16 @@ export const PrepareLidoCore = command.cli({
       epochsPerFrame: HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME,
     };
 
-    tomlObj.vesting = vestingParams;
-    tomlObj.dao = daoObj;
-    tomlObj.dao.initialSettings = initialSettings;
-    tomlObj.dao.initialSettings.voting = daoVoting;
-    tomlObj.oracleDaemonConfig = oracleDaemonConfig;
-    tomlObj.hashConsensusForAccountingOracle = hashConsensusAO;
-    tomlObj.hashConsensusForValidatorsExitBusOracle = hashConsensusVEBO;
+    configObj.vesting = vestingParams;
+    configObj.dao = daoObj;
+    configObj.dao.initialSettings = initialSettings;
+    configObj.dao.initialSettings.voting = daoVoting;
+    configObj.oracleDaemonConfig = oracleDaemonConfig;
+    configObj.hashConsensusForAccountingOracle = hashConsensusAO;
+    configObj.hashConsensusForValidatorsExitBusOracle = hashConsensusVEBO;
 
-    await lidoCore.writeToml(filePath, tomlObj);
+    await (fileExtension === "json"
+      ? lidoCore.writeJson(filePath, configObj)
+      : lidoCore.writeToml(filePath, configObj));
   },
 });

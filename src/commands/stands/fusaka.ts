@@ -63,7 +63,11 @@ export const FusakaDevNetUp = command.cli({
     const depositArgs = { dsm: true };
 
     logger.log("🚀 Deploying Lido Core contracts...");
-    await dre.runCommand(DeployLidoContracts, deployArgs);
+    await dre.runCommand(DeployLidoContracts, {
+      ...deployArgs,
+      configFile:
+        dre.services.lidoCore.config.constants.NETWORK_STATE_DEFAULTS_FILE,
+    });
     logger.log("✅ Lido contracts deployed.");
 
     logger.log("🚀 Deploying CSM contracts...");
