@@ -108,37 +108,37 @@ export const PrepareLidoCore = command.cli({
     } else if (fileExtension === "toml") {
       configObj = await lidoCore.readToml(filePath);
     } else {
-      throw new Error(`Unsupported file extension: ${fileExtension}. Supported formats: .json, .toml`);
+      throw new Error(
+        `Unsupported file extension: ${fileExtension}. Supported formats: .json, .toml`,
+      );
     }
 
-    console.log(`📄 Config file parsed (${filePath}):`, JSON.stringify(configObj, null, 2));
+    console.log(
+      `📄 Config file parsed (${filePath}):`,
+      JSON.stringify(configObj, null, 2),
+    );
 
-    const vestingParams = configObj.vesting || {};
-    const daoObj = configObj.dao || {};
-    const initialSettings = daoObj.initialSettings || {};
-    const daoVoting = initialSettings.voting || {};
-    const oracleDaemonConfig = configObj.oracleDaemonConfig || {};
-    const hashConsensusAO = configObj.hashConsensusForAccountingOracle || {};
-    const hashConsensusVEBO =
-      configObj.hashConsensusForValidatorsExitBusOracle || {};
+    // Validation after reading
+    console.log("🔍 Validating config structure after reading...");
+    assert(configObj.vesting, "Missing vesting configuration in source file");
+    assert(configObj.vesting.holders, "Missing vesting.holders in source file");
+    assert(configObj.dao, "Missing dao configuration in source file");
+    assert(
+      configObj.dao.initialSettings,
+      "Missing dao.initialSettings in source file",
+    );
+    assert(
+      configObj.dao.initialSettings.voting,
+      "Missing dao.initialSettings.voting in source file",
+    );
 
-    assert(
-      vestingParams.holders !== undefined,
-      "Missing vestingParams.holders",
-    );
-    assert(
-      initialSettings.voting !== undefined,
-      "Missing initialSettings.voting",
-    );
-    assert(oracleDaemonConfig !== undefined, "Missing oracleDaemonConfig");
-    assert(
-      oracleDaemonConfig.hashConsensusForAccountingOracle !== undefined,
-      "Missing oracleDaemonConfig.hashConsensusForAccountingOracle",
-    );
-    assert(
-      oracleDaemonConfig.hashConsensusForValidatorsExitBusOracle !== undefined,
-      "Missing oracleDaemonConfig.hashConsensusForValidatorsExitBusOracle",
-    );
+    const vestingParams = configObj.vesting;
+    const daoObj = configObj.dao;
+    const { initialSettings } = daoObj;
+    const daoVoting = initialSettings.voting;
+    const { oracleDaemonConfig } = configObj;
+    const hashConsensusAO = configObj.hashConsensusForAccountingOracle;
+    const hashConsensusVEBO = configObj.hashConsensusForValidatorsExitBusOracle;
 
     vestingParams.holders = {
       ...vestingParams.holders,
@@ -205,8 +205,16 @@ export const PrepareLidoCore = command.cli({
     configObj.hashConsensusForAccountingOracle = hashConsensusAO;
     configObj.hashConsensusForValidatorsExitBusOracle = hashConsensusVEBO;
 
+    // Log final object before writing
+    console.log(
+      `💾 Writing config to file (${filePath}):`,
+      JSON.stringify(configObj, null, 2),
+    );
+
     await (fileExtension === "json"
       ? lidoCore.writeJson(filePath, configObj)
       : lidoCore.writeToml(filePath, configObj));
+
+    console.log(`✅ Config successfully written to ${filePath}`);
   },
 });
