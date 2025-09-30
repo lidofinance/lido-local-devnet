@@ -8,6 +8,7 @@ import { LidoCoreVerify } from "./verify.js";
 type DeployEnvRequired = {
   DEPLOYER: string;
   DEPOSIT_CONTRACT: string;
+  GAS_LIMIT?: string;
   GAS_MAX_FEE: string;
   GAS_PRIORITY_FEE: string;
   GENESIS_TIME: string;
@@ -16,8 +17,8 @@ type DeployEnvRequired = {
   NETWORK_STATE_DEFAULTS_FILE: string;
   NETWORK_STATE_FILE: string;
   RPC_URL: string;
+  SCRATCH_DEPLOY_CONFIG?: string;
   SLOTS_PER_EPOCH: string;
-  GAS_LIMIT?: string;
 };
 
 export const DeployLidoContracts = command.cli({
@@ -72,6 +73,7 @@ export const DeployLidoContracts = command.cli({
       NETWORK: constants.NETWORK,
       NETWORK_STATE_DEFAULTS_FILE: constants.NETWORK_STATE_DEFAULTS_FILE,
       NETWORK_STATE_FILE: constants.NETWORK_STATE_FILE,
+      SCRATCH_DEPLOY_CONFIG: constants.SCRATCH_DEPLOY_CONFIG,
       GENESIS_TIME: genesis_time,
       RPC_URL: elPublic,
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,

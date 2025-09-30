@@ -71,13 +71,13 @@ export const FusakaSRV3DevNetUp = command.cli({
     await dre.runCommand(ActivateLidoProtocol, {});
     logger.log("✅ Lido Core protocol activated.");
 
-    logger.log("🚀 Activating CSM protocol...");
-    await dre.runCommand(ActivateCSM, {
-      stakeShareLimitBP: 2000,
-      priorityExitShareThresholdBP: 2500,
-      maxDepositsPerBlock: 30,
-    });
-    logger.log("✅ CSM protocol activated.");
+    // logger.log("🚀 Activating CSM protocol...");
+    // await dre.runCommand(ActivateCSM, {
+    //   stakeShareLimitBP: 2000,
+    //   priorityExitShareThresholdBP: 2500,
+    //   maxDepositsPerBlock: 30,
+    // });
+    // logger.log("✅ CSM protocol activated.");
 
     if (!params.dsm) {
       logger.log("🚀 Replacing DSM with an EOA...");
@@ -86,17 +86,17 @@ export const FusakaSRV3DevNetUp = command.cli({
     }
 
     const NOR_DEVNET_OPERATOR = "devnet_nor_1";
-    const CSM_DEVNET_OPERATOR = "devnet_csm_1";
+    // const CSM_DEVNET_OPERATOR = "devnet_csm_1";
 
     logger.log("🚀 Generating and allocating keys for NOR Module...");
     await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
     await dre.runCommand(UseLidoDevNetKeys, { name: NOR_DEVNET_OPERATOR });
     logger.log("✅ NOR Module keys generated and allocated.");
 
-    logger.log("🚀 Generating and allocating keys for CSM Module...");
-    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
-    await dre.runCommand(UseLidoDevNetKeys, { name: CSM_DEVNET_OPERATOR });
-    logger.log("✅ CSM Module keys generated and allocated.");
+    // logger.log("🚀 Generating and allocating keys for CSM Module...");
+    // await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
+    // await dre.runCommand(UseLidoDevNetKeys, { name: CSM_DEVNET_OPERATOR });
+    // logger.log("✅ CSM Module keys generated and allocated.");
 
     logger.log("🚀 Adding NOR operator...");
     await dre.runCommand(LidoAddOperator, { name: NOR_DEVNET_OPERATOR });
@@ -110,11 +110,11 @@ export const FusakaSRV3DevNetUp = command.cli({
     await dre.runCommand(LidoSetStakingLimit, { operatorId: 0, limit: 30 });
     logger.log("✅ Staking limit for NOR increased.");
 
-    logger.log("🚀 Adding CSM operator with keys...");
-    await dre.runCommand(LidoAddCSMOperatorWithKeys, {
-      name: CSM_DEVNET_OPERATOR,
-    });
-    logger.log(`✅ Keys for operator ${CSM_DEVNET_OPERATOR} added.`);
+    // logger.log("🚀 Adding CSM operator with keys...");
+    // await dre.runCommand(LidoAddCSMOperatorWithKeys, {
+    //   name: CSM_DEVNET_OPERATOR,
+    // });
+    // logger.log(`✅ Keys for operator ${CSM_DEVNET_OPERATOR} added.`);
 
     logger.log("🚀 Run KAPI service in K8s.");
     await dre.runCommand(KapiK8sUp, {});
@@ -140,9 +140,9 @@ export const FusakaSRV3DevNetUp = command.cli({
     await dre.runCommand(LidoDeposit, { id: 1, deposits: 30, ...depositArgs });
     logger.log("✅ Deposit to NOR completed.");
 
-    logger.log("🚀 Making deposit to CSM...");
-    await dre.runCommand(LidoDeposit, { id: 3, deposits: 30, ...depositArgs });
-    logger.log("✅ Deposit to CSM completed.");
+    // logger.log("🚀 Making deposit to CSM...");
+    // await dre.runCommand(LidoDeposit, { id: 3, deposits: 30, ...depositArgs });
+    // logger.log("✅ Deposit to CSM completed.");
 
     logger.log("🚀 Adding keys to the validator...");
     await dre.runCommand(ValidatorAdd, {});

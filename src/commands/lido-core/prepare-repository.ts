@@ -29,72 +29,68 @@ export const PrepareLidoCore = command.cli({
     const { constants } = lidoCore.config;
     const { deployer, secondDeployer } = await state.getNamedWallet();
 
-    const filePath = constants.NETWORK_STATE_DEFAULTS_FILE;
-    const networkStateDefaults = await lidoCore.readJson(filePath);
+    const filePath = constants.SCRATCH_DEPLOY_CONFIG;
+    const tomlObj: any = await lidoCore.readToml(filePath);
 
-    const {
-      vestingParams,
-      daoInitialSettings,
-      oracleDaemonConfig,
-      hashConsensusForAccountingOracle,
-      hashConsensusForValidatorsExitBusOracle,
-    } = networkStateDefaults;
-    assert(vestingParams?.holders, "Missing vestingParams.holders");
-    assert(daoInitialSettings?.voting, "Missing daoInitialSettings.voting");
-    assert(oracleDaemonConfig, "Missing oracleDaemonConfig");
-    assert(
-      hashConsensusForAccountingOracle,
-      "Missing hashConsensusForAccountingOracle",
-    );
-    assert(
-      hashConsensusForValidatorsExitBusOracle,
-      "Missing hashConsensusForValidatorsExitBusOracle",
-    );
+    const vestingParams = tomlObj.vesting || {};
+    const daoObj = tomlObj.dao || {};
+    const initialSettings = daoObj.initialSettings || {};
+    const daoVoting = initialSettings.voting || {};
+    const oracleDaemonConfig = tomlObj.oracleDaemonConfig || {};
+    const hashConsensusAO = tomlObj.hashConsensusForAccountingOracle || {};
+    const hashConsensusVEBO = tomlObj.hashConsensusForValidatorsExitBusOracle || {};
 
-    Object.assign(vestingParams.holders, {
+    assert(vestingParams.holders !== undefined, "Missing vestingParams.holders");
+    assert(initialSettings.voting !== undefined, "Missing initialSettings.voting");
+    assert(oracleDaemonConfig !== undefined, "Missing oracleDaemonConfig");
+    assert(oracleDaemonConfig.hashConsensusForAccountingOracle !== undefined, "Missing oracleDaemonConfig.hashConsensusForAccountingOracle");
+    assert(oracleDaemonConfig.hashConsensusForValidatorsExitBusOracle !== undefined, "Missing oracleDaemonConfig.hashConsensusForValidatorsExitBusOracle");
+
+    vestingParams.holders = {
+      ...vestingParams.holders,
       [deployer.publicKey]: vesting,
       [secondDeployer.publicKey]: vesting,
-    });
+    };
 
-    Object.assign(daoInitialSettings.voting, {
-      voteDuration,
-      objectionPhaseDuration,
-    });
+    daoVoting.voteDuration = voteDuration;
+    daoVoting.objectionPhaseDuration = objectionPhaseDuration;
 
-    Object.assign(oracleDaemonConfig, {
-      deployParameters: {
-        NORMALIZED_CL_REWARD_PER_EPOCH: 64,
-        NORMALIZED_CL_REWARD_MISTAKE_RATE_BP: 1000,
-        REBASE_CHECK_NEAREST_EPOCH_DISTANCE: 1,
-        REBASE_CHECK_DISTANT_EPOCH_DISTANCE: 2,
-        VALIDATOR_DELAYED_TIMEOUT_IN_SLOTS: 7200,
-        VALIDATOR_DELINQUENT_TIMEOUT_IN_SLOTS: 28_800,
-        NODE_OPERATOR_NETWORK_PENETRATION_THRESHOLD_BP: 100,
-        PREDICTION_DURATION_IN_SLOTS: 50_400,
-        FINALIZATION_MAX_NEGATIVE_REBASE_EPOCH_SHIFT: 1350,
-        EXIT_EVENTS_LOOKBACK_WINDOW_IN_SLOTS: 100_800
-      },
-    });
+    oracleDaemonConfig.deployParameters = {
+      NORMALIZED_CL_REWARD_PER_EPOCH: 64,
+      NORMALIZED_CL_REWARD_MISTAKE_RATE_BP: 1000,
+      REBASE_CHECK_NEAREST_EPOCH_DISTANCE: 1,
+      REBASE_CHECK_DISTANT_EPOCH_DISTANCE: 2,
+      VALIDATOR_DELAYED_TIMEOUT_IN_SLOTS: 7200,
+      VALIDATOR_DELINQUENT_TIMEOUT_IN_SLOTS: 28_800,
+      NODE_OPERATOR_NETWORK_PENETRATION_THRESHOLD_BP: 100,
+      PREDICTION_DURATION_IN_SLOTS: 50_400,
+      FINALIZATION_MAX_NEGATIVE_REBASE_EPOCH_SHIFT: 1350,
+      EXIT_EVENTS_LOOKBACK_WINDOW_IN_SLOTS: 100_800,
+    };
 
     const {
       HASH_CONSENSUS_AO_EPOCHS_PER_FRAME,
       HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME,
     } = oracle.config.constants;
 
-    Object.assign(hashConsensusForAccountingOracle, {
-      deployParameters: {
-        fastLaneLengthSlots: 10,
-        epochsPerFrame: HASH_CONSENSUS_AO_EPOCHS_PER_FRAME,
-      },
-    });
+    hashConsensusAO.deployParameters = {
+      fastLaneLengthSlots: 10,
+      epochsPerFrame: HASH_CONSENSUS_AO_EPOCHS_PER_FRAME,
+    };
 
-    Object.assign(hashConsensusForValidatorsExitBusOracle, {
-      deployParameters: {
-        fastLaneLengthSlots: 10,
-        epochsPerFrame: HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME,
-      },
-    });
+    hashConsensusVEBO.deployParameters = {
+      fastLaneLengthSlots: 10,
+      epochsPerFrame: HASH_CONSENSUS_VEBO_EPOCHS_PER_FRAME,
+    };
 
-    await lidoCore.writeJson(filePath, networkStateDefaults, true);
+    tomlObj.vesting = vestingParams;
+    tomlObj.dao = daoObj;
+    tomlObj.dao.initialSettings = initialSettings;
+    tomlObj.dao.initialSettings.voting = daoVoting;
+    tomlObj.oracleDaemonConfig = oracleDaemonConfig;
+    tomlObj.hashConsensusForAccountingOracle = hashConsensusAO;
+    tomlObj.hashConsensusForValidatorsExitBusOracle = hashConsensusVEBO;
+
+    await lidoCore.writeToml(filePath, tomlObj);
   },
 });
