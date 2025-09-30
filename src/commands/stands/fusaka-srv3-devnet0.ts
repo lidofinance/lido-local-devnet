@@ -1,4 +1,4 @@
-import { Params, command } from "@devnet/command";
+import { DevNetRuntimeEnvironmentInterface, Params, command } from "@devnet/command";
 
 import { ChainGetInfo } from "../chain/info.js";
 import { ChainUp } from "../chain/up.js";
@@ -21,6 +21,27 @@ import { ReplaceDSM } from "../lido-core/replace-dsm.js";
 import { LidoSetStakingLimit } from "../lido-core/set-staking-limit.js";
 import { OracleK8sUp } from "../oracles-k8s/up.js";
 import { ValidatorAdd } from "../validator/add.js";
+
+const addLidoNodeOperator = async (dre: DevNetRuntimeEnvironmentInterface, name: string, id: number, validators: number) => {
+  const { logger } = dre;
+
+  logger.log("🚀 Generating and allocating keys for NOR Module...");
+  await dre.runCommand(GenerateLidoDevNetKeys, { validators });
+  await dre.runCommand(UseLidoDevNetKeys, { name });
+  logger.log("✅ NOR Module keys generated and allocated.");
+
+  logger.log("🚀 Adding NOR operator...");
+  await dre.runCommand(LidoAddOperator, { name });
+  logger.log(`✅ Operator ${name} added.`);
+
+  logger.log("🚀 Adding NOR keys...");
+  await dre.runCommand(LidoAddKeys, { name, id: id - 1 });
+  logger.log("✅ NOR keys added.");
+
+  logger.log("🚀 Increasing staking limit for NOR...");
+  await dre.runCommand(LidoSetStakingLimit, { operatorId: id - 1, limit: validators });
+  logger.log("✅ Staking limit for NOR increased.");
+}
 
 export const FusakaSRV3DevNetUp = command.cli({
   description: "Staking Router V3 Devnet0 on Fusaka test stand.",
@@ -84,50 +105,20 @@ export const FusakaSRV3DevNetUp = command.cli({
     await dre.runCommand(ActivateLidoProtocol, {});
     logger.log("✅ Lido Core protocol activated.");
 
-    // logger.log("🚀 Activating CSM protocol...");
-    // await dre.runCommand(ActivateCSM, {
-    //   stakeShareLimitBP: 2000,
-    //   priorityExitShareThresholdBP: 2500,
-    //   maxDepositsPerBlock: 30,
-    // });
-    // logger.log("✅ CSM protocol activated.");
-
     if (!params.dsm) {
       logger.log("🚀 Replacing DSM with an EOA...");
       await dre.runCommand(ReplaceDSM, {});
       logger.log("✅ DSM replaced with an EOA.");
     }
 
-    const NOR_DEVNET_OPERATOR = "devnet_nor_1";
-    // const CSM_DEVNET_OPERATOR = "devnet_csm_1";
+    const validators = 30;
+    const NOR_DEVNET_OPERATOR_1 = "devnet_nor_1";
+    const NOR_DEVNET_OPERATOR_2 = "devnet_nor_2";
+    const NOR_DEVNET_OPERATOR_3 = "devnet_nor_3";
 
-    logger.log("🚀 Generating and allocating keys for NOR Module...");
-    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
-    await dre.runCommand(UseLidoDevNetKeys, { name: NOR_DEVNET_OPERATOR });
-    logger.log("✅ NOR Module keys generated and allocated.");
-
-    // logger.log("🚀 Generating and allocating keys for CSM Module...");
-    // await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
-    // await dre.runCommand(UseLidoDevNetKeys, { name: CSM_DEVNET_OPERATOR });
-    // logger.log("✅ CSM Module keys generated and allocated.");
-
-    logger.log("🚀 Adding NOR operator...");
-    await dre.runCommand(LidoAddOperator, { name: NOR_DEVNET_OPERATOR });
-    logger.log(`✅ Operator ${NOR_DEVNET_OPERATOR} added.`);
-
-    logger.log("🚀 Adding NOR keys...");
-    await dre.runCommand(LidoAddKeys, { name: NOR_DEVNET_OPERATOR, id: 0 });
-    logger.log("✅ NOR keys added.");
-
-    logger.log("🚀 Increasing staking limit for NOR...");
-    await dre.runCommand(LidoSetStakingLimit, { operatorId: 0, limit: 30 });
-    logger.log("✅ Staking limit for NOR increased.");
-
-    // logger.log("🚀 Adding CSM operator with keys...");
-    // await dre.runCommand(LidoAddCSMOperatorWithKeys, {
-    //   name: CSM_DEVNET_OPERATOR,
-    // });
-    // logger.log(`✅ Keys for operator ${CSM_DEVNET_OPERATOR} added.`);
+    await addLidoNodeOperator(dre, NOR_DEVNET_OPERATOR_1, 1, validators).then(() => logger.log(`✅ ${NOR_DEVNET_OPERATOR_1} initialized.`));
+    await addLidoNodeOperator(dre, NOR_DEVNET_OPERATOR_2, 2, validators).then(() => logger.log(`✅ ${NOR_DEVNET_OPERATOR_2} initialized.`));
+    await addLidoNodeOperator(dre, NOR_DEVNET_OPERATOR_3, 3, validators).then(() => logger.log(`✅ ${NOR_DEVNET_OPERATOR_3} initialized.`));
 
     logger.log("🚀 Run KAPI service in K8s.");
     await dre.runCommand(KapiK8sUp, {});
@@ -150,12 +141,8 @@ export const FusakaSRV3DevNetUp = command.cli({
     }
 
     logger.log("🚀 Making deposit to NOR...");
-    await dre.runCommand(LidoDeposit, { id: 1, deposits: 30, ...depositArgs });
+    await dre.runCommand(LidoDeposit, { id: 1, deposits: validators * 3, ...depositArgs });
     logger.log("✅ Deposit to NOR completed.");
-
-    // logger.log("🚀 Making deposit to CSM...");
-    // await dre.runCommand(LidoDeposit, { id: 3, deposits: 30, ...depositArgs });
-    // logger.log("✅ Deposit to CSM completed.");
 
     logger.log("🚀 Adding keys to the validator...");
     await dre.runCommand(ValidatorAdd, {});
