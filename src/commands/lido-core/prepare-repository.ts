@@ -69,6 +69,11 @@ export const PrepareLidoCore = command.cli({
       default: 1350,
       required: false,
     }),
+    exitEventsLookbackWindowInSlots: Params.integer({
+      description: "Exit events lookback window in slots",
+      default: 7200,
+      required: false,
+    }),
   },
   async handler({
     dre,
@@ -86,6 +91,7 @@ export const PrepareLidoCore = command.cli({
       nodeOperatorNetworkPenetrationThresholdBp,
       predictionDurationInSlots,
       finalizationMaxNegativeRebaseEpochShift,
+      exitEventsLookbackWindowInSlots,
     },
   }) {
     const { state, services } = dre;
@@ -153,6 +159,7 @@ export const PrepareLidoCore = command.cli({
       PREDICTION_DURATION_IN_SLOTS: predictionDurationInSlots,
       FINALIZATION_MAX_NEGATIVE_REBASE_EPOCH_SHIFT:
         finalizationMaxNegativeRebaseEpochShift,
+      EXIT_EVENTS_LOOKBACK_WINDOW_IN_SLOTS: exitEventsLookbackWindowInSlots,
     };
 
     const {

@@ -77,6 +77,7 @@ export const DeployTWContracts = command.cli({
       nodeOperatorNetworkPenetrationThresholdBp: 100,
       predictionDurationInSlots: 50_400,
       finalizationMaxNegativeRebaseEpochShift: 1350,
+      exitEventsLookbackWindowInSlots: 7200,
     });
 
     await lidoCore.sh({

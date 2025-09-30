@@ -79,6 +79,11 @@ export const DeployLidoContracts = command.cli({
       default: 1350,
       required: false,
     }),
+    exitEventsLookbackWindowInSlots: Params.integer({
+      description: "Exit events lookback window in slots",
+      default: 7200,
+      required: false,
+    }),
   },
   extensions:[lidoCoreExtension],
   async handler({ dre, dre: { logger }, params }) {
@@ -117,6 +122,7 @@ export const DeployLidoContracts = command.cli({
       nodeOperatorNetworkPenetrationThresholdBp: params.nodeOperatorNetworkPenetrationThresholdBp,
       predictionDurationInSlots: params.predictionDurationInSlots,
       finalizationMaxNegativeRebaseEpochShift: params.finalizationMaxNegativeRebaseEpochShift,
+      exitEventsLookbackWindowInSlots: params.exitEventsLookbackWindowInSlots,
     });
 
     const DEPOSIT_CONTRACT_ADDRESS = await dre.services.kurtosis.config.getters.DEPOSIT_CONTRACT_ADDRESS(dre.services.kurtosis);
