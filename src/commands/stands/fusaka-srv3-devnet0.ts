@@ -55,7 +55,19 @@ export const FusakaSRV3DevNetUp = command.cli({
     const depositArgs = { dsm: true };
 
     logger.log("🚀 Deploying Lido Core contracts...");
-    await dre.runCommand(DeployLidoContracts, deployArgs);
+    await dre.runCommand(DeployLidoContracts, {
+      ...deployArgs,
+      configFile: dre.services.lidoCore.config.constants.SCRATCH_DEPLOY_CONFIG,
+      normalizedClRewardPerEpoch: 64,
+      normalizedClRewardMistakeRateBp: 1000,
+      rebaseCheckNearestEpochDistance: 1,
+      rebaseCheckDistantEpochDistance: 2,
+      validatorDelayedTimeoutInSlots: 7200,
+      validatorDelinquentTimeoutInSlots: 28_800,
+      nodeOperatorNetworkPenetrationThresholdBp: 100,
+      predictionDurationInSlots: 50_400,
+      finalizationMaxNegativeRebaseEpochShift: 1350,
+    });
     logger.log("✅ Lido contracts deployed.");
 
     logger.log("🚀 Deploying CSM contracts...");
@@ -120,7 +132,7 @@ export const FusakaSRV3DevNetUp = command.cli({
     await dre.runCommand(KapiK8sUp, {});
 
     logger.log("🚀 Run Oracle service in K8s.");
-    await dre.runCommand(OracleK8sUp, { tag: '6.0.1', build: false });
+    await dre.runCommand(OracleK8sUp, { tag: "6.0.1", build: false });
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");
