@@ -132,12 +132,12 @@ export const PrepareLidoCore = command.cli({
     );
     assert(oracleDaemonConfig !== undefined, "Missing oracleDaemonConfig");
     assert(
-      oracleDaemonConfig.hashConsensusForAccountingOracle !== undefined,
-      "Missing oracleDaemonConfig.hashConsensusForAccountingOracle",
+      configObj.hashConsensusForAccountingOracle !== undefined,
+      "Missing hashConsensusForAccountingOracle",
     );
     assert(
-      oracleDaemonConfig.hashConsensusForValidatorsExitBusOracle !== undefined,
-      "Missing oracleDaemonConfig.hashConsensusForValidatorsExitBusOracle",
+      configObj.hashConsensusForValidatorsExitBusOracle !== undefined,
+      "Missing hashConsensusForValidatorsExitBusOracle",
     );
 
     vestingParams.holders = {
