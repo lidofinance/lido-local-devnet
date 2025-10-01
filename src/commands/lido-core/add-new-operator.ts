@@ -17,19 +17,30 @@ export const AddNewOperator = command.cli({
       description: "Operator ID to be used for the new operator.",
       default: 1,
     }),
+    depositCount: Params.integer({
+      description: "Number of deposits to be made for the new operator.",
+      default: 30,
+    }),
+    stakingModuleId: Params.integer({
+      description: "Staking module ID to be used for the new operator.",
+      default: 1,
+    }),
   },
   async handler({ params, dre, dre: { logger, services } }) {
     const depositArgs = { dsm: false };
     const OPERATOR_ID = params.operatorId;
+    const STAKING_MODULE_ID = params.stakingModuleId ?? 1;
+    const NOR_DEVNET_OPERATOR = `devnet_nor_${OPERATOR_ID}`;
+    const DEPOSIT_COUNT = params.depositCount ?? 30;
 
     assert(
       OPERATOR_ID > 0,
       `Operator ID must be greater than 0, got ${OPERATOR_ID}`,
     );
-
-    const NOR_DEVNET_OPERATOR = `devnet_nor_${OPERATOR_ID}`;
-
-    const DEPOSIT_COUNT = 100;
+    assert(
+      STAKING_MODULE_ID > 0,
+      `Staking Module ID must be greater than 0, got ${STAKING_MODULE_ID}`,
+    );
 
     const operatorExists = await services.lidoCLI.fileExists(
       `generated-keys/${NOR_DEVNET_OPERATOR}.json`,
