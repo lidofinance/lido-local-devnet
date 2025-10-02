@@ -42,6 +42,7 @@ export const LateProverBotK8sUp = command.cli({
     const { elPrivate, clPrivate } = await state.getChain();
 
     const { locator } = await state.getLido();
+    const { deployer } = await state.getNamedWallet();
     const { image, tag, registryHostname } = await state.getLateProverBotK8sImage();
 
     const env: Record<string, number | string> = {
@@ -51,6 +52,7 @@ export const LateProverBotK8sUp = command.cli({
       LIDO_LOCATOR_ADDRESS: locator,
       EL_API_URLS: elPrivate,
       CL_API_URLS: clPrivate,
+      TX_SIGNER_PRIVATE_KEY: deployer.privateKey,
     };
 
     const hostname = process.env.LATE_PROVER_BOT_INGRESS_HOSTNAME?.
