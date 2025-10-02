@@ -57,6 +57,7 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.CL_API_URLS="${CL_API_URLS}" \
 	--set lido-app.env.variables.CHAIN_ID="${CHAIN_ID}" \
 	--set lido-app.env.variables.LIDO_LOCATOR_ADDRESS="${LIDO_LOCATOR_ADDRESS}" \
+	--set lido-app.env.variables.TX_SIGNER_PRIVATE_KEY="${TX_SIGNER_PRIVATE_KEY}" \
 	--set-json lido-app.ingress.hosts='[{ "host": "${INGRESS_HOSTNAME}", "paths": [{ "path": "/", "pathType": "Prefix", "port": "http"}]}]'
 endef
 
