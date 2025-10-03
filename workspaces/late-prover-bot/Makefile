@@ -6,7 +6,7 @@ NAMESPACE ?= test-namespace
 
 # Helm chart paths
 HELM_CHART_ROOT_PATH ?= ../../helm
-HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/lido/lido-kapi
+HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/lido/lido-late-prover-bot
 HELM_VALUES_PATH ?=
 
 ifneq ($(HELM_VALUES_PATH),)
@@ -16,7 +16,7 @@ else
 endif
 
 # Release names
-HELM_RELEASE ?= lido-kapi
+HELM_RELEASE ?= late-prover-bot
 
 # Default Helm timeout
 TIMEOUT ?= 5m
@@ -40,11 +40,10 @@ else
 endif
 
 # Default ENV Variables specific to chart
-LATE_PROVER_BOT_INGRESS_HOSTNAME ?= late-prover-bot.devnet.testnet.fi
-IMAGE ?= lidofinance/lido-late-prover-bot
+IMAGE ?= lidofinance/late-prover-bot
 TAG ?= dev
 REGISTRY_HOSTNAME ?= docker.io
-PROVIDERS_URLS ?= http://execution
+EL_RPC_URLS ?= http://execution
 CL_API_URLS ?= http://consensus
 CHAIN_ID ?= 32382
 
@@ -54,11 +53,11 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.image.repository="${IMAGE}" \
 	--set lido-app.image.tag="${TAG}" \
 	--set lido-app.image.registry="${REGISTRY_HOSTNAME}" \
+	--set lido-app.env.variables.EL_RPC_URLS="${EL_RPC_URLS}" \
 	--set lido-app.env.variables.CL_API_URLS="${CL_API_URLS}" \
 	--set lido-app.env.variables.CHAIN_ID="${CHAIN_ID}" \
 	--set lido-app.env.variables.LIDO_LOCATOR_ADDRESS="${LIDO_LOCATOR_ADDRESS}" \
-	--set lido-app.env.variables.TX_SIGNER_PRIVATE_KEY="${TX_SIGNER_PRIVATE_KEY}" \
-	--set-json lido-app.ingress.hosts='[{ "host": "${INGRESS_HOSTNAME}", "paths": [{ "path": "/", "pathType": "Prefix", "port": "http"}]}]'
+	--set lido-app.env.variables.TX_SIGNER_PRIVATE_KEY="${TX_SIGNER_PRIVATE_KEY}"
 endef
 
 

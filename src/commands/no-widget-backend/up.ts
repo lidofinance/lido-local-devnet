@@ -63,7 +63,7 @@ export const NoWidgetBackendUp = command.cli({
       LIDO_DEVNET_ADDRESS: lido,
       DEVNET_GENESIS_FORK_VERSION: GENESIS_FORK_VERSION.replace("0x", ""),
       KEYS_API_HOST: privateUrl,
-      EL_API_URLS: elPrivate,
+      EL_RPC_URLS: elPrivate,
     };
 
     const hostname = process.env.NO_WIDGET_BACKEND_INGRESS_HOSTNAME?.

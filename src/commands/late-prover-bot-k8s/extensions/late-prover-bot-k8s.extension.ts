@@ -41,8 +41,6 @@ export const LateProverBotK8sStateImage = z.object({
 export type LateProverBotK8sStateImage = z.infer<typeof LateProverBotK8sStateImage>;
 
 export const LateProverBotK8sStateRunning = z.object({
-  publicUrl: z.string().url(),
-  privateUrl: z.string().url(),
   helmRelease: z.string(),
 });
 
@@ -77,7 +75,7 @@ export const lateProverBotK8sExtension = (dre: DevNetRuntimeEnvironmentInterface
 
   dre.state.isLateProverBotK8sRunning = (async function () {
     const state = await dre.state.getLateProverBotK8sRunning(false);
-    return state && !isEmptyObject(state) && (state.privateUrl !== undefined);
+    return state && !isEmptyObject(state) && (state.helmRelease !== undefined);
   });
 
   dre.state.getLateProverBotK8sImage = (async function <M extends boolean = true>(must: M = true as M) {
@@ -96,8 +94,6 @@ export const lateProverBotK8sExtension = (dre: DevNetRuntimeEnvironmentInterface
   dre.state.getLateProverBotK8sRunning = (async function <M extends boolean = true>(must: M = true as M) {
     return dre.state.getProperties(
       {
-        publicUrl: "lateProverBotK8s.running.publicUrl",
-        privateUrl: "lateProverBotK8s.running.privateUrl",
         helmRelease: "lateProverBotK8s.running.helmRelease",
       },
       "lateProverBotK8s",
