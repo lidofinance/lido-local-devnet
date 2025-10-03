@@ -1,13 +1,6 @@
-import {
-  DEFAULT_NETWORK_NAME,
-  NETWORK_NAME_SUBSTITUTION,
-  command,
-} from "@devnet/command";
+import { command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
-import {
-  addPrefixToIngressHostname,
-  createNamespaceIfNotExists,
-} from "@devnet/k8s";
+import { createNamespaceIfNotExists } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
@@ -40,31 +33,20 @@ export const LateProverBotK8sUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
-
     const { locator } = await state.getLido();
     const { deployer } = await state.getNamedWallet();
     const { image, tag, registryHostname } = await state.getLateProverBotK8sImage();
-
     const env: Record<string, number | string> = {
       ...lateProverBot.config.constants,
 
       CHAIN_ID: "32382",
       LIDO_LOCATOR_ADDRESS: locator,
-      EL_API_URLS: elPrivate,
+      EL_RPC_URLS: elPrivate,
       CL_API_URLS: clPrivate,
       TX_SIGNER_PRIVATE_KEY: deployer.privateKey,
     };
 
-    const hostname = process.env.LATE_PROVER_BOT_INGRESS_HOSTNAME?.
-      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
-
-    if (!hostname) {
-      throw new DevNetError(`LATE_PROVER_BOT_INGRESS_HOSTNAME env variable is not set`);
-    }
-
-    const INGRESS_HOSTNAME = addPrefixToIngressHostname(hostname);
-
-    const HELM_RELEASE = 'lido-late-prover-bot-1';
+    const HELM_RELEASE = 'lido-late-prover-bot';
     const helmSh = lateProverBot.sh({
       env: {
         ...env,
@@ -74,7 +56,6 @@ export const LateProverBotK8sUp = command.cli({
         IMAGE: image,
         TAG: tag,
         REGISTRY_HOSTNAME: registryHostname,
-        INGRESS_HOSTNAME,
       },
     });
 
@@ -88,8 +69,6 @@ export const LateProverBotK8sUp = command.cli({
 
     await state.updateLateProverBotK8sRunning({
       helmRelease: HELM_RELEASE,
-      publicUrl: `http://${INGRESS_HOSTNAME}`,
-      privateUrl: `http://${HELM_RELEASE}.${NAMESPACE(dre)}.svc.cluster.local:3000`
     });
 
     logger.log(`${SERVICE_NAME} started.`);
