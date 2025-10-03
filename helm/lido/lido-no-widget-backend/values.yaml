@@ -70,7 +70,7 @@ api:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       LOG_FORMAT: ${LOG_FORMAT:-json}
       KEYS_API_HOST: ${KEYS_API_HOST}
-      EL_RPC_URLS: ${EL_RPC_URLS}
+      EL_API_URLS: ${EL_API_URLS}
       CHAIN_ID: ${CHAIN_ID}
       PG_HOST: lido-no-widget-backend-postgresql
       POSTGRES_USER: postgres
@@ -215,7 +215,7 @@ worker:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       LOG_FORMAT: ${LOG_FORMAT:-json}
       KEYS_API_HOST: ${KEYS_API_HOST}
-      EL_RPC_URLS: ${EL_RPC_URLS}
+      EL_API_URLS: ${EL_API_URLS}
       CHAIN_ID: ${CHAIN_ID}
       DEVNET_GENESIS_FORK_VERSION: ${DEVNET_GENESIS_FORK_VERSION}
       LIDO_DEVNET_ADDRESS: ${LIDO_DEVNET_ADDRESS}
