@@ -1,0 +1,113 @@
+lido-app:
+  nameOverride: lido-csm-prover-tool
+
+  # Number of replicas for the backend deployment
+  replicaCount: 1
+
+  # Image configuration
+  image:
+    registry: docker.io
+    repository: lidofinance/csm-prover-tool
+    tag: "dev"
+    pullPolicy: Always
+    imagePullSecrets:
+    - name: registry-pull-secret
+    # Example:
+    # imagePullSecrets:
+    #   - name: myregistrykey
+
+  service:
+    type: ClusterIP
+    ports:
+      - name: metrics
+        port: 9090
+        targetPort: 9090
+        protocol: TCP
+      - name: http-health
+        port: 8081
+        targetPort: 8081
+        protocol: TCP
+
+  # Container command
+  command: [ ]
+
+  # Container args
+  args: [ ]
+
+  # Environment variables
+  env:
+    # Static environment variables
+    variables:
+      PROMETHEUS_PORT: 9000
+      HEALTHCHECK_SERVER_PORT: 8080
+      CHAIN_ID: ${CHAIN_ID}
+      EL_RPC_URLS: ${EL_RPC_URLS}
+      CL_API_URLS: ${CL_API_URLS}
+      KEYSAPI_API_URLS: ${KEYSAPI_API_URLS}
+      CSM_ADDRESS: ${CSM_ADDRESS}
+      VERIFIER_ADDRESS: ${VERIFIER_ADDRESS}
+      TX_SIGNER_PRIVATE_KEY: ${TX_SIGNER_PRIVATE_KEY}
+
+  # Resource limits and requests
+  resources: { }
+  # Example:
+  # resources:
+  #   limits:
+  #     cpu: 500m
+  #     memory: 512Mi
+  #   requests:
+  #     cpu: 250m
+  #     memory: 256Mi
+
+  # Node selector
+  nodeSelector: { }
+
+  # Tolerations
+  tolerations: [ ]
+
+  # Affinity rules
+  affinity: { }
+
+  # Security context
+  securityContext: { }
+
+  # Pod security context
+  podSecurityContext: { }
+
+  # Liveness probe
+  livenessProbe:
+    exec:
+      command: ["curl", "-f", "http://localhost:8080/health"]
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  # Readiness probe
+  readinessProbe:
+    exec:
+      command: ["curl", "-f", "http://localhost:8080/health"]
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+  # Additional labels
+  additionalLabels: { }
+
+  # Additional annotations
+  additionalAnnotations: { }
+
+  # Persistent Volume Claims configuration
+  pvcs: [ ]
+  # Example PVC configuration:
+  # pvcs:
+  #   - name: data-storage
+  #     storageClassName: "ssh-hostpath"
+  #     accessModes:
+  #       - ReadWriteOnce
+  #     size: 10Gi
+  #     mountPath: /data
+  #   - name: logs-storage
+  #     storageClassName: "ssh-hostpath"
+  #     accessModes:
+  #       - ReadWriteOnce
+  #     size: 5Gi
+  #     mountPath: /logs
+
