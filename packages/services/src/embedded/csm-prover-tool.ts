@@ -3,7 +3,7 @@ import { DevnetServiceConfig } from "../devnet-service-config.js";
 export const csmProverTool = new DevnetServiceConfig({
   repository: {
     url: "git@github.com:lidofinance/csm-prover-tool.git",
-    branch: "develop",
+    branch: "feat/support-fusaka",
   },
   workspace: "workspaces/csm-prover-tool",
   name: "csmProverTool" as const,

@@ -1,15 +1,8 @@
 participants:
 
-  #- el_type: besu
-  #  el_image: ethpandaops/besu:fusaka-devnet-3
-  # - el_type: reth
-  #   el_image: ethpandaops/reth:fusaka-devnet-3
-  # - el_type: nimbus
-  #   el_image: ethpandaops/nimbus-eth1:fusaka-devnet-3
   - el_type: geth
     el_image: ethereum/client-go:v1.16.4
     el_extra_params: [ --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive ]
-  #  el_extra_params: [ --rpc.gascap=16777215 --rpc.allow-unprotected-txs --syncmode=full --gcmode=archive ]
     el_min_cpu: 0
     el_max_cpu: 0
     el_min_mem: 0
@@ -32,50 +25,52 @@ participants:
 
   - el_type: erigon
     el_image: erigontech/erigon:v3.2.0-rc1
+    el_extra_params: [ --prune.mode=archive ]
     el_min_cpu: 0
     el_max_cpu: 0
     el_min_mem: 0
     el_max_mem: 0
     el_volume_size: 51200
     # CL
-    cl_type: prysm
-    cl_image: gcr.io/offchainlabs/prysm/beacon-chain:v6.1.0
+    cl_type: lighthouse
+    cl_image: sigp/lighthouse:v8.0.0-rc.1
+    cl_extra_params: [ '--hierarchy-exponents=5,7,11', --reconstruct-historic-states ]
     supernode: true
     cl_volume_size: 51200
     count: 1
-  # - el_type: nethermind
-  #   el_image: ethpandaops/nethermind:fusaka-devnet-3
-  #- cl_type: lighthouse
-  #  cl_image: docker.ethquokkaops.io/dh/ethpandaops/lighthouse:fusaka-devnet-3
-  #  supernode: true
-  #  use_separate_vc: true
-#    - cl_type: prysm
-#      cl_image: ethpandaops/prysm-beacon-chain:fusaka-devnet-3
-#      supernode: true
-  # - cl_type: grandine
-  #   cl_image: ethpandaops/grandine:fusaka-devnet-3
-  #   supernode: true
-  # - cl_type: lodestar
-  #   cl_image: ethpandaops/lodestar:fusaka-devnet-3
-  #   supernode: true
 
+  - el_type: geth
+    el_image: ethereum/client-go:v1.16.4
+    el_extra_params: [ --rpc.gascap=16777215 --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive ]
+    el_min_cpu: 0
+    el_max_cpu: 0
+    el_min_mem: 0
+    el_max_mem: 0
+    el_volume_size: 51200
+    # CL
+    cl_type: lighthouse
+    cl_image: sigp/lighthouse:v8.0.0-rc.1
+    cl_extra_params: [ '--hierarchy-exponents=5,7,11', --reconstruct-historic-states ]
+    supernode: true
+    cl_volume_size: 51200
+    count: 1
 
 network_params:
   network_id: "32382"
-  fulu_fork_epoch: 20
-  bpo_1_epoch: 32
+  fulu_fork_epoch: 10
+  bpo_1_epoch: 12
   bpo_1_max_blobs: 12
   bpo_1_target_blobs: 9
-  bpo_2_epoch: 33
+  bpo_2_epoch: 13
   bpo_2_max_blobs: 6
   bpo_2_target_blobs: 4
-  bpo_3_epoch: 34
+  bpo_3_epoch: 14
   bpo_3_max_blobs: 9
   bpo_3_target_blobs: 6
-  bpo_4_epoch: 35
+  bpo_4_epoch: 15
   bpo_4_max_blobs: 18
   bpo_4_target_blobs: 12
-  bpo_5_epoch: 36
+  bpo_5_epoch: 16
   bpo_5_max_blobs: 9
   bpo_5_target_blobs: 6
   withdrawal_type: "0x02"
