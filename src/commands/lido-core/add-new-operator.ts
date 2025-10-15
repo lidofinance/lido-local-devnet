@@ -46,6 +46,8 @@ export const AddNewOperator = command.cli({
       `generated-keys/${NOR_DEVNET_OPERATOR}.json`,
     );
 
+    const operatorId = OPERATOR_ID - 1;
+
     assert(!operatorExists, `Operator ${NOR_DEVNET_OPERATOR} already exists.`);
 
     logger.log("🚀 Generating and allocating keys for NOR Module...");
@@ -60,20 +62,20 @@ export const AddNewOperator = command.cli({
     logger.log("🚀 Adding NOR keys...");
     await dre.runCommand(LidoAddKeys, {
       name: NOR_DEVNET_OPERATOR,
-      id: OPERATOR_ID,
+      id: operatorId,
     });
     logger.log("✅ NOR keys added.");
 
     logger.log("🚀 Increasing staking limit for NOR...");
     await dre.runCommand(LidoSetStakingLimit, {
-      operatorId: OPERATOR_ID,
+      operatorId,
       limit: DEPOSIT_COUNT,
     });
     logger.log("✅ Staking limit for NOR increased.");
 
     logger.log("🚀 Making deposit to NOR...");
     await dre.runCommand(LidoDeposit, {
-      id: 1,
+      id: STAKING_MODULE_ID,
       deposits: DEPOSIT_COUNT,
       ...depositArgs,
     });

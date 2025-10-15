@@ -112,14 +112,6 @@ export const FusakaSRV3DevNetUp = command.cli({
       logger.log("✅ DSM-bots service started.");
     }
 
-    logger.log("🚀 Making deposit to NOR...");
-    await dre.runCommand(LidoDeposit, { id: 1, deposits: validators * 3, ...depositArgs });
-    logger.log("✅ Deposit to NOR completed.");
-
-    logger.log("🚀 Adding keys to the validator...");
-    await dre.runCommand(ValidatorAdd, {});
-    logger.log("✅ Validator keys added.");
-
     await dre.runCommand(ChainGetInfo, {});
   },
 });
