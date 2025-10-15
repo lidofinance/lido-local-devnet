@@ -5,8 +5,8 @@ import { ChainUp } from "../chain/up.js";
 import { CouncilK8sUp } from "../council-k8s/up.js";
 import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
-import { DeployCSVerifier } from "../csm/add-verifier.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
+import { CSMProverToolK8sUp } from "../csm-prover-tool-k8s/up.js";
 import { DataBusDeploy } from "../data-bus/deploy.js";
 import { DSMBotsK8sUp } from "../dsm-bots-k8s/up.js";
 import { GitCheckout } from "../git/checkout.js";
@@ -43,7 +43,7 @@ export const FusakaDevNetUp = command.cli({
   async handler({ params, dre, dre: { logger } }) {
     await dre.runCommand(GitCheckout, {
       service: "lidoCore",
-      ref: "fix/scratch-deploy-tw",
+      ref: "master",
     });
 
     await dre.runCommand(GitCheckout, {
@@ -60,7 +60,7 @@ export const FusakaDevNetUp = command.cli({
     logger.log("✅ Network initialized.");
 
     const deployArgs = { verify: false };
-    const depositArgs = { dsm: true };
+    const depositArgs = { dsm: params.dsm };
 
     logger.log("🚀 Deploying Lido Core contracts...");
     await dre.runCommand(DeployLidoContracts, deployArgs);
@@ -153,12 +153,15 @@ export const FusakaDevNetUp = command.cli({
     await dre.runCommand(ValidatorAdd, {});
     logger.log("✅ Validator keys added.");
 
-    await dre.runCommand(ChainGetInfo, {});
-
     logger.log("🚀 Run No Widget Backend");
     await dre.runCommand(NoWidgetBackendUp, { });
 
     logger.log("🚀 Run No Widget");
     await dre.runCommand(NoWidgetUp, { });
+
+    logger.log("🚀 Run CSM Prover Tool");
+    await dre.runCommand(CSMProverToolK8sUp, {});
+
+    await dre.runCommand(ChainGetInfo, {});
   },
 });
