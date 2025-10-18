@@ -25,9 +25,13 @@ export const AddNewOperator = command.cli({
       description: "Staking module ID to be used for the new operator.",
       default: 1,
     }),
+    dsm: Params.boolean({
+      description: "Use full DSM setup.",
+      default: false,
+    }),
   },
   async handler({ params, dre, dre: { logger, services } }) {
-    const depositArgs = { dsm: false };
+    const depositArgs = { dsm: params.dsm };
     const OPERATOR_ID = params.operatorId;
     const STAKING_MODULE_ID = params.stakingModuleId ?? 1;
     const NOR_DEVNET_OPERATOR = `devnet_nor_${OPERATOR_ID}`;

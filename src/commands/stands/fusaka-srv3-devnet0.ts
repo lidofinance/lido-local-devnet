@@ -11,11 +11,8 @@ import { KapiK8sUp } from "../kapi-k8s/up.js";
 import { ActivateLidoProtocol } from "../lido-core/activate.js";
 import { AddNewOperator } from "../lido-core/add-new-operator.js";
 import { DeployLidoContracts } from "../lido-core/deploy.js";
-import { LidoDeposit } from "../lido-core/deposit.js";
 import { ReplaceDSM } from "../lido-core/replace-dsm.js";
 import { OracleK8sUp } from "../oracles-k8s/up.js";
-import { ValidatorAdd } from "../validator/add.js";
-
 
 export const FusakaSRV3DevNetUp = command.cli({
   description: "Staking Router V3 Devnet0 on Fusaka test stand.",
@@ -87,9 +84,9 @@ export const FusakaSRV3DevNetUp = command.cli({
 
     const validators = 30;
     logger.log("🚀 Adding 3 new operators with validators...");
-    await dre.runCommand(AddNewOperator, { operatorId: 1, stakingModuleId: 1, depositCount: validators});
-    await dre.runCommand(AddNewOperator, { operatorId: 2, stakingModuleId: 1, depositCount: validators});
-    await dre.runCommand(AddNewOperator, { operatorId: 3, stakingModuleId: 1, depositCount: validators});
+    await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 2, stakingModuleId: 1, depositCount: validators});
+    await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 1, stakingModuleId: 1, depositCount: validators});
+    await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 3, stakingModuleId: 1, depositCount: validators});
     logger.log("✅ 3 new operators with validators added.");
 
     logger.log("🚀 Run KAPI service in K8s.");
