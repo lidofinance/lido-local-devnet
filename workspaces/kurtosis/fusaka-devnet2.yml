@@ -21,21 +21,21 @@ participants:
     cl_volume_size: 51200
     count: 1
 
-  - el_type: erigon
-    el_image: erigontech/erigon:v3.2.0-rc1
-    el_extra_params: [ --prune.mode=archive ]
-    el_min_cpu: 0
-    el_max_cpu: 0
-    el_min_mem: 0
-    el_max_mem: 0
-    el_volume_size: 51200
-    # CL
-    cl_type: lighthouse
-    cl_image: sigp/lighthouse:v8.0.0-rc.1
-    cl_extra_params: [ '--hierarchy-exponents=5,7,11', --reconstruct-historic-states ]
-    supernode: true
-    cl_volume_size: 51200
-    count: 1
+  # - el_type: erigon
+  #   el_image: erigontech/erigon:v3.2.0-rc1
+  #   el_extra_params: [ --prune.mode=archive ]
+  #   el_min_cpu: 0
+  #   el_max_cpu: 0
+  #   el_min_mem: 0
+  #   el_max_mem: 0
+  #   el_volume_size: 51200
+  #   # CL
+  #   cl_type: lighthouse
+  #   cl_image: sigp/lighthouse:v8.0.0-rc.1
+  #   cl_extra_params: [ '--hierarchy-exponents=5,7,11', --reconstruct-historic-states ]
+  #   supernode: true
+  #   cl_volume_size: 51200
+  #   count: 1
 
   - el_type: geth
     el_image: ethereum/client-go:v1.16.4
@@ -73,6 +73,7 @@ network_params:
   bpo_5_target_blobs: 6
   withdrawal_type: "0x02"
   preset: mainnet
+  max_per_epoch_activation_exit_churn_limit: 64000000000
 
 persistent: true
 

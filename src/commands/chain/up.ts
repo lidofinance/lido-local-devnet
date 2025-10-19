@@ -2,6 +2,7 @@ import { Params, command } from "@devnet/command";
 import { DevNetError, sleep } from "@devnet/utils";
 
 import { BlockscoutUp } from "../blockscout/up.js";
+import { GenesisGeneratorK8SBuild } from "../genesis-generator/build.js";
 import { K8sPing } from "../k8s/ping.js";
 import { K8sSetDefaultContext } from "../k8s/set-default-context.js";
 import { KurtosisDoraK8sIngressUp } from "../kurtosis/dora/up.js";
@@ -25,6 +26,7 @@ export const ChainUp = command.isomorphic({
 
     await dre.runCommand(K8sSetDefaultContext, { context: defaultContext });
     await dre.runCommand(K8sPing, { context: defaultContext });
+    await dre.runCommand(GenesisGeneratorK8SBuild, {});
     await dre.runCommand(KurtosisRunPackage, { preset: preset ?? '' });
 
     await sleep(5000);
