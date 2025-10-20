@@ -2,7 +2,8 @@ participants:
 
   - el_type: geth
     el_image: ethereum/client-go:v1.16.4
-    el_extra_params: [ --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive ]
+    el_extra_params: [ --state.scheme=hash --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive ]
+    el_init_extra_params: [--state.scheme=hash ] # a new state scheme is required for zk-test (with the fork of ethereum-package)
     el_min_cpu: 0
     el_max_cpu: 0
     el_min_mem: 0
@@ -23,10 +24,25 @@ participants:
     cl_volume_size: 51200
     count: 1
 
+  - el_type: reth
+    el_image: ghcr.io/paradigmxyz/reth:v1.8.1
+    el_init_extra_params: []
+    el_min_cpu: 0
+    el_max_cpu: 0
+    el_min_mem: 0
+    el_max_mem: 0
+    el_volume_size: 51200
+    # CL
+    cl_type: prysm
+    cl_image: gcr.io/offchainlabs/prysm/beacon-chain:v6.1.1
+    supernode: true
+    cl_volume_size: 51200
+    count: 1
+
 
 network_params:
   network_id: "32382"
-  fulu_fork_epoch: 1
+  fulu_fork_epoch: 2
   bpo_1_epoch: 32
   bpo_1_max_blobs: 12
   bpo_1_target_blobs: 9
@@ -44,6 +60,7 @@ network_params:
   bpo_5_target_blobs: 6
   withdrawal_type: "0x02"
   preset: mainnet
+  min_epochs_for_block_requests: 33024
 
 persistent: true
 
@@ -52,6 +69,11 @@ additional_services:
   - spamoor
 
 keymanager_enabled: true
+
+ethereum_genesis_generator_params:
+  # The image to use for ethereum genesis generator
+  image: ethpandaops/ethereum-genesis-generator:5.0.8
+
 
 spamoor_params:
   image: ethpandaops/spamoor:master
