@@ -50,7 +50,7 @@ sigProvider:
     annotations: {}
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
-    hostname: hr6vb82d1ndsx-blockscout-sig-provider.fusaka-verification-test.valset-03.testnet.fi
+    hostname: verifier-devnet.testnet.fi
     tls:
       enabled: false
 
