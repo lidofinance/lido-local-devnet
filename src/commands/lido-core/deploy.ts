@@ -87,7 +87,7 @@ export const DeployLidoContracts = command.cli({
 
     if (params.verify) {
       logger.log("Verifying smart contracts...");
-      //await dre.runCommand(LidoCoreVerify, {});
+      await dre.runCommand(LidoCoreVerify, {});
     }
 
     logger.log("✅ Deployment of smart contracts completed successfully.");

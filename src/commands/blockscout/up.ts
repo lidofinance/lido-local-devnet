@@ -57,6 +57,21 @@ export const BlockscoutUp = command.cli({
     await blockScoutPostgresqlSh`make lint`;
     await blockScoutPostgresqlSh`make install`;
 
+    // blockscout verification
+    const blockScoutVerificationSh = blockscout.sh({
+      cwd: path.join(blockscout.artifact.root, 'verification'),
+      env: {
+        NAMESPACE: NAMESPACE(dre),
+        HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
+        // Makefile-related ENV vars for Helm charts overrides
+        // see workspaces/blockscout/blockscout-*/Makefile
+      },
+    });
+
+    await blockScoutVerificationSh`make debug`;
+    await blockScoutVerificationSh`make lint`;
+    await blockScoutVerificationSh`make install`;
+
     const blockScoutStackSh = blockscout.sh({
       cwd: path.join(blockscout.artifact.root, 'blockscout-stack'),
       env: {
