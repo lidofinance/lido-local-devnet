@@ -73,7 +73,6 @@ network_params:
   bpo_5_target_blobs: 6
   withdrawal_type: "0x02"
   preset: mainnet
-  max_per_epoch_activation_exit_churn_limit: 64000000000
   validator_balance: 2048
   num_validator_keys_per_node: 5000
   shard_committee_period: 1
