@@ -49,7 +49,7 @@ export const KurtosisRunPackage = command.isomorphic({
 
     await kurtosis.sh`kurtosis run
                         --enclave ${dre.network.name}
-                        github.com/AlexandrMov/ethereum-package
+                        github.com/lidofinance/ethereum-package
                         --production
                         --args-file ${configFileName}`;
 
