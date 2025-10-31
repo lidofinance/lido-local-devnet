@@ -20,8 +20,8 @@ export const VoluntaryExit = command.cli({
       required: true,
     }),
   },
-  async handler({ dre: { services }, params }) {
-    const { lidoCLI } = services;
+  async handler({ dre: { services, state, network }, params }) {
+    const { lidoCLI,  } = services;
 
     const mnemonic = mnemonics[params.mtype as keyof typeof mnemonics];
 
@@ -30,6 +30,18 @@ export const VoluntaryExit = command.cli({
       `No mnemonics found for key ${params.mtype}`,
     );
 
-    await lidoCLI.sh`./run.sh validators voluntary-exit ${mnemonic} ${params.index}`;
+    const { elPublic, clPublic } = await state.getChain();
+    const { deployer } = await state.getNamedWallet();
+
+    await lidoCLI.sh({
+      env: {
+        EL_CHAIN_ID: "32382",
+        EL_NETWORK_NAME: network.name,
+        EL_API_PROVIDER: elPublic,
+        CL_API_PROVIDER: clPublic,
+        PRIVATE_KEY: deployer.privateKey,
+        DEPLOYED: `deployed-${network.name}.json`,
+      },
+    })`./run.sh validators voluntary-exit ${mnemonic} ${params.index}`;
   },
 });

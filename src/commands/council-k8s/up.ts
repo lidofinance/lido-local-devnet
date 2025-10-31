@@ -54,9 +54,6 @@ export const CouncilK8sUp = command.cli({
       PUBSUB_SERVICE: "evm-chain",
       EVM_CHAIN_DATA_BUS_ADDRESS: dataBusAddress,
       EVM_CHAIN_DATA_BUS_PROVIDER_URL: elPrivate,
-      RABBITMQ_URL: "ws://dsm_rabbit:15674/ws", // not really used
-      RABBITMQ_LOGIN: "guest",
-      RABBITMQ_PASSCODE: "guest",
       LOCATOR_DEVNET_ADDRESS: locator,
     };
 

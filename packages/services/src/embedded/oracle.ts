@@ -3,7 +3,7 @@ import { DevnetServiceConfig } from "../devnet-service-config.js";
 export const oracle = new DevnetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/lido-oracle.git",
-    branch: "fix/vroom-306-temp-fix-fusaka-1",
+    branch: "feat/srv3-accounting",
   },
   workspace: "workspaces/oracle",
   name: "oracle" as const,

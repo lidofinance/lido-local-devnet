@@ -45,6 +45,18 @@ export const BlockscoutDown = command.cli({
 
     // TODO remove postgressql persistent volumes
 
+    const blockScoutVerificationSh = blockscout.sh({
+      cwd: path.join(blockscout.artifact.root, 'verification'),
+      env: {
+        NAMESPACE: NAMESPACE(dre),
+        HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
+      },
+    });
+
+    await blockScoutVerificationSh`make debug`;
+    await blockScoutVerificationSh`make lint`;
+    await blockScoutVerificationSh`make uninstall`;
+
     const blockScoutStackSh = blockscout.sh({
       cwd: path.join(blockscout.artifact.root, 'blockscout-stack'),
       env: {

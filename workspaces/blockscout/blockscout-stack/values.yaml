@@ -125,9 +125,6 @@ blockscout:
     ETHEREUM_JSONRPC_HTTP_URL: 'http://execution'
     DATABASE_URL: 'postgresql://admin:admin@postgresql:5432/blockscout?sslmode=disable'
     ECTO_USE_SSL: false
-    MICROSERVICE_SC_VERIFIER_ENABLED: "true"
-    MICROSERVICE_SC_VERIFIER_URL: "" # TODO
-    MICROSERVICE_SC_VERIFIER_TYPE: "true"
     INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: "true"
     SUBNETWORK: "lido"
     INDEXER_COIN_BALANCES_BATCH_SIZE: "50"
@@ -138,6 +135,32 @@ blockscout:
     POOL_SIZE_API: "10"
     HEART_BEAT_TIMEOUT: "30"
     ETHEREUM_JSONRPC_DISABLE_ARCHIVE_BALANCES: false
+    CONTRACT_VERIFICATION_ALLOWED_SOLIDITY_EVM_VERSIONS: "homestead,tangerineWhistle,spuriousDragon,byzantium,constantinople,petersburg,istanbul,berlin,london,paris,shanghai,cancun,default"
+    CONTRACT_VERIFICATION_ALLOWED_VYPER_EVM_VERSIONS: "byzantium,constantinople,petersburg,istanbul,berlin,paris,shanghai,cancun,default"
+    CONTRACT_MAX_STRING_LENGTH_WITHOUT_TRIMMING: "2040"
+    CHECKSUM_ADDRESS_HASHES: true
+    CHECKSUM_FUNCTION: eth
+    MICROSERVICE_SC_VERIFIER_ENABLED: true
+    # MICROSERVICE_SC_VERIFIER_URL: http://sc-verifier:8050/
+    # MICROSERVICE_SC_VERIFIER_TYPE: sc_verifier
+    # MICROSERVICE_SC_VERIFIER_URL: https://eth-bytecode-db.services.blockscout.com/
+    # MICROSERVICE_SC_VERIFIER_TYPE: eth_bytecode_db
+    MICROSERVICE_SC_VERIFIER_URL: http://blockscout-verifier-smart-contract-verifier:8050/
+    MICROSERVICE_SC_VERIFIER_TYPE: sc_verifier
+    MICROSERVICE_ETH_BYTECODE_DB_INTERVAL_BETWEEN_LOOKUPS: "10m"
+    MICROSERVICE_ETH_BYTECODE_DB_MAX_LOOKUPS_CONCURRENCY: "10"
+    MICROSERVICE_VISUALIZE_SOL2UML_ENABLED: false
+    MICROSERVICE_VISUALIZE_SOL2UML_URL: http://visualizer:8050/
+    MICROSERVICE_SIG_PROVIDER_ENABLED: true
+    MICROSERVICE_SIG_PROVIDER_URL: http://blockscout-verifier-sig-provider:8043/
+    # MICROSERVICE_BENS_URL:
+    # MICROSERVICE_BENS_ENABLED:
+    MICROSERVICE_ACCOUNT_ABSTRACTION_ENABLED: false
+    MICROSERVICE_ACCOUNT_ABSTRACTION_URL: http://user-ops-indexer:8050/
+    # MICROSERVICE_METADATA_URL:
+    # MICROSERVICE_METADATA_ENABLED:
+    # MICROSERVICE_STYLUS_VERIFIER_URL:
+    DECODE_NOT_A_CONTRACT_CALLS: true
 
     # NAME: VALUE
   # Refer to an existing Secret/ConfigMap
