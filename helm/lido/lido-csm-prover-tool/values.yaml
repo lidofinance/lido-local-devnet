@@ -47,6 +47,8 @@ lido-app:
       CSM_ADDRESS: ${CSM_ADDRESS}
       VERIFIER_ADDRESS: ${VERIFIER_ADDRESS}
       TX_SIGNER_PRIVATE_KEY: ${TX_SIGNER_PRIVATE_KEY}
+      START_ROOT: ${START_ROOT}
+
 
   # Resource limits and requests
   resources: { }

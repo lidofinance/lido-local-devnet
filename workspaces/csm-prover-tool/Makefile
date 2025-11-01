@@ -59,7 +59,8 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.CHAIN_ID="${CHAIN_ID}" \
 	--set lido-app.env.variables.CSM_ADDRESS="${CSM_ADDRESS}" \
 	--set lido-app.env.variables.VERIFIER_ADDRESS="${VERIFIER_ADDRESS}" \
-	--set lido-app.env.variables.TX_SIGNER_PRIVATE_KEY="${TX_SIGNER_PRIVATE_KEY}"
+	--set lido-app.env.variables.TX_SIGNER_PRIVATE_KEY="${TX_SIGNER_PRIVATE_KEY}" \
+	--set lido-app.env.variables.START_ROOT="${START_ROOT}"
 endef
 
 
