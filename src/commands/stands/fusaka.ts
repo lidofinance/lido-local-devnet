@@ -48,7 +48,7 @@ export const FusakaDevNetUp = command.cli({
 
     await dre.runCommand(GitCheckout, {
       service: "csm",
-      ref: "main",
+      ref: "develop",
     });
 
     await dre.runCommand(GitCheckout, {
