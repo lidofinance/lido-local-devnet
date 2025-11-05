@@ -59,7 +59,7 @@ export const FusakaDevNetUp = command.cli({
     await dre.runCommand(ChainUp, { preset: params.preset });
     logger.log("✅ Network initialized.");
 
-    const deployArgs = { verify: false };
+    const deployArgs = { verify: params.verify };
     const depositArgs = { dsm: params.dsm };
 
     logger.log("🚀 Deploying Lido Core contracts...");
