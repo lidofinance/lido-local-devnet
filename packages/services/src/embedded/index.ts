@@ -6,6 +6,7 @@ import { csmProverTool } from "./csm-prover-tool.js";
 import { dataBus } from "./data-bus.js";
 import { dockerRegistry } from "./docker-registry.js";
 import { dsmBots } from "./dsm-bots.js";
+import { ethGenenisGenerator } from "./genesis-generator.js";
 import { kapi } from "./kapi.js";
 import { kubo } from "./kubo.js";
 import { kurtosis } from "./kurtosis.js"
@@ -19,6 +20,7 @@ import { voting } from "./voting.js";
 
 export const serviceConfigs = {
   blockscout,
+  ethGenenisGenerator,
   lateProverBot,
   lidoCore,
   lidoCLI,

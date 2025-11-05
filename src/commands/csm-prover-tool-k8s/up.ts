@@ -41,6 +41,7 @@ export const CSMProverToolK8sUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
+    const { el, cl } = await state.getNodesIngress();
     const { verifier: csVerifier, module: csModule } = await state.getCSM();
     const { privateUrl: kapiPrivateUrl } = await state.getKapiK8sRunning();
     const { deployer } = await state.getNamedWallet();
@@ -49,8 +50,8 @@ export const CSMProverToolK8sUp = command.cli({
       ...csmProverTool.config.constants,
 
       CHAIN_ID: "32382",
-      EL_RPC_URLS: elPrivate,
-      CL_API_URLS: clPrivate,
+      EL_RPC_URLS: el[1].publicIngressUrl,
+      CL_API_URLS: cl[1].publicIngressUrl,
       KEYSAPI_API_URLS: kapiPrivateUrl,
       CSM_ADDRESS: csModule,
       VERIFIER_ADDRESS: csVerifier,

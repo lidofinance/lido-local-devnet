@@ -3,7 +3,7 @@ import { DevnetServiceConfig } from "../devnet-service-config.js";
 export const lidoCLI = new DevnetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/lido-cli.git",
-    branch: "fix/vroom-306-temp-fix-fusaka-1",
+    branch: "feature/sr-66-devnet0-1",
   },
   name: "lidoCLI" as const,
   constants: {
