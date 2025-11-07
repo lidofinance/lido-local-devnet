@@ -155,7 +155,7 @@ postgresql:
   image:
     registry: docker.io
     repository: bitnami/postgresql
-    tag: 17.6.0-debian-12-r0
+    tag: "latest"
     digest: ""
     pullPolicy: IfNotPresent
   primary:
