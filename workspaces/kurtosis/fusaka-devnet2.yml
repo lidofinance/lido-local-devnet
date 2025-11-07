@@ -60,6 +60,22 @@ network_params:
   withdrawal_type: "0x02"
   preset: mainnet
   shard_committee_period: 1
+  fulu_fork_epoch: 1
+  bpo_1_epoch: 32
+  bpo_1_max_blobs: 12
+  bpo_1_target_blobs: 9
+  bpo_2_epoch: 33
+  bpo_2_max_blobs: 6
+  bpo_2_target_blobs: 4
+  bpo_3_epoch: 34
+  bpo_3_max_blobs: 9
+  bpo_3_target_blobs: 6
+  bpo_4_epoch: 35
+  bpo_4_max_blobs: 18
+  bpo_4_target_blobs: 12
+  bpo_5_epoch: 36
+  bpo_5_max_blobs: 9
+  bpo_5_target_blobs: 6
 
 persistent: true
 

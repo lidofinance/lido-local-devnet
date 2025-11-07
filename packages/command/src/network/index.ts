@@ -64,9 +64,9 @@ export class DevNetDRENetwork {
     const attemptToFetchGenesis = async (): Promise<void> => {
       try {
         await clClient.getGenesis();
-      } catch {
+      } catch (error) {
         this.logger.log(
-          "Consensus node not ready yet... Retrying in 5 seconds",
+          `Consensus node not ready yet... Retrying in 5 seconds ${error}`,
         );
         await new Promise((resolve) => setTimeout(resolve, 5000));
         return attemptToFetchGenesis();
