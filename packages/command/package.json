@@ -16,8 +16,11 @@
   },
   "dependencies": {
     "@devnet/cl-client": "workspace:*",
+    "@devnet/logger": "workspace:*",
     "@devnet/service": "workspace:*",
     "@devnet/state": "workspace:*",
+    "@devnet/types": "workspace:*",
+    "@devnet/ui": "workspace:*",
     "@fastify/swagger": "^9.4.2",
     "@fastify/swagger-ui": "^5.2.1",
     "@oclif/core": "^4.0.37",
@@ -33,6 +36,7 @@
   },
   "devDependencies": {
     "@types/dockerode": "^3.3.34",
+    "@types/ws": "^8.18.0",
     "eslint": "^8",
     "eslint-config-oclif": "^5",
     "eslint-config-oclif-typescript": "^3",

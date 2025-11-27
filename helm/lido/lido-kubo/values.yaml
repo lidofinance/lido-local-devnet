@@ -1,0 +1,115 @@
+lido-app:
+  nameOverride: lido-kubo
+
+  # Number of replicas for the backend deployment
+  replicaCount: 1
+
+  # Image configuration
+  image:
+    registry: docker.io
+    repository: lidofinance/kubo
+    tag: "dev"
+    pullPolicy: Always
+    imagePullSecrets:
+      - name: registry-pull-secret
+
+  service:
+    type: ClusterIP
+    ports:
+     - name: http
+       port: 8080
+       targetPort: 8080
+       protocol: TCP
+     - name: http-api
+       port: 5001
+       targetPort: 5001
+       protocol: TCP
+
+  # Ingress configuration
+  ingress:
+    # Enable/disable ingress
+    enabled: true
+    # Ingress class name
+    className: "public"
+    # Ingress annotations
+    annotations: {}
+    # Example annotations:
+    # annotations:
+    #   nginx.ingress.kubernetes.io/rewrite-target: /
+    #   cert-manager.io/cluster-issuer: letsencrypt-prod
+
+    # Ingress hosts configuration
+    hosts:
+      - host: kubo-api.local
+        paths:
+          - path: /
+            pathType: Prefix
+            port: http-api
+
+  # Container command
+  command: [ ]
+
+  # Container args
+  args: ["daemon", "--migrate=true", "--agent-version-suffix=docker"]
+
+  # Environment variables
+  env:
+    # Static environment variables
+    variables:
+      CHAIN: ${CHAIN}
+
+  # Resource limits and requests
+  resources: { }
+  # Example:
+  # resources:
+  #   limits:
+  #     cpu: 500m
+  #     memory: 512Mi
+  #   requests:
+  #     cpu: 250m
+  #     memory: 256Mi
+
+  # Node selector
+  nodeSelector: { }
+
+  # Tolerations
+  tolerations: [ ]
+
+  # Affinity rules
+  affinity: { }
+
+  # Security context
+  securityContext: { }
+
+  # Pod security context
+  podSecurityContext: { }
+
+  # Liveness probe
+  livenessProbe:
+    httpGet:
+      path: /debug/metrics/prometheus
+      port: http-api
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  # Readiness probe
+  readinessProbe:
+    httpGet:
+      path: /debug/metrics/prometheus
+      port: http-api
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+  # Additional labels
+  additionalLabels: { }
+
+  # Additional annotations
+  additionalAnnotations: { }
+
+  # Persistent Volume Claims configuration
+  pvcs:
+   - name: ipfs-data
+     accessModes:
+       - ReadWriteOnce
+     size: 16Gi
+     mountPath: /data/ipfs

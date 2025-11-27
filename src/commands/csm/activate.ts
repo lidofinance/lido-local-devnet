@@ -44,11 +44,18 @@ export const ActivateCSM = command.cli({
     const csmState = await dre.state.getCSM();
     const clClient = await network.getCLClient();
 
+    if (await state.isCSMActivated()) {
+      logger.log("CSM already activated");
+      return;
+    }
+
     await dre.network.waitEL();
 
     const { HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME } = oracle.config.constants;
 
-    const currentEpoch = await clClient.getHeadEpoch();
+    let currentEpoch = await clClient.getHeadEpoch();
+    // Ensure a minimum epoch for having non-zero block roots from CL state on initial epoch.
+    currentEpoch = Math.max(currentEpoch, 256); // SLOTS_PER_HISTORICAL_ROOT / SLOTS_PER_EPOCH
     const initialEpoch = HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME + currentEpoch + 2;
 
     const env: CSMActivateENV = {
@@ -72,5 +79,7 @@ export const ActivateCSM = command.cli({
     logger.log("Deploying and configuring csm components...");
 
     await lidoCLI.sh({ env })`./run.sh omnibus script devnetCSMStart`;
+
+    await state.updateCSMActivated({ active: true });
   },
 });

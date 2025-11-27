@@ -4,12 +4,17 @@ export const ActivateLidoProtocol = command.cli({
   description:
     "Activates the lido-core protocol by deploying smart contracts and configuring the environment based on the current network state.",
   params: {},
-  async handler({ dre }) {
+  async handler({ dre, dre: { logger} }) {
     const {
       state,
       services: { lidoCLI, oracle },
       network,
     } = dre;
+
+    if (await state.isLidoActivated()) {
+      logger.log("Lido already activated");
+      return;
+    }
 
     const { elPublic } = await state.getChain();
     const { deployer, oracles, councils } = await state.getNamedWallet();
@@ -47,5 +52,7 @@ export const ActivateLidoProtocol = command.cli({
                           --dsm-guardians ${councils.map(({ publicKey }) => publicKey).join(",")}
                           --dsm-quorum ${councils.length}
                           --roles-beneficiary ${deployer.publicKey}`;
+
+    await state.updateLidoActivated({ active: true });
   },
 });

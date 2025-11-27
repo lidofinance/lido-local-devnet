@@ -29,7 +29,7 @@ export const DeployTWContracts = command.cli({
     const { constants } = lidoCore.config;
 
     const { elPublic } = await state.getChain();
-    const blockscoutState = await state.getBlockScout();
+    const blockscoutState = await state.getBlockscout();
     const clClient = await network.getCLClient();
 
     const {
@@ -40,10 +40,11 @@ export const DeployTWContracts = command.cli({
 
     await dre.network.waitEL();
 
+    const DEPOSIT_CONTRACT_ADDRESS = await dre.services.kurtosis.config.getters.DEPOSIT_CONTRACT_ADDRESS(dre.services.kurtosis);
+
     const deployEnv: DeployEnvRequired = {
       DEPLOYER: deployer.publicKey,
-      // TODO: get DEPOSIT_CONTRACT from state
-      DEPOSIT_CONTRACT: constants.DEPOSIT_CONTRACT,
+      DEPOSIT_CONTRACT: DEPOSIT_CONTRACT_ADDRESS,
       GAS_MAX_FEE: constants.GAS_MAX_FEE,
       GAS_PRIORITY_FEE: constants.GAS_PRIORITY_FEE,
       LOCAL_DEVNET_PK: deployer.privateKey,

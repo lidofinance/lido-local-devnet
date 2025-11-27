@@ -1,0 +1,6 @@
+dependencies:
+- name: lido-app
+  repository: file://../lido-app
+  version: 1.0.1
+digest: sha256:5bf51314dd3340ef4c7c75e5e0f9ce1805f5395ac182fe13fbbe2608820eb051
+generated: "2025-09-25T16:38:30.766118321+03:00"

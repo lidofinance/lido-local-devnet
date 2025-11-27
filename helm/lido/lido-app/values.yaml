@@ -1,0 +1,154 @@
+# Default values for backend.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+nameOverride: ""
+
+# Number of replicas for the backend deployment
+replicaCount: 1
+
+# Image configuration
+image:
+  # Docker registry to pull the image from
+  registry: docker.io
+  # Repository/image name
+  repository: busybox
+  # Image tag (can be overridden)
+  tag: "latest"
+  # Image pull policy
+  pullPolicy: IfNotPresent
+  # Image pull secrets for private docker registries
+  imagePullSecrets: []
+  # Example:
+  # imagePullSecrets:
+  #   - name: myregistrykey
+
+
+
+# Service configuration
+service:
+  # Service type
+  type: ClusterIP
+  # Multiple ports configuration
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+
+# Ingress configuration
+ingress:
+  # Enable/disable ingress
+  enabled: false
+  # Ingress class name
+  className: "public"
+  # Ingress annotations
+  annotations: {}
+  # Example annotations:
+  # annotations:
+  #   nginx.ingress.kubernetes.io/rewrite-target: /
+  #   cert-manager.io/cluster-issuer: letsencrypt-prod
+
+  # Ingress hosts configuration
+  hosts:
+    - host: lido-app.local
+      paths:
+        - path: /
+          pathType: Prefix
+          port: http
+
+  # TLS configuration
+  tls: []
+  # Example TLS:
+  # tls:
+  #   - secretName: backend-tls
+  #     hosts:
+  #       - backend.local
+
+# Container command
+command: []
+
+# Container args
+args: []
+
+# Environment variables
+env:
+  # Static environment variables
+  variables: {}
+  # Example:
+  # variables:
+  #   NODE_ENV: production
+  #   API_URL: https://api.example.com
+
+# Resource limits and requests
+resources: {}
+# Example:
+# resources:
+#   limits:
+#     cpu: 500m
+#     memory: 512Mi
+#   requests:
+#     cpu: 250m
+#     memory: 256Mi
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity rules
+affinity: {}
+
+# Security context
+securityContext: {}
+
+# Pod security context
+podSecurityContext: {}
+
+# Liveness probe
+livenessProbe: {}
+#  httpGet:
+#    path: /health
+#    port: http
+#  initialDelaySeconds: 30
+#  periodSeconds: 10
+
+# Readiness probe
+readinessProbe: {}
+#  httpGet:
+#    path: /ready
+#    port: http
+#  initialDelaySeconds: 5
+#  periodSeconds: 5
+
+# Additional labels
+additionalLabels: {}
+
+# Additional annotations
+additionalAnnotations: {}
+
+# Persistent Volume Claims configuration
+pvcs: []
+# Example PVC configuration:
+# pvcs:
+#   - name: data-storage
+#     storageClassName: "ssh-hostpath"
+#     accessModes:
+#       - ReadWriteOnce
+#     size: 10Gi
+#     mountPath: /data
+#   - name: logs-storage
+#     storageClassName: "ssh-hostpath"
+#     accessModes:
+#       - ReadWriteOnce
+#     size: 5Gi
+#     mountPath: /logs
+
+# Service account
+serviceAccount:
+  # Create service account
+  create: true
+  # Service account annotations
+  annotations: {}
+  # Service account name (if not created, must exist)
+  name: ""

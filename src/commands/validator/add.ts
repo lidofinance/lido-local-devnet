@@ -1,5 +1,7 @@
-import { assert, command } from "@devnet/command";
+import { command } from "@devnet/command";
 import * as keyManager from "@devnet/key-manager-api";
+import { assert, sleep } from "@devnet/utils";
+import { pipe, A, RA, TE, NEA, E } from "@devnet/fp";
 
 import { ValidatorRestart } from "./restart.js";
 
@@ -14,11 +16,13 @@ export const ValidatorAdd = command.cli({
       state,
     },
   }) {
-    const { validatorsApi } = await dre.state.getChain();
+    const { validatorsApiPublic } = await dre.state.getChain();
     const keystoresResponse = await keyManager.fetchKeystores(
-      validatorsApi,
+      validatorsApiPublic,
       keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
     );
+
+    logger.log(`Total keystores: ${keystoresResponse.data.length}`);
 
     const existingPubKeys = new Set(
       keystoresResponse.data.map((p) => p.validating_pubkey.replace("0x", "")),
@@ -38,17 +42,33 @@ export const ValidatorAdd = command.cli({
 
     logger.log(`Detected new keystores: ${actualKeystores.length}`);
 
+    await sleep(25_000);
+
     const keystoresStrings = actualKeystores.map((v) => JSON.stringify(v));
-    const keystoresPasswords = actualKeystores.map((_) => "12345678");
-    const res = await keyManager.importKeystores(
-      validatorsApi,
+
+    await pipe(
       keystoresStrings,
-      keystoresPasswords,
-      keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
+      A.chunksOf(10),
+      A.mapWithIndex((index, keystoresChunk) => {
+        logger.log(`Chunk ${index} of keystores`);
+
+        const keystoresChunkPasswords = keystoresChunk.map((_) => "12345678");
+
+        return TE.tryCatch(async () => {
+          await keyManager.importKeystores(
+            validatorsApiPublic,
+            keystoresChunk,
+            keystoresChunkPasswords,
+            keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
+          );
+        }, E.toError);
+      }),
+      A.sequence(TE.ApplicativeSeq), // sequential execution
+      TE.execute
     );
 
-    logger.logJson(res);
 
-    await dre.runCommand(ValidatorRestart, {});
+    // TODO
+    // await dre.runCommand(ValidatorRestart, {});
   },
 });

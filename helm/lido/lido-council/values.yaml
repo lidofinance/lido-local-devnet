@@ -1,0 +1,99 @@
+lido-app:
+  nameOverride: lido-council
+
+  # Number of replicas for the backend deployment
+  replicaCount: 1
+
+  # Image configuration
+  image:
+    registry: docker.io
+    repository: lidofinance/lido-council-daemon
+    tag: "dev"
+    pullPolicy: Always
+    imagePullSecrets:
+      - name: registry-pull-secret
+
+  service:
+    type: ClusterIP
+    ports:
+      - name: http
+        port: 9040
+        targetPort: 9040
+        protocol: TCP
+
+  # Container command
+  command: [ ]
+
+  # Container args
+  args: []
+
+  # Environment variables
+  env:
+    # Static environment variables
+    variables:
+      PORT: 3000
+      LOG_LEVEL: ${LOG_LEVEL}
+      LOG_FORMAT: ${LOG_FORMAT}
+      RPC_URL: ${RPC_URL}
+      WALLET_PRIVATE_KEY: ${WALLET_PRIVATE_KEY_1}
+      KEYS_API_HOST: ${KEYS_API_HOST}
+      KEYS_API_PORT: ${KEYS_API_PORT}
+      PUBSUB_SERVICE: ${PUBSUB_SERVICE}
+      EVM_CHAIN_DATA_BUS_ADDRESS: ${EVM_CHAIN_DATA_BUS_ADDRESS}
+      EVM_CHAIN_DATA_BUS_PROVIDER_URL: ${EVM_CHAIN_DATA_BUS_PROVIDER_URL}
+
+  # Resource limits and requests
+  resources: { }
+  # Example:
+  # resources:
+  #   limits:
+  #     cpu: 500m
+  #     memory: 512Mi
+  #   requests:
+  #     cpu: 250m
+  #     memory: 256Mi
+
+  # Node selector
+  nodeSelector: { }
+
+  # Tolerations
+  tolerations: [ ]
+
+  # Affinity rules
+  affinity: { }
+
+  # Security context
+  securityContext: { }
+
+  # Pod security context
+  podSecurityContext: { }
+
+  # Liveness probe
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  # Readiness probe
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+  # Additional labels
+  additionalLabels: { }
+
+  # Additional annotations
+  additionalAnnotations: { }
+
+  # Persistent Volume Claims configuration
+  pvcs:
+    - name: council-cache
+      accessModes:
+        - ReadWriteOnce
+      size: 16Gi
+      mountPath: /council/cache/

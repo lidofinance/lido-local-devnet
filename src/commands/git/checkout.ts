@@ -1,12 +1,13 @@
-import { DevNetError, Params, command } from "@devnet/command";
-import { services } from "@devnet/service";
+import { Params, command } from "@devnet/command";
+import { serviceConfigs } from "@devnet/service";
+import { DevNetError } from "@devnet/utils";
 
 export const GitCheckout = command.cli({
   description: "Switching the Git branch in the specified service",
   params: {
     service: Params.option({
       description: "Name of one of the existing services.",
-      options: Object.keys(services) as (keyof typeof services)[],
+      options: Object.keys(serviceConfigs) as (keyof typeof serviceConfigs)[],
       required: true,
     })(),
     ref: Params.string({
@@ -47,6 +48,10 @@ export const GitCheckout = command.cli({
       logger.log("⚠️ Uncommitted changes found. Performing a hard reset...");
       await sh`git reset --hard && git clean -fd`;
     }
+
+    // fetching all branches
+    await sh`git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"`;
+    await sh`git fetch origin --prune`;
 
     // Check if the branch exists locally
     const localBranchExists =

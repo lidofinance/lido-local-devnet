@@ -1,5 +1,6 @@
 import { Params, command } from "@devnet/command";
 
+import { lidoCoreExtension } from "./extensions/lido-core.extension.js";
 import { PrepareLidoCore } from "./prepare-repository.js";
 import { LidoCoreUpdateState } from "./update-state.js";
 import { LidoCoreVerify } from "./verify.js";
@@ -16,6 +17,7 @@ type DeployEnvRequired = {
   NETWORK_STATE_FILE: string;
   RPC_URL: string;
   SLOTS_PER_EPOCH: string;
+  GAS_LIMIT?: string;
 };
 
 export const DeployLidoContracts = command.cli({
@@ -28,12 +30,19 @@ export const DeployLidoContracts = command.cli({
       required: true,
     }),
   },
+  extensions:[lidoCoreExtension],
   async handler({ dre, dre: { logger }, params }) {
     const { state, services, network } = dre;
     const { lidoCore } = services;
     const { constants } = lidoCore.config;
 
+    if (await state.isLidoDeployed()) {
+      logger.log("Lido contracts are already deployed.");
+      return;
+    }
+
     const { elPublic } = await state.getChain();
+    await network.waitCL();
     const clClient = await network.getCLClient();
 
     const {
@@ -50,10 +59,13 @@ export const DeployLidoContracts = command.cli({
       vesting: "820000000000000000000000",
     });
 
+    const DEPOSIT_CONTRACT_ADDRESS = await dre.services.kurtosis.config.getters.DEPOSIT_CONTRACT_ADDRESS(dre.services.kurtosis);
+
+    logger.log(DEPOSIT_CONTRACT_ADDRESS);
+
     const deployEnv: DeployEnvRequired = {
       DEPLOYER: deployer.publicKey,
-      // TODO: get DEPOSIT_CONTRACT from state
-      DEPOSIT_CONTRACT: constants.DEPOSIT_CONTRACT,
+      DEPOSIT_CONTRACT: DEPOSIT_CONTRACT_ADDRESS,
       GAS_MAX_FEE: constants.GAS_MAX_FEE,
       GAS_PRIORITY_FEE: constants.GAS_PRIORITY_FEE,
       LOCAL_DEVNET_PK: deployer.privateKey,
@@ -63,7 +75,11 @@ export const DeployLidoContracts = command.cli({
       GENESIS_TIME: genesis_time,
       RPC_URL: elPublic,
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,
+      GAS_LIMIT: '16000000',
     };
+
+    // print git branch information
+    await lidoCore.sh`git status`;
 
     await lidoCore.sh({ env: deployEnv })`bash -c scripts/dao-deploy.sh`;
 

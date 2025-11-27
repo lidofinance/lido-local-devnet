@@ -1,0 +1,31 @@
+import {command} from "@devnet/command";
+
+export const ChainSyncState = command.isomorphic({
+  description:
+    "Sync Chain state and place it in the state. Should be run after chain is up and nodes state synced",
+  params: {},
+  async handler({ dre: { logger, state , network} }) {
+    logger.log(
+      "Syncing chain nodes state form k8s",
+    );
+    // TODO check that devnet is in k8s or in docker
+
+    const nodes = await state.getNodes();
+    const nodesIngress = await state.getNodesIngress();
+
+    await state.updateChain({
+      clPrivate: `http://${nodes.cl[0].k8sService}.kt-${network.name}.svc.cluster.local:${nodes.cl[0].httpPort}`,
+      clPublic: nodesIngress.cl[0].publicIngressUrl,
+
+      elClientType: nodes.el[0].clientType,
+      elPrivate: `http://${nodes.el[0].k8sService}.kt-${network.name}.svc.cluster.local:${nodes.el[0].rpcPort}`,
+      elPublic: nodesIngress.el[0].publicIngressUrl,
+
+      elWsPrivate: `http://${nodes.el[0].k8sService}.kt-${network.name}.svc.cluster.local:${nodes.el[0].wsPort}`,
+      elWsPublic: nodesIngress.el[0].publicIngressUrl,
+
+      validatorsApiPublic: nodesIngress.vc[0].publicIngressUrl,
+      validatorsApiPrivate: `http://${nodes.vc[0].k8sService}.kt-${network.name}.svc.cluster.local:${nodes.vc[0].httpValidatorPort}`,
+    });
+  },
+});

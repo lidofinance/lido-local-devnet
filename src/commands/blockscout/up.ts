@@ -1,40 +1,102 @@
-import { command } from "@devnet/command";
+import {
+  command,
+  DEFAULT_NETWORK_NAME,
+  NETWORK_NAME_SUBSTITUTION,
+} from "@devnet/command";
+import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
+import { addPrefixToIngressHostname } from "@devnet/k8s";
+import { DevNetError } from "@devnet/utils";
+import path from "node:path";
+
+import { NAMESPACE } from "./constants/blockscout.constants.js";
+import { blockscoutExtension } from "./extensions/blockscout.extension.js";
 
 export const BlockscoutUp = command.cli({
-  description: "Start Blockscout",
+  description: "Start Blockscout in k8s",
   params: {},
-  async handler({ dre, dre: { logger } }) {
-    const {
-      state,
-      network,
-      services: { blockscout },
-    } = dre;
+  extensions: [blockscoutExtension],
+  async handler({ dre, dre: { logger, state, services: { blockscout } } }) {
 
-    const { elPrivate, elWsPrivate } = await state.getChain();
+    if (await dre.state.isBlockscoutDeployed()) {
+      logger.log("Blockscout already deployed.");
+      return;
+    }
 
-    const blockScoutSh = blockscout.sh({
+    const blockscoutIngressHostname = process.env.BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME?.
+      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+
+    if (!blockscoutIngressHostname) {
+      throw new DevNetError(`BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME env variable is not set`);
+    }
+
+    const blockscoutFrontendIngressHostname = process.env.BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME?.
+      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+
+    if (!blockscoutFrontendIngressHostname) {
+      throw new DevNetError(`BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME env variable is not set`);
+    }
+
+    const BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME = addPrefixToIngressHostname(
+      blockscoutIngressHostname
+    );
+    const BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME = addPrefixToIngressHostname(
+      blockscoutFrontendIngressHostname
+    );
+
+    const { elPrivate, elWsPrivate, elClientType } = await state.getChain();
+
+    const blockScoutPostgresqlSh = blockscout.sh({
+      cwd: path.join(blockscout.artifact.root, 'blockscout-postgresql'),
       env: {
-        BLOCKSCOUT_RPC_URL: elPrivate,
-        BLOCKSCOUT_WS_RPC_URL: elWsPrivate,
-        DOCKER_NETWORK_NAME: `kt-${network.name}`,
-        COMPOSE_PROJECT_NAME: `blockscout-${network.name}`,
+        NAMESPACE: NAMESPACE(dre),
+        HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
       },
     });
 
-    await blockScoutSh`docker compose -f ./geth.yml up -d`;
+    await blockScoutPostgresqlSh`make debug`;
+    await blockScoutPostgresqlSh`make lint`;
+    await blockScoutPostgresqlSh`make install`;
 
-    const [info] = await blockscout.getExposedPorts();
-    const apiHost = `localhost:${info.publicPort}`;
-    const publicUrl = `http://${apiHost}`;
+    // blockscout verification
+    const blockScoutVerificationSh = blockscout.sh({
+      cwd: path.join(blockscout.artifact.root, 'verification'),
+      env: {
+        NAMESPACE: NAMESPACE(dre),
+        HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
+        // Makefile-related ENV vars for Helm charts overrides
+        // see workspaces/blockscout/blockscout-*/Makefile
+      },
+    });
 
-    logger.log("Restart the frontend instance to pass the actual public url");
+    await blockScoutVerificationSh`make debug`;
+    await blockScoutVerificationSh`make lint`;
+    await blockScoutVerificationSh`make install`;
 
-    await blockScoutSh({
-      env: { NEXT_PUBLIC_API_HOST: apiHost, NEXT_PUBLIC_APP_HOST: apiHost },
-    })`docker compose -f geth.yml up -d frontend`;
+    const blockScoutStackSh = blockscout.sh({
+      cwd: path.join(blockscout.artifact.root, 'blockscout-stack'),
+      env: {
+        NAMESPACE: NAMESPACE(dre),
+        HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
+        // Makefile-related ENV vars for Helm charts overrides
+        // see workspaces/blockscout/blockscout-*/Makefile
+        BLOCKSCOUT_ETHEREUM_JSONRPC_VARIANT: elClientType,
+        BLOCKSCOUT_ETHEREUM_JSONRPC_WS_URL: elWsPrivate,
+        BLOCKSCOUT_ETHEREUM_JSONRPC_TRACE_URL: elPrivate,
+        BLOCKSCOUT_ETHEREUM_JSONRPC_HTTP_URL: elPrivate,
+        BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME,
+        BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME,
+      },
+    });
 
-    logger.log(`Blockscout started successfully on URL: ${publicUrl}`);
+    await blockScoutStackSh`make debug`;
+    await blockScoutStackSh`make lint`;
+    await blockScoutStackSh`make install`;
 
-    await state.updateBlockScout({ url: publicUrl, api: `${publicUrl}/api` });
+    const publicUrl = `http://${BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME}`;
+    const publicBackendUrl = `http://${BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME}`;
+
+    logger.log(`Blockscout started on URL: ${BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME}`);
+
+    await state.updateBlockscout({ url: publicUrl, api: `${publicBackendUrl}/api` });
   },
 });

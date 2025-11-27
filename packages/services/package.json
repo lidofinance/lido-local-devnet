@@ -13,12 +13,18 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
+    "@devnet/docker": "workspace:*",
+    "@devnet/logger": "workspace:*",
+    "@devnet/ui": "workspace:*",
+    "@devnet/utils": "workspace:*",
     "@fastify/swagger": "^9.4.2",
     "@fastify/swagger-ui": "^5.2.1",
     "@oclif/core": "^4.0.37",
     "@oclif/plugin-help": "^6.2.19",
     "@types/node": "^22.10.5",
-    "typescript": "^5"
+    "execa": "^9.5.2",
+    "typescript": "^5",
+    "viem": "^2.36.0"
   },
   "devDependencies": {
     "eslint": "^8",

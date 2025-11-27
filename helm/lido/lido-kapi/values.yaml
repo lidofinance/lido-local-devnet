@@ -1,0 +1,164 @@
+lido-app:
+  nameOverride: lido-kapi
+  # Default values for backend.
+  # This is a YAML-formatted file.
+  # Declare variables to be passed into your templates.
+
+  # Number of replicas for the backend deployment
+  replicaCount: 1
+
+  # Image configuration
+  image:
+    # Docker registry to pull the image from
+    registry: docker.io
+    # Repository/image name
+    repository: lidofinance/lido-keys-api
+    # Image tag (can be overridden)
+    tag: "dev"
+    # Image pull policy
+    pullPolicy: Always
+    # Image pull secrets for private registries
+    imagePullSecrets:
+      - name: registry-pull-secret
+
+  service:
+    type: ClusterIP
+    ports:
+      - name: http
+        port: 3000
+        targetPort: 3000
+        protocol: TCP
+
+  # Ingress configuration
+  ingress:
+    # Enable/disable ingress
+    enabled: true
+    # Ingress class name
+    className: "public"
+    # Ingress annotations
+    annotations: {}
+    # Example annotations:
+    # annotations:
+    #   nginx.ingress.kubernetes.io/rewrite-target: /
+    #   cert-manager.io/cluster-issuer: letsencrypt-prod
+
+    # Ingress hosts configuration
+    hosts:
+      - host: kapi.local
+        paths:
+          - path: /
+            pathType: Prefix
+            port: http
+
+    # TLS configuration
+    tls: []
+    # Example TLS:
+    # tls:
+    #   - secretName: backend-tls
+    #     hosts:
+    #       - backend.local
+
+  # Environment variables
+  env:
+    # Static environment variables
+    variables:
+      NODE_ENV: production
+      PORT: 3000
+      CORS_WHITELIST_REGEXP: ${CORS_WHITELIST_REGEXP}
+      GLOBAL_THROTTLE_TTL: ${GLOBAL_THROTTLE_TTL}
+      GLOBAL_THROTTLE_LIMIT: ${GLOBAL_THROTTLE_LIMIT}
+      GLOBAL_CACHE_TTL: ${GLOBAL_CACHE_TTL}
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+      PROVIDERS_URLS: ${PROVIDERS_URLS}
+      CL_API_URLS: ${CL_API_URLS}
+      IS_DEVNET_MODE: ${IS_DEVNET_MODE}
+      CHAIN_ID: ${CHAIN_ID}
+      DB_NAME: kapi-db
+      DB_PORT: 5432
+      DB_HOST: lido-kapi-1-postgresql
+      DB_USER: postgres
+      DB_PASSWORD: changemeasap
+      JOB_INTERVAL_REGISTRY: ${JOB_INTERVAL_REGISTRY}
+      VALIDATOR_REGISTRY_ENABLE: ${VALIDATOR_REGISTRY_ENABLE}
+      JOB_INTERVAL_VALIDATORS_REGISTRY: ${JOB_INTERVAL_VALIDATORS_REGISTRY}
+      LIDO_LOCATOR_DEVNET_ADDRESS: ${LIDO_LOCATOR_DEVNET_ADDRESS}
+      CURATED_MODULE_DEVNET_ADDRESS: ${CURATED_MODULE_DEVNET_ADDRESS}
+      CSM_MODULE_DEVNET_ADDRESS: ${CSM_MODULE_DEVNET_ADDRESS}
+      STAKING_ROUTER_DEVNET_ADDRESS: ${STAKING_ROUTER_DEVNET_ADDRESS}
+
+  # Resource limits and requests
+  resources: {}
+  # Example:
+  # resources:
+  #   limits:
+  #     cpu: 500m
+  #     memory: 512Mi
+  #   requests:
+  #     cpu: 250m
+  #     memory: 256Mi
+
+  # Node selector
+  nodeSelector: {}
+
+  # Tolerations
+  tolerations: []
+
+  # Affinity rules
+  affinity: {}
+
+  # Security context
+  securityContext: {}
+
+  # Pod security context
+  podSecurityContext: {}
+
+  # Liveness probe
+  livenessProbe:
+    httpGet:
+      path: /v1/status
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  # Readiness probe
+  readinessProbe:
+    httpGet:
+      path: /v1/status
+      port: http
+    initialDelaySeconds: 15
+    periodSeconds: 10
+
+  # Additional labels
+  additionalLabels: {}
+
+  # Additional annotations
+  additionalAnnotations: {}
+
+
+postgresql:
+  global:
+    postgresql:
+      auth:
+        postgresPassword: "changemeasap"
+        username: "admin"
+        password: "changemeasap"
+        database: "kapi-db"
+        existingSecret: ""
+        secretKeys:
+          adminPasswordKey: ""
+          userPasswordKey: ""
+          replicationPasswordKey: ""
+      service:
+        ports:
+          postgresql: ""
+  image:
+    registry: docker.io
+    repository: bitnami/postgresql
+    tag: "latest"
+    digest: ""
+    pullPolicy: IfNotPresent
+  primary:
+    resourcesPreset: "2xlarge"
+    resources: { }
+

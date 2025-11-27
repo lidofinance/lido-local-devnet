@@ -1,5 +1,6 @@
 {
   "name": "lido-local-devnet",
+  "version": "2.0.0-alpha.1",
   "packageManager": "yarn@4.2.2",
   "private": true,
   "type": "module",
@@ -17,24 +18,32 @@
   ],
   "dependencies": {
     "@devnet/command": "workspace:*",
+    "@devnet/fp": "workspace:*",
+    "@devnet/k8s": "workspace:*",
     "@devnet/key-manager-api": "workspace:*",
     "@devnet/keygen": "workspace:*",
+    "@devnet/utils": "workspace:*",
     "@fastify/swagger": "^9.4.2",
     "@fastify/swagger-ui": "^5.2.1",
     "@oclif/core": "^4.0.37",
     "@oclif/plugin-help": "^6.2.19",
     "@types/node": "^22.10.5",
+    "bcryptjs": "^3.0.2",
+    "cdk8s": "^2.70.15",
     "chalk": "^5.4.1",
+    "constructs": "^10.4.2",
     "dockerode": "^4.0.4",
     "ethers": "^6.13.4",
     "execa": "^9.5.2",
     "fastify": "^5.2.1",
+    "ps-list": "^7.2.0",
     "ts-node": "^10.9.2",
     "typescript": "^5",
     "yaml": "^2.6.1",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/dockerode": "^3.3.34",
     "eslint": "^8",
     "eslint-config-oclif": "^5",
@@ -46,7 +55,14 @@
   },
   "oclif": {
     "bin": "./bin/run.js",
-    "commands": "./dist/commands",
+    "commands": {
+      "strategy": "pattern",
+      "globPatterns": [
+        "**/*.+(js|cjs|mjs|ts|tsx|mts|cts)",
+        "!**/*.+(d.*|extension.*|template.*|helpers.*|constants.*)?(x)"
+      ],
+      "target": "./dist/commands"
+    },
     "dirname": "devnet",
     "topicSeparator": " ",
     "topics": {

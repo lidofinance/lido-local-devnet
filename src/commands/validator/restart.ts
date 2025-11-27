@@ -1,6 +1,5 @@
-import { assert, command } from "@devnet/command";
-
-import { KurtosisUpdate } from "../chain/update.js";
+import { command } from "@devnet/command";
+import { assert } from "@devnet/utils";
 
 export const ValidatorRestart = command.cli({
   description: "Restarts the Teku validator client.",
@@ -34,7 +33,7 @@ export const ValidatorRestart = command.cli({
 
     // Update the state after restarting the container
     logger.log("Updating state after validator restart...");
-    await dre.runCommand(KurtosisUpdate, {});
+    // await dre.runCommand(KurtosisUpdate, {});
     logger.log("Validator restart completed successfully.");
   },
 });

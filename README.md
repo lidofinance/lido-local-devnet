@@ -23,44 +23,97 @@ Lido Local DevNet is a powerful tool for deploying and testing the Lido protocol
 - **npm** ([Install npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm))
 - **Docker** 27+ ([Install Docker](https://www.docker.com/))  
 - **Docker Compose** V2 ([Install Docker Compose](https://docs.docker.com/compose/))  
-- **Kurtosis** ([Install Kurtosis](https://www.kurtosistech.com/))  
+- **Kurtosis 1.11.1+** ([Install Kurtosis](https://www.kurtosistech.com/))  
 - **Foundry tools** ([Install Foundry](https://book.getfoundry.sh/getting-started/installation))  
 - **Just** ([Install Just](https://github.com/casey/just))  
+- **Make** 4+  (Install Make - Linux: `sudo apt-get install build-essential`)
+- **Kubectl** v1.30.+ (for k8s deployments) ([Install Kubectl](https://kubernetes.io/docs/tasks/tools/))`
+- **Helm** 3.12+ (for k8s deployments) ([Install Helm](https://helm.sh/docs/intro/install/))`
 
 ---
 
-## Getting Started
+## Getting Started (with k8s integration)
 
-Follow these steps to set up the DevNet:
+Original docs are located in `https://docs.kurtosis.com/k8s/`
 
-### 1. Start Kurtosis
-Kurtosis is required to launch Ethereum nodes:
-```sh
-kurtosis engine start
-```
-
-### 2. Install dependencies
+### 1. Install dependencies
 ```sh
 yarn && yarn build:all
 ```
 
-### 3. Launch the environment and deploy Lido smart contracts
-Below is an example for launching the `pectra` test stand. If you need a different setup, refer to the [test stands documentation](./docs/commands/stands.md).
+### 2. Create `.env` file and fill it with the required values
+```sh
+cp .env.sample .env
+```
+
+### 3. (Optional) Turn on SSH Tunnel to the machine with k8s cluster
+```sh
+./bin/run.js ssh tunnel
+```
+
+### 4. Set the current context to the k8s cluster (if you have multiple clusters)
+
+Contexts can be found by running: `kubectl config get-contexts`
 
 ```sh
-./bin/run.js stands pectra --full
+kubectl config use-context <cluster context> # or whatever your k8s context is
+```
+
+### 5. Ensure that you are connected to the k8s cluster
+
+The cluster can be accessible via SSH Tunnel.
+
+```sh
+kubectl cluster-info
+```
+
+### 6. Change kurtosis config to work with the k8s cluster
+
+Update once your kurtosis config at `echo $(kurtosis config path)` location
+
+```yaml
+config-version: 6
+should-send-metrics: false
+kurtosis-clusters:
+  docker:
+    type: "docker"
+  cloud:
+    type: "kubernetes"
+    config:
+      kubernetes-cluster-name: "<cluster name from kubectl>" # change the cluster name if needed
+      storage-class: "ssd-hostpath"
+      enclave-size-in-megabytes: 256
+```
+
+### 7. Point kurtosis to the cluster
+```sh
+# tell kurtosis to work with k8s cluster
+kurtosis cluster set cloud # or whatever your kurtosis cluster is
+```
+
+### 8. Start Kurtosis
+Kurtosis is required to launch Ethereum nodes
+```sh
+kurtosis engine start
+```
+
+### 9. Launch the environment and deploy Lido smart contracts
+Below is an example for launching the `fusaka` test stand. 
+If you need a different setup, refer to the [test stands documentation](./docs/commands/stands.md).
+
+```sh
+./bin/run.js stands <stand-name>  # (fusaka) or any other test stand name
 ```
 For contract verification, use the `--verify` flag:
 ```sh
-./bin/run.js stands pectra --full --verify
+./bin/run.js stands <stand-name> --verify
 ```
 For a full DSM infrastructure deployment, add the `--dsm` flag:
 ```sh
-./bin/run.js stands pectra --full --verify --dsm
+./bin/run.js stands <stand-name> --verify --dsm
 ```
 
-### 4. Interaction with Voting scripts
-
+### 10. (Optional) Interaction with Voting scripts 
 
 Since voting scripts require Python and Brownie, install the necessary dependencies:
 ```sh
@@ -85,7 +138,7 @@ After adding an account, proceed with the voting process. See the [voting docume
 ./bin/run.js voting enact-after-pectra
 ```
 
-### 5. Done!
+### 11. Done!
 The network, infrastructure, and protocol have been successfully launched.
 
 ---
@@ -100,13 +153,15 @@ To stop the DevNet and remove all services, run:
 
 ## Running Multiple Environments
 
-To run multiple environments on a single machine, use the `--network <custom-network-name>` flag:
-```sh
-./bin/run.js stands pectra --full --network test-pectra1
-```
-> **Note:** The `--network test-pectra1` flag must be used with all subsequent commands to interact with the specified environment.
-
+To run multiple devnets on a single cluster, change the `DEVNET_NAME=<another_devnet>` variable in `.env` file
+All the commands will be executed in the context of the current devnet.
 ---
+
+## DevNet info
+To get the latest information on available services, run:
+```sh
+./bin/run.js chain info
+```
 
 ## Available Services
 To get the latest information on available services, run:

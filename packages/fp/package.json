@@ -1,0 +1,33 @@
+{
+  "name": "@devnet/fp",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "rm -rf dist && rm -rf tsconfig.tsbuildinfo && tsc -b",
+    "build:types": "tsc --build --emitDeclarationOnly",
+    "lint": "eslint . --ext .ts && tsc --noEmit"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@oclif/core": "^4.0.37",
+    "@oclif/plugin-help": "^6.2.19",
+    "@types/node": "^22.10.5",
+    "fp-ts": "^2.16.11",
+    "typescript": "^5"
+  },
+  "devDependencies": {
+    "eslint": "^8",
+    "eslint-config-oclif": "^5",
+    "eslint-config-oclif-typescript": "^3",
+    "eslint-config-prettier": "^9",
+    "eslint-plugin-prettier": "^5.2.2",
+    "prettier": "^3.4.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

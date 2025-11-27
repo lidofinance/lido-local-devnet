@@ -1,0 +1,32 @@
+{{- if and .Values.registry.enabled .Values.registry.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "docker-registry-ui.fullname" . }}-registry-data
+  labels:
+    app.kubernetes.io/component: registry-server
+    {{- include "docker-registry-ui.labels" . | nindent 4 }}
+  {{- with .Values.registry.persistence.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- range .Values.registry.persistence.accessModes }}
+    - {{ . | quote }}
+    {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.registry.persistence.size | quote }}
+  {{- if .Values.registry.persistence.storageClass }}
+  {{- if (eq "-" .Values.registry.persistence.storageClass) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ .Values.registry.persistence.storageClass | quote }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.registry.persistence.selector }}
+  selector:
+    {{- toYaml .Values.registry.persistence.selector | nindent 4 }}
+  {{- end }}
+{{- end }}

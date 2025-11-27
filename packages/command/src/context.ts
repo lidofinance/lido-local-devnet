@@ -1,16 +1,18 @@
 import { Command as BaseCommand, Interfaces } from "@oclif/core";
 
-import { DevNetRuntimeEnvironment } from "./runtime-env.js";
+import {
+  DevNetRuntimeEnvironmentInterface,
+} from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
 export class DevNetContext<T extends typeof BaseCommand> {
   // public args: ExtractArgs<T>;
-  public readonly dre: DevNetRuntimeEnvironment;
+  public readonly dre: DevNetRuntimeEnvironmentInterface;
   public params: ExtractFlags<T>;
   // public runCommand: (id: string, argv?: string[]) => Promise<void>;
 
-  constructor(options: {
+  public constructor(options: {
     // args: ExtractArgs<T>;
-    dre: DevNetRuntimeEnvironment;
+    dre: DevNetRuntimeEnvironmentInterface;
     params: ExtractFlags<T>;
     // runCommand: (id: string, argv?: string[]) => Promise<void>;
   }) {
@@ -22,6 +24,6 @@ export class DevNetContext<T extends typeof BaseCommand> {
 }
 
 export type CustomDevNetContext<F extends Record<string, any>, T extends typeof BaseCommand> = {
-  dre: DevNetRuntimeEnvironment;
+  dre: DevNetRuntimeEnvironmentInterface;
   params: Interfaces.InferredFlags<(T)["baseFlags"] &F>;
 };

@@ -14,6 +14,8 @@ export const LidoAddCSMOperatorWithKeys = command.cli({
     const { services } = dre;
     const { lidoCLI } = services;
 
+    // TODO check if operator already exists
+
     await dre.network.waitEL();
 
     await lidoCLI.sh`./run.sh csm add-operator-with-keys-from-file generated-keys/${params.name}.json`;

@@ -30,7 +30,7 @@ export const DeployCSVerifier = command.cli({
       data: { ELECTRA_FORK_EPOCH, SLOTS_PER_EPOCH },
     } = await clClient.getConfig();
 
-    const blockscoutConfig = await state.getBlockScout();
+    const blockscoutConfig = await state.getBlockscout();
 
     const env = {
       ARTIFACTS_DIR: constants.ARTIFACTS_DIR,

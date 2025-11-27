@@ -1,21 +1,12 @@
 import { command } from "@devnet/command";
 
-export const KurtosisGetInfo = command.cli({
-  description: "Retrieves and displays information about the Kurtosis enclave.",
-  params: {},
-  async handler({
-    dre: {
-      logger,
-      state,
-      services: { kurtosis },
-    },
-  }) {
-    const kurtosisInfo = await kurtosis.getDockerInfo(false);
-    if (!kurtosisInfo) {
-      logger.log(`Kurtosis service is not enabled`);
-      return;
-    }
+import { BlockscoutGetInfo } from "../blockscout/info.js";
+import { KurtosisDoraK8sInfo } from "../kurtosis/dora/info.js";
 
+export const ChainGetInfo = command.cli({
+  description: "Retrieves and displays information about the chain.",
+  params: {},
+  async handler({ dre, dre: { logger, state }}) {
     logger.log("");
     const chainServices = Object.entries(await state.getChain()).filter(
       ([k]) => !k.endsWith("Private"),
@@ -24,8 +15,10 @@ export const KurtosisGetInfo = command.cli({
       ["Service", "URL"],
       [
         ...chainServices,
-        ["dora", kurtosisInfo.dora[0].ports[0].publicUrl!],
       ],
     );
+
+    await dre.runCommand(BlockscoutGetInfo, {});
+    await dre.runCommand(KurtosisDoraK8sInfo, {});
   },
 });

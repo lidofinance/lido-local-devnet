@@ -1,0 +1,12 @@
+dependencies:
+- name: lido-app
+  repository: file://../lido-app
+  version: 1.0.1
+- name: lido-app
+  repository: file://../lido-app
+  version: 1.0.1
+- name: postgresql
+  repository: file://../../vendor/postgresql
+  version: 16.7.26
+digest: sha256:4b1fb883fe68913461690541345344f90303faf0c6c7970228b81e8bd0550b4f
+generated: "2025-09-25T16:38:17.990681222+03:00"

@@ -1,0 +1,233 @@
+## Global
+global:
+  # Set the prefix used for all resources in the Helm chart. If not set,
+  # the prefix will be `<helm release name>`.
+  name: null
+  # The default array of objects containing image pull secret names that will be applied.
+  imagePullSecrets: []
+  # The default image policy for images: `IfNotPresent`, `Always`, `Never`
+  imagePullPolicy: IfNotPresent
+
+## User Interface
+ui:
+  # Number of replicas for the Deployment.
+  replicas: 1
+  # Title of the registry
+  title: "Docker registry UI"
+  # UI behave as a proxy of the registry
+  proxy: false
+  # The URL of your docker registry, may be a service (when proxy is on) or an external URL.
+  dockerRegistryUrl: null
+  # Override the pull URL
+  pullUrl: null
+  # Remove the menu that show the dialogs to add, remove and change the endpoint of your docker registry.
+  singleRegistry: true
+  # By default, the UI will check on every requests if your registry is secured or not (you will see `401` responses in your console). Set to `true` if your registry uses Basic Authentication and divide by two the number of call to your registry.
+  registrySecured: false
+
+  # Show number of tags per images on catalog page. This will produce + nb images requests, not recommended on large registries.
+  showCatalogNbTags: false
+  # Limit the number of elements in the catalog page.
+  catalogElementsLimit: 1000
+  # Expand by default all repositories in catalog
+  catalogDefaultExpanded: false
+  # Set the minimum repository/namespace to expand (e.g. `joxit/docker-registry-ui` `joxit/` is the repository/namespace). Can be 0 to disable branching.
+  catalogMinBranches: 1
+  # Set the maximum repository/namespace to expand (e.g. `joxit/docker-registry-ui` `joxit/` is the repository/namespace). Can be 0 to disable branching.
+  catalogMaxBranches: 1
+
+  # Allow delete of images
+  deleteImages: true
+  # Show content digest in docker tag list.
+  showContentDigest: false
+  # Set the default order for the taglist page, could be `num-asc;alpha-asc`, `num-desc;alpha-asc`, `num-asc;alpha-desc`, `num-desc;alpha-desc`, `alpha-asc;num-asc`, `alpha-asc;num-desc`, `alpha-desc;num-asc` or `alpha-desc;num-desc`.
+  taglistOrder: alpha-asc;num-desc
+  # Set the number of tags to display in one page.
+  taglistPageSize: 100
+
+  # Expose custom labels in history page, custom labels will be processed like maintainer label.
+  historyCustomLabels: []
+
+  # Update the default Nginx configuration and **set custom headers** for your backend docker registry. Only when `ui.proxy` is used.
+  # Example:
+  # nginxProxyHeaders:
+  #  [ { my-heeader-name: my-header-value } ]
+  nginxProxyHeaders: []
+  # Update the default Nginx configuration and **forward custom headers** to your backend docker registry. Only when `ui.proxy` is used.
+  # Example:
+  # nginxProxyPassHeaders: [ my-first-header, my-second-header ]
+  nginxProxyPassHeaders: []
+  # Add header Control-Cache: no-store, no-cache on requests to registry server.
+  # This needs to update your registry configuration with : `Access-Control-Allow-Headers: ['Authorization', 'Accept', 'Cache-Control']`
+  useControlCacheHeader: false
+  # Use root or nginx user inside the container, when this is false the target port must be greater or equal to 1024.
+  runAsRoot: false
+
+  # Select the default theme to apply, values can be `auto`, `dark` and `light`
+  defaultTheme: "auto"
+
+  theme:
+    # Custom background color for the UI
+    background: ""
+    # Custom primary text color for the UI
+    primaryText: ""
+    # Custom netral color for the UI (icons)
+    neutralText: ""
+    # Custom accent color for the UI (buttons)
+    accentText: ""
+    # Custom hover background color for the UI
+    hoverBackground: ""
+    # Custom header background color for the UI
+    headerBackground: ""
+    # Custom header text color for the UI
+    headerText: ""
+    # Custom footer background color for the UI
+    footerBackground: ""
+    # Custom footer text color for the UI
+    footerText: ""
+    # Custom footer neutral color for the UI (links)
+    footerNeutralText: ""
+
+  # The name and tag of the docker image of the interface
+  image: joxit/docker-registry-ui:2.5.2
+  # Override default image pull secrets
+  imagePullSecrets: "-"
+  # Override default pull policy
+  imagePullPolicy: "-"
+  # The resource settings for user interface pod.
+  resources: {}
+  # Optional YAML string to specify a nodeSelector config.
+  nodeSelector: {}
+  # Optional YAML string to specify tolerations.
+  tolerations: []
+  # This value defines the [affinity](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity)
+  # for server pods.
+  affinity: {}
+  # Annotations to apply to the user interface deployment.
+  annotations: {}
+  # Optional YAML string that will be appended to the deployment spec.
+  additionalSpec: {}
+
+  service:
+    # Type of service: `LoadBalancer`, `ClusterIP` or `NodePort`. If using `NodePort` service
+    # type, you must set the desired `nodePorts` setting below.
+    type: ClusterIP
+    # Ports that will be exposed on the service
+    port: 80
+    # The port to listhen on the container. If under 1024, the user must be root
+    targetPort: 3000
+    # If using a `NodePort` service type, you must specify the desired `nodePort` for each exposed port.
+    nodePort: null
+    # Annotations to apply to the user interface service.
+    annotations: {}
+    # Optional YAML string that will be appended to the Service spec.
+    additionalSpec: {}
+
+  ingress:
+    # Enable the ingress for the user interface.
+    enabled: false
+    # Fully qualified domain name of a network host.
+    host: null
+    # Path is matched against the path of an incoming request.
+    path: /
+    # Determines the interpretation of the Path matching, must be Prefix to serve assets.
+    pathType: Prefix
+    # The name of an IngressClass cluster resource.
+    ingressClassName: nginx
+    # TLS configuration
+    tls: []
+    # Annotations to apply to the user interface ingress.
+    annotations: {}
+    # If you want a custom path, you can try this example:
+    # path: /ui(/|$)(.*)
+    # annotations:
+    #  { nginx.ingress.kubernetes.io/rewrite-target: /$2 }
+
+## Registry Server
+registry:
+  # Enable the registry server.
+  enabled: false
+  # The name and tag of the docker registry server image
+  image: registry:2.8.2
+  # Override default image pull secrets
+  imagePullSecrets: "-"
+  # Override default pull policy
+  imagePullPolicy: "-"
+  # Configuration for the data directory.  When null it will create an emptyDir.
+  dataVolume: null
+  # Persistence configuration for registry data
+  persistence:
+    # Enable persistence for registry data
+    enabled: false
+    # Storage class to use for the PVC. Use "-" to disable dynamic provisioning
+    storageClass: ""
+    # Access modes for the PVC
+    accessModes:
+      - ReadWriteOnce
+    # Size of the persistent volume
+    size: 10Gi
+    # Annotations for the PVC
+    annotations: {}
+    # Selector for existing PV (optional)
+    selector: {}
+  # The resource settings for registry server pod.
+  resources: {}
+  # Optional YAML string to specify a nodeSelector config.
+  nodeSelector: {}
+  # Optional YAML string to specify tolerations.
+  tolerations: []
+  # This value defines the [affinity](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity)
+  # for server pods.
+  affinity: {}
+  # Annotations to apply to the registry server deployment.
+  annotations: {}
+  # Optional YAML string that will be appended to the deployment spec.
+  additionalSpec: {}
+  # Extra Environmental Variables for Registry
+  extraEnv: []
+
+  auth:
+    basic:
+      # Enable basic auth for Registry.
+      enabled: true
+      # Basic auth realm.
+      realm: Docker registry
+      # Full path for htpasswd file. Note that filename should match the secret key.
+      htpasswdPath: /etc/docker/registry/auth/htpasswd
+      # htpasswd secret name volume to mount.
+      secretName: ''
+
+  service:
+    # Type of service: `LoadBalancer`, `ClusterIP` or `NodePort`. If using `NodePort` service
+    # type, you must set the desired `nodePorts` setting below.
+    type: ClusterIP
+    # Ports that will be exposed on the service
+    port: 5000
+    # The port to listhen on the container.
+    targetPort: 5000
+    # If using a `NodePort` service type, you must specify the desired `nodePort` for each exposed port.
+    nodePort: null
+    # Annotations to apply to the registry server service.
+    annotations: {}
+    # Optional YAML string that will be appended to the Service spec.
+    additionalSpec: {}
+
+  ingress:
+    # Enable the ingress for the registry server.
+    enabled: true
+    # Fully qualified domain name of a network host.
+    host: null
+    # Path is matched against the path of an incoming request.
+    path: /v2/
+    # Determines the interpretation of the Path matching, must be Prefix to serve assets.
+    pathType: Prefix
+    # The name of an IngressClass cluster resource.
+    ingressClassName: nginx
+    # TLS configuration
+    tls: []
+    # Annotations to apply to the registry server ingress.
+    annotations: {}
+    # If you want a custom path, you can try this example:
+    # path: /api(/|$)(.*)
+    # annotations:
+    #  { nginx.ingress.kubernetes.io/rewrite-target: /$2 }

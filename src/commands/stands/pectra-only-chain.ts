@@ -1,7 +1,7 @@
 import { Params, command } from "@devnet/command";
 
 import { BlockscoutUp } from "../blockscout/up.js";
-import { KurtosisUp } from "../chain/up.js";
+import { ChainUp } from "../chain/up.js";
 import { GitCheckout } from "../git/checkout.js";
 
 export const PectraChainUp = command.cli({
@@ -18,12 +18,9 @@ export const PectraChainUp = command.cli({
       ref: "develop",
     });
 
-    await dre.runCommand(KurtosisUp, { preset: params.preset });
+    await dre.runCommand(ChainUp, { preset: params.preset });
     logger.log("✅ Chain network initialized.");
 
-    await dre.runCommand(BlockscoutUp, {});
-    logger.log("✅ BlockScout launched for transaction visualization.");
-    
     logger.log("✅ Pectra chain environment is ready.");
   },
 });

@@ -1,40 +1,40 @@
-import { DevNetError, Params, command } from "@devnet/command";
+import { Params, command } from "@devnet/command";
+import { DevNetError, sleep } from "@devnet/utils";
 
-import { DownloadKurtosisArtifacts } from "./artifacts.js";
-import { KurtosisUpdate } from "./update.js";
+import { BlockscoutUp } from "../blockscout/up.js";
+import { K8sPing } from "../k8s/ping.js";
+import { K8sSetDefaultContext } from "../k8s/set-default-context.js";
+import { KurtosisDoraK8sIngressUp } from "../kurtosis/dora/up.js";
+import { KurtosisDownloadArtifacts } from "../kurtosis/download-artifacts.js";
+import { KurtosisK8sNodesIngressUp } from "../kurtosis/nodes/ingress-up.js";
+import { KurtosisRunPackage } from "../kurtosis/run-package.js";
+import { ChainSyncNodesStateFromK8s } from "./chain-sync-nodes-state-from-k8s.js";
+import { ChainSyncState } from "./chain-sync-state.js";
 
-export const KurtosisUp = command.isomorphic({
+export const ChainUp = command.isomorphic({
   description:
-    "Runs a specific Ethereum package in Kurtosis and updates local JSON database with the network information.",
+    "Starts the chain",
   params: { preset: Params.string({ description: "Kurtosis config name." }) },
-  async handler({ dre, dre: { logger }, params: { preset } }) {
-    logger.log("Running Ethereum package in Kurtosis...");
-    const { name } = dre.network;
-    const {
-      state,
-      services: { kurtosis },
-    } = dre;
+  async handler({ dre, dre: { logger }, params: { preset,  } }) {
 
-    const { preset: configPreset } = await state.getKurtosis();
-    const configFileName = `${preset ?? configPreset}.yml`;
+    const defaultContext = process.env.K8S_KUBECTL_DEFAULT_CONTEXT;
 
-    const file = await kurtosis.readYaml(configFileName).catch((error: any) => {
-      logger.warn(
-        `There was an error in the process of connecting the config, most likely you specified the wrong file name, check the "workspaces/kurtosis" folder`,
-      );
+    if (!defaultContext) {
+      throw new DevNetError('K8S_KUBECTL_DEFAULT_CONTEXT env variable not set');
+    }
 
-      throw new DevNetError(error.message);
-    });
+    await dre.runCommand(K8sSetDefaultContext, { context: defaultContext });
+    await dre.runCommand(K8sPing, { context: defaultContext });
+    await dre.runCommand(KurtosisRunPackage, { preset: preset ?? '' });
 
-    logger.log(`Resolved kurtosis config: ${configFileName}`);
-    logger.logJson(file);
+    await sleep(5000);
 
-    await kurtosis.sh`kurtosis run
-                        --enclave ${name} 
-                        github.com/ethpandaops/ethereum-package 
-                        --args-file ${configFileName}`;
+    await dre.runCommand(ChainSyncNodesStateFromK8s, {});
+    await dre.runCommand(KurtosisK8sNodesIngressUp, {});
+    await dre.runCommand(ChainSyncState, {});
 
-    await dre.runCommand(KurtosisUpdate, {});
-    await dre.runCommand(DownloadKurtosisArtifacts, {});
+    await dre.runCommand(KurtosisDownloadArtifacts, {});
+    await dre.runCommand(KurtosisDoraK8sIngressUp, {});
+    await dre.runCommand(BlockscoutUp, {});
   },
 });

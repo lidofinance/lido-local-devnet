@@ -1,5 +1,6 @@
-import { Params, assert, command } from "@devnet/command";
+import { Params, command } from "@devnet/command";
 import * as keyManager from "@devnet/key-manager-api";
+import { assert } from "@devnet/utils";
 
 export const ValidatorRemove = command.cli({
   description:
@@ -15,9 +16,9 @@ export const ValidatorRemove = command.cli({
       logger,
     },
   }) {
-    const { validatorsApi } = await dre.state.getChain();
+    const { validatorsApiPublic } = await dre.state.getChain();
     const keystoresResponse = await keyManager.fetchKeystores(
-      validatorsApi,
+      validatorsApiPublic,
       keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
     );
 
@@ -49,7 +50,7 @@ export const ValidatorRemove = command.cli({
 
     logger.log("Removing key from Key Manager")
     await keyManager.deleteKeystores(
-      validatorsApi,
+      validatorsApiPublic,
       [existingPubKey.validating_pubkey],
       keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
     );

@@ -2,6 +2,7 @@ import { Params, command } from "@devnet/command";
 
 import { CSMInstall } from "./install.js";
 import { CSMUpdateState } from "./update-state.js";
+import { csmExtension } from "./extensions/csm.extension.js";
 
 type CSMENVConfig = {
   FOUNDRY_PROFILE: string;
@@ -16,10 +17,12 @@ type CSMENVConfig = {
   CSM_ORACLE_2_ADDRESS: string;
   CSM_ORACLE_3_ADDRESS: string;
   CSM_SECOND_ADMIN_ADDRESS: string;
+  CSM_STAKING_MODULE_ID: string;
   DEPLOY_CONFIG: string;
   DEPLOYER_PRIVATE_KEY: string;
   DEVNET_CHAIN_ID: string;
   DEVNET_ELECTRA_EPOCH: string;
+  DEVNET_CAPELLA_EPOCH: string;
   DEVNET_GENESIS_TIME: string;
   DEVNET_SLOTS_PER_EPOCH: string;
   EVM_SCRIPT_EXECUTOR_ADDRESS: string;
@@ -27,6 +30,7 @@ type CSMENVConfig = {
   UPGRADE_CONFIG: string;
   VERIFIER_API_KEY: string;
   VERIFIER_URL: string;
+  FOUNDRY_BLOCK_GAS_LIMIT: string;
 };
 
 export const DeployCSMContracts = command.cli({
@@ -37,12 +41,18 @@ export const DeployCSMContracts = command.cli({
       description: "Verify smart contracts",
     }),
   },
+  extensions: [csmExtension],
   async handler({ params, dre, dre: { logger } }) {
     const { state, services, network } = dre;
     const { csm, oracle } = services;
     const {
       config: { constants },
     } = csm;
+
+    if (await state.isCSMDeployed()) {
+      logger.log("CSM contracts are already deployed.");
+      return;
+    }
 
     await dre.network.waitEL();
 
@@ -51,6 +61,7 @@ export const DeployCSMContracts = command.cli({
     const { deployer, secondDeployer, oracle1, oracle2, oracle3 } =
       await state.getNamedWallet();
 
+    await network.waitCL();
     const clClient = await network.getCLClient();
 
     const {
@@ -58,10 +69,10 @@ export const DeployCSMContracts = command.cli({
     } = await clClient.getGenesis();
 
     const {
-      data: { ELECTRA_FORK_EPOCH, SLOTS_PER_EPOCH },
+      data: { ELECTRA_FORK_EPOCH, SLOTS_PER_EPOCH, CAPELLA_FORK_EPOCH },
     } = await clClient.getConfig();
 
-    const blockscoutConfig = await state.getBlockScout();
+    const blockscoutConfig = await state.getBlockscout();
 
     const env: CSMENVConfig = {
       FOUNDRY_PROFILE: constants.FOUNDRY_PROFILE,
@@ -77,6 +88,8 @@ export const DeployCSMContracts = command.cli({
       CSM_ORACLE_3_ADDRESS: oracle3.publicKey,
 
       CSM_SECOND_ADMIN_ADDRESS: secondDeployer.publicKey,
+      CSM_STAKING_MODULE_ID: constants.CSM_STAKING_MODULE_ID,
+      DEVNET_CAPELLA_EPOCH: CAPELLA_FORK_EPOCH,
       DEPLOY_CONFIG: constants.DEPLOY_CONFIG,
       DEPLOYER_PRIVATE_KEY: deployer.privateKey,
       DEVNET_CHAIN_ID: "32382",
@@ -90,6 +103,7 @@ export const DeployCSMContracts = command.cli({
       VERIFIER_API_KEY: constants.VERIFIER_API_KEY,
 
       VERIFIER_URL: blockscoutConfig.api,
+      FOUNDRY_BLOCK_GAS_LIMIT: "1000000000"
     };
 
     logger.logJson(env);

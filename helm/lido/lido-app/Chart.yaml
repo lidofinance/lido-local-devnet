@@ -1,0 +1,7 @@
+apiVersion: v2
+name: lido-app
+description: Basic Lido application Helm chart
+type: application
+version: 1.0.1
+appVersion: "2.5.2"
+kubeVersion: '>=1.19.0-0'

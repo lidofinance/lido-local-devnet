@@ -1,4 +1,5 @@
-import { Params, assert, command } from "@devnet/command";
+import { Params, command } from "@devnet/command";
+import { assert } from "@devnet/utils";
 
 export const PrepareLidoCore = command.cli({
   description: "Prepare lido core repository.",
@@ -71,6 +72,7 @@ export const PrepareLidoCore = command.cli({
         NODE_OPERATOR_NETWORK_PENETRATION_THRESHOLD_BP: 100,
         PREDICTION_DURATION_IN_SLOTS: 50_400,
         FINALIZATION_MAX_NEGATIVE_REBASE_EPOCH_SHIFT: 1350,
+        EXIT_EVENTS_LOOKBACK_WINDOW_IN_SLOTS: 100_800
       },
     });
 

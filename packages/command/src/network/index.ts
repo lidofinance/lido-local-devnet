@@ -1,5 +1,8 @@
 import { BeaconClient } from "@devnet/cl-client";
-import { State } from "@devnet/state";
+import { DevNetLogger } from "@devnet/logger";
+import { StateInterface } from "@devnet/state";
+import { Network } from "@devnet/types";
+import { assert } from "@devnet/utils";
 import {
   AbstractSigner,
   JsonRpcProvider,
@@ -9,13 +12,11 @@ import {
   parseEther,
 } from "ethers";
 
-import { assert } from "../assert.js";
-import { DevNetLogger } from "../logger.js";
 export class DevNetDRENetwork {
-  name: string;
+  public readonly name: Network;
   private logger: DevNetLogger;
-  private state: State;
-  constructor(network: string, state: State, logger: DevNetLogger) {
+  private state: StateInterface;
+  constructor(network: Network, state: StateInterface, logger: DevNetLogger) {
     this.name = network;
     this.state = state;
     this.logger = logger;
@@ -36,11 +37,70 @@ export class DevNetDRENetwork {
     return wallet as AbstractSigner<Provider>;
   }
 
+  public async waitCL() {
+    const { clPublic } = await this.state.getChain();
+    this.logger.log(`Ensuring the consensus node at ${clPublic} is ready...`);
+    await this.fetchGenesisWithRetry();
+    this.logger.log("Consensus node is ready.");
+  }
+
+  public async waitCLFinalizedEpoch(epoch: number) {
+    const { clPublic } = await this.state.getChain();
+    this.logger.log(`Waiting for consensus node at ${clPublic} to reach epoch ${epoch}...`);
+    await this.waitForFinalizedEpochWithRetry(epoch);
+    this.logger.log(`Consensus node has reached epoch ${epoch}.`);
+  }
+
   public async waitEL() {
     const { elPublic } = await this.state.getChain();
     this.logger.log(`Ensuring the execution node at ${elPublic} is ready...`);
     await this.sendTransactionWithRetry();
     this.logger.log("Execution node is ready.");
+  }
+
+  private async fetchGenesisWithRetry(): Promise<void> {
+    const clClient = await this.getCLClient();
+
+    const attemptToFetchGenesis = async (): Promise<void> => {
+      try {
+        await clClient.getGenesis();
+      } catch (error) {
+        this.logger.log(
+          `Consensus node not ready yet... Retrying in 5 seconds ${error}`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        return attemptToFetchGenesis();
+      }
+    };
+
+    return attemptToFetchGenesis();
+  }
+
+  private async waitForFinalizedEpochWithRetry(targetEpoch: number): Promise<void> {
+    const clClient = await this.getCLClient();
+
+    const attemptToWaitForEpoch = async (): Promise<void> => {
+      try {
+        const currentEpoch = await clClient.getFinalizedEpoch();
+        if (currentEpoch >= targetEpoch) {
+          return;
+        }
+
+        this.logger.log(
+          `Current epoch is ${currentEpoch}, waiting for epoch ${targetEpoch}... Retrying in 5 seconds`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        return attemptToWaitForEpoch();
+      } catch (error: any) {
+        this.logger.log(
+          `Error checking epoch: ${error.message}... Retrying in 10 seconds`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        return attemptToWaitForEpoch();
+      }
+    };
+
+    return attemptToWaitForEpoch();
   }
 
   private async sendTransactionWithRetry(
