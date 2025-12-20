@@ -1420,6 +1420,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@iarna/toml@npm:^2.2.5":
+  version: 2.2.5
+  resolution: "@iarna/toml@npm:2.2.5"
+  checksum: 10c0/d095381ad4554aca233b7cf5a91f243ef619e5e15efd3157bc640feac320545450d14b394aebbf6f02a2047437ced778ae598d5879a995441ab7b6c0b2c2f201
+  languageName: node
+  linkType: hard
+
 "@inquirer/checkbox@npm:^4.1.2":
   version: 4.1.2
   resolution: "@inquirer/checkbox@npm:4.1.2"
@@ -6920,6 +6927,7 @@ __metadata:
     "@devnet/utils": "workspace:*"
     "@fastify/swagger": "npm:^9.4.2"
     "@fastify/swagger-ui": "npm:^5.2.1"
+    "@iarna/toml": "npm:^2.2.5"
     "@oclif/core": "npm:^4.0.37"
     "@oclif/plugin-help": "npm:^6.2.19"
     "@types/bcryptjs": "npm:^3.0.0"
