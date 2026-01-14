@@ -13,7 +13,7 @@ import {
 import { sharedWallet } from "./shared-wallet.js";
 import { generateKeysFromMnemonicOnce } from "./wallet/index.js";
 
-export { Config } from './schemas.js';
+export { Config, NotificationsConfig } from './schemas.js';
 
 export interface StateInterface extends State {
   // augmented in user code
@@ -22,11 +22,6 @@ export interface StateInterface extends State {
 export class State extends BaseState {
   public constructor(rawConfig: unknown, networkArtifactsRoot: NetworkArtifactRoot, chainRoot: ChainRoot) {
     super(rawConfig, networkArtifactsRoot, chainRoot);
-  }
-
-  async isChainDeployed() {
-    const state = await this.getChain(false);
-    return state && !isEmptyObject(state);
   }
 
   async getChain<M extends boolean = true>(must: M = true as M) {
@@ -107,6 +102,11 @@ export class State extends BaseState {
     }
 
     return WalletSchema.parseAsync(wallet ?? sharedWallet);
+  }
+
+  async isChainDeployed() {
+    const state = await this.getChain(false);
+    return state && !isEmptyObject(state);
   }
 
 

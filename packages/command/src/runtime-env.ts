@@ -1,4 +1,5 @@
 import { DevNetLogger } from "@devnet/logger";
+import { DevNetNotifier, NotificationEvent, createNotifier } from "@devnet/notifications";
 import { DevnetServiceRegistry } from "@devnet/service";
 import { State, StateInterface } from "@devnet/state";
 import { ChainRoot, Network } from "@devnet/types";
@@ -9,7 +10,7 @@ import { readFile, rm } from "node:fs/promises";
 import * as YAML from "yaml";
 import { z } from "zod";
 
-import { CmdReturn, FactoryResult } from "./command.js";
+import { FactoryResult } from "./command.js";
 import { USER_CONFIG_PATH } from "./constants.js";
 import { DevNetDRENetwork } from "./network/index.js";
 
@@ -24,6 +25,7 @@ const YamlConfig = z.object({
       lido: z.record(z.string(), z.any()).optional(),
       csm: z.record(z.string(), z.any()).optional(),
       walletMnemonic: z.string().optional(),
+      notifications: z.record(z.string(), z.any()).optional(),
     })
   )
 });
@@ -41,6 +43,8 @@ export interface DevNetRuntimeEnvironmentInterface {
   clone(commandName: string): DevNetRuntimeEnvironmentInterface;
   readonly logger: DevNetLogger;
   readonly network: DevNetDRENetwork;
+  notify(event: NotificationEvent): Promise<void>;
+
   runCommand<
     F extends Record<string, any>,
     R,
@@ -59,8 +63,10 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
   public readonly network: DevNetDRENetwork;
   public readonly services: DevnetServiceRegistry["services"];
   public readonly state: StateInterface;
-
+  private readonly notifier: DevNetNotifier;
   private readonly oclifConfig: OclifConfig;
+
+  private readonly rawConfig: unknown;
 
   private readonly registry: DevnetServiceRegistry;
 
@@ -77,12 +83,18 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
       // TODO make this dynamic (get rid of kurtosis knowledge here)
       ChainRoot.parse(registry.services.kurtosis.artifact.root),
     );
+    this.rawConfig = rawConfig;
     this.network = new DevNetDRENetwork(network, this.state, logger);
     this.services = registry.services;
 
     this.registry = registry;
 
     this.logger = logger;
+    this.notifier = createNotifier({
+      config: (rawConfig as { notifications?: unknown })?.notifications as any,
+      env: process.env,
+      logger,
+    });
 
     this.oclifConfig = oclifConfig;
   }
@@ -130,11 +142,15 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
     const newLogger = new DevNetLogger(this.network.name, commandName);
     return new DevNetRuntimeEnvironment(
       this.network.name,
-      this.state,
+      this.rawConfig,
       this.registry.clone(commandName, newLogger),
       newLogger,
       this.oclifConfig,
     );
+  }
+
+  public async notify(event: NotificationEvent): Promise<void> {
+    await this.notifier.notify(event);
   }
 
   public runCommand<

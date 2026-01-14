@@ -50,6 +50,36 @@ export const WalletSchema = z
 
 export const WalletMnemonic = z.string();
 
+export const NotificationsSlackConfigSchema = z.object({
+  enabled: z.boolean().optional(),
+  webhookUrlEnv: z.string().optional(),
+  channel: z.string().optional(),
+  username: z.string().optional(),
+  iconEmoji: z.string().optional(),
+});
+
+export const NotificationsEventsConfigSchema = z.object({
+  deploy: z.boolean().optional(),
+  redeploy: z.boolean().optional(),
+  delete: z.boolean().optional(),
+  serviceUp: z.boolean().optional(),
+  serviceDown: z.boolean().optional(),
+  serviceRestart: z.boolean().optional(),
+});
+
+export const NotificationsFiltersConfigSchema = z.object({
+  allowCommands: z.array(z.string()).optional(),
+  ignoreCommands: z.array(z.string()).optional(),
+});
+
+export const NotificationsConfigSchema = z.object({
+  slack: NotificationsSlackConfigSchema.optional(),
+  events: NotificationsEventsConfigSchema.optional(),
+  filters: NotificationsFiltersConfigSchema.optional(),
+});
+
+export type NotificationsConfig = z.infer<typeof NotificationsConfigSchema>;
+
 const ConfigSchema = z.object({
   chain: ChainState.partial().optional(),
   wallet: WalletSchema.optional(),
@@ -57,6 +87,7 @@ const ConfigSchema = z.object({
   parsedConsensusGenesisState:
     ParsedConsensusGenesisStateSchema.partial().optional(),
   dataBus: DataBusConfigSchema.optional(),
+  notifications: NotificationsConfigSchema.optional(),
 });
 
 export type ChainConfig = z.infer<typeof ChainState>;

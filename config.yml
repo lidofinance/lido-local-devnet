@@ -28,6 +28,17 @@ networks:
       hashConsensus: "0xHashConsensusAddress"
       lidoLocator: "0xLidoLocatorAddress"
     walletMnemonic: test test test test test test test test test test test junk
+    notifications:
+      slack:
+        enabled: false
+        webhookUrlEnv: SLACK_WEBHOOK_URL
+      events:
+        deploy: true
+        redeploy: true
+        delete: true
+        serviceUp: true
+        serviceDown: true
+        serviceRestart: true
 
   - name: testnet1
     chain:
