@@ -22,6 +22,7 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import * as YAML from "yaml";
+import * as toml from "@iarna/toml";
 
 import { DevnetServiceArtifact } from "./devnet-service-artifact.js";
 import { serviceConfigs } from "./embedded/index.js";
@@ -192,6 +193,10 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
     return JSON.parse(await this.readFile(relativePath));
   }
 
+  public async readToml(relativePath: string) {
+    return toml.parse(await this.readFile(relativePath));
+  }
+
   public async readYaml(relativePath: string) {
     return YAML.parse(await this.readFile(relativePath), { intAsBigInt: true });
   }
@@ -224,6 +229,10 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
       ? JSON.stringify(fileContent, null, 2)
       : JSON.stringify(fileContent);
     return await this.writeFile(relativePath, json);
+  }
+
+  public async writeToml(relativePath: string, fileContent: toml.JsonMap) {
+    return await this.writeFile(relativePath, toml.stringify(fileContent));
   }
 
   public async writeYaml(relativePath: string, fileContent: unknown) {

@@ -17,23 +17,40 @@ export const AddNewOperator = command.cli({
       description: "Operator ID to be used for the new operator.",
       default: 1,
     }),
+    depositCount: Params.integer({
+      description: "Number of deposits to be made for the new operator.",
+      default: 30,
+    }),
+    stakingModuleId: Params.integer({
+      description: "Staking module ID to be used for the new operator.",
+      default: 1,
+    }),
+    dsm: Params.boolean({
+      description: "Use full DSM setup.",
+      default: false,
+    }),
   },
   async handler({ params, dre, dre: { logger, services } }) {
-    const depositArgs = { dsm: false };
+    const depositArgs = { dsm: params.dsm };
     const OPERATOR_ID = params.operatorId;
+    const STAKING_MODULE_ID = params.stakingModuleId ?? 1;
+    const NOR_DEVNET_OPERATOR = `devnet_nor_${OPERATOR_ID}`;
+    const DEPOSIT_COUNT = params.depositCount ?? 30;
 
     assert(
       OPERATOR_ID > 0,
       `Operator ID must be greater than 0, got ${OPERATOR_ID}`,
     );
-
-    const NOR_DEVNET_OPERATOR = `devnet_nor_${OPERATOR_ID}`;
-
-    const DEPOSIT_COUNT = 100;
+    assert(
+      STAKING_MODULE_ID > 0,
+      `Staking Module ID must be greater than 0, got ${STAKING_MODULE_ID}`,
+    );
 
     const operatorExists = await services.lidoCLI.fileExists(
       `generated-keys/${NOR_DEVNET_OPERATOR}.json`,
     );
+
+    const operatorId = OPERATOR_ID - 1;
 
     assert(!operatorExists, `Operator ${NOR_DEVNET_OPERATOR} already exists.`);
 
@@ -49,20 +66,20 @@ export const AddNewOperator = command.cli({
     logger.log("🚀 Adding NOR keys...");
     await dre.runCommand(LidoAddKeys, {
       name: NOR_DEVNET_OPERATOR,
-      id: OPERATOR_ID,
+      id: operatorId,
     });
     logger.log("✅ NOR keys added.");
 
     logger.log("🚀 Increasing staking limit for NOR...");
     await dre.runCommand(LidoSetStakingLimit, {
-      operatorId: OPERATOR_ID,
+      operatorId,
       limit: DEPOSIT_COUNT,
     });
     logger.log("✅ Staking limit for NOR increased.");
 
     logger.log("🚀 Making deposit to NOR...");
     await dre.runCommand(LidoDeposit, {
-      id: 1,
+      id: STAKING_MODULE_ID,
       deposits: DEPOSIT_COUNT,
       ...depositArgs,
     });

@@ -16,6 +16,7 @@ export const lidoCore = new DevnetServiceConfig({
       "scripts/scratch/deployed-testnet-defaults.json",
     NETWORK_STATE_FILE: `deployed-local-devnet.json`,
     SLOTS_PER_EPOCH: "32",
+    SCRATCH_DEPLOY_CONFIG: "scripts/scratch/deploy-params-testnet.toml",
   },
   hooks: {
     install: "lido-core:install",

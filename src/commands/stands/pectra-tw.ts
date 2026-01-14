@@ -5,8 +5,7 @@ import { DeployTWContracts } from "../lido-core/deploy-tw.js";
 import { PectraDevNetUp } from "./pectra.js";
 
 export const PectraTWDevNetUp = command.cli({
-  description:
-    "Triggerable Withdrawals test stand.",
+  description: "Triggerable Withdrawals test stand.",
   params: {
     verify: Params.boolean({
       description: "Enables verification of smart contracts during deployment.",
@@ -28,7 +27,10 @@ export const PectraTWDevNetUp = command.cli({
       ref: "feat/tw-deploy",
     });
 
-    await dre.runCommand(DeployTWContracts, {});
+    await dre.runCommand(DeployTWContracts, {
+      configFile:
+        dre.services.lidoCore.config.constants.NETWORK_STATE_DEFAULTS_FILE,
+    });
 
     logger.log("");
     logger.log(
