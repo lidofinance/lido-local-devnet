@@ -959,6 +959,7 @@ __metadata:
   dependencies:
     "@devnet/cl-client": "workspace:*"
     "@devnet/logger": "workspace:*"
+    "@devnet/notifications": "workspace:*"
     "@devnet/service": "workspace:*"
     "@devnet/state": "workspace:*"
     "@devnet/types": "workspace:*"
@@ -1107,6 +1108,21 @@ __metadata:
     "@devnet/ui": "workspace:*"
     "@oclif/core": "npm:^4.0.37"
     "@oclif/plugin-help": "npm:^6.2.19"
+    "@types/node": "npm:^22.10.5"
+    eslint: "npm:^8"
+    eslint-config-oclif: "npm:^5"
+    eslint-config-oclif-typescript: "npm:^3"
+    eslint-config-prettier: "npm:^9"
+    eslint-plugin-prettier: "npm:^5.2.2"
+    prettier: "npm:^3.4.2"
+    typescript: "npm:^5"
+  languageName: unknown
+  linkType: soft
+
+"@devnet/notifications@workspace:*, @devnet/notifications@workspace:packages/notifications":
+  version: 0.0.0-use.local
+  resolution: "@devnet/notifications@workspace:packages/notifications"
+  dependencies:
     "@types/node": "npm:^22.10.5"
     eslint: "npm:^8"
     eslint-config-oclif: "npm:^5"

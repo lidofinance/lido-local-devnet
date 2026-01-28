@@ -13,6 +13,7 @@ import {
   Path,
 } from "@devnet/types";
 import { assert } from "@devnet/utils";
+import * as toml from "@iarna/toml";
 import {
   access,
   constants,
@@ -22,7 +23,6 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import * as YAML from "yaml";
-import * as toml from "@iarna/toml";
 
 import { DevnetServiceArtifact } from "./devnet-service-artifact.js";
 import { serviceConfigs } from "./embedded/index.js";
@@ -97,7 +97,7 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
     );
   }
 
-  public async fileExists(relativePath: string | Path): Promise<boolean> {
+  public async fileExists(relativePath: Path | string): Promise<boolean> {
     const servicePath = this.artifact.root;
     const fullPath = path.join(servicePath, relativePath);
 
