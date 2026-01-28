@@ -1,5 +1,6 @@
 import { assertoor } from "./assertoor.js";
 import { blockscout } from "./blockscout.js";
+import { cmv2 } from "./cmv2.js";
 import { council } from "./council-daemon.js";
 import { csm } from "./csm.js";
 import { csmProverTool } from "./csm-prover-tool.js";
@@ -23,6 +24,7 @@ export const serviceConfigs = {
   lidoCore,
   lidoCLI,
   kurtosis,
+  cmv2,
   csm,
   csmProverTool,
   kapi,
