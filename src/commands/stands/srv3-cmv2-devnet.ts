@@ -2,7 +2,11 @@ import { Params, command } from "@devnet/command";
 
 import { ChainGetInfo } from "../chain/info.js";
 import { ChainUp } from "../chain/up.js";
+import { ActivateCMv2 } from "../cmv2/activate.js";
+import { LidoAddCMv2OperatorWithKeys } from "../cmv2/add-operator.js";
+import { DeployCMv2Contracts } from "../cmv2/deploy.js";
 import { CouncilK8sUp } from "../council-k8s/up.js";
+import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
 import { DataBusDeploy } from "../data-bus/deploy.js";
 import { DSMBotsK8sUp } from "../dsm-bots-k8s/up.js";
@@ -11,6 +15,8 @@ import { KapiK8sUp } from "../kapi-k8s/up.js";
 import { ActivateLidoProtocol } from "../lido-core/activate.js";
 import { AddNewOperator } from "../lido-core/add-new-operator.js";
 import { DeployLidoContracts } from "../lido-core/deploy.js";
+import { GenerateLidoDevNetKeys } from "../lido-core/keys/generate.js";
+import { UseLidoDevNetKeys } from "../lido-core/keys/use.js";
 import { ReplaceDSM } from "../lido-core/replace-dsm.js";
 import { OracleK8sUp } from "../oracles-k8s/up.js";
 
@@ -37,6 +43,11 @@ export const SRv3CMv2DevnetUp = command.cli({
 
     await dre.runCommand(GitCheckout, {
       service: "csm",
+      ref: "develop",
+    });
+
+    await dre.runCommand(GitCheckout, {
+      service: "cmv2",
       ref: "develop",
     });
 
@@ -67,6 +78,10 @@ export const SRv3CMv2DevnetUp = command.cli({
     await dre.runCommand(DeployCSMContracts, deployArgs);
     logger.log("✅ CSM contracts deployed.");
 
+    logger.log("🚀 Deploying CMv2 contracts...");
+    await dre.runCommand(DeployCMv2Contracts, deployArgs);
+    logger.log("✅ CMv2 contracts deployed.");
+
     await dre.runCommand(GitCheckout, {
       service: "lidoCLI",
       ref: "feature/vroom-435-staking-router-v3-devnet1-with-cmv2",
@@ -75,6 +90,14 @@ export const SRv3CMv2DevnetUp = command.cli({
     logger.log("🚀 Activating Lido Core protocol...");
     await dre.runCommand(ActivateLidoProtocol, {});
     logger.log("✅ Lido Core protocol activated.");
+
+    logger.log("🚀 Activating CMv2 module...");
+    await dre.runCommand(ActivateCMv2, {
+      stakeShareLimitBP: 2000,
+      priorityExitShareThresholdBP: 2500,
+      maxDepositsPerBlock: 30,
+    });
+    logger.log("✅ CMv2 module activated.");
 
     if (!params.dsm) {
       logger.log("🚀 Replacing DSM with an EOA...");
@@ -89,11 +112,53 @@ export const SRv3CMv2DevnetUp = command.cli({
     await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 3, stakingModuleId: 1, depositCount: validators});
     logger.log("✅ 3 new operators with validators added.");
 
+    const CSM_OPERATOR_PREFIX = "devnet_csm_";
+    const CMV2_OPERATOR_PREFIX = "devnet_cmv2_";
+    const CSM_OPERATORS_COUNT = 2;
+    const CMV2_OPERATORS_COUNT = 2;
+    const KEYS_PER_OPERATOR = 25;
+
+    logger.log("🚀 Generating and allocating keys for CSM Module...");
+    for (let i = 0; i < CSM_OPERATORS_COUNT; i++) {
+      await dre.runCommand(GenerateLidoDevNetKeys, { validators: KEYS_PER_OPERATOR });
+      await dre.runCommand(UseLidoDevNetKeys, {
+        name: `${CSM_OPERATOR_PREFIX}${i}`,
+      });
+    }
+
+    logger.log("✅ CSM Module keys generated and allocated.");
+
+    logger.log("🚀 Adding CSM operators with keys...");
+    for (let i = 0; i < CSM_OPERATORS_COUNT; i++) {
+      await dre.runCommand(LidoAddCSMOperatorWithKeys, {
+        name: `${CSM_OPERATOR_PREFIX}${i}`,
+      });
+      logger.log(`✅ Keys for operator ${CSM_OPERATOR_PREFIX}${i} added.`);
+    }
+
+    logger.log("🚀 Generating and allocating keys for CMv2 Module...");
+    for (let i = 0; i < CMV2_OPERATORS_COUNT; i++) {
+      await dre.runCommand(GenerateLidoDevNetKeys, { validators: KEYS_PER_OPERATOR });
+      await dre.runCommand(UseLidoDevNetKeys, {
+        name: `${CMV2_OPERATOR_PREFIX}${i}`,
+      });
+    }
+
+    logger.log("✅ CMv2 Module keys generated and allocated.");
+
+    logger.log("🚀 Adding CMv2 operators with keys...");
+    for (let i = 0; i < CMV2_OPERATORS_COUNT; i++) {
+      await dre.runCommand(LidoAddCMv2OperatorWithKeys, {
+        name: `${CMV2_OPERATOR_PREFIX}${i}`,
+      });
+      logger.log(`✅ Keys for operator ${CMV2_OPERATOR_PREFIX}${i} added.`);
+    }
+
     logger.log("🚀 Run KAPI service in K8s.");
     await dre.runCommand(KapiK8sUp, {});
 
     logger.log("🚀 Run Oracle service in K8s.");
-    await dre.runCommand(OracleK8sUp, { tag: "6.0.1", build: false });
+    await dre.runCommand(OracleK8sUp, { tag: "kt-srv3-cmv2-devnet", build: true });
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");
