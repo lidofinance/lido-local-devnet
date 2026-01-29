@@ -69,7 +69,7 @@ export const SRv3CMv2DevnetUp = command.cli({
 
     await dre.runCommand(GitCheckout, {
       service: "lidoCLI",
-      ref: "develop",
+      ref: "feature/vroom-435-staking-router-v3-devnet1-with-cmv2",
     });
 
     logger.log("🚀 Activating Lido Core protocol...");

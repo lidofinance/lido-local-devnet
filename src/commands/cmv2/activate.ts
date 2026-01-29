@@ -78,7 +78,7 @@ export const ActivateCMv2 = command.cli({
 
     logger.log("Deploying and configuring CMv2 components...");
 
-    await lidoCLI.sh({ env })`./run.sh omnibus script devnetCSMStart`;
+    await lidoCLI.sh({ env })`./run.sh omnibus script devnetCMv2Start`;
 
     await state.updateCMv2Activated({ active: true });
   },
