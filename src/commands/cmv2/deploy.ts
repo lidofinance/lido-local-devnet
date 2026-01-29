@@ -1,16 +1,15 @@
 import { Params, command } from "@devnet/command";
 
+import { cmv2Extension } from "./extensions/cmv2.extension.js";
 import { CMv2Install } from "./install.js";
 import { CMv2UpdateState } from "./update-state.js";
-import { cmv2Extension } from "./extensions/cmv2.extension.js";
 
 type CMv2ENVConfig = {
-  FOUNDRY_PROFILE: string;
   ARTIFACTS_DIR: string;
   // CHAIN: string;
   CSM_ARAGON_AGENT_ADDRESS: string;
-  CSM_FIRST_ADMIN_ADDRESS: string;
   CSM_EPOCHS_PER_FRAME: string;
+  CSM_FIRST_ADMIN_ADDRESS: string;
   CSM_LOCATOR_ADDRESS: string;
   CSM_LOCATOR_TREASURY_ADDRESS: string;
   CSM_ORACLE_1_ADDRESS: string;
@@ -20,17 +19,18 @@ type CMv2ENVConfig = {
   CSM_STAKING_MODULE_ID: string;
   DEPLOY_CONFIG: string;
   DEPLOYER_PRIVATE_KEY: string;
+  DEVNET_CAPELLA_EPOCH: string;
   DEVNET_CHAIN_ID: string;
   DEVNET_ELECTRA_EPOCH: string;
-  DEVNET_CAPELLA_EPOCH: string;
   DEVNET_GENESIS_TIME: string;
   DEVNET_SLOTS_PER_EPOCH: string;
   EVM_SCRIPT_EXECUTOR_ADDRESS: string;
+  FOUNDRY_BLOCK_GAS_LIMIT: string;
+  FOUNDRY_PROFILE: string;
   RPC_URL: string;
   UPGRADE_CONFIG: string;
   VERIFIER_API_KEY: string;
   VERIFIER_URL: string;
-  FOUNDRY_BLOCK_GAS_LIMIT: string;
 };
 
 export const DeployCMv2Contracts = command.cli({
@@ -113,7 +113,7 @@ export const DeployCMv2Contracts = command.cli({
 
     await dre.runCommand(CMv2Install, {});
 
-    const args = ["deploy-live-no-confirm", "-g", "200", "--legacy", "--private-key", "$DEPLOYER_PRIVATE_KEY"];
+    const args = ["deploy-curated-live-no-confirm", "-g", "200", "--legacy", "--private-key", "$DEPLOYER_PRIVATE_KEY"];
     if (params.verify) {
       args.push("--verify", "--verifier", "blockscout", "--chain", "32382");
     }
