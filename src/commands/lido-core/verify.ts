@@ -7,6 +7,7 @@ type DeployEnvRequired = {
   GAS_PRIORITY_FEE: string;
   LOCAL_DEVNET_EXPLORER_API_URL: string;
   LOCAL_DEVNET_EXPLORER_URL: string;
+  LOCAL_DEVNET_CHAIN_ID: string;
   LOCAL_DEVNET_PK: string;
   NETWORK: string;
   NETWORK_STATE_DEFAULTS_FILE: string;
@@ -45,6 +46,7 @@ export const LidoCoreVerify = command.cli({
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,
       LOCAL_DEVNET_EXPLORER_API_URL: blockscoutState.api,
       LOCAL_DEVNET_EXPLORER_URL: blockscoutState.url,
+      LOCAL_DEVNET_CHAIN_ID: process.env.LOCAL_DEVNET_CHAIN_ID ?? "32382",
     };
 
     await lidoCore.sh({
