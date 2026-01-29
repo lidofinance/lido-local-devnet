@@ -27,6 +27,10 @@ lido-app:
         port: 9010
         targetPort: 9010
         protocol: TCP
+      - name: performance-web
+        port: 9020
+        targetPort: 9020
+        protocol: TCP
 
   # Container command
   command: [ ]
@@ -45,11 +49,17 @@ lido-app:
       KEYS_API_URI: ${KEYS_API_URI}
       MEMBER_PRIV_KEY: ${MEMBER_PRIV_KEY}
       LIDO_LOCATOR_ADDRESS: ${LIDO_LOCATOR_ADDRESS}
-      CSM_MODULE_ADDRESS: ${CSM_MODULE_ADDRESS}
+      STAKING_MODULE_ADDRESS: ${STAKING_MODULE_ADDRESS}
       SUBMIT_DATA_DELAY_IN_SLOTS: ${SUBMIT_DATA_DELAY_IN_SLOTS}
       ALLOW_REPORTING_IN_BUNKER_MODE: false
       CSM_ORACLE_MAX_CONCURRENCY: "1"
       KUBO_HOST: http://kubo:5001
+      PERFORMANCE_COLLECTOR_URI: ${PERFORMANCE_COLLECTOR_URI}
+      PERFORMANCE_DB_HOST: ${PERFORMANCE_DB_HOST}
+      PERFORMANCE_DB_PORT: ${PERFORMANCE_DB_PORT}
+      PERFORMANCE_DB_NAME: ${PERFORMANCE_DB_NAME}
+      PERFORMANCE_DB_USER: ${PERFORMANCE_DB_USER}
+      PERFORMANCE_DB_PASSWORD: ${PERFORMANCE_DB_PASSWORD}
 
   # Resource limits and requests
   resources: { }
@@ -113,4 +123,3 @@ lido-app:
   #       - ReadWriteOnce
   #     size: 5Gi
   #     mountPath: /logs
-

@@ -59,12 +59,18 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.KEYS_API_URI="${KEYS_API_URI}" \
 	--set lido-app.env.variables.MEMBER_PRIV_KEY="${MEMBER_PRIV_KEY}" \
 	--set lido-app.env.variables.LIDO_LOCATOR_ADDRESS="${LIDO_LOCATOR_ADDRESS}" \
-	--set lido-app.env.variables.CSM_MODULE_ADDRESS="${CSM_MODULE_ADDRESS}" \
+	--set lido-app.env.variables.STAKING_MODULE_ADDRESS="${STAKING_MODULE_ADDRESS}" \
 	--set lido-app.env.variables.CSM_ORACLE_MAX_CONCURRENCY="${CSM_ORACLE_MAX_CONCURRENCY}" \
 	--set lido-app.env.variables.SUBMIT_DATA_DELAY_IN_SLOTS="${SUBMIT_DATA_DELAY_IN_SLOTS}" \
 	--set lido-app.env.variables.ALLOW_REPORTING_IN_BUNKER_MODE="${ALLOW_REPORTING_IN_BUNKER_MODE}" \
 	--set lido-app.env.variables.PINATA_JWT="${PINATA_JWT}" \
-	--set lido-app.env.variables.KUBO_HOST="${KUBO_HOST}"
+	--set lido-app.env.variables.KUBO_HOST="${KUBO_HOST}" \
+	--set lido-app.env.variables.PERFORMANCE_COLLECTOR_URI="${PERFORMANCE_COLLECTOR_URI}" \
+	--set lido-app.env.variables.PERFORMANCE_DB_HOST="${PERFORMANCE_DB_HOST}" \
+	--set lido-app.env.variables.PERFORMANCE_DB_PORT="${PERFORMANCE_DB_PORT}" \
+	--set lido-app.env.variables.PERFORMANCE_DB_NAME="${PERFORMANCE_DB_NAME}" \
+	--set lido-app.env.variables.PERFORMANCE_DB_USER="${PERFORMANCE_DB_USER}" \
+	--set lido-app.env.variables.PERFORMANCE_DB_PASSWORD="${PERFORMANCE_DB_PASSWORD}"
 endef
 
 # Lint Helm chart

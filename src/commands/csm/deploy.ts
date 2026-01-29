@@ -1,16 +1,15 @@
 import { Params, command } from "@devnet/command";
 
+import { csmExtension } from "./extensions/csm.extension.js";
 import { CSMInstall } from "./install.js";
 import { CSMUpdateState } from "./update-state.js";
-import { csmExtension } from "./extensions/csm.extension.js";
 
 type CSMENVConfig = {
-  FOUNDRY_PROFILE: string;
   ARTIFACTS_DIR: string;
   // CHAIN: string;
   CSM_ARAGON_AGENT_ADDRESS: string;
-  CSM_FIRST_ADMIN_ADDRESS: string;
   CSM_EPOCHS_PER_FRAME: string;
+  CSM_FIRST_ADMIN_ADDRESS: string;
   CSM_LOCATOR_ADDRESS: string;
   CSM_LOCATOR_TREASURY_ADDRESS: string;
   CSM_ORACLE_1_ADDRESS: string;
@@ -20,17 +19,18 @@ type CSMENVConfig = {
   CSM_STAKING_MODULE_ID: string;
   DEPLOY_CONFIG: string;
   DEPLOYER_PRIVATE_KEY: string;
+  DEVNET_CAPELLA_EPOCH: string;
   DEVNET_CHAIN_ID: string;
   DEVNET_ELECTRA_EPOCH: string;
-  DEVNET_CAPELLA_EPOCH: string;
   DEVNET_GENESIS_TIME: string;
   DEVNET_SLOTS_PER_EPOCH: string;
   EVM_SCRIPT_EXECUTOR_ADDRESS: string;
+  FOUNDRY_BLOCK_GAS_LIMIT: string;
+  FOUNDRY_PROFILE: string;
   RPC_URL: string;
   UPGRADE_CONFIG: string;
   VERIFIER_API_KEY: string;
   VERIFIER_URL: string;
-  FOUNDRY_BLOCK_GAS_LIMIT: string;
 };
 
 export const DeployCSMContracts = command.cli({

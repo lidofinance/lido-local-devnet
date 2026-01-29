@@ -1,9 +1,13 @@
 import { command } from "@devnet/command";
 import { buildAndPushDockerImage } from "@devnet/docker";
 
+import { CMv2ProverToolK8sExtension } from "./extensions/cmv2-prover-tool-k8s.extension.js";
+import { CSMProverToolK8sExtension } from "./extensions/csm-prover-tool-k8s.extension.js";
+
 export const CSMProverToolK8sBuild = command.cli({
   description: "Build CSM Prover Tool and push to Docker registry",
   params: {},
+  extensions: [CSMProverToolK8sExtension, CMv2ProverToolK8sExtension],
   async handler({ dre: { state, network, services, logger } }) {
     const dockerRegistry = await state.getDockerRegistry();
 
@@ -26,6 +30,12 @@ export const CSMProverToolK8sBuild = command.cli({
       tag: TAG,
       image: IMAGE,
       registryHostname: dockerRegistry.registryHostname,
-    })
+    });
+
+    await state.updateCMv2ProverToolK8sImage({
+      tag: TAG,
+      image: IMAGE,
+      registryHostname: dockerRegistry.registryHostname,
+    });
   },
 });
