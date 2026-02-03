@@ -25,6 +25,7 @@ type CSMENVConfig = {
   DEVNET_GENESIS_TIME: string;
   DEVNET_SLOTS_PER_EPOCH: string;
   EVM_SCRIPT_EXECUTOR_ADDRESS: string;
+  CSM_RESEAL_MANAGER_ADDRESS: string;
   FOUNDRY_BLOCK_GAS_LIMIT: string;
   FOUNDRY_PROFILE: string;
   RPC_URL: string;
@@ -98,6 +99,7 @@ export const DeployCSMContracts = command.cli({
       DEVNET_GENESIS_TIME: genesis_time,
       DEVNET_SLOTS_PER_EPOCH: SLOTS_PER_EPOCH,
       EVM_SCRIPT_EXECUTOR_ADDRESS: agent,
+      CSM_RESEAL_MANAGER_ADDRESS: deployer.publicKey,
       RPC_URL: elPublic,
       UPGRADE_CONFIG: constants.UPGRADE_CONFIG,
       VERIFIER_API_KEY: constants.VERIFIER_API_KEY,

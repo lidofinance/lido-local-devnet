@@ -14,8 +14,8 @@ export const AddNewOperator = command.cli({
     "Generate keys, add operator, add keys to operator and reload validator client.",
   params: {
     operatorId: Params.integer({
-      description: "Operator ID to be used for the new operator.",
-      default: 1,
+      description: "Operator index (0-based) to be used for the new operator.",
+      default: 0,
     }),
     depositCount: Params.integer({
       description: "Number of deposits to be made for the new operator.",
@@ -38,8 +38,8 @@ export const AddNewOperator = command.cli({
     const DEPOSIT_COUNT = params.depositCount ?? 30;
 
     assert(
-      OPERATOR_ID > 0,
-      `Operator ID must be greater than 0, got ${OPERATOR_ID}`,
+      OPERATOR_ID >= 0,
+      `Operator ID must be greater than or equal to 0, got ${OPERATOR_ID}`,
     );
     assert(
       STAKING_MODULE_ID > 0,
@@ -50,7 +50,7 @@ export const AddNewOperator = command.cli({
       `generated-keys/${NOR_DEVNET_OPERATOR}.json`,
     );
 
-    const operatorId = OPERATOR_ID - 1;
+    const operatorId = OPERATOR_ID;
 
     assert(!operatorExists, `Operator ${NOR_DEVNET_OPERATOR} already exists.`);
 

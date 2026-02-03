@@ -8,11 +8,11 @@ export const cmv2 = new DevnetServiceConfig({
   name: "cmv2" as const,
   constants: {
     FOUNDRY_PROFILE: "deploy",
-    DEPLOY_CONFIG: "artifacts/latest/deploy-local-devnet.json",
-    UPGRADE_CONFIG: "artifacts/latest/deploy-local-devnet.json",
+    DEPLOY_CONFIG: "artifacts/latest/curated/deploy-local-devnet.json",
+    UPGRADE_CONFIG: "artifacts/latest/curated/deploy-local-devnet.json",
     VERIFIER_API_KEY: "local-testnet",
-    ARTIFACTS_DIR: "artifacts/latest/",
-    DEPLOYED_VERIFIER: "artifacts/latest/deploy-verifier-devnet.json",
+    ARTIFACTS_DIR: "artifacts/latest/curated",
+    DEPLOYED_VERIFIER: "artifacts/latest/curated/deploy-verifier-devnet.json",
     CSM_STAKING_MODULE_ID: "3",
   },
   env: {

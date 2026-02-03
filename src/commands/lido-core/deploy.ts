@@ -84,6 +84,18 @@ export const DeployLidoContracts = command.cli({
       default: 7200,
       required: false,
     }),
+    gasMaxFee: Params.string({
+      description: "Max fee per gas in gwei (overrides config)",
+      required: false,
+    }),
+    gasPriorityFee: Params.string({
+      description: "Max priority fee per gas in gwei (overrides config)",
+      required: false,
+    }),
+    gasLimit: Params.string({
+      description: "Gas limit for deployments (overrides config)",
+      required: false,
+    }),
   },
   extensions:[lidoCoreExtension],
   async handler({ dre, dre: { logger }, params }) {
@@ -132,8 +144,8 @@ export const DeployLidoContracts = command.cli({
     const deployEnv: DeployEnvRequired = {
       DEPLOYER: deployer.publicKey,
       DEPOSIT_CONTRACT: DEPOSIT_CONTRACT_ADDRESS,
-      GAS_MAX_FEE: constants.GAS_MAX_FEE,
-      GAS_PRIORITY_FEE: constants.GAS_PRIORITY_FEE,
+      GAS_MAX_FEE: params.gasMaxFee ?? constants.GAS_MAX_FEE,
+      GAS_PRIORITY_FEE: params.gasPriorityFee ?? constants.GAS_PRIORITY_FEE,
       LOCAL_DEVNET_PK: deployer.privateKey,
       NETWORK: constants.NETWORK,
       NETWORK_STATE_DEFAULTS_FILE: constants.NETWORK_STATE_DEFAULTS_FILE,
@@ -142,7 +154,7 @@ export const DeployLidoContracts = command.cli({
       GENESIS_TIME: genesis_time,
       RPC_URL: elPublic,
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,
-      GAS_LIMIT: '16000000',
+      GAS_LIMIT: params.gasLimit ?? '16000000',
     };
 
     // print git branch information

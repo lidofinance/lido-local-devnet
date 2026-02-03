@@ -18,6 +18,6 @@ export const LidoAddCMv2OperatorWithKeys = command.cli({
 
     await dre.network.waitEL();
 
-    await lidoCLI.sh`./run.sh csm add-operator-with-keys-from-file generated-keys/${params.name}.json`;
+    await lidoCLI.sh`./run.sh cmv2 add-operator-with-keys-from-file generated-keys/${params.name}.json`;
   },
 });

@@ -14,6 +14,10 @@ export const LidoCoreUpdateState = command.cli({
     const jsonData = await lidoCore.readJson(
       lidoCore.config.constants.NETWORK_STATE_FILE,
     );
+    const burnerProxy =
+      jsonData?.burner?.proxy?.address ??
+      jsonData?.burner?.proxyAddress ??
+      jsonData?.burner?.address;
 
     await state.updateLido(jsonData);
 
@@ -40,9 +44,13 @@ export const LidoCoreUpdateState = command.cli({
 
     await lidoCLI.writeENV(lidoCLIConstants.ENV_CONFIG_PATH, lidoCliEnv);
 
+    const lidoCliExtraDevnetConfig = burnerProxy
+      ? { burner: burnerProxy }
+      : {};
+
     await lidoCLI.writeJson(
       lidoCLIConstants.DEPLOYED_NETWORK_CONFIG_EXTRA_PATH,
-      {},
+      lidoCliExtraDevnetConfig,
     );
   },
 });

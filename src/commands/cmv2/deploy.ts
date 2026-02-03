@@ -6,6 +6,7 @@ import { CMv2UpdateState } from "./update-state.js";
 
 type CMv2ENVConfig = {
   ARTIFACTS_DIR: string;
+  CS_MODULE_NAME: string;
   // CHAIN: string;
   CSM_ARAGON_AGENT_ADDRESS: string;
   CSM_EPOCHS_PER_FRAME: string;
@@ -15,6 +16,7 @@ type CMv2ENVConfig = {
   CSM_ORACLE_1_ADDRESS: string;
   CSM_ORACLE_2_ADDRESS: string;
   CSM_ORACLE_3_ADDRESS: string;
+  CSM_RESEAL_MANAGER_ADDRESS: string;
   CSM_SECOND_ADMIN_ADDRESS: string;
   CSM_STAKING_MODULE_ID: string;
   DEPLOY_CONFIG: string;
@@ -87,6 +89,7 @@ export const DeployCMv2Contracts = command.cli({
       CSM_ORACLE_2_ADDRESS: oracle2.publicKey,
       CSM_ORACLE_3_ADDRESS: oracle3.publicKey,
 
+      CS_MODULE_NAME: "curated-module-v2",
       CSM_SECOND_ADMIN_ADDRESS: secondDeployer.publicKey,
       CSM_STAKING_MODULE_ID: constants.CSM_STAKING_MODULE_ID,
       DEVNET_CAPELLA_EPOCH: CAPELLA_FORK_EPOCH,
@@ -98,6 +101,7 @@ export const DeployCMv2Contracts = command.cli({
       DEVNET_GENESIS_TIME: genesis_time,
       DEVNET_SLOTS_PER_EPOCH: SLOTS_PER_EPOCH,
       EVM_SCRIPT_EXECUTOR_ADDRESS: agent,
+      CSM_RESEAL_MANAGER_ADDRESS: deployer.publicKey,
       RPC_URL: elPublic,
       UPGRADE_CONFIG: constants.UPGRADE_CONFIG,
       VERIFIER_API_KEY: constants.VERIFIER_API_KEY,

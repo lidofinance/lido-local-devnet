@@ -13,6 +13,7 @@ export const UseLidoDevNetKeys = command.cli({
     const { kurtosis, lidoCLI } = services;
 
     const depositData = await state.getDepositData();
+    assert(depositData !== undefined, "Deposit data not found.");
 
     const { withdrawalVault } = await state.getLido();
     const WC = withdrawalVault

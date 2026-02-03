@@ -5,9 +5,9 @@ type DeployEnvRequired = {
   DEPOSIT_CONTRACT: string;
   GAS_MAX_FEE: string;
   GAS_PRIORITY_FEE: string;
+  LOCAL_DEVNET_CHAIN_ID: string;
   LOCAL_DEVNET_EXPLORER_API_URL: string;
   LOCAL_DEVNET_EXPLORER_URL: string;
-  LOCAL_DEVNET_CHAIN_ID: string;
   LOCAL_DEVNET_PK: string;
   NETWORK: string;
   NETWORK_STATE_DEFAULTS_FILE: string;

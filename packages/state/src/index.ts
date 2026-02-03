@@ -1,6 +1,8 @@
 import { DepositData, DepositDataResult, Keystores } from "@devnet/keygen";
 import { ChainRoot, NetworkArtifactRoot } from "@devnet/types";
 import { isEmptyObject } from "@devnet/utils";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 import { BaseState } from "./base-state.js";
 import { WALLET_KEYS_COUNT } from "./constants.js";
@@ -46,12 +48,34 @@ export class State extends BaseState {
 
   async getDepositData() {
     const currentState = await this.validators.read();
-    return currentState?.depositData as ({ used?: boolean } & DepositData)[];
+    if (currentState?.depositData) {
+      return currentState.depositData as ({ used?: boolean } & DepositData)[];
+    }
+
+    try {
+      const fallbackPath = path.join(this.chainRoot, "kurtosis/validators.json");
+      const raw = await fs.readFile(fallbackPath, "utf-8");
+      const parsed = JSON.parse(raw);
+      return parsed?.depositData as ({ used?: boolean } & DepositData)[];
+    } catch {
+      return undefined;
+    }
   }
 
   async getKeystores() {
     const currentState = await this.validators.read();
-    return currentState?.keystores as Keystores[];
+    if (currentState?.keystores) {
+      return currentState.keystores as Keystores[];
+    }
+
+    try {
+      const fallbackPath = path.join(this.chainRoot, "kurtosis/validators.json");
+      const raw = await fs.readFile(fallbackPath, "utf-8");
+      const parsed = JSON.parse(raw);
+      return parsed?.keystores as Keystores[];
+    } catch {
+      return undefined;
+    }
   }
 
   async getNamedWallet() {

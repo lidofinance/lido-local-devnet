@@ -6,6 +6,7 @@ import { ActivateCMv2 } from "../cmv2/activate.js";
 import { LidoAddCMv2OperatorWithKeys } from "../cmv2/add-operator.js";
 import { DeployCMv2Contracts } from "../cmv2/deploy.js";
 import { CouncilK8sUp } from "../council-k8s/up.js";
+import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
 import { DataBusDeploy } from "../data-bus/deploy.js";
@@ -36,9 +37,12 @@ export const SRv3CMv2DevnetUp = command.cli({
     }),
   },
   async handler({ params, dre, dre: { logger } }) {
-    await dre.runCommand(GitCheckout, {
+    const deployArgs = { verify: params.verify };
+    const depositArgs = { dsm: params.dsm };
+
+    /* await dre.runCommand(GitCheckout, {
       service: "lidoCore",
-      ref: "feat/staking-router-3.0",
+      ref: "feat/srv3-develop-merge",
     });
 
     await dre.runCommand(GitCheckout, {
@@ -54,12 +58,12 @@ export const SRv3CMv2DevnetUp = command.cli({
     await dre.runCommand(ChainUp, { preset: params.preset });
     logger.log("✅ Network initialized.");
 
-    const deployArgs = { verify: params.verify };
-    const depositArgs = { dsm: params.dsm };
-
     logger.log("🚀 Deploying Lido Core contracts...");
     await dre.runCommand(DeployLidoContracts, {
       ...deployArgs,
+      gasMaxFee: "60",
+      gasPriorityFee: "1",
+      gasLimit: "16000000",
       configFile: dre.services.lidoCore.config.constants.SCRATCH_DEPLOY_CONFIG,
       normalizedClRewardPerEpoch: 64,
       normalizedClRewardMistakeRateBp: 1000,
@@ -91,6 +95,14 @@ export const SRv3CMv2DevnetUp = command.cli({
     await dre.runCommand(ActivateLidoProtocol, {});
     logger.log("✅ Lido Core protocol activated.");
 
+    logger.log("🚀 Activating CSM module...");
+    await dre.runCommand(ActivateCSM, {
+      stakeShareLimitBP: 2000,
+      priorityExitShareThresholdBP: 2500,
+      maxDepositsPerBlock: 30,
+    });
+    logger.log("✅ CSM module activated.");
+
     logger.log("🚀 Activating CMv2 module...");
     await dre.runCommand(ActivateCMv2, {
       stakeShareLimitBP: 2000,
@@ -104,37 +116,37 @@ export const SRv3CMv2DevnetUp = command.cli({
       await dre.runCommand(ReplaceDSM, {});
       logger.log("✅ DSM replaced with an EOA.");
     }
-
+    */
     const validators = 30;
     logger.log("🚀 Adding 3 new operators with validators...");
-    await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 2, stakingModuleId: 1, depositCount: validators});
-    await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 1, stakingModuleId: 1, depositCount: validators});
-    await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 3, stakingModuleId: 1, depositCount: validators});
-    logger.log("✅ 3 new operators with validators added.");
+    // await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 0, stakingModuleId: 1, depositCount: validators});
+    // await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 1, stakingModuleId: 1, depositCount: validators});
+    // await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 2, stakingModuleId: 1, depositCount: validators});
+    // logger.log("✅ 3 new operators with validators added.");
 
     const CSM_OPERATOR_PREFIX = "devnet_csm_";
-    const CMV2_OPERATOR_PREFIX = "devnet_cmv2_";
+    const CMV2_OPERATOR_PREFIX = "devnet_cmv2___";
     const CSM_OPERATORS_COUNT = 2;
     const CMV2_OPERATORS_COUNT = 2;
     const KEYS_PER_OPERATOR = 25;
 
-    logger.log("🚀 Generating and allocating keys for CSM Module...");
-    for (let i = 0; i < CSM_OPERATORS_COUNT; i++) {
-      await dre.runCommand(GenerateLidoDevNetKeys, { validators: KEYS_PER_OPERATOR });
-      await dre.runCommand(UseLidoDevNetKeys, {
-        name: `${CSM_OPERATOR_PREFIX}${i}`,
-      });
-    }
+    // logger.log("🚀 Generating and allocating keys for CSM Module...");
+    // for (let i = 0; i < CSM_OPERATORS_COUNT; i++) {
+    //   await dre.runCommand(GenerateLidoDevNetKeys, { validators: KEYS_PER_OPERATOR });
+    //   await dre.runCommand(UseLidoDevNetKeys, {
+    //     name: `${CSM_OPERATOR_PREFIX}${i}`,
+    //   });
+    // }
 
-    logger.log("✅ CSM Module keys generated and allocated.");
+    // logger.log("✅ CSM Module keys generated and allocated.");
 
-    logger.log("🚀 Adding CSM operators with keys...");
-    for (let i = 0; i < CSM_OPERATORS_COUNT; i++) {
-      await dre.runCommand(LidoAddCSMOperatorWithKeys, {
-        name: `${CSM_OPERATOR_PREFIX}${i}`,
-      });
-      logger.log(`✅ Keys for operator ${CSM_OPERATOR_PREFIX}${i} added.`);
-    }
+    // logger.log("🚀 Adding CSM operators with keys...");
+    // for (let i = 0; i < CSM_OPERATORS_COUNT; i++) {
+    //   await dre.runCommand(LidoAddCSMOperatorWithKeys, {
+    //     name: `${CSM_OPERATOR_PREFIX}${i}`,
+    //   });
+    //   logger.log(`✅ Keys for operator ${CSM_OPERATOR_PREFIX}${i} added.`);
+    // }
 
     logger.log("🚀 Generating and allocating keys for CMv2 Module...");
     for (let i = 0; i < CMV2_OPERATORS_COUNT; i++) {

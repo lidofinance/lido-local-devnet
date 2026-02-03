@@ -43,6 +43,8 @@ export const CMv2State = z.object({
   module: z.string(),
   verifier: z.string(),
   permissionlessGate: z.string(),
+  vettedGate: z.string(),
+  curatedGate: z.string(),
 });
 
 export type CMv2State = z.infer<typeof CMv2State>;
@@ -81,6 +83,8 @@ export const cmv2Extension = (dre: DevNetRuntimeEnvironmentInterface) => {
         module: "cmv2.CSModule",
         verifier: "cmv2.CSVerifier",
         permissionlessGate: "cmv2.PermissionlessGate",
+        vettedGate: "cmv2.VettedGate",
+        curatedGate: "cmv2.CuratedGate",
       },
       "cmv2",
       CMv2State,

@@ -22,14 +22,26 @@ export const ValidatorAdd = command.cli({
       keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
     );
 
-    logger.log(`Total keystores: ${keystoresResponse.data.length}`);
+    const existingKeystores = Array.isArray(keystoresResponse?.data)
+      ? keystoresResponse.data
+      : undefined;
+
+    if (!existingKeystores) {
+      logger.log("Validator keymanager returned no keystores; skipping import.");
+      return;
+    }
+
+    logger.log(`Total keystores: ${existingKeystores.length}`);
 
     const existingPubKeys = new Set(
-      keystoresResponse.data.map((p) => p.validating_pubkey.replace("0x", "")),
+      existingKeystores.map((p) => p.validating_pubkey.replace("0x", "")),
     );
 
     const keystore = await state.getKeystores();
-    assert(keystore !== undefined, "Keystore data not found");
+    if (!keystore) {
+      logger.log("Keystore data not found in state; skipping import.");
+      return;
+    }
 
     const actualKeystores = keystore.filter(
       (k) => !existingPubKeys.has(k.pubkey),

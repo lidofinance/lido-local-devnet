@@ -7,12 +7,14 @@ import { Config, ConfigValidator } from "./schemas.js";
 
 export abstract class BaseState {
   protected readonly config: Config;
+  protected readonly chainRoot: ChainRoot;
   protected parsedConsensusGenesisState: JsonDb;
   protected validators: JsonDb;
   private appState: JsonDb;
 
   public constructor(rawConfig: unknown, artifactsRoot: NetworkArtifactRoot, chainRoot: ChainRoot) {
     this.config = ConfigValidator.validate(rawConfig);
+    this.chainRoot = chainRoot;
     this.appState = new JsonDb(path.join(artifactsRoot, "state.json"));
     this.parsedConsensusGenesisState = new JsonDb(
       path.join(chainRoot, "parsed_consensus_genesis.json"),
