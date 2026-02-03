@@ -1,12 +1,9 @@
-import { Params, command } from "@devnet/command";
+import { command } from "@devnet/command";
 
 import { csmExtension } from "./extensions/csm.extension.js";
-import { CSMInstall } from "./install.js";
-import { CSMUpdateState } from "./update-state.js";
 
 type CSMENVConfig = {
   ARTIFACTS_DIR: string;
-  // CHAIN: string;
   CSM_ARAGON_AGENT_ADDRESS: string;
   CSM_EPOCHS_PER_FRAME: string;
   CSM_FIRST_ADMIN_ADDRESS: string;
@@ -34,33 +31,22 @@ type CSMENVConfig = {
   VERIFIER_URL: string;
 };
 
-export const DeployCSMContracts = command.cli({
-  description:
-    "Deploys CSM smart contracts using configured deployment scripts.",
-  params: {
-    verify: Params.boolean({
-      description: "Verify smart contracts",
-    }),
-  },
+export const VerifyCSMContracts = command.cli({
+  description: "Verifies CSM smart contracts on the current network.",
+  params: {},
   extensions: [csmExtension],
-  async handler({ params, dre, dre: { logger } }) {
+  async handler({ dre, dre: { logger } }) {
     const { state, services, network } = dre;
     const { csm, oracle } = services;
     const {
       config: { constants },
     } = csm;
 
-    if (await state.isCSMDeployed()) {
-      logger.log("CSM contracts are already deployed.");
-      return;
-    }
-
     await dre.network.waitEL();
 
     const { agent, locator, treasury } = await state.getLido();
     const { elPublic } = await state.getChain();
-    const { deployer, secondDeployer, oracle1, oracle2, oracle3 } =
-      await state.getNamedWallet();
+    const { deployer, secondDeployer, oracle1, oracle2, oracle3 } = await state.getNamedWallet();
 
     await network.waitCL();
     const clClient = await network.getCLClient();
@@ -105,23 +91,12 @@ export const DeployCSMContracts = command.cli({
       VERIFIER_API_KEY: constants.VERIFIER_API_KEY,
 
       VERIFIER_URL: blockscoutConfig.api,
-      FOUNDRY_BLOCK_GAS_LIMIT: "1000000000"
+      FOUNDRY_BLOCK_GAS_LIMIT: "1000000000",
     };
 
     logger.logJson(env);
 
     const csmSh = csm.sh({ env });
-    await csmSh`just clean`;
-
-    await dre.runCommand(CSMInstall, {});
-
-    const args = ["deploy-live-no-confirm", "-g", "200", "--legacy", "--private-key", "$DEPLOYER_PRIVATE_KEY"];
-    if (params.verify) {
-      args.push("--verify", "--verifier", "blockscout", "--chain", "32382");
-    }
-
-    await csmSh`just ${args}`;
-
-    await dre.runCommand(CSMUpdateState, {});
+    await csmSh`just verify-live --verifier blockscout --chain 32382`;
   },
 });
