@@ -17,9 +17,13 @@ export const ValidatorAdd = command.cli({
     },
   }) {
     const { validatorsApiPublic } = await dre.state.getChain();
+    const token =
+      process.env.VALIDATOR_KEYMANAGER_TOKEN ??
+      keyManager.KEY_MANAGER_DEFAULT_API_TOKEN;
+    logger.log(`Validator keymanager URL: ${validatorsApiPublic}`);
     const keystoresResponse = await keyManager.fetchKeystores(
       validatorsApiPublic,
-      keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
+      token,
     );
 
     const existingKeystores = Array.isArray(keystoresResponse?.data)
@@ -28,6 +32,9 @@ export const ValidatorAdd = command.cli({
 
     if (!existingKeystores) {
       logger.log("Validator keymanager returned no keystores; skipping import.");
+      logger.log(
+        `Validator keymanager response: ${JSON.stringify(keystoresResponse)}`,
+      );
       return;
     }
 
@@ -71,7 +78,7 @@ export const ValidatorAdd = command.cli({
             validatorsApiPublic,
             keystoresChunk,
             keystoresChunkPasswords,
-            keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,
+            token,
           );
         }, E.toError);
       }),
