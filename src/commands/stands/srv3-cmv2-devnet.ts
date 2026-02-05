@@ -138,6 +138,7 @@ export const SRv3CMv2DevnetUp = command.cli({
       await dre.runCommand(GenerateLidoDevNetKeys, { validators: KEYS_PER_OPERATOR, wcType: "0x01" });
       await dre.runCommand(UseLidoDevNetKeys, {
         name: `${CSM_OPERATOR_PREFIX}${i}`,
+        wcType: "0x01",
       });
     }
 
