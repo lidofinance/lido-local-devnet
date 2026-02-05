@@ -110,13 +110,13 @@ export const FusakaDevNetUp = command.cli({
     const CSM_DEVNET_OPERATOR = "devnet_csm_1";
 
     logger.log("🚀 Generating and allocating keys for NOR Module...");
-    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
-    await dre.runCommand(UseLidoDevNetKeys, { name: NOR_DEVNET_OPERATOR });
+    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30, wcType: "0x01" });
+    await dre.runCommand(UseLidoDevNetKeys, { name: NOR_DEVNET_OPERATOR, wcType: "0x01" });
     logger.log("✅ NOR Module keys generated and allocated.");
 
     logger.log("🚀 Generating and allocating keys for CSM Module...");
-    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
-    await dre.runCommand(UseLidoDevNetKeys, { name: CSM_DEVNET_OPERATOR });
+    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30, wcType: "0x01" });
+    await dre.runCommand(UseLidoDevNetKeys, { name: CSM_DEVNET_OPERATOR, wcType: "0x01" });
     logger.log("✅ CSM Module keys generated and allocated.");
 
     logger.log("🚀 Adding NOR operator...");

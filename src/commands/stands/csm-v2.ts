@@ -117,9 +117,10 @@ export const PectraDevNetUp = command.cli({
 
     logger.log("🚀 Generating and allocating keys for CSM Module...");
     for (let i = 0; i < CSM_OPERATORS_COUNT; i++) {
-      await dre.runCommand(GenerateLidoDevNetKeys, { validators: 25 });
+      await dre.runCommand(GenerateLidoDevNetKeys, { validators: 25, wcType: "0x01" });
       await dre.runCommand(UseLidoDevNetKeys, {
         name: `${CSM_OPERATOR_PREFIX}${i}`,
+        wcType: "0x01",
       });
     }
     logger.log("✅ CSM Module keys generated and allocated.");

@@ -1,4 +1,5 @@
 import { Params, command } from "@devnet/command";
+import { resolve } from "node:path";
 
 
 export const LidoAddCMv2OperatorWithKeys = command.cli({
@@ -18,6 +19,7 @@ export const LidoAddCMv2OperatorWithKeys = command.cli({
 
     await dre.network.waitEL();
 
-    await lidoCLI.sh`./run.sh cmv2 add-operator-with-keys-from-file generated-keys/${params.name}.json`;
+    const proofFile = resolve("artifacts/merkle/merkle-proofs.json");
+    await lidoCLI.sh`./run.sh cmv2 add-operator-with-keys-from-file generated-keys/${params.name}.json -f ${proofFile}`;
   },
 });

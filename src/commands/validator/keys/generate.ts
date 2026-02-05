@@ -8,6 +8,10 @@ export const GenerateDevNetKeys = command.cli({
     wc: Params.string({
       description: "Custom withdrawal credentials (optional).",
     }),
+    wcType: Params.string({
+      description: "Withdrawal credentials type (0x01 or 0x02).",
+      default: "0x01",
+    }),
     validators: Params.integer({
       description: "Number of validator keys to generate.",
       default: 30,
@@ -15,9 +19,11 @@ export const GenerateDevNetKeys = command.cli({
   },
   async handler({ params, dre, dre: { logger, state, network } }) {
     const customWC = params.wc;
+    const wcType = params.wcType ?? "0x01";
     const { validators } = params;
 
     logger.log(`Using withdrawal credentials: ${customWC || "default"}`);
+    logger.log(`Withdrawal credentials type: ${wcType}`);
     logger.log(`Generating ${validators} validator keys`);
 
     const depositData = await state.getDepositData();
@@ -45,6 +51,7 @@ export const GenerateDevNetKeys = command.cli({
         numValidators: validators,
         amount,
         wcAddress: wc,
+        wcType,
         forkVersionString: genesis_fork_version,
         generateFrom: startIndex,
       },

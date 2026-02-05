@@ -55,8 +55,8 @@ export const AddNewOperator = command.cli({
     assert(!operatorExists, `Operator ${NOR_DEVNET_OPERATOR} already exists.`);
 
     logger.log("🚀 Generating and allocating keys for NOR Module...");
-    await dre.runCommand(GenerateLidoDevNetKeys, { validators: DEPOSIT_COUNT });
-    await dre.runCommand(UseLidoDevNetKeys, { name: NOR_DEVNET_OPERATOR });
+    await dre.runCommand(GenerateLidoDevNetKeys, { validators: DEPOSIT_COUNT, wcType: "0x01" });
+    await dre.runCommand(UseLidoDevNetKeys, { name: NOR_DEVNET_OPERATOR, wcType: "0x01" });
     logger.log("✅ NOR Module keys generated and allocated.");
 
     logger.log("🚀 Adding NOR operator...");

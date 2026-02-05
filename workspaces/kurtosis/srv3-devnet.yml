@@ -65,7 +65,7 @@ network_params:
   bpo_5_target_blobs: 6
 
 
-persistent: true
+persistent: false
 
 additional_services:
   - dora

@@ -8,6 +8,10 @@ export const UseLidoDevNetKeys = command.cli({
       description: "The name under which the unused validator keys will be saved.",
       required: true,
     }),
+    wcType: Params.string({
+      description: "Withdrawal credentials type (0x01 or 0x02).",
+      default: "0x01",
+    }),
   },
   async handler({ params, dre: { services, state } }) {
     const { kurtosis, lidoCLI } = services;
@@ -16,9 +20,10 @@ export const UseLidoDevNetKeys = command.cli({
     assert(depositData !== undefined, "Deposit data not found.");
 
     const { withdrawalVault } = await state.getLido();
-    const WC = withdrawalVault
-      .toLowerCase()
-      .replace("0x", "010000000000000000000000");
+    const wcType = (params.wcType ?? "0x01").toLowerCase();
+    assert(wcType === "0x01" || wcType === "0x02", "wcType must be 0x01 or 0x02");
+    const prefix = wcType.replace("0x", "") + "0000000000000000000000";
+    const WC = withdrawalVault.toLowerCase().replace("0x", prefix);
 
     const lidoKeys = depositData.filter((d) => d.withdrawal_credentials === WC);
 

@@ -16,6 +16,7 @@ import { DataBusDeploy } from "../data-bus/deploy.js";
 import { DSMBotsK8sUp } from "../dsm-bots-k8s/up.js";
 import { GitCheckout } from "../git/checkout.js";
 import { KapiK8sUp } from "../kapi-k8s/up.js";
+import { LidoCLIInstall } from "../lido-cli/install.js";
 import { ActivateLidoProtocol } from "../lido-core/activate.js";
 import { AddNewOperator } from "../lido-core/add-new-operator.js";
 import { DeployLidoContracts } from "../lido-core/deploy.js";
@@ -23,7 +24,6 @@ import { GenerateLidoDevNetKeys } from "../lido-core/keys/generate.js";
 import { UseLidoDevNetKeys } from "../lido-core/keys/use.js";
 import { ReplaceDSM } from "../lido-core/replace-dsm.js";
 import { OracleK8sUp } from "../oracles-k8s/up.js";
-import { VotingAutoVote } from "../voting/auto-vote.js";
 
 export const SRv3CMv2DevnetUp = command.cli({
   description: "Staking Router V3 with CMv2 Devnet1",
@@ -94,6 +94,7 @@ export const SRv3CMv2DevnetUp = command.cli({
       service: "lidoCLI",
       ref: "feature/vroom-435-staking-router-v3-devnet1-with-cmv2",
     });
+    await dre.runCommand(LidoCLIInstall, {});
 
     logger.log("🚀 Activating Lido Core protocol...");
     await dre.runCommand(ActivateLidoProtocol, {});
@@ -122,11 +123,9 @@ export const SRv3CMv2DevnetUp = command.cli({
     }
     
     const validators = 30;
-    logger.log("🚀 Adding 3 new operators with validators...");
+    logger.log("🚀 Adding new operator with validators...");
     await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 0, stakingModuleId: 1, depositCount: validators});
-    await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 1, stakingModuleId: 1, depositCount: validators});
-    await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 2, stakingModuleId: 1, depositCount: validators});
-    logger.log("✅ 3 new operators with validators added.");
+    logger.log("✅ 1 new operator with validators added.");
 
     const CSM_OPERATOR_PREFIX = "devnet_csm_";
     const CMV2_OPERATOR_PREFIX = "devnet_cmv2___";
@@ -136,7 +135,7 @@ export const SRv3CMv2DevnetUp = command.cli({
 
     logger.log("🚀 Generating and allocating keys for CSM Module...");
     for (let i = 0; i < CSM_OPERATORS_COUNT; i++) {
-      await dre.runCommand(GenerateLidoDevNetKeys, { validators: KEYS_PER_OPERATOR });
+      await dre.runCommand(GenerateLidoDevNetKeys, { validators: KEYS_PER_OPERATOR, wcType: "0x01" });
       await dre.runCommand(UseLidoDevNetKeys, {
         name: `${CSM_OPERATOR_PREFIX}${i}`,
       });
@@ -154,9 +153,10 @@ export const SRv3CMv2DevnetUp = command.cli({
 
     logger.log("🚀 Generating and allocating keys for CMv2 Module...");
     for (let i = 0; i < CMV2_OPERATORS_COUNT; i++) {
-      await dre.runCommand(GenerateLidoDevNetKeys, { validators: KEYS_PER_OPERATOR });
+      await dre.runCommand(GenerateLidoDevNetKeys, { validators: KEYS_PER_OPERATOR, wcType: "0x02" });
       await dre.runCommand(UseLidoDevNetKeys, {
         name: `${CMV2_OPERATOR_PREFIX}${i}`,
+        wcType: "0x02",
       });
     }
 
@@ -171,7 +171,6 @@ export const SRv3CMv2DevnetUp = command.cli({
     });
     const allowlistPath = resolve("artifacts/merkle/allowlist.json");
     await dre.services.lidoCLI.sh`./run.sh cmv2 grant-set-tree-role-vote`;
-    await dre.runCommand(VotingAutoVote, {});
     await dre.runCommand(CMv2SetGateTree, {
       input: allowlistPath,
       outputDir: undefined,

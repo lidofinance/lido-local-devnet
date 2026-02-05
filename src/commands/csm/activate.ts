@@ -1,18 +1,18 @@
 // services/lido-cli/programs/omnibus-scripts/devnet-csm-start.ts
 
-import { command, Params } from "@devnet/command";
+import { Params, command } from "@devnet/command";
 
 type CSMActivateENV = {
   CS_ACCOUNTING_ADDRESS: string;
+  CS_MAX_DEPOSITS_PER_BLOCK: string;
   CS_MODULE_ADDRESS: string;
   CS_ORACLE_HASH_CONSENSUS_ADDRESS: string;
   CS_ORACLE_INITIAL_EPOCH: string;
-  EL_NETWORK_NAME: string;
+  CS_PRIORITY_EXIT_SHARE_THRESHOLD: string;
+  CS_STAKE_SHARE_LIMIT: string;
   EL_API_PROVIDER: string;
   EL_CHAIN_ID: string;
-  CS_STAKE_SHARE_LIMIT: string;
-  CS_PRIORITY_EXIT_SHARE_THRESHOLD: string;
-  CS_MAX_DEPOSITS_PER_BLOCK: string;
+  EL_NETWORK_NAME: string;
   PRIVATE_KEY: string;
 };
 
