@@ -141,7 +141,20 @@ export const FusakaDevNetUp = command.cli({
     await dre.runCommand(KapiK8sUp, {});
 
     logger.log("🚀 Run Oracle service in K8s.");
-    await dre.runCommand(OracleK8sUp, { tag: '6.0.1', build: false });
+    await dre.runCommand(OracleK8sUp, {
+      image: "lidofinance/oracle",
+      registryHostname: undefined,
+      tag: "6.0.1",
+      accountingImage: undefined,
+      accountingTag: undefined,
+      csmImage: undefined,
+      csmTag: undefined,
+      consensusClientUris: undefined,
+      performanceConsensusClientUri: undefined,
+      ejectorImage: undefined,
+      ejectorTag: undefined,
+      build: false,
+    });
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");

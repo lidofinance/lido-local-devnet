@@ -107,10 +107,15 @@ export const CMv2SetGateTree = command.cli({
       required: false,
       default: false,
     }),
+    vote: Params.boolean({
+      description: "Use vote (via lidoCLI) to set tree root instead of direct call.",
+      required: false,
+      default: false,
+    }),
   },
   extensions: [cmv2Extension],
   async handler({ params, dre, dre: { logger } }) {
-    const { input, outputDir, treeCid, gate, setRoot } = params;
+    const { input, outputDir, treeCid, gate, setRoot, vote } = params;
     if (!input) {
       throw new Error("input is required");
     }
@@ -144,6 +149,12 @@ export const CMv2SetGateTree = command.cli({
 
     if (!gateAddress || gateAddress === "0x0000000000000000000000000000000000000000") {
       throw new Error("Gate address is not configured (curated/vetted).");
+    }
+
+    if (vote) {
+      logger.log(`Creating vote to set tree root on gate ${gateAddress} with cid "${treeCid}"...`);
+      await dre.services.lidoCLI.sh`./run.sh cmv2 set-gate-tree-vote --root ${root} --cid ${treeCid} --gate ${gateAddress}`;
+      return;
     }
 
     const { elPublic } = await dre.state.getChain();

@@ -117,6 +117,10 @@ export const DeployCMv2Contracts = command.cli({
 
     await dre.runCommand(CMv2Install, {});
 
+    if (params.verify) {
+      await cmv2Sh`just build --skip test`;
+    }
+
     const args = ["deploy-curated-live-no-confirm", "-g", "200", "--legacy", "--private-key", "$DEPLOYER_PRIVATE_KEY"];
     if (params.verify) {
       args.push("--verify", "--verifier", "blockscout", "--chain", "32382");

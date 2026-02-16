@@ -80,6 +80,13 @@ export const ActivateCMv2 = command.cli({
 
     await lidoCLI.sh({ env })`./run.sh omnibus script devnetCMv2Start`;
 
+    logger.log("Granting MANAGE_OPERATOR_GROUPS_ROLE on CMv2 MetaRegistry...");
+    try {
+      await lidoCLI.sh({ env })`./run.sh cmv2 grant-manage-operator-groups-role-vote`;
+    } catch (error) {
+      logger.warn("Failed to grant MANAGE_OPERATOR_GROUPS_ROLE; proceed manually if needed");
+    }
+
     await state.updateCMv2Activated({ active: true });
   },
 });

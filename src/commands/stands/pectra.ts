@@ -133,7 +133,20 @@ export const PectraDevNetUp = command.cli({
     await dre.runCommand(KapiK8sUp, {});
 
     logger.log("🚀 Run Oracle service.");
-    await dre.runCommand(OracleK8sUp, {tag: '', build: true });
+    await dre.runCommand(OracleK8sUp, {
+      image: "lidofinance/oracle",
+      registryHostname: undefined,
+      tag: "",
+      accountingImage: undefined,
+      accountingTag: undefined,
+      csmImage: undefined,
+      csmTag: undefined,
+      consensusClientUris: undefined,
+      performanceConsensusClientUri: undefined,
+      ejectorImage: undefined,
+      ejectorTag: undefined,
+      build: true,
+    });
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");

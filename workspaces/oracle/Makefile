@@ -32,6 +32,9 @@ endif
 # Default values for chart versions (empty means latest)
 HELM_CHART_VERSION ?=
 
+# Extra helm set overrides (optional)
+HELM_EXTRA_SET ?=
+
 # Version flags (only add if version is specified)
 ifneq ($(HELM_CHART_VERSION),)
 	HELM_VERSION_FLAG = --version $(HELM_CHART_VERSION)
@@ -85,19 +88,20 @@ debug:
 # Lint Helm chart
 .PHONY: lint
 lint:
-	helm lint $(HELM_CHART_PATH) $(HELM_VALUES) $(HELM_CHART_VALUES_OVERRIDES)
+	helm lint $(HELM_CHART_PATH) $(HELM_VALUES) $(HELM_CHART_VALUES_OVERRIDES) $(HELM_EXTRA_SET)
 
 # Print rendered Helm chart templates to stdout
 .PHONY: template
 template:
 	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) $(HELM_VALUES) --namespace $(NAMESPACE) \
-		$(HELM_CHART_VALUES_OVERRIDES) $(HELM_DEBUG_FLAG)
+		$(HELM_CHART_VALUES_OVERRIDES) $(HELM_EXTRA_SET) $(HELM_DEBUG_FLAG)
 
 # Dry-run Helm chart install into K8s
 .PHONY: dry-run
 dry-run:
 	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) $(HELM_VALUES) --namespace $(NAMESPACE) \
 		$(HELM_CHART_VALUES_OVERRIDES) \
+		$(HELM_EXTRA_SET) \
 	| kubectl apply --dry-run=client -f -
 
 # Helm chart install into K8s
@@ -106,6 +110,7 @@ install:
 	helm install $(HELM_RELEASE) $(HELM_CHART_PATH) \
 		$(HELM_VALUES) \
 		$(HELM_CHART_VALUES_OVERRIDES) \
+		$(HELM_EXTRA_SET) \
 		--namespace $(NAMESPACE) \
 		--create-namespace \
 		--timeout $(TIMEOUT) \
@@ -118,6 +123,7 @@ upgrade:
 	helm upgrade $(HELM_RELEASE) $(HELM_CHART_PATH) \
 		$(HELM_VALUES) \
 		$(HELM_CHART_VALUES_OVERRIDES) \
+		$(HELM_EXTRA_SET) \
 		--namespace $(NAMESPACE) \
 		--timeout $(TIMEOUT) \
 		$(HELM_VERSION_FLAG) \

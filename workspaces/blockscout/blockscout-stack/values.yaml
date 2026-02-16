@@ -135,7 +135,7 @@ blockscout:
     POOL_SIZE_API: "10"
     HEART_BEAT_TIMEOUT: "30"
     ETHEREUM_JSONRPC_DISABLE_ARCHIVE_BALANCES: false
-    CONTRACT_VERIFICATION_ALLOWED_SOLIDITY_EVM_VERSIONS: "homestead,tangerineWhistle,spuriousDragon,byzantium,constantinople,petersburg,istanbul,berlin,london,paris,shanghai,cancun,default"
+    CONTRACT_VERIFICATION_ALLOWED_SOLIDITY_EVM_VERSIONS: "homestead,tangerineWhistle,spuriousDragon,byzantium,constantinople,petersburg,istanbul,berlin,london,paris,shanghai,cancun,default,osaka"
     CONTRACT_VERIFICATION_ALLOWED_VYPER_EVM_VERSIONS: "byzantium,constantinople,petersburg,istanbul,berlin,paris,shanghai,cancun,default"
     CONTRACT_MAX_STRING_LENGTH_WITHOUT_TRIMMING: "2040"
     CHECKSUM_ADDRESS_HASHES: true
