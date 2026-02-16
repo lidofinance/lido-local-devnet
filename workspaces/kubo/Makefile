@@ -49,7 +49,7 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.image.tag="${TAG}" \
 	--set lido-app.image.registry="${REGISTRY_HOSTNAME}" \
 	--set lido-app.env.variables.CHAIN="${CHAIN}" \
-	--set-json lido-app.ingress.hosts='[{ "host": "${KUBO_INGRESS_HOSTNAME}", "paths": [{ "path": "/", "pathType": "Prefix", "port": "http-api"}]}]'
+	--set-json lido-app.ingress.hosts='[{ "host": "${KUBO_INGRESS_HOSTNAME}", "paths": [{ "path": "/api/v0", "pathType": "Prefix", "port": "http-api"}, { "path": "/", "pathType": "Prefix", "port": "http"}]}]'
 endef
 
 

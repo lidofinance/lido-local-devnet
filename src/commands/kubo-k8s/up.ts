@@ -17,9 +17,11 @@ export const KuboK8sUp = command.cli({
   params: {},
   extensions: [kuboK8sExtension],
   async handler({ dre, dre: { state, services: { kubo }, logger } }) {
-    if (await state.isKuboK8sRunning()) {
-      logger.log("KUbo already running");
-      return;
+    await kubo.applyWorkspace();
+
+    const isRunning = await state.isKuboK8sRunning();
+    if (isRunning) {
+      logger.log("Kubo already running, applying upgrade");
     }
 
     await dre.runCommand(KuboK8sBuild, {});
@@ -65,7 +67,11 @@ export const KuboK8sUp = command.cli({
 
     await helmLidoKuboSh`make debug`;
     await helmLidoKuboSh`make lint`;
-    await helmLidoKuboSh`make install`;
+    if (isRunning) {
+      await helmLidoKuboSh`make upgrade`;
+    } else {
+      await helmLidoKuboSh`make install`;
+    }
 
     // TODO get service name from helm release
     await state.updateKuboK8sRunning({

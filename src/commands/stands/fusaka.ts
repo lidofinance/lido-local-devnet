@@ -189,7 +189,7 @@ export const FusakaDevNetUp = command.cli({
     await dre.runCommand(NoWidgetUp, { });
 
     logger.log("🚀 Run CSM Prover Tool");
-    await dre.runCommand(CSMProverToolK8sUp, {});
+    await dre.runCommand(CSMProverToolK8sUp, { clApiUrls: undefined });
 
     await dre.runCommand(ChainGetInfo, {});
   },

@@ -47,15 +47,21 @@ EL_RPC_URLS ?= http://execution
 CL_API_URLS ?= http://consensus
 CHAIN_ID ?= 32382
 
+# Escape commas for Helm --set values (Helm treats commas as key separators).
+COMMA := ,
+EL_RPC_URLS_ESCAPED := $(subst $(COMMA),\$(COMMA),$(EL_RPC_URLS))
+CL_API_URLS_ESCAPED := $(subst $(COMMA),\$(COMMA),$(CL_API_URLS))
+KEYSAPI_API_URLS_ESCAPED := $(subst $(COMMA),\$(COMMA),$(KEYSAPI_API_URLS))
+
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.image.repository="${IMAGE}" \
 	--set lido-app.image.tag="${TAG}" \
 	--set lido-app.image.registry="${REGISTRY_HOSTNAME}" \
-	--set lido-app.env.variables.EL_RPC_URLS="${EL_RPC_URLS}" \
-	--set lido-app.env.variables.CL_API_URLS="${CL_API_URLS}" \
-	--set lido-app.env.variables.KEYSAPI_API_URLS="${KEYSAPI_API_URLS}" \
+	--set lido-app.env.variables.EL_RPC_URLS="${EL_RPC_URLS_ESCAPED}" \
+	--set lido-app.env.variables.CL_API_URLS="${CL_API_URLS_ESCAPED}" \
+	--set lido-app.env.variables.KEYSAPI_API_URLS="${KEYSAPI_API_URLS_ESCAPED}" \
 	--set lido-app.env.variables.CHAIN_ID="${CHAIN_ID}" \
 	--set lido-app.env.variables.CSM_ADDRESS="${CSM_ADDRESS}" \
 	--set lido-app.env.variables.VERIFIER_ADDRESS="${VERIFIER_ADDRESS}" \
