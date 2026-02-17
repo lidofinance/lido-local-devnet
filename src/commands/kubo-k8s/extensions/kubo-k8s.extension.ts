@@ -44,6 +44,11 @@ export const KuboK8sStateRunning = z.object({
   publicUrl: z.string().url(),
   privateUrl: z.string().url(),
   helmRelease: z.string(),
+  swarmExternalHost: z.string().optional(),
+  swarmTcpPort: z.string().optional(),
+  swarmUdpPort: z.string().optional(),
+  swarmTcpMultiaddr: z.string().optional(),
+  swarmUdpMultiaddr: z.string().optional(),
 });
 
 export type KuboK8sStateRunning = z.infer<typeof KuboK8sStateRunning>;
@@ -99,6 +104,11 @@ export const kuboK8sExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
         publicUrl: "kuboK8s.running.publicUrl",
         privateUrl: "kuboK8s.running.privateUrl",
         helmRelease: "kuboK8s.running.helmRelease",
+        swarmExternalHost: "kuboK8s.running.swarmExternalHost",
+        swarmTcpPort: "kuboK8s.running.swarmTcpPort",
+        swarmUdpPort: "kuboK8s.running.swarmUdpPort",
+        swarmTcpMultiaddr: "kuboK8s.running.swarmTcpMultiaddr",
+        swarmUdpMultiaddr: "kuboK8s.running.swarmUdpMultiaddr",
       },
       "kuboK8s",
       KuboK8sStateRunning,

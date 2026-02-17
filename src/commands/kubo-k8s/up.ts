@@ -6,6 +6,7 @@ import {
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { addPrefixToIngressHostname, createNamespaceIfNotExists } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
+import { execa } from "execa";
 
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { KuboK8sBuild } from "./build.js";
@@ -46,6 +47,33 @@ export const KuboK8sUp = command.cli({
     }
 
     const KUBO_INGRESS_HOSTNAME = addPrefixToIngressHostname(kuboHostname);
+    const KUBO_SWARM_EXTERNAL_TCP_PORT = process.env.KUBO_SWARM_EXTERNAL_TCP_PORT || "32355";
+    const KUBO_SWARM_EXTERNAL_UDP_PORT = process.env.KUBO_SWARM_EXTERNAL_UDP_PORT || "32355";
+
+    let KUBO_SWARM_EXTERNAL_HOST = process.env.KUBO_SWARM_EXTERNAL_HOST || "";
+    if (!KUBO_SWARM_EXTERNAL_HOST) {
+      try {
+        const { stdout } = await execa("kubectl", ["get", "nodes", "-o", "json"]);
+        const nodes = JSON.parse(stdout).items || [];
+        const addresses = nodes[0]?.status?.addresses || [];
+        KUBO_SWARM_EXTERNAL_HOST =
+          addresses.find((address: { type?: string; address?: string }) => address.type === "ExternalIP")?.address ||
+          addresses.find((address: { type?: string; address?: string }) => address.type === "InternalIP")?.address ||
+          "";
+      } catch {
+        // Keep empty host if k8s API is unavailable, chart will skip announce setup.
+      }
+    }
+
+    if (!KUBO_SWARM_EXTERNAL_HOST) {
+      logger.log("KUBO_SWARM_EXTERNAL_HOST is empty, Kubo will not advertise public swarm addresses");
+    }
+    const swarmTcpMultiaddr = KUBO_SWARM_EXTERNAL_HOST
+      ? `/ip4/${KUBO_SWARM_EXTERNAL_HOST}/tcp/${KUBO_SWARM_EXTERNAL_TCP_PORT}`
+      : "";
+    const swarmUdpMultiaddr = KUBO_SWARM_EXTERNAL_HOST
+      ? `/ip4/${KUBO_SWARM_EXTERNAL_HOST}/udp/${KUBO_SWARM_EXTERNAL_UDP_PORT}/quic-v1`
+      : "";
 
     const HELM_RELEASE = 'lido-kubo-1';
     const helmLidoKuboSh = kubo.sh({
@@ -58,6 +86,9 @@ export const KuboK8sUp = command.cli({
         TAG: tag,
         REGISTRY_HOSTNAME: registryHostname,
         KUBO_INGRESS_HOSTNAME,
+        KUBO_SWARM_EXTERNAL_HOST,
+        KUBO_SWARM_EXTERNAL_TCP_PORT,
+        KUBO_SWARM_EXTERNAL_UDP_PORT,
       },
     });
 
@@ -77,7 +108,16 @@ export const KuboK8sUp = command.cli({
     await state.updateKuboK8sRunning({
       helmRelease: HELM_RELEASE,
       publicUrl: `http://${KUBO_INGRESS_HOSTNAME}`,
-      privateUrl: `http://${HELM_RELEASE}.${NAMESPACE(dre)}.svc.cluster.local:5001`
+      privateUrl: `http://${HELM_RELEASE}.${NAMESPACE(dre)}.svc.cluster.local:5001`,
+      swarmExternalHost: KUBO_SWARM_EXTERNAL_HOST || undefined,
+      swarmTcpPort: KUBO_SWARM_EXTERNAL_TCP_PORT,
+      swarmUdpPort: KUBO_SWARM_EXTERNAL_UDP_PORT,
+      swarmTcpMultiaddr: swarmTcpMultiaddr || undefined,
+      swarmUdpMultiaddr: swarmUdpMultiaddr || undefined,
     });
+
+    if (swarmTcpMultiaddr || swarmUdpMultiaddr) {
+      logger.log(`Kubo swarm advertised addresses: ${swarmTcpMultiaddr} ${swarmUdpMultiaddr}`.trim());
+    }
   },
 });

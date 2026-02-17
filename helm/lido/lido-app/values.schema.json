@@ -11,6 +11,10 @@
       "minimum": 1,
       "description": "Number of replicas for the backend deployment"
     },
+    "deploymentStrategy": {
+      "type": "object",
+      "description": "Deployment strategy"
+    },
     "image": {
       "type": "object",
       "properties": {
@@ -171,6 +175,13 @@
         "type": "string"
       },
       "description": "Container args"
+    },
+    "initCommands": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Init shell commands executed before the main container starts"
     },
     "env": {
       "type": "object",

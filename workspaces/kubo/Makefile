@@ -41,6 +41,9 @@ endif
 
 # Default ENV Variables specific to chart
 CHAIN ?= artifact
+KUBO_SWARM_EXTERNAL_HOST ?=
+KUBO_SWARM_EXTERNAL_TCP_PORT ?= 32355
+KUBO_SWARM_EXTERNAL_UDP_PORT ?= 32355
 
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
@@ -49,6 +52,11 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.image.tag="${TAG}" \
 	--set lido-app.image.registry="${REGISTRY_HOSTNAME}" \
 	--set lido-app.env.variables.CHAIN="${CHAIN}" \
+	--set-string lido-app.env.variables.KUBO_SWARM_EXTERNAL_HOST="${KUBO_SWARM_EXTERNAL_HOST}" \
+	--set-string lido-app.env.variables.KUBO_SWARM_EXTERNAL_TCP_PORT="${KUBO_SWARM_EXTERNAL_TCP_PORT}" \
+	--set-string lido-app.env.variables.KUBO_SWARM_EXTERNAL_UDP_PORT="${KUBO_SWARM_EXTERNAL_UDP_PORT}" \
+	--set swarmExternalService.ports[0].nodePort=${KUBO_SWARM_EXTERNAL_TCP_PORT} \
+	--set swarmExternalService.ports[1].nodePort=${KUBO_SWARM_EXTERNAL_UDP_PORT} \
 	--set-json lido-app.ingress.hosts='[{ "host": "${KUBO_INGRESS_HOSTNAME}", "paths": [{ "path": "/api/v0", "pathType": "Prefix", "port": "http-api"}, { "path": "/", "pathType": "Prefix", "port": "http"}]}]'
 endef
 

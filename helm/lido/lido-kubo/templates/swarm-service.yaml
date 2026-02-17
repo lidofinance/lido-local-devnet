@@ -1,0 +1,36 @@
+{{- if .Values.swarmExternalService.enabled }}
+{{- $lidoAppValues := index .Values "lido-app" -}}
+{{- $appName := default .Chart.Name (index $lidoAppValues "nameOverride") -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-swarm
+  labels:
+    app.kubernetes.io/name: {{ $appName }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- with .Values.swarmExternalService.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.swarmExternalService.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.swarmExternalService.type }}
+  {{- with .Values.swarmExternalService.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ . }}
+  {{- end }}
+  ports:
+    {{- range .Values.swarmExternalService.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      protocol: {{ .protocol }}
+      {{- if .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
+    {{- end }}
+  selector:
+    app.kubernetes.io/name: {{ $appName }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

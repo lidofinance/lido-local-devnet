@@ -6,6 +6,9 @@ nameOverride: ""
 # Number of replicas for the backend deployment
 replicaCount: 1
 
+# Deployment strategy
+deploymentStrategy: {}
+
 # Image configuration
 image:
   # Docker registry to pull the image from
@@ -69,6 +72,9 @@ command: []
 
 # Container args
 args: []
+
+# One-time init shell commands executed before the main container starts
+initCommands: []
 
 # Environment variables
 env:
