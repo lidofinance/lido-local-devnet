@@ -302,6 +302,8 @@ export const OracleK8sUp = command.cli({
 
     await ensurePerformanceDb(oracle, namespace);
 
+    const allowReportingInBunkerMode = dre.network.name === "srv3-cmv2-devnet" ? "true" : "false";
+
     const env: Record<string, number | string> = {
       ...oracle.config.constants,
       CHAIN_ID: "32382",
@@ -311,7 +313,7 @@ export const OracleK8sUp = command.cli({
       KEYS_API_URI: kapiPrivateUrl,
       CSM_ORACLE_MAX_CONCURRENCY: "1",
       SUBMIT_DATA_DELAY_IN_SLOTS: "1",
-      ALLOW_REPORTING_IN_BUNKER_MODE: "false",
+      ALLOW_REPORTING_IN_BUNKER_MODE: allowReportingInBunkerMode,
       PINATA_JWT: process.env.CSM_ORACLE_PINATA_JWT ?? "",
       KUBO_HOST: kuboPrivateUrl.replace(":5001", ""),
       PERFORMANCE_COLLECTOR_URI: performanceCollectorUri,

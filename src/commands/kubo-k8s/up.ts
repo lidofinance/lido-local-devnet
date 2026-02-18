@@ -4,7 +4,11 @@ import {
   command,
 } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
-import { addPrefixToIngressHostname, createNamespaceIfNotExists } from "@devnet/k8s";
+import {
+  addPrefixToIngressHostname,
+  createNamespaceIfNotExists,
+  getNamespacedDeployedHelmReleases,
+} from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 import { execa } from "execa";
 
@@ -56,9 +60,10 @@ export const KuboK8sUp = command.cli({
         const { stdout } = await execa("kubectl", ["get", "nodes", "-o", "json"]);
         const nodes = JSON.parse(stdout).items || [];
         const addresses = nodes[0]?.status?.addresses || [];
+        type K8sNodeAddress = { address?: string; type?: string };
         KUBO_SWARM_EXTERNAL_HOST =
-          addresses.find((address: { type?: string; address?: string }) => address.type === "ExternalIP")?.address ||
-          addresses.find((address: { type?: string; address?: string }) => address.type === "InternalIP")?.address ||
+          addresses.find((address: K8sNodeAddress) => address.type === "ExternalIP")?.address ||
+          addresses.find((address: K8sNodeAddress) => address.type === "InternalIP")?.address ||
           "";
       } catch {
         // Keep empty host if k8s API is unavailable, chart will skip announce setup.
@@ -68,6 +73,7 @@ export const KuboK8sUp = command.cli({
     if (!KUBO_SWARM_EXTERNAL_HOST) {
       logger.log("KUBO_SWARM_EXTERNAL_HOST is empty, Kubo will not advertise public swarm addresses");
     }
+
     const swarmTcpMultiaddr = KUBO_SWARM_EXTERNAL_HOST
       ? `/ip4/${KUBO_SWARM_EXTERNAL_HOST}/tcp/${KUBO_SWARM_EXTERNAL_TCP_PORT}`
       : "";
@@ -76,10 +82,11 @@ export const KuboK8sUp = command.cli({
       : "";
 
     const HELM_RELEASE = 'lido-kubo-1';
+    const namespace = NAMESPACE(dre);
     const helmLidoKuboSh = kubo.sh({
       env: {
         ...env,
-        NAMESPACE: NAMESPACE(dre),
+        NAMESPACE: namespace,
         HELM_RELEASE,
         HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
         IMAGE: image,
@@ -92,23 +99,26 @@ export const KuboK8sUp = command.cli({
       },
     });
 
-    await createNamespaceIfNotExists(NAMESPACE(dre));
+    await createNamespaceIfNotExists(namespace);
 
-    await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace: NAMESPACE(dre) });
+    const deployedHelmReleases = await getNamespacedDeployedHelmReleases(namespace);
+    const isReleaseInstalled = deployedHelmReleases.includes(HELM_RELEASE);
+    const shouldUpgrade = isRunning || isReleaseInstalled;
+
+    if (isReleaseInstalled && !isRunning) {
+      logger.log(`Helm release ${HELM_RELEASE} already exists, using upgrade mode`);
+    }
+
+    await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace });
 
     await helmLidoKuboSh`make debug`;
     await helmLidoKuboSh`make lint`;
-    if (isRunning) {
-      await helmLidoKuboSh`make upgrade`;
-    } else {
-      await helmLidoKuboSh`make install`;
-    }
+    await (shouldUpgrade ? helmLidoKuboSh`make upgrade` : helmLidoKuboSh`make install`);
 
-    // TODO get service name from helm release
     await state.updateKuboK8sRunning({
       helmRelease: HELM_RELEASE,
       publicUrl: `http://${KUBO_INGRESS_HOSTNAME}`,
-      privateUrl: `http://${HELM_RELEASE}.${NAMESPACE(dre)}.svc.cluster.local:5001`,
+      privateUrl: `http://${HELM_RELEASE}.${namespace}.svc.cluster.local:5001`,
       swarmExternalHost: KUBO_SWARM_EXTERNAL_HOST || undefined,
       swarmTcpPort: KUBO_SWARM_EXTERNAL_TCP_PORT,
       swarmUdpPort: KUBO_SWARM_EXTERNAL_UDP_PORT,
