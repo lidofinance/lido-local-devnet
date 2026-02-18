@@ -1,12 +1,26 @@
 import { Params, command } from "@devnet/command";
 import { buildAndPushDockerImage } from "@devnet/docker";
 import { DevNetError } from "@devnet/utils";
+import { execa } from "execa";
+import fs from "node:fs/promises";
 import path from "node:path";
 
 import { dockerRegistryExtension } from "../docker-registry/extensions/docker-registry.extension.js";
 import { oraclesK8sExtension } from "./extensions/oracles-k8s.extension.js";
 
 const sanitizeBranch = (branch: string) => branch.replaceAll(/[^\w.-]+/g, "_");
+
+const getWorktreeCommit = async (worktreePath: string) => {
+  const sh = execa({ cwd: worktreePath, shell: true });
+  const result = await sh`git rev-parse HEAD`;
+  const commit = result.stdout?.trim();
+
+  if (!commit) {
+    throw new DevNetError(`Failed to resolve HEAD commit for worktree: ${worktreePath}`);
+  }
+
+  return commit;
+};
 
 export const OracleK8sBuildMulti = command.cli({
   description: "Build and push oracle images from multiple branches",
@@ -50,19 +64,19 @@ export const OracleK8sBuildMulti = command.cli({
     }),
     keepWorktrees: Params.boolean({
       description: "Keep git worktrees after build",
-      default: false,
+      default: true,
       required: false,
     }),
   },
   extensions: [oraclesK8sExtension, dockerRegistryExtension],
-  async handler({ dre, dre: { state, services, logger, network } , params }) {
+  async handler({ dre: { state, services, logger, network }, params }) {
     const dockerRegistry = await state.getDockerRegistry();
     const oracleService = services.oracle;
     const oracleSh = oracleService.sh({ env: {} });
 
     const accountingTag = params.accountingTag ?? `kt-${network.name}-ao`;
     const ejectorTag = params.ejectorTag ?? `kt-${network.name}-vebo`;
-    const {image} = params;
+    const { image } = params;
 
     if (params.fetch) {
       try {
@@ -98,18 +112,11 @@ export const OracleK8sBuildMulti = command.cli({
       await oracleSh`git worktree prune`;
 
       try {
-        const hasLocalRef = await (async () => {
-          try {
-            await oracleSh`git show-ref --verify --quiet refs/heads/${branch}`;
-            return true;
-          } catch {
-            return false;
-          }
-        })();
-
-        if (hasLocalRef) {
-          await oracleSh`git worktree add ${worktreePath} ${branch}`;
-          return;
+        // Explicitly refresh requested branch even in single-branch clones.
+        try {
+          await oracleSh`git fetch origin ${branch}:refs/remotes/origin/${branch}`;
+        } catch {
+          // ignore: branch may be a commit hash or non-origin ref
         }
 
         const hasRemoteRef = await (async () => {
@@ -126,7 +133,35 @@ export const OracleK8sBuildMulti = command.cli({
           return;
         }
 
-        // Repo may be cloned with --single-branch; try fetching the specific branch.
+        const hasLocalRef = await (async () => {
+          try {
+            await oracleSh`git show-ref --verify --quiet refs/heads/${branch}`;
+            return true;
+          } catch {
+            return false;
+          }
+        })();
+
+        if (hasLocalRef) {
+          await oracleSh`git worktree add ${worktreePath} ${branch}`;
+          return;
+        }
+
+        const hasResolvableRef = await (async () => {
+          try {
+            await oracleSh`git rev-parse --verify --quiet ${branch}^{commit}`;
+            return true;
+          } catch {
+            return false;
+          }
+        })();
+
+        if (hasResolvableRef) {
+          await oracleSh`git worktree add ${worktreePath} ${branch}`;
+          return;
+        }
+
+        // Repo may be cloned with --single-branch; try fetching the specific branch once again.
         try {
           await oracleSh`git fetch origin ${branch}:refs/remotes/origin/${branch}`;
         } catch (error) {
@@ -160,15 +195,61 @@ export const OracleK8sBuildMulti = command.cli({
       logger.log(`Oracle image pushed: ${dockerRegistry.registryUrl}/${image}:${tag}`);
     };
 
+    const buildSummary: Array<{
+      branch: string;
+      commit: string;
+      role: "accounting" | "csm" | "ejector";
+      tag: string;
+      worktreePath: string;
+    }> = [];
+
     await prepareWorktree(accountingWorktree, params.accountingBranch);
+    const accountingCommit = await getWorktreeCommit(accountingWorktree);
     await build(accountingWorktree, accountingTag);
+    buildSummary.push({
+      role: "accounting",
+      branch: params.accountingBranch,
+      tag: accountingTag,
+      commit: accountingCommit,
+      worktreePath: accountingWorktree,
+    });
 
     await prepareWorktree(ejectorWorktree, params.ejectorBranch);
+    const ejectorCommit = await getWorktreeCommit(ejectorWorktree);
     await build(ejectorWorktree, ejectorTag);
+    buildSummary.push({
+      role: "ejector",
+      branch: params.ejectorBranch,
+      tag: ejectorTag,
+      commit: ejectorCommit,
+      worktreePath: ejectorWorktree,
+    });
 
     const csmTag = params.csmTag ?? `kt-${network.name}-csm`;
     await prepareWorktree(csmWorktree, params.csmBranch);
+    const csmCommit = await getWorktreeCommit(csmWorktree);
     await build(csmWorktree, csmTag);
+    buildSummary.push({
+      role: "csm",
+      branch: params.csmBranch,
+      tag: csmTag,
+      commit: csmCommit,
+      worktreePath: csmWorktree,
+    });
+
+    const manifestPath = path.join(oracleService.artifact.root, "build-multi-manifest.json");
+    await fs.writeFile(
+      manifestPath,
+      JSON.stringify({
+        generatedAt: new Date().toISOString(),
+        image,
+        registryHostname: dockerRegistry.registryHostname,
+        registryUrl: dockerRegistry.registryUrl,
+        keepWorktrees: params.keepWorktrees,
+        builds: buildSummary,
+      }, null, 2),
+      "utf8",
+    );
 
     if (!params.keepWorktrees) {
       try {
@@ -186,6 +267,13 @@ export const OracleK8sBuildMulti = command.cli({
       await oracleSh`git worktree prune`;
     }
 
+    for (const buildInfo of buildSummary) {
+      logger.log(
+        `${buildInfo.role}: branch=${buildInfo.branch} commit=${buildInfo.commit} tag=${buildInfo.tag}`,
+      );
+    }
+
+    logger.log(`Build manifest saved: ${manifestPath}`);
     logger.log(`Accounting tag: ${accountingTag}`);
     logger.log(`Ejector tag: ${ejectorTag}`);
     logger.log(`CSM tag: ${csmTag}`);

@@ -210,7 +210,7 @@ export const SRv3CMv2DevnetUp = command.cli({
       csmTag: oracleTags.csm,
       image: "lido/oracle",
       fetch: true,
-      keepWorktrees: false,
+      keepWorktrees: true,
     });
     const { registryHostname } = await dre.state.getDockerRegistry();
     const chainNamespace = `kt-${dre.network.name}`;
