@@ -33,19 +33,17 @@ export const CMv2UpdateState = command.cli({
 
     // NOTE: CMv2 uses CuratedGates as curated gates; keep PermissionlessGate only if present in deploy data.
     if (normalized.VettedGate === undefined) {
-      if (Array.isArray(normalized.CuratedGates) && normalized.CuratedGates.length > 0) {
-        normalized.VettedGate = normalized.CuratedGates[0];
-      } else {
-        normalized.VettedGate = "0x00";
-      }
+      normalized.VettedGate =
+        Array.isArray(normalized.CuratedGates) && normalized.CuratedGates.length > 0
+          ? normalized.CuratedGates[0]
+          : "0x00";
     }
 
     if (normalized.CuratedGate === undefined) {
-      if (Array.isArray(normalized.CuratedGates) && normalized.CuratedGates.length > 0) {
-        normalized.CuratedGate = normalized.CuratedGates[0];
-      } else {
-        normalized.CuratedGate = "0x00";
-      }
+      normalized.CuratedGate =
+        Array.isArray(normalized.CuratedGates) && normalized.CuratedGates.length > 0
+          ? normalized.CuratedGates[0]
+          : "0x00";
     }
 
     if (normalized.PermissionlessGate === undefined) {
@@ -80,6 +78,7 @@ export const CMv2UpdateState = command.cli({
       cmv2: {
         accounting: { address: cmv2State.accounting },
         earlyAdoption: { address: cmv2State.earlyAdoption },
+        ...(cmv2State.ejector ? { ejector: { address: cmv2State.ejector } } : {}),
         feeDistributor: { address: cmv2State.feeDistributor },
         feeOracle: { address: cmv2State.feeOracle },
         gateSeal: { address: cmv2State.gateSeal },

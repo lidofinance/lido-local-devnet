@@ -4,12 +4,15 @@ import { Params, command } from "@devnet/command";
 
 type CSMActivateENV = {
   CS_ACCOUNTING_ADDRESS: string;
+  CS_EJECTOR_ADDRESS?: string;
   CS_MAX_DEPOSITS_PER_BLOCK: string;
   CS_MODULE_ADDRESS: string;
   CS_ORACLE_HASH_CONSENSUS_ADDRESS: string;
   CS_ORACLE_INITIAL_EPOCH: string;
   CS_PRIORITY_EXIT_SHARE_THRESHOLD: string;
   CS_STAKE_SHARE_LIMIT: string;
+  CS_TRIGGERABLE_WITHDRAWALS_GATEWAY_ADDRESS?: string;
+  CS_TWG_ADDRESS?: string;
   EL_API_PROVIDER: string;
   EL_CHAIN_ID: string;
   EL_NETWORK_NAME: string;
@@ -37,11 +40,16 @@ export const ActivateCSM = command.cli({
     }),
   },
   async handler({ params, dre, dre: { logger, network } }) {
-    const { lidoCLI, oracle } = dre.services;
+    const { lidoCLI, oracle, csm } = dre.services;
     const { state } = dre;
     const { deployer } = await state.getNamedWallet();
     const { elPublic } = await dre.state.getChain();
     const csmState = await dre.state.getCSM();
+    const { triggerableWithdrawalsGateway } = await dre.state.getLido();
+    const csmDeployState = (await csm.readJson(csm.config.constants.DEPLOY_CONFIG).catch(() => ({}))) as {
+      Ejector?: string;
+    };
+    const csmEjector = csmState.ejector ?? csmDeployState.Ejector;
     const clClient = await network.getCLClient();
 
     if (await state.isCSMActivated()) {
@@ -72,7 +80,20 @@ export const ActivateCSM = command.cli({
       EL_API_PROVIDER: elPublic,
       EL_CHAIN_ID: "32382",
       PRIVATE_KEY: deployer.privateKey,
+      ...(csmEjector ? { CS_EJECTOR_ADDRESS: csmEjector } : {}),
+      ...(triggerableWithdrawalsGateway
+        ? {
+            CS_TRIGGERABLE_WITHDRAWALS_GATEWAY_ADDRESS: triggerableWithdrawalsGateway,
+            CS_TWG_ADDRESS: triggerableWithdrawalsGateway,
+          }
+        : {}),
     };
+
+    if (!triggerableWithdrawalsGateway || !csmEjector) {
+      logger.warn(
+        "Skipping automatic ADD_FULL_WITHDRAWAL_REQUEST_ROLE grant for CSM Ejector: missing TWG or Ejector address in state",
+      );
+    }
 
     logger.logJson(env);
 

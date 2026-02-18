@@ -35,6 +35,7 @@ declare module "@devnet/state" {
 export const CMv2State = z.object({
   accounting: z.string(),
   earlyAdoption: z.string(),
+  ejector: z.string().optional(),
   feeDistributor: z.string(),
   feeOracle: z.string(),
   gateSeal: z.string(),
@@ -75,6 +76,7 @@ export const cmv2Extension = (dre: DevNetRuntimeEnvironmentInterface) => {
       {
         accounting: "cmv2.CSAccounting",
         earlyAdoption: "cmv2.CSEarlyAdoption",
+        ejector: "cmv2.Ejector",
         feeDistributor: "cmv2.CSFeeDistributor",
         feeOracle: "cmv2.CSFeeOracle",
         gateSeal: "cmv2.GateSeal",

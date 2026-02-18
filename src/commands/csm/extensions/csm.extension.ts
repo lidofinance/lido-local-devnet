@@ -35,6 +35,7 @@ declare module "@devnet/state" {
 export const CSMState = z.object({
   accounting: z.string(),
   earlyAdoption: z.string(),
+  ejector: z.string().optional(),
   feeDistributor: z.string(),
   feeOracle: z.string(),
   gateSeal: z.string(),
@@ -73,6 +74,7 @@ export const csmExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
       {
         accounting: "csm.CSAccounting",
         earlyAdoption: "csm.CSEarlyAdoption",
+        ejector: "csm.Ejector",
         feeDistributor: "csm.CSFeeDistributor",
         feeOracle: "csm.CSFeeOracle",
         gateSeal: "csm.GateSeal",

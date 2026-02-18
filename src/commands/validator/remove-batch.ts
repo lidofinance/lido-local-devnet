@@ -88,6 +88,7 @@ export const ValidatorRemoveBatch = command.cli({
     );
     const modulePubkeys = splitPubkeys(pubkeysHex).map((key) => key.toLowerCase());
     assert(modulePubkeys.length > 0, "No keys returned from module for provided range");
+    logger.log(`Source module pubkeys: ${JSON.stringify(modulePubkeys)}`);
 
     let targetApis: string[] = [];
     if (params.validatorApis) {

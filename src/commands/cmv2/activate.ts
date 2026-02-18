@@ -4,12 +4,15 @@ import { Params, command } from "@devnet/command";
 
 type CMv2ActivateENV = {
   CS_ACCOUNTING_ADDRESS: string;
+  CS_EJECTOR_ADDRESS?: string;
   CS_MAX_DEPOSITS_PER_BLOCK: string;
   CS_MODULE_ADDRESS: string;
   CS_ORACLE_HASH_CONSENSUS_ADDRESS: string;
   CS_ORACLE_INITIAL_EPOCH: string;
   CS_PRIORITY_EXIT_SHARE_THRESHOLD: string;
   CS_STAKE_SHARE_LIMIT: string;
+  CS_TRIGGERABLE_WITHDRAWALS_GATEWAY_ADDRESS?: string;
+  CS_TWG_ADDRESS?: string;
   EL_API_PROVIDER: string;
   EL_CHAIN_ID: string;
   EL_NETWORK_NAME: string;
@@ -37,11 +40,16 @@ export const ActivateCMv2 = command.cli({
     }),
   },
   async handler({ params, dre, dre: { logger, network } }) {
-    const { lidoCLI, oracle } = dre.services;
+    const { lidoCLI, oracle, cmv2 } = dre.services;
     const { state } = dre;
     const { deployer } = await state.getNamedWallet();
     const { elPublic } = await dre.state.getChain();
     const cmv2State = await dre.state.getCMv2();
+    const { triggerableWithdrawalsGateway } = await dre.state.getLido();
+    const cmv2DeployState = (await cmv2.readJson(cmv2.config.constants.DEPLOY_CONFIG).catch(() => ({}))) as {
+      Ejector?: string;
+    };
+    const cmv2Ejector = cmv2State.ejector ?? cmv2DeployState.Ejector;
     const clClient = await network.getCLClient();
 
     if (await state.isCMv2Activated()) {
@@ -72,7 +80,20 @@ export const ActivateCMv2 = command.cli({
       EL_API_PROVIDER: elPublic,
       EL_CHAIN_ID: "32382",
       PRIVATE_KEY: deployer.privateKey,
+      ...(cmv2Ejector ? { CS_EJECTOR_ADDRESS: cmv2Ejector } : {}),
+      ...(triggerableWithdrawalsGateway
+        ? {
+            CS_TRIGGERABLE_WITHDRAWALS_GATEWAY_ADDRESS: triggerableWithdrawalsGateway,
+            CS_TWG_ADDRESS: triggerableWithdrawalsGateway,
+          }
+        : {}),
     };
+
+    if (!triggerableWithdrawalsGateway || !cmv2Ejector) {
+      logger.warn(
+        "Skipping automatic ADD_FULL_WITHDRAWAL_REQUEST_ROLE grant for CMv2 Ejector: missing TWG or Ejector address in state",
+      );
+    }
 
     logger.logJson(env);
 
@@ -83,7 +104,7 @@ export const ActivateCMv2 = command.cli({
     logger.log("Granting MANAGE_OPERATOR_GROUPS_ROLE on CMv2 MetaRegistry...");
     try {
       await lidoCLI.sh({ env })`./run.sh cmv2 grant-manage-operator-groups-role-vote`;
-    } catch (error) {
+    } catch {
       logger.warn("Failed to grant MANAGE_OPERATOR_GROUPS_ROLE; proceed manually if needed");
     }
 

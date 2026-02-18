@@ -22,6 +22,7 @@ export const CSMUpdateState = command.cli({
 
     const csmStateLower = {
       accounting: normalized.CSAccounting ?? normalized.Accounting,
+      ejector: normalized.Ejector,
       feeDistributor: normalized.CSFeeDistributor ?? normalized.FeeDistributor,
       feeOracle: normalized.CSFeeOracle ?? normalized.FeeOracle,
       module:
@@ -36,6 +37,7 @@ export const CSMUpdateState = command.cli({
 
     const csmStateRaw = {
       CSAccounting: csmStateLower.accounting,
+      Ejector: csmStateLower.ejector,
       CSFeeDistributor: csmStateLower.feeDistributor,
       CSFeeOracle: csmStateLower.feeOracle,
       CSModule: csmStateLower.module,
@@ -73,6 +75,7 @@ export const CSMUpdateState = command.cli({
       csm: {
         accounting: { address: csmState.accounting },
         earlyAdoption: { address: csmState.earlyAdoption },
+        ...(csmState.ejector ? { ejector: { address: csmState.ejector } } : {}),
         feeDistributor: { address: csmState.feeDistributor },
         feeOracle: { address: csmState.feeOracle },
         gateSeal: { address: csmState.gateSeal },

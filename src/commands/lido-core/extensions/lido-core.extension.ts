@@ -39,6 +39,7 @@ export const LidoCoreState = z.object({
   curatedModule: z.string(),
   acl: z.string(),
   oracleDaemonConfig: z.string(),
+  triggerableWithdrawalsGateway: z.string().optional(),
   withdrawalQueue: z.string(),
   finance: z.string(),
 
@@ -96,6 +97,7 @@ export const lidoCoreExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
         curatedModule: "lidoCore.app:node-operators-registry.proxy.address",
         acl: "lidoCore.aragon-acl.proxy.address",
         oracleDaemonConfig: "lidoCore.oracleDaemonConfig.address",
+        triggerableWithdrawalsGateway: "lidoCore.triggerableWithdrawalsGateway.address",
         withdrawalVault: "lidoCore.withdrawalVault.proxy.address",
         withdrawalQueue: "lidoCore.withdrawalQueueERC721.proxy.address",
         withdrawalVaultImpl: "lidoCore.withdrawalVault.implementation.address",
