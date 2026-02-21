@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-clickhouse
+  labels:
+    app: {{ .Release.Name }}-clickhouse
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-clickhouse
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-clickhouse
+    spec:
+      containers:
+        - name: clickhouse
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8123
+              protocol: TCP
+            - name: native
+              containerPort: 9000
+              protocol: TCP
+          env:
+            - name: CLICKHOUSE_DB
+              value: {{ .Values.env.CLICKHOUSE_DB | quote }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: users-config
+              mountPath: /etc/clickhouse-server/users.d/users.xml
+              subPath: users.xml
+            {{- if .Values.persistence.enabled }}
+            - name: data
+              mountPath: /var/lib/clickhouse
+            {{- end }}
+      volumes:
+        - name: users-config
+          configMap:
+            name: {{ .Release.Name }}-clickhouse-config
+        {{- if .Values.persistence.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-clickhouse-data
+        {{- end }}

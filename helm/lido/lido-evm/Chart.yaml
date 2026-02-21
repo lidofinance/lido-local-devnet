@@ -1,0 +1,11 @@
+apiVersion: v2
+name: lido-evm
+description: Ethereum Validators Monitoring Helm chart
+type: application
+version: 1.0.0
+appVersion: "4.10.0"
+kubeVersion: '>=1.19.0-0'
+dependencies:
+  - name: "lido-app"
+    version: "1.0.1"
+    repository: "file://../lido-app"

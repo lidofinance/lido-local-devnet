@@ -1,0 +1,117 @@
+lido-app:
+  nameOverride: lido-evm
+
+  # Number of replicas for the deployment
+  replicaCount: 1
+
+  # Image configuration
+  image:
+    registry: docker.io
+    repository: lido/ethereum-validators-monitoring
+    tag: "dev"
+    pullPolicy: Always
+    imagePullSecrets:
+      - name: registry-pull-secret
+
+  service:
+    type: ClusterIP
+    ports:
+      - name: http
+        port: 8080
+        targetPort: 8080
+        protocol: TCP
+
+  # Ingress configuration
+  ingress:
+    enabled: true
+    className: "public"
+    annotations: {}
+    hosts:
+      - host: evm.local
+        paths:
+          - path: /
+            pathType: Prefix
+            port: http
+    tls: []
+
+  # Environment variables
+  env:
+    variables:
+      NODE_ENV: production
+      HTTP_PORT: "8080"
+      WORKING_MODE: finalized
+      DRY_RUN: "false"
+      LOG_LEVEL: info
+      LOG_FORMAT: simple
+      DB_HOST: http://evm-clickhouse
+      DB_PORT: "8123"
+      DB_USER: default
+      DB_PASSWORD: ""
+      DB_NAME: default
+      DB_MAX_RETRIES: "10"
+      DB_MIN_BACKOFF_SEC: "1"
+      DB_MAX_BACKOFF_SEC: "120"
+      START_EPOCH: "0"
+      ETH_NETWORK: "32382"
+      EL_RPC_URLS: ${EL_RPC_URLS}
+      CL_API_URLS: ${CL_API_URLS}
+      CL_API_RETRY_DELAY_MS: "500"
+      CL_API_GET_RESPONSE_TIMEOUT: "60000"
+      CL_API_MAX_RETRIES: "3"
+      CL_API_GET_BLOCK_INFO_MAX_RETRIES: "3"
+      CL_API_MAX_SLOT_DEEP_COUNT: "32"
+      FETCH_INTERVAL_SLOTS: "32"
+      CHAIN_SLOT_TIME_SECONDS: "12"
+      VALIDATOR_REGISTRY_SOURCE: keysapi
+      VALIDATOR_REGISTRY_KEYSAPI_SOURCE_URLS: ${VALIDATOR_REGISTRY_KEYSAPI_SOURCE_URLS}
+      VALIDATOR_REGISTRY_KEYSAPI_SOURCE_RETRY_DELAY_MS: "500"
+      VALIDATOR_REGISTRY_KEYSAPI_SOURCE_RESPONSE_TIMEOUT: "30000"
+      VALIDATOR_REGISTRY_KEYSAPI_SOURCE_MAX_RETRIES: "3"
+      SYNC_PARTICIPATION_DISTANCE_DOWN_FROM_CHAIN_AVG: "0"
+      SYNC_PARTICIPATION_EPOCHS_LESS_THAN_CHAIN_AVG: "3"
+      BAD_ATTESTATION_EPOCHS: "3"
+
+  # Resource limits and requests
+  resources:
+    limits:
+      memory: 5Gi
+
+  # Node selector
+  nodeSelector: {}
+
+  # Tolerations
+  tolerations: []
+
+  # Affinity rules
+  affinity: {}
+
+  # Security context
+  securityContext: {}
+
+  # Pod security context
+  podSecurityContext: {}
+
+  # Liveness probe
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+
+  # Readiness probe
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 10
+
+  # Additional labels
+  additionalLabels: {}
+
+  # Additional annotations
+  additionalAnnotations: {}

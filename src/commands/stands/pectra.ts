@@ -10,6 +10,7 @@ import { DeployCSVerifier } from "../csm/add-verifier.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
 import { DataBusDeploy } from "../data-bus/deploy.js";
 import { DSMBotsK8sUp } from "../dsm-bots-k8s/up.js";
+import { EvmUp } from "../evm/up.js";
 import { GitCheckout } from "../git/checkout.js";
 import { KapiK8sUp } from "../kapi-k8s/up.js";
 import { ActivateLidoProtocol } from "../lido-core/activate.js";
@@ -32,6 +33,10 @@ export const PectraDevNetUp = command.cli({
     }),
     dsm: Params.boolean({
       description: "Use full DSM setup.",
+      default: false,
+    }),
+    evm: Params.boolean({
+      description: "Start Ethereum Validators Monitoring.",
       default: false,
     }),
     preset: Params.string({
@@ -147,6 +152,12 @@ export const PectraDevNetUp = command.cli({
       ejectorTag: undefined,
       build: true,
     });
+
+    if (params.evm) {
+      logger.log("🚀 Starting Ethereum Validators Monitoring...");
+      await dre.runCommand(EvmUp, {});
+      logger.log("✅ Ethereum Validators Monitoring started.");
+    }
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");
