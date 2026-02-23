@@ -1,0 +1,25 @@
+{{- if .Values.dashboardProviders }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-dashboard-providers
+  labels:
+    app: {{ .Release.Name }}-grafana
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+    {{- range .Values.dashboardProviders }}
+      - name: {{ .name }}
+        orgId: 1
+        folder: {{ .folder | default .name }}
+        type: file
+        disableDeletion: false
+        editable: true
+        updateIntervalSeconds: 30
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards/{{ .name }}
+          foldersFromFilesStructure: false
+    {{- end }}
+{{- end }}

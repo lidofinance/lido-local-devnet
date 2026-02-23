@@ -1,0 +1,7 @@
+apiVersion: v2
+name: grafana
+description: Minimal Grafana Helm chart for devnet dashboards
+type: application
+version: 1.0.0
+appVersion: "11.4.0"
+kubeVersion: '>=1.19.0-0'

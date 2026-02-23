@@ -18,6 +18,10 @@ export const PectraTWDevNetUp = command.cli({
       description: "Start Ethereum Validators Monitoring.",
       default: false,
     }),
+    grafana: Params.boolean({
+      description: "Start Grafana dashboards.",
+      default: false,
+    }),
     preset: Params.string({
       description: "Kurtosis preset name",
       default: "pectra-stable",

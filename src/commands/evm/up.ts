@@ -20,6 +20,45 @@ import { evmExtension } from "./extensions/evm.extension.js";
 const SLOTS_PER_EPOCH = 32;
 const SECONDS_PER_DAY = 86400;
 
+const resolveEvmRpcUrls = ({
+  defaultClPrivate,
+  defaultElPrivate,
+  logger,
+}: {
+  defaultClPrivate: string;
+  defaultElPrivate: string;
+  logger: { log: (msg: string) => void };
+}) => {
+  const envElRpcUrls = process.env.EVM_EL_RPC_URLS?.trim();
+  const envClApiUrls = process.env.EVM_CL_API_URLS?.trim();
+  if (envElRpcUrls || envClApiUrls) {
+    const elRpcUrls = envElRpcUrls || defaultElPrivate;
+    const clApiUrls = envClApiUrls || defaultClPrivate;
+    logger.log(`Using EVM RPC endpoints from env (EL=${elRpcUrls}, CL=${clApiUrls})`);
+    return { clApiUrls, elRpcUrls };
+  }
+
+  const pairedElPrivate = defaultElPrivate.replace(
+    "el-1-geth-teku",
+    "el-2-geth-lighthouse",
+  );
+  const pairedClPrivate = defaultClPrivate.replace(
+    "cl-1-teku-geth",
+    "cl-2-lighthouse-geth",
+  );
+
+  const canUsePairedUrls = pairedElPrivate !== defaultElPrivate
+    && pairedClPrivate !== defaultClPrivate;
+
+  if (canUsePairedUrls) {
+    logger.log(`Using paired EL/CL endpoints (EL=${pairedElPrivate}, CL=${pairedClPrivate})`);
+    return { clApiUrls: pairedClPrivate, elRpcUrls: pairedElPrivate };
+  }
+
+  logger.log(`Using default chain endpoints (EL=${defaultElPrivate}, CL=${defaultClPrivate})`);
+  return { clApiUrls: defaultClPrivate, elRpcUrls: defaultElPrivate };
+};
+
 const ensureClickHouse = async (
   evmService: { sh: Function },
   namespace: string,
@@ -92,6 +131,11 @@ export const EvmUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
+    const { elRpcUrls, clApiUrls } = resolveEvmRpcUrls({
+      defaultClPrivate: clPrivate,
+      defaultElPrivate: elPrivate,
+      logger,
+    });
     const { privateUrl: kapiPrivateUrl } = await state.getKapiK8sRunning();
     const { image, tag, registryHostname } = await state.getEvmImage();
 
@@ -109,7 +153,7 @@ export const EvmUp = command.cli({
     const clickhouseHost = `http://${CLICKHOUSE_RELEASE}-clickhouse`;
 
     const slotTimeSec = Number(evm.config.constants.CHAIN_SLOT_TIME_SECONDS) || 12;
-    const startEpoch = await getStartEpochForLastDay(elPrivate, clPrivate, chainNamespace, slotTimeSec, logger);
+    const startEpoch = await getStartEpochForLastDay(elRpcUrls, clApiUrls, chainNamespace, slotTimeSec, logger);
 
     // Deploy ClickHouse
     await createNamespaceIfNotExists(namespace);
@@ -128,8 +172,8 @@ export const EvmUp = command.cli({
         TAG: tag,
         REGISTRY_HOSTNAME: registryHostname,
         INGRESS_HOSTNAME,
-        EL_RPC_URLS: elPrivate,
-        CL_API_URLS: clPrivate,
+        EL_RPC_URLS: elRpcUrls,
+        CL_API_URLS: clApiUrls,
         CHAIN_ID: "32382",
         VALIDATOR_REGISTRY_KEYSAPI_SOURCE_URLS: kapiPrivateUrl,
         DB_HOST: clickhouseHost,

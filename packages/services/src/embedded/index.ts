@@ -8,6 +8,7 @@ import { dataBus } from "./data-bus.js";
 import { dockerRegistry } from "./docker-registry.js";
 import { dsmBots } from "./dsm-bots.js";
 import { evm } from "./evm.js";
+import { grafana } from "./grafana.js";
 import { kapi } from "./kapi.js";
 import { kubo } from "./kubo.js";
 import { kurtosis } from "./kurtosis.js"
@@ -29,6 +30,7 @@ export const serviceConfigs = {
   csm,
   csmProverTool,
   evm,
+  grafana,
   kapi,
   oracle,
   voting,

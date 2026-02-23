@@ -97,6 +97,9 @@
       "git": {
         "description": "Switch the Git branch in the specified service."
       },
+      "grafana": {
+        "description": "Command set for managing Grafana dashboards."
+      },
       "install": {
         "description": "Start DevNet from scratch."
       },

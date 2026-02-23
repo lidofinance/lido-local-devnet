@@ -1,0 +1,45 @@
+# Default values for Grafana
+image:
+  repository: grafana/grafana-oss
+  tag: "11.4.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: true
+  className: "public"
+  host: grafana.devnet.local
+
+resources:
+  limits:
+    cpu: "1"
+    memory: 1Gi
+  requests:
+    cpu: "0.1"
+    memory: 256Mi
+
+# Comma-separated list of Grafana plugins to install
+plugins: ""
+
+# Admin password (devnet only)
+adminPassword: "admin"
+
+# Datasource provisioning - rendered into provisioning/datasources/datasources.yaml
+datasources: []
+# - name: ClickHouse
+#   type: vertamedia-clickhouse-datasource
+#   uid: devnet-clickhouse
+#   url: http://evm-clickhouse-clickhouse:8123
+#   access: proxy
+#   isDefault: false
+
+# Dashboard provisioning folders
+# Each entry creates a provider pointing to /var/lib/grafana/dashboards/<name>
+# and expects a ConfigMap with the given configMapName to exist in the namespace
+dashboardProviders: []
+# - name: evm
+#   folder: EVM
+#   configMapName: grafana-dashboards-evm
