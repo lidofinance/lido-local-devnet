@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{PROMETHEUS_DEPLOYMENT_NAME}}
+  namespace: {{NAMESPACE}}
+  labels:
+    app: {{PROMETHEUS_DEPLOYMENT_NAME}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{PROMETHEUS_DEPLOYMENT_NAME}}
+  template:
+    metadata:
+      labels:
+        app: {{PROMETHEUS_DEPLOYMENT_NAME}}
+    spec:
+      containers:
+        - name: prometheus
+          image: {{PROMETHEUS_IMAGE}}
+          imagePullPolicy: IfNotPresent
+          args:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.path=/prometheus
+          ports:
+            - name: http
+              containerPort: 9090
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+      volumes:
+        - name: config
+          configMap:
+            name: {{PROMETHEUS_CONFIGMAP_NAME}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{PROMETHEUS_SERVICE_NAME}}
+  namespace: {{NAMESPACE}}
+  labels:
+    app: {{PROMETHEUS_DEPLOYMENT_NAME}}
+spec:
+  selector:
+    app: {{PROMETHEUS_DEPLOYMENT_NAME}}
+  ports:
+    - name: http
+      port: 9090
+      targetPort: http
