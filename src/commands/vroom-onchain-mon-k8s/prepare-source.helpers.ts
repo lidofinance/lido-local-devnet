@@ -142,14 +142,6 @@ const prepareSourceTree = async (artifactRoot: string) => {
   await fs.mkdir(targetSourceRoot, { recursive: true });
   await fs.cp(sourceRoot, targetSourceRoot, { recursive: true, force: true });
 
-  const overridesRoot = path.join(artifactRoot, "overrides");
-  try {
-    await fs.access(overridesRoot);
-    await fs.cp(overridesRoot, targetSourceRoot, { recursive: true, force: true });
-  } catch {
-    // no overrides in workspace
-  }
-
   return targetSourceRoot;
 };
 

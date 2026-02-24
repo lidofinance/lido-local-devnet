@@ -28,14 +28,6 @@ export const prepareOnchainMonSource = async (dre: DevNetRuntimeEnvironmentInter
   await fs.mkdir(targetSourceRoot, { recursive: true });
   await fs.cp(sourceRoot, targetSourceRoot, { recursive: true, force: true });
 
-  const overridesRoot = path.join(onchainMon.artifact.root, "overrides");
-  try {
-    await fs.access(overridesRoot);
-    await fs.cp(overridesRoot, targetSourceRoot, { recursive: true, force: true });
-  } catch {
-    // no overrides in workspace
-  }
-
   return {
     sourceRoot: targetSourceRoot,
   };

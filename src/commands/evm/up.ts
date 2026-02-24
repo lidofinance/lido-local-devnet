@@ -59,13 +59,21 @@ const resolveEvmRpcUrls = ({
   return { clApiUrls: defaultClPrivate, elRpcUrls: defaultElPrivate };
 };
 
+const resolveClickHouseImage = () => ({
+  repository: process.env.EVM_CLICKHOUSE_IMAGE_REPOSITORY?.trim() || "yandex/clickhouse-server",
+  tag: process.env.EVM_CLICKHOUSE_IMAGE_TAG?.trim() || "latest",
+});
+
 const ensureClickHouse = async (
   evmService: { sh: Function },
   namespace: string,
+  logger: { log: (msg: string) => void },
 ) => {
   const clickhouseChartPath = `${HELM_VENDOR_CHARTS_ROOT_PATH}/vendor/clickhouse`;
+  const { repository, tag } = resolveClickHouseImage();
+  logger.log(`Using ClickHouse image ${repository}:${tag}`);
   const helmSh = evmService.sh({ env: { NAMESPACE: namespace } });
-  await helmSh`helm upgrade --install ${CLICKHOUSE_RELEASE} ${clickhouseChartPath} --namespace ${namespace} --create-namespace --timeout 5m`;
+  await helmSh`helm upgrade --install ${CLICKHOUSE_RELEASE} ${clickhouseChartPath} --namespace ${namespace} --create-namespace --timeout 5m --set image.repository=${repository} --set image.tag=${tag}`;
 };
 
 /**
@@ -157,7 +165,7 @@ export const EvmUp = command.cli({
 
     // Deploy ClickHouse
     await createNamespaceIfNotExists(namespace);
-    await ensureClickHouse(evm, namespace);
+    await ensureClickHouse(evm, namespace, logger);
 
     // Create pull secret
     await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace });

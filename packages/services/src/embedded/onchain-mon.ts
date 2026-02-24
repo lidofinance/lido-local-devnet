@@ -1,6 +1,10 @@
 import { DevnetServiceConfig } from "../devnet-service-config.js";
 
 export const onchainMon = new DevnetServiceConfig({
+  repository: {
+    url: "git@github.com:lidofinance/onchain-mon.git",
+    branch: "feature/vroom-435-staking-router-v3-devnet1-with-cmv2",
+  },
   workspace: "workspaces/onchain-mon",
   name: "onchainMon" as const,
   exposedPorts: [8080],
