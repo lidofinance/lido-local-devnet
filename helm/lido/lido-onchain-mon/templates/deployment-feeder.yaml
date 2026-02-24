@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-feeder
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: feeder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: feeder
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: feeder
+    spec:
+{{- if .Values.image.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.image.imagePullSecrets | indent 8 }}
+{{- end }}
+      containers:
+        - name: feeder
+          image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["./feeder"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.feeder.port }}
+              protocol: TCP
+          env:
+            - name: READ_ENV_FROM_SHELL
+              value: "true"
+            - name: APP_NAME
+              value: {{ .Values.feeder.appName | quote }}
+            - name: SOURCE
+              value: {{ .Values.feeder.source | quote }}
+            - name: ENV
+              value: {{ .Values.feeder.envName | quote }}
+            - name: PORT
+              value: {{ .Values.feeder.port | quote }}
+            - name: LOG_FORMAT
+              value: {{ .Values.feeder.logFormat | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.feeder.logLevel | quote }}
+            - name: NATS_DEFAULT_URL
+              value: {{ .Values.feeder.natsDefaultUrl | quote }}
+            - name: JSON_RPC_URL
+              value: {{ .Values.feeder.jsonRpcUrl | quote }}
+            - name: BLOCK_TOPIC
+              value: {{ .Values.feeder.blockTopic | quote }}
+            - name: REDIS_ADDRESS
+              value: {{ .Values.feeder.redisAddress | quote }}
+            - name: REDIS_DB
+              value: {{ .Values.feeder.redisDb | quote }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          resources:
+{{ toYaml .Values.feeder.resources | indent 12 }}

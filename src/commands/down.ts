@@ -7,7 +7,9 @@ import { K8sPing } from "./k8s/ping.js";
 import { KapiK8sDown } from "./kapi-k8s/down.js";
 import { NoWidgetDown } from "./no-widget/down.js";
 import { NoWidgetBackendDown } from "./no-widget-backend/down.js";
+import { OnchainMonK8sDown } from "./onchain-mon-k8s/down.js";
 import { OracleK8sDown } from "./oracles-k8s/down.js";
+import { VroomOnchainMonK8sDown } from "./vroom-onchain-mon-k8s/down.js";
 
 export const DevNetStop = command.cli({
   description: "Stop full DevNet",
@@ -32,7 +34,9 @@ export const DevNetStop = command.cli({
       () => dre.runCommand(NoWidgetBackendDown, { force: params.force }),
       () => dre.runCommand(NoWidgetDown, { force: params.force }),
       () => dre.runCommand(KapiK8sDown, { force: params.force }),
+      () => dre.runCommand(OnchainMonK8sDown, { force: params.force }),
       () => dre.runCommand(OracleK8sDown, { force: params.force }),
+      () => dre.runCommand(VroomOnchainMonK8sDown, { force: params.force }),
       () => dre.runCommand(CouncilK8sDown, { force: params.force }),
       () => dre.runCommand(DSMBotsK8sDown, { force: params.force }),
       () => dre.runCommand(ChainDown, {})

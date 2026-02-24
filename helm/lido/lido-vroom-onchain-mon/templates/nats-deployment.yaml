@@ -1,0 +1,53 @@
+{{- if .Values.nats.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-nats
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: nats
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: nats
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: nats
+    spec:
+      containers:
+      - name: nats
+        image: {{ .Values.nats.image }}
+        imagePullPolicy: {{ .Values.nats.pullPolicy }}
+        args:
+          - "-js"
+          - "-m"
+          - "{{ .Values.nats.monitorPort }}"
+          - "-p"
+          - "{{ .Values.nats.port }}"
+        ports:
+          - name: client
+            containerPort: {{ .Values.nats.port }}
+            protocol: TCP
+          - name: monitor
+            containerPort: {{ .Values.nats.monitorPort }}
+            protocol: TCP
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.nats.port }}
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.nats.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          {{- toYaml .Values.nats.resources | nindent 10 }}
+{{- end }}

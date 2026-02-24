@@ -106,6 +106,12 @@
       "kapi": {
         "description": "Command set for managing Kapi."
       },
+      "onchain-mon-k8s": {
+        "description": "Command set for managing onchain feeder/forwarder in Kubernetes."
+      },
+      "vroom-onchain-mon-k8s": {
+        "description": "Command set for managing VROOM onchain monitoring bot in Kubernetes."
+      },
       "lido-cli": {
         "description": "Command set for managing Lido-CLI dependencies."
       },

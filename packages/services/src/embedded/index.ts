@@ -17,8 +17,10 @@ import { lidoCLI } from "./lido-cli.js";
 import { lidoCore } from "./lido-core.js";
 import { noWidget } from "./no-widget.js";
 import { noWidgetBackend } from "./no-widget-backend.js";
+import { onchainMon } from "./onchain-mon.js";
 import { oracle } from "./oracle.js";
 import { voting } from "./voting.js";
+import { vroomOnchainMon } from "./vroom-onchain-mon.js";
 
 export const serviceConfigs = {
   blockscout,
@@ -42,6 +44,8 @@ export const serviceConfigs = {
   kubo,
   noWidgetBackend,
   noWidget,
+  onchainMon,
+  vroomOnchainMon,
 };
 
 export type EmbeddedServicesConfigs = typeof serviceConfigs;
