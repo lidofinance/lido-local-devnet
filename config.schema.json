@@ -210,6 +210,73 @@
               }
             },
             "additionalProperties": false
+          },
+          "ethereumHeadWatcher": {
+            "type": "object",
+            "description": "Ethereum Head Watcher configuration",
+            "properties": {
+              "alerting": {
+                "type": "object",
+                "properties": {
+                  "slack": {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "routes": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "webhookUrlEnv": {
+                              "type": "string"
+                            },
+                            "channel": {
+                              "type": "string"
+                            },
+                            "matchers": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "sendResolved": {
+                              "type": "boolean"
+                            },
+                            "username": {
+                              "type": "string"
+                            },
+                            "iconEmoji": {
+                              "type": "string"
+                            },
+                            "groupWait": {
+                              "type": "string"
+                            },
+                            "groupInterval": {
+                              "type": "string"
+                            },
+                            "repeatInterval": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
           }
         },
         "required": ["name", "chain", "lido", "csm", "walletMnemonic"],

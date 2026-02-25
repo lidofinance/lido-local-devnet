@@ -94,6 +94,9 @@
       "dsm-bots": {
         "description": "Command set for managing DSM-Bots."
       },
+      "ethereum-head-watcher-k8s": {
+        "description": "Command set for managing Ethereum Head Watcher in Kubernetes."
+      },
       "git": {
         "description": "Switch the Git branch in the specified service."
       },

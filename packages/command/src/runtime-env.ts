@@ -26,6 +26,7 @@ const YamlConfig = z.object({
       csm: z.record(z.string(), z.any()).optional(),
       walletMnemonic: z.string().optional(),
       notifications: z.record(z.string(), z.any()).optional(),
+      ethereumHeadWatcher: z.record(z.string(), z.any()).optional(),
     })
   )
 });

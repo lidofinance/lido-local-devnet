@@ -39,6 +39,16 @@ networks:
         serviceUp: true
         serviceDown: true
         serviceRestart: true
+    ethereumHeadWatcher:
+      alerting:
+        slack:
+          enabled: false
+          routes:
+            - id: default
+              webhookUrlEnv: ETHEREUM_HEAD_WATCHER_SLACK_WEBHOOK_URL
+              channel: "#devnet-alerts"
+              matchers:
+                - network="devnet4"
 
   - name: testnet1
     chain:

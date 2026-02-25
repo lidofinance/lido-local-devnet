@@ -1,31 +1,31 @@
 import { command } from "@devnet/command";
 import { buildAndPushDockerImage } from "@devnet/docker";
+
 import { prepareRepositoryBackedServiceSource } from "../shared/prepare-source.helpers.js";
+import { SERVICE_NAME } from "./constants/ethereum-head-watcher-k8s.constants.js";
+import { ethereumHeadWatcherK8sExtension } from "./extensions/ethereum-head-watcher-k8s.extension.js";
 
-import { SERVICE_NAME } from "./constants/onchain-mon-k8s.constants.js";
-import { onchainMonK8sExtension } from "./extensions/onchain-mon-k8s.extension.js";
-
-export const OnchainMonK8sBuild = command.cli({
+export const EthereumHeadWatcherK8sBuild = command.cli({
   description: `Build ${SERVICE_NAME} and push to Docker registry`,
   params: {},
-  extensions: [onchainMonK8sExtension],
+  extensions: [ethereumHeadWatcherK8sExtension],
   async handler({ dre, dre: { state, network, services, logger } }) {
     const dockerRegistry = await state.getDockerRegistry();
-    const { onchainMon } = services;
+    const { ethereumHeadWatcher } = services;
 
     // Commands run from artifacts; keep workspace synced with local edits.
-    await onchainMon.applyWorkspace();
+    await ethereumHeadWatcher.applyWorkspace();
     await prepareRepositoryBackedServiceSource({
       logger: dre.logger,
-      service: onchainMon,
-      serviceName: "onchain-mon",
+      service: ethereumHeadWatcher,
+      serviceName: "ethereum-head-watcher",
     });
 
     const TAG = `kt-${network.name}`;
-    const IMAGE = "lido/onchain-mon";
+    const IMAGE = "lido/ethereum-head-watcher";
 
     await buildAndPushDockerImage({
-      cwd: onchainMon.artifact.root,
+      cwd: ethereumHeadWatcher.artifact.root,
       registryHostname: dockerRegistry.registryHostname,
       buildContext: "source",
       imageName: IMAGE,
@@ -36,7 +36,7 @@ export const OnchainMonK8sBuild = command.cli({
 
     logger.log(`${SERVICE_NAME} image pushed to ${dockerRegistry.registryUrl}/${IMAGE}:${TAG}`);
 
-    await state.updateOnchainMonK8sImage({
+    await state.updateEthereumHeadWatcherK8sImage({
       tag: TAG,
       image: IMAGE,
       registryHostname: dockerRegistry.registryHostname,

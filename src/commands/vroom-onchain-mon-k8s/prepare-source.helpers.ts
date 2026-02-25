@@ -1,9 +1,9 @@
 import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
-import { DevNetError } from "@devnet/utils";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { CHAIN_ID, CONTRACTS_NETWORK, SOURCE_ROOT } from "./constants/vroom-onchain-mon-k8s.constants.js";
+import { prepareRepositoryBackedServiceSource } from "../shared/prepare-source.helpers.js";
+import { CHAIN_ID, CONTRACTS_NETWORK } from "./constants/vroom-onchain-mon-k8s.constants.js";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -20,13 +20,6 @@ type JsonNetworkDependentConstants = {
   CL_GENESIS_TIMESTAMP: number;
   CSFEE_ORACLE_MEMBERS: Record<string, string>;
   EXITBUS_ORACLE_MEMBERS: Record<string, string>;
-};
-
-const resolveSourceRoot = () => {
-  const sourceRoot = SOURCE_ROOT();
-  return path.isAbsolute(sourceRoot)
-    ? sourceRoot
-    : path.resolve(process.cwd(), sourceRoot);
 };
 
 const getExplorerPrefixes = () => {
@@ -49,7 +42,7 @@ const getExplorerPrefixes = () => {
 };
 
 const toUniqueLowerAddresses = (values: Array<string | undefined>) =>
-  Array.from(new Set(values.filter(Boolean).map((value) => value!.toLowerCase())));
+  [...new Set(values.filter(Boolean).map((value) => value!.toLowerCase()))];
 
 const resolveAddress = (value: string | undefined) => value || ZERO_ADDRESS;
 
@@ -127,27 +120,19 @@ const buildNetworkOverridesPayload = async (dre: DevNetRuntimeEnvironmentInterfa
   return payload;
 };
 
-const prepareSourceTree = async (artifactRoot: string) => {
-  const sourceRoot = resolveSourceRoot();
-
-  try {
-    await fs.access(sourceRoot);
-  } catch {
-    throw new DevNetError(`VROOM onchain monitor source path not found: ${sourceRoot}`);
-  }
-
-  const targetSourceRoot = path.join(artifactRoot, "source");
-
-  await fs.rm(targetSourceRoot, { force: true, recursive: true });
-  await fs.mkdir(targetSourceRoot, { recursive: true });
-  await fs.cp(sourceRoot, targetSourceRoot, { recursive: true, force: true });
-
-  return targetSourceRoot;
+const prepareSourceTree = async (
+  dre: DevNetRuntimeEnvironmentInterface,
+) => {
+  const { vroomOnchainMon } = dre.services;
+  return prepareRepositoryBackedServiceSource({
+    logger: dre.logger,
+    service: vroomOnchainMon,
+    serviceName: "vroom-onchain-mon",
+  });
 };
 
 export const prepareVroomOnchainMonSource = async (dre: DevNetRuntimeEnvironmentInterface) => {
-  const { vroomOnchainMon } = dre.services;
-  const sourceRoot = await prepareSourceTree(vroomOnchainMon.artifact.root);
+  const sourceRoot = await prepareSourceTree(dre);
 
   const contractsPayload = await buildContractsPayload(dre);
   const networkOverridesPayload = await buildNetworkOverridesPayload(dre);

@@ -80,6 +80,29 @@ export const NotificationsConfigSchema = z.object({
 
 export type NotificationsConfig = z.infer<typeof NotificationsConfigSchema>;
 
+export const EthereumHeadWatcherSlackRouteSchema = z.object({
+  id: z.string().optional(),
+  enabled: z.boolean().optional(),
+  webhookUrlEnv: z.string().optional(),
+  channel: z.string().optional(),
+  matchers: z.array(z.string()).optional(),
+  sendResolved: z.boolean().optional(),
+  username: z.string().optional(),
+  iconEmoji: z.string().optional(),
+  groupWait: z.string().optional(),
+  groupInterval: z.string().optional(),
+  repeatInterval: z.string().optional(),
+});
+
+export const EthereumHeadWatcherConfigSchema = z.object({
+  alerting: z.object({
+    slack: z.object({
+      enabled: z.boolean().optional(),
+      routes: z.array(EthereumHeadWatcherSlackRouteSchema).optional(),
+    }).optional(),
+  }).optional(),
+});
+
 const ConfigSchema = z.object({
   chain: ChainState.partial().optional(),
   wallet: WalletSchema.optional(),
@@ -88,6 +111,7 @@ const ConfigSchema = z.object({
     ParsedConsensusGenesisStateSchema.partial().optional(),
   dataBus: DataBusConfigSchema.optional(),
   notifications: NotificationsConfigSchema.optional(),
+  ethereumHeadWatcher: EthereumHeadWatcherConfigSchema.optional(),
 });
 
 export type ChainConfig = z.infer<typeof ChainState>;

@@ -5,9 +5,6 @@ export const NAMESPACE = (dre: DevNetRuntimeEnvironmentInterface) =>
 
 export const SERVICE_NAME = "Onchain Feeder/Forwarder";
 
-export const SOURCE_ROOT = () =>
-  process.env.ONCHAIN_MON_SOURCE_PATH?.trim() || "../onchain-mon";
-
 export const getForwarderSource = (networkName: string) =>
   process.env.ONCHAIN_MON_FORWARDER_SOURCE?.trim() || `vroom-devnet-${networkName}`;
 

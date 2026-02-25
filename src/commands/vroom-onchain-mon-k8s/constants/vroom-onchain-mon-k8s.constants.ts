@@ -14,6 +14,3 @@ export const CHAIN_ID = () => parseChainId(process.env.VROOM_ONCHAIN_MON_CHAIN_I
 
 export const CONTRACTS_NETWORK = () =>
   process.env.VROOM_ONCHAIN_MON_CONTRACTS_NETWORK?.trim() || "local-devnet";
-
-export const SOURCE_ROOT = () =>
-  process.env.VROOM_ONCHAIN_MON_SOURCE_PATH?.trim() || "../valset-onchain-mon-bots/bots/l1-unified";
