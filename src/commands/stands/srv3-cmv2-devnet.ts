@@ -14,7 +14,7 @@ import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
 import { DataBusDeploy } from "../data-bus/deploy.js";
 import { DSMBotsK8sUp } from "../dsm-bots-k8s/up.js";
-import { EthereumHeadWatcherK8sUp } from "../ethereum-head-watcher-k8s/up.js";
+import { EhwUp } from "../ehw/up.js";
 import { GitCheckout } from "../git/checkout.js";
 import { KapiK8sUp } from "../kapi-k8s/up.js";
 import { LidoCLIInstall } from "../lido-cli/install.js";
@@ -41,7 +41,7 @@ export const SRv3CMv2DevnetUp = command.cli({
       description: "Kurtosis preset name",
       default: "srv3-devnet",
     }),
-    ethereumHeadWatcher: Params.boolean({
+    ehw: Params.boolean({
       description: "Run Ethereum Head Watcher in Kubernetes.",
       default: false,
     }),
@@ -200,9 +200,9 @@ export const SRv3CMv2DevnetUp = command.cli({
     logger.log("🚀 Run KAPI service in K8s.");
     await dre.runCommand(KapiK8sUp, {});
 
-    if (params.ethereumHeadWatcher) {
+    if (params.ehw) {
       logger.log("🚀 Run Ethereum Head Watcher service in K8s.");
-      await dre.runCommand(EthereumHeadWatcherK8sUp, {});
+      await dre.runCommand(EhwUp, {});
       logger.log("✅ Ethereum Head Watcher service started.");
     }
 

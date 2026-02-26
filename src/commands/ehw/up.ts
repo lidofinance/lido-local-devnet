@@ -10,13 +10,13 @@ import { csmExtension } from "../csm/extensions/csm.extension.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { kapiK8sExtension } from "../kapi-k8s/extensions/kapi-k8s.extension.js";
 import { lidoCoreExtension } from "../lido-core/extensions/lido-core.extension.js";
-import { EthereumHeadWatcherK8sBuild } from "./build.js";
+import { EhwBuild } from "./build.js";
 import {
   HELM_RELEASE,
   NAMESPACE,
   SERVICE_NAME,
-} from "./constants/ethereum-head-watcher-k8s.constants.js";
-import { ethereumHeadWatcherK8sExtension } from "./extensions/ethereum-head-watcher-k8s.extension.js";
+} from "./constants/ehw.constants.js";
+import { ehwExtension } from "./extensions/ehw.extension.js";
 
 type HeadWatcherSlackRouteConfig = {
   channel?: string;
@@ -33,6 +33,14 @@ type HeadWatcherSlackRouteConfig = {
 };
 
 type HeadWatcherNetworkConfig = {
+  ehw?: {
+    alerting?: {
+      slack?: {
+        enabled?: boolean;
+        routes?: HeadWatcherSlackRouteConfig[];
+      };
+    };
+  };
   ethereumHeadWatcher?: {
     alerting?: {
       slack?: {
@@ -126,7 +134,8 @@ const buildAlertmanagerSlackConfig = async ({
   networkName: string;
 }) => {
   const networkConfig = await readNetworkConfig(networkName);
-  const slackConfig = networkConfig.ethereumHeadWatcher?.alerting?.slack;
+  const slackConfig = networkConfig.ehw?.alerting?.slack
+    || networkConfig.ethereumHeadWatcher?.alerting?.slack;
   const routesFromConfig = slackConfig?.routes ?? [];
   const slackEnabled = slackConfig?.enabled ?? routesFromConfig.length > 0;
 
@@ -207,16 +216,16 @@ const buildAlertmanagerSlackConfig = async ({
   };
 };
 
-export const EthereumHeadWatcherK8sUp = command.cli({
+export const EhwUp = command.cli({
   description: `Start ${SERVICE_NAME} on K8s with Helm`,
   params: {},
   extensions: [
-    ethereumHeadWatcherK8sExtension,
+    ehwExtension,
     kapiK8sExtension,
     lidoCoreExtension,
     csmExtension,
   ],
-  async handler({ dre, dre: { state, services: { ethereumHeadWatcher }, logger, network } }) {
+  async handler({ dre, dre: { state, services: { ehw }, logger, network } }) {
     if (await state.isEthereumHeadWatcherK8sRunning()) {
       logger.log(`${SERVICE_NAME} already running`);
       return;
@@ -234,7 +243,7 @@ export const EthereumHeadWatcherK8sUp = command.cli({
       throw new DevNetError("KAPI is not running. Start KAPI first.");
     }
 
-    await dre.runCommand(EthereumHeadWatcherK8sBuild, {});
+    await dre.runCommand(EhwBuild, {});
 
     if (!(await state.isEthereumHeadWatcherK8sImageReady())) {
       throw new DevNetError(`${SERVICE_NAME} image is not ready`);
@@ -258,7 +267,7 @@ export const EthereumHeadWatcherK8sUp = command.cli({
     });
 
     const appEnv: Record<string, string> = {
-      ...ethereumHeadWatcher.config.constants,
+      ...ehw.config.constants,
       CONSENSUS_CLIENT_URI: clApiUrls,
       EXECUTION_CLIENT_URI: elRpcUrls,
       LIDO_LOCATOR_ADDRESS: locator,
@@ -273,20 +282,20 @@ export const EthereumHeadWatcherK8sUp = command.cli({
         process.env.ETHEREUM_HEAD_WATCHER_VALID_WITHDRAWAL_ADDRESSES?.trim() || "",
       LOG_LEVEL:
         process.env.ETHEREUM_HEAD_WATCHER_LOG_LEVEL?.trim()
-        || ethereumHeadWatcher.config.constants.LOG_LEVEL,
+        || ehw.config.constants.LOG_LEVEL,
       DRY_RUN:
         process.env.ETHEREUM_HEAD_WATCHER_DRY_RUN?.trim()
-        || ethereumHeadWatcher.config.constants.DRY_RUN,
+        || ehw.config.constants.DRY_RUN,
       KEYS_SOURCE:
         process.env.ETHEREUM_HEAD_WATCHER_KEYS_SOURCE?.trim()
-        || ethereumHeadWatcher.config.constants.KEYS_SOURCE,
+        || ehw.config.constants.KEYS_SOURCE,
       CL_REQUEST_TIMEOUT:
         process.env.ETHEREUM_HEAD_WATCHER_CL_REQUEST_TIMEOUT?.trim()
-        || ethereumHeadWatcher.config.constants.CL_REQUEST_TIMEOUT,
+        || ehw.config.constants.CL_REQUEST_TIMEOUT,
     };
 
     const helmValuesPath = "helm.values.generated.yaml";
-    await ethereumHeadWatcher.writeYaml(helmValuesPath, {
+    await ehw.writeYaml(helmValuesPath, {
       "lido-app": {
         env: {
           variables: appEnv,
@@ -312,7 +321,7 @@ export const EthereumHeadWatcherK8sUp = command.cli({
       },
     });
 
-    const helmSh = ethereumHeadWatcher.sh({
+    const helmSh = ehw.sh({
       env: {
         NAMESPACE: namespace,
         HELM_RELEASE,

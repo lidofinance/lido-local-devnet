@@ -29,6 +29,7 @@ Requirements:
    - `build`, `up`, `down`, and `status/logs` if needed.
 5. Follow existing `lido-local-devnet` architecture and patterns:
    - commands in `src/commands/*`,
+   - prefer concise command topic names where reasonable (for example `ehw`),
    - embedded service wiring in `packages/services/src/embedded/*`,
    - state/config integration,
    - stand integration in `src/commands/stands/*`.
@@ -39,12 +40,13 @@ Requirements:
    - add service-specific `prepare-source.helpers.ts` only when extra source post-processing is required (for example generated config/json),
    - for clean redeploy, ensure source repo can be auto-cloned and synced to configured `repository.branch`,
    - always sync source from `repository` during `build/up`,
-   - keep managed source checkout inside service artifacts (for example, `artifacts/<network>/<service>/repository-source`).
+   - keep managed source checkout in the service artifact root (for example, `artifacts/<network>/<service>`), without extra duplicate clone directories.
+   - when local workspace files are needed on top of repository source (for example local `Makefile`), overlay them via `service.applyWorkspace()`; do not add ad-hoc manual file copy logic.
 7. Pass runtime config via env/values (no hardcoded secrets).
 8. If dependencies are needed (NATS, ClickHouse, etc.), deploy them as separate releases/resources similarly to existing integrations.
 9. If dashboards are enabled by user, integrate dashboard provisioning/deployment flow similarly to `evm` (including lifecycle behavior and environment wiring).
 10. If changes are required in external/original service repos:
-   - patch original repos (avoid local overrides when possible),
+   - patch original repos (do not add local `workspaces/*/overrides` patch layers),
    - use/create branch `{FEATURE_BRANCH}`,
    - set that branch as default source branch in `lido-local-devnet` for this service.
 11. Keep compatibility with mainnet/hoodi:

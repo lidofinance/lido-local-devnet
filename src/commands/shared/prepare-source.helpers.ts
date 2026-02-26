@@ -47,7 +47,7 @@ const pathExists = async (targetPath: string) =>
 const copyDirectoryContents = async (
   sourceRoot: string,
   targetRoot: string,
-  excludeNames: string[] = [".git"],
+  excludeNames: string[] = [".git", "overrides"],
 ) => {
   const excluded = new Set(excludeNames);
   const entries = await fs.readdir(sourceRoot, { withFileTypes: true });
@@ -66,7 +66,7 @@ export const syncRepositorySource = async ({
   repository,
   serviceName,
   sourceRoot,
-}: SyncRepositorySourceParams & { sourceRoot: string }) => {
+}: { sourceRoot: string } & SyncRepositorySourceParams) => {
   if (!repository) return;
 
   const { branch, url } = repository;
@@ -81,16 +81,11 @@ export const syncRepositorySource = async ({
 
   const gitDirExists = await pathExists(path.join(sourceRoot, ".git"));
   if (!gitDirExists) {
-    throw new DevNetError(
-      `${serviceName} source path exists but is not a git repo: ${sourceRoot}.`,
-    );
-  }
-
-  const status = await execa("git", ["status", "--porcelain"], { cwd: sourceRoot });
-  if (status.stdout.trim()) {
-    throw new DevNetError(
-      `${serviceName} repo has uncommitted changes at ${sourceRoot}. Commit/stash them before build.`,
-    );
+    logger.log(`${serviceName} source path is not a git repo; recloning into ${sourceRoot}`);
+    await fs.rm(sourceRoot, { force: true, recursive: true });
+    await fs.mkdir(path.dirname(sourceRoot), { recursive: true });
+    await execa("git", ["clone", "--branch", branch, "--single-branch", url, sourceRoot]);
+    return;
   }
 
   const currentRemote = await execa("git", ["remote", "get-url", "origin"], { cwd: sourceRoot });
@@ -106,10 +101,13 @@ export const syncRepositorySource = async ({
   await execa("git", ["checkout", "-B", branch, `refs/remotes/origin/${branch}`], {
     cwd: sourceRoot,
   });
+  await execa("git", ["reset", "--hard", `refs/remotes/origin/${branch}`], {
+    cwd: sourceRoot,
+  });
 };
 
 export const getRepositorySourceRoot = (artifactRoot: string) =>
-  path.join(artifactRoot, "repository-source");
+  artifactRoot;
 
 export const prepareServiceSource = async ({
   artifactRoot,
@@ -144,15 +142,36 @@ export const prepareRepositoryBackedServiceSource = async ({
   serviceName,
   sourceNotFoundMessage,
 }: PrepareRepositoryBackedServiceSourceParams) => {
-  const sourceRoot = getRepositorySourceRoot(service.artifact.root);
+  const sourceRoot = await syncRepositoryBackedServiceSource({
+    logger,
+    service,
+    serviceName,
+  });
+
   return prepareServiceSource({
     sourceRoot,
     artifactRoot: service.artifact.root,
     sourceNotFoundMessage,
-    syncOptions: {
-      logger,
-      repository: service.config.repository,
-      serviceName,
-    },
   });
+};
+
+export const syncRepositoryBackedServiceSource = async ({
+  logger,
+  service,
+  serviceName,
+}: Omit<PrepareRepositoryBackedServiceSourceParams, "sourceNotFoundMessage">) => {
+  const sourceRoot = getRepositorySourceRoot(service.artifact.root);
+  const legacySourceRoot = path.join(service.artifact.root, "repository-source");
+  if (legacySourceRoot !== sourceRoot && await pathExists(legacySourceRoot)) {
+    logger.log(`Removing legacy source checkout at ${legacySourceRoot}`);
+    await fs.rm(legacySourceRoot, { force: true, recursive: true });
+  }
+
+  await syncRepositorySource({
+    logger,
+    repository: service.config.repository,
+    serviceName,
+    sourceRoot,
+  });
+  return sourceRoot;
 };

@@ -5,10 +5,10 @@ import { deleteNamespace, getNamespacedDeployedHelmReleases } from "@devnet/k8s"
 import {
   NAMESPACE,
   SERVICE_NAME,
-} from "./constants/ethereum-head-watcher-k8s.constants.js";
-import { ethereumHeadWatcherK8sExtension } from "./extensions/ethereum-head-watcher-k8s.extension.js";
+} from "./constants/ehw.constants.js";
+import { ehwExtension } from "./extensions/ehw.extension.js";
 
-export const EthereumHeadWatcherK8sDown = command.cli({
+export const EhwDown = command.cli({
   description: `Stop ${SERVICE_NAME} in K8s with Helm`,
   params: {
     force: Params.boolean({
@@ -17,8 +17,8 @@ export const EthereumHeadWatcherK8sDown = command.cli({
       required: false,
     }),
   },
-  extensions: [ethereumHeadWatcherK8sExtension],
-  async handler({ dre, dre: { services: { ethereumHeadWatcher }, logger, state }, params }) {
+  extensions: [ehwExtension],
+  async handler({ dre, dre: { services: { ehw }, logger, state }, params }) {
     if (!(await state.isEthereumHeadWatcherK8sRunning()) && !params.force) {
       logger.log(`${SERVICE_NAME} not running. Skipping`);
       return;
@@ -31,7 +31,7 @@ export const EthereumHeadWatcherK8sDown = command.cli({
     }
 
     const helmRelease = releases[0];
-    const helmSh = ethereumHeadWatcher.sh({
+    const helmSh = ehw.sh({
       env: {
         NAMESPACE: NAMESPACE(dre),
         HELM_RELEASE: helmRelease,

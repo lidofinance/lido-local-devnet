@@ -67,9 +67,9 @@ export class DevnetServiceArtifact {
       // Read all files and directories in the source path
       const entries = await fs.readdir(sourcePath, { withFileTypes: true });
 
-      // Filter out `.git` and map entries to their full paths
+      // Filter out VCS and legacy local patch folders, then map entries to full paths.
       const itemsToCopy = entries
-        .filter((entry) => entry.name !== ".git")
+        .filter((entry) => ![".git", "overrides"].includes(entry.name))
         .map((entry) => ({
           destination: path.join(this.root, entry.name),
           source: path.join(sourcePath, entry.name),

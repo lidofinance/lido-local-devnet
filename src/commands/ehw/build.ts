@@ -1,33 +1,33 @@
 import { command } from "@devnet/command";
 import { buildAndPushDockerImage } from "@devnet/docker";
 
-import { prepareRepositoryBackedServiceSource } from "../shared/prepare-source.helpers.js";
-import { SERVICE_NAME } from "./constants/ethereum-head-watcher-k8s.constants.js";
-import { ethereumHeadWatcherK8sExtension } from "./extensions/ethereum-head-watcher-k8s.extension.js";
+import { syncRepositoryBackedServiceSource } from "../shared/prepare-source.helpers.js";
+import { SERVICE_NAME } from "./constants/ehw.constants.js";
+import { ehwExtension } from "./extensions/ehw.extension.js";
 
-export const EthereumHeadWatcherK8sBuild = command.cli({
+export const EhwBuild = command.cli({
   description: `Build ${SERVICE_NAME} and push to Docker registry`,
   params: {},
-  extensions: [ethereumHeadWatcherK8sExtension],
+  extensions: [ehwExtension],
   async handler({ dre, dre: { state, network, services, logger } }) {
     const dockerRegistry = await state.getDockerRegistry();
-    const { ethereumHeadWatcher } = services;
+    const { ehw } = services;
 
-    // Commands run from artifacts; keep workspace synced with local edits.
-    await ethereumHeadWatcher.applyWorkspace();
-    await prepareRepositoryBackedServiceSource({
+    // Sync repository first, then overlay local workspace files (Makefile, etc.).
+    await syncRepositoryBackedServiceSource({
       logger: dre.logger,
-      service: ethereumHeadWatcher,
-      serviceName: "ethereum-head-watcher",
+      service: ehw,
+      serviceName: "ehw",
     });
+    await ehw.applyWorkspace();
 
     const TAG = `kt-${network.name}`;
     const IMAGE = "lido/ethereum-head-watcher";
 
     await buildAndPushDockerImage({
-      cwd: ethereumHeadWatcher.artifact.root,
+      cwd: ehw.artifact.root,
       registryHostname: dockerRegistry.registryHostname,
-      buildContext: "source",
+      buildContext: ".",
       imageName: IMAGE,
       tag: TAG,
       password: process.env.DOCKER_REGISTRY_PASSWORD ?? "admin",

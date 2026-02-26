@@ -2,7 +2,7 @@ import { Params, command } from "@devnet/command";
 
 import { CouncilK8sDown } from "./council-k8s/down.js";
 import { DSMBotsK8sDown } from "./dsm-bots-k8s/down.js";
-import { EthereumHeadWatcherK8sDown } from "./ethereum-head-watcher-k8s/down.js";
+import { EhwDown } from "./ehw/down.js";
 import { K8sPing } from "./k8s/ping.js";
 import { KapiK8sDown } from "./kapi-k8s/down.js";
 import { OnchainMonK8sDown } from "./onchain-mon-k8s/down.js";
@@ -33,7 +33,7 @@ export const DevNetStopOffchain = command.cli({
       () => dre.runCommand(OnchainMonK8sDown, { force: params.force }),
       () => dre.runCommand(OracleK8sDown, { force: params.force }),
       () => dre.runCommand(VroomOnchainMonK8sDown, { force: params.force }),
-      () => dre.runCommand(EthereumHeadWatcherK8sDown, { force: params.force }),
+      () => dre.runCommand(EhwDown, { force: params.force }),
       () => dre.runCommand(CouncilK8sDown, { force: params.force }),
       () => dre.runCommand(DSMBotsK8sDown, { force: params.force }),
     ];

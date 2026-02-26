@@ -1,12 +1,12 @@
 import { DevnetServiceConfig } from "../devnet-service-config.js";
 
-export const ethereumHeadWatcher = new DevnetServiceConfig({
+export const ehw = new DevnetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/ethereum-head-watcher.git",
     branch: "feature/vroom-435-staking-router-v3-devnet1-with-cmv2",
   },
   workspace: "workspaces/ethereum-head-watcher",
-  name: "ethereumHeadWatcher" as const,
+  name: "ehw" as const,
   constants: {
     KEYS_SOURCE: "keys_api",
     LOG_LEVEL: "INFO",

@@ -7,8 +7,8 @@ import { csmProverTool } from "./csm-prover-tool.js";
 import { dataBus } from "./data-bus.js";
 import { dockerRegistry } from "./docker-registry.js";
 import { dsmBots } from "./dsm-bots.js";
+import { ehw } from "./ethereum-head-watcher.js";
 import { evm } from "./evm.js";
-import { ethereumHeadWatcher } from "./ethereum-head-watcher.js";
 import { grafana } from "./grafana.js";
 import { kapi } from "./kapi.js";
 import { kubo } from "./kubo.js";
@@ -32,8 +32,8 @@ export const serviceConfigs = {
   cmv2,
   csm,
   csmProverTool,
+  ehw,
   evm,
-  ethereumHeadWatcher,
   grafana,
   kapi,
   oracle,

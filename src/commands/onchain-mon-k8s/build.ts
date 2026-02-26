@@ -1,7 +1,7 @@
 import { command } from "@devnet/command";
 import { buildAndPushDockerImage } from "@devnet/docker";
-import { prepareRepositoryBackedServiceSource } from "../shared/prepare-source.helpers.js";
 
+import { syncRepositoryBackedServiceSource } from "../shared/prepare-source.helpers.js";
 import { SERVICE_NAME } from "./constants/onchain-mon-k8s.constants.js";
 import { onchainMonK8sExtension } from "./extensions/onchain-mon-k8s.extension.js";
 
@@ -13,13 +13,15 @@ export const OnchainMonK8sBuild = command.cli({
     const dockerRegistry = await state.getDockerRegistry();
     const { onchainMon } = services;
 
-    // Commands run from artifacts; keep workspace synced with local edits.
-    await onchainMon.applyWorkspace();
-    await prepareRepositoryBackedServiceSource({
+    // Sync repository first.
+    await syncRepositoryBackedServiceSource({
       logger: dre.logger,
       service: onchainMon,
       serviceName: "onchain-mon",
     });
+
+    // Apply local workspace files (e.g. Makefile) over synced repository.
+    await onchainMon.applyWorkspace();
 
     const TAG = `kt-${network.name}`;
     const IMAGE = "lido/onchain-mon";
@@ -27,7 +29,7 @@ export const OnchainMonK8sBuild = command.cli({
     await buildAndPushDockerImage({
       cwd: onchainMon.artifact.root,
       registryHostname: dockerRegistry.registryHostname,
-      buildContext: "source",
+      buildContext: ".",
       imageName: IMAGE,
       tag: TAG,
       password: process.env.DOCKER_REGISTRY_PASSWORD ?? "admin",

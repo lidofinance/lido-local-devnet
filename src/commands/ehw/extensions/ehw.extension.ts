@@ -72,7 +72,7 @@ export const EthereumHeadWatcherK8sState = z.object({
 
 export type EthereumHeadWatcherK8sState = z.infer<typeof EthereumHeadWatcherK8sState>;
 
-export const ethereumHeadWatcherK8sExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
+export const ehwExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
   dre.state.updateEthereumHeadWatcherK8sImage = (async function (
     stateImage: EthereumHeadWatcherK8sStateImage,
   ) {
