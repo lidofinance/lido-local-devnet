@@ -6,7 +6,7 @@ import {
   getNamespacedDeployedHelmReleases,
 } from "@devnet/k8s";
 
-import { CLICKHOUSE_RELEASE, NAMESPACE, SERVICE_NAME } from "./constants/evm.constants.js";
+import { CLICKHOUSE_RELEASE, NAMESPACE, PROMETHEUS_RELEASE, SERVICE_NAME } from "./constants/evm.constants.js";
 import { evmExtension } from "./extensions/evm.extension.js";
 
 export const EvmDown = command.cli({
@@ -33,8 +33,9 @@ export const EvmDown = command.cli({
       return;
     }
 
-    // Uninstall EVM app release
-    const evmReleases = releases.filter((r: string) => r !== CLICKHOUSE_RELEASE);
+    // Uninstall EVM app release (filter out infra releases)
+    const infraReleases = new Set([CLICKHOUSE_RELEASE, PROMETHEUS_RELEASE]);
+    const evmReleases = releases.filter((r: string) => !infraReleases.has(r));
     for (const release of evmReleases) {
       const helmSh = evm.sh({
         env: {
@@ -47,6 +48,12 @@ export const EvmDown = command.cli({
       await helmSh`make debug`;
       await helmSh`make lint`;
       await helmSh`make uninstall`;
+    }
+
+    // Uninstall Prometheus
+    if (releases.includes(PROMETHEUS_RELEASE)) {
+      const helmSh = evm.sh({ env: { NAMESPACE: namespace } });
+      await helmSh`helm uninstall ${PROMETHEUS_RELEASE} --namespace ${namespace} --ignore-not-found`;
     }
 
     // Uninstall ClickHouse

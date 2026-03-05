@@ -44,6 +44,7 @@ export const EvmRunningState = z.object({
   publicUrl: z.string().url(),
   privateUrl: z.string().url(),
   helmRelease: z.string(),
+  prometheusPrivateUrl: z.string(),
 });
 
 export type EvmRunningState = z.infer<typeof EvmRunningState>;
@@ -99,6 +100,7 @@ export const evmExtension = (dre: DevNetRuntimeEnvironmentInterface) => {
         publicUrl: "evm.running.publicUrl",
         privateUrl: "evm.running.privateUrl",
         helmRelease: "evm.running.helmRelease",
+        prometheusPrivateUrl: "evm.running.prometheusPrivateUrl",
       },
       "evm",
       EvmRunningState,

@@ -1,0 +1,7 @@
+apiVersion: v2
+name: prometheus
+description: Minimal Prometheus Helm chart for devnet
+type: application
+version: 1.0.0
+appVersion: "v2.54.1"
+kubeVersion: '>=1.19.0-0'

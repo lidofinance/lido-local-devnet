@@ -14,7 +14,7 @@ import { dockerRegistryExtension } from "../docker-registry/extensions/docker-re
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { kapiK8sExtension } from "../kapi-k8s/extensions/kapi-k8s.extension.js";
 import { EvmBuild } from "./build.js";
-import { CLICKHOUSE_RELEASE, NAMESPACE, SERVICE_NAME } from "./constants/evm.constants.js";
+import { CLICKHOUSE_RELEASE, NAMESPACE, PROMETHEUS_RELEASE, SERVICE_NAME } from "./constants/evm.constants.js";
 import { evmExtension } from "./extensions/evm.extension.js";
 
 const SLOTS_PER_EPOCH = 32;
@@ -74,6 +74,19 @@ const ensureClickHouse = async (
   logger.log(`Using ClickHouse image ${repository}:${tag}`);
   const helmSh = evmService.sh({ env: { NAMESPACE: namespace } });
   await helmSh`helm upgrade --install ${CLICKHOUSE_RELEASE} ${clickhouseChartPath} --namespace ${namespace} --create-namespace --timeout 5m --set image.repository=${repository} --set image.tag=${tag}`;
+};
+
+const ensurePrometheus = async (
+  evmService: { sh: Function },
+  namespace: string,
+  evmHelmRelease: string,
+  logger: { log: (msg: string) => void },
+) => {
+  const prometheusChartPath = `${HELM_VENDOR_CHARTS_ROOT_PATH}/vendor/prometheus`;
+  const evmScrapeTarget = `${evmHelmRelease}:8080`;
+  logger.log(`Deploying Prometheus (scrape target: ${evmScrapeTarget})`);
+  const helmSh = evmService.sh({ env: { NAMESPACE: namespace } });
+  await helmSh`helm upgrade --install ${PROMETHEUS_RELEASE} ${prometheusChartPath} --namespace ${namespace} --create-namespace --timeout 5m --set scrapeTargets[0].host=${evmScrapeTarget} --set scrapeTargets[0].jobName=evm`;
 };
 
 /**
@@ -163,9 +176,10 @@ export const EvmUp = command.cli({
     const slotTimeSec = Number(evm.config.constants.CHAIN_SLOT_TIME_SECONDS) || 12;
     const startEpoch = await getStartEpochForLastDay(elRpcUrls, clApiUrls, chainNamespace, slotTimeSec, logger);
 
-    // Deploy ClickHouse
+    // Deploy ClickHouse and Prometheus
     await createNamespaceIfNotExists(namespace);
     await ensureClickHouse(evm, namespace, logger);
+    await ensurePrometheus(evm, namespace, HELM_RELEASE, logger);
 
     // Create pull secret
     await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace });
@@ -195,15 +209,18 @@ export const EvmUp = command.cli({
 
     const privateUrl = `http://${HELM_RELEASE}.${namespace}.svc.cluster.local:8080`;
     const publicUrl = `http://${INGRESS_HOSTNAME}`;
+    const prometheusPrivateUrl = `http://${PROMETHEUS_RELEASE}.${namespace}.svc.cluster.local:9090`;
 
     await state.updateEvmRunning({
       helmRelease: HELM_RELEASE,
       publicUrl,
       privateUrl,
+      prometheusPrivateUrl,
     });
 
     logger.log(`${SERVICE_NAME} started.`);
     logger.log(`Public URL: ${publicUrl}`);
     logger.log(`Private URL: ${privateUrl}`);
+    logger.log(`Prometheus URL: ${prometheusPrivateUrl}`);
   },
 });

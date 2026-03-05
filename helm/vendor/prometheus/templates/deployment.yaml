@@ -1,36 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{PROMETHEUS_DEPLOYMENT_NAME}}
-  namespace: {{NAMESPACE}}
+  name: {{ .Release.Name }}
   labels:
-    app: {{PROMETHEUS_DEPLOYMENT_NAME}}
+    app: {{ .Release.Name }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{PROMETHEUS_DEPLOYMENT_NAME}}
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{PROMETHEUS_DEPLOYMENT_NAME}}
+        app: {{ .Release.Name }}
     spec:
       containers:
         - name: prometheus
-          image: {{PROMETHEUS_IMAGE}}
-          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - --config.file=/etc/prometheus/prometheus.yml
             - --storage.tsdb.path=/prometheus
           ports:
             - name: http
               containerPort: 9090
+          {{- with .Values.resources }}
           resources:
-            requests:
-              cpu: 50m
-              memory: 128Mi
-            limits:
-              memory: 512Mi
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           livenessProbe:
             httpGet:
               path: /-/healthy
@@ -49,19 +46,4 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: {{PROMETHEUS_CONFIGMAP_NAME}}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{PROMETHEUS_SERVICE_NAME}}
-  namespace: {{NAMESPACE}}
-  labels:
-    app: {{PROMETHEUS_DEPLOYMENT_NAME}}
-spec:
-  selector:
-    app: {{PROMETHEUS_DEPLOYMENT_NAME}}
-  ports:
-    - name: http
-      port: 9090
-      targetPort: http
+            name: {{ .Release.Name }}-config

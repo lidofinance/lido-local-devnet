@@ -20,7 +20,6 @@ import {
 } from "./constants/grafana.constants.js";
 import { prepareDashboards } from "./dashboards.helpers.js";
 import { grafanaExtension } from "./extensions/grafana.extension.js";
-import { ensurePrometheus } from "./prometheus.helpers.js";
 
 type GrafanaDatasource = {
   access: string;
@@ -60,7 +59,6 @@ export const GrafanaUp = command.cli({
 
     // Build datasources list based on what's running
     const datasources: GrafanaDatasource[] = [];
-    const prometheusScrapeTargets: string[] = [];
     const plugins = new Set<string>();
 
     if (await state.isEvmRunning()) {
@@ -68,7 +66,6 @@ export const GrafanaUp = command.cli({
       const clickhouseUrl = `http://evm-clickhouse-clickhouse.${evmNamespace}.svc.cluster.local:8123`;
       const evmRunning = await state.getEvmRunning();
       const jsonApiUrl = evmRunning.privateUrl;
-      const evmPrometheusTarget = `${evmRunning.helmRelease}.${evmNamespace}.svc.cluster.local:8080`;
 
       datasources.push({
         name: "ClickHouse",
@@ -92,26 +89,25 @@ export const GrafanaUp = command.cli({
         isDefault: false,
       });
       plugins.add("marcusolsson-json-datasource");
-      prometheusScrapeTargets.push(evmPrometheusTarget);
+
+      datasources.push({
+        name: "Prometheus",
+        type: "prometheus",
+        uid: DATASOURCE_UIDS.prometheus,
+        url: evmRunning.prometheusPrivateUrl,
+        access: "proxy",
+        isDefault: true,
+      });
 
       logger.log(`ClickHouse datasource: ${clickhouseUrl}`);
       logger.log(`JSON API datasource: ${jsonApiUrl}`);
+      logger.log(`Prometheus datasource: ${evmRunning.prometheusPrivateUrl}`);
     } else {
-      logger.log("EVM is not running. ClickHouse and JSON API datasources will be unavailable.");
+      logger.log("EVM is not running. ClickHouse, JSON API, and Prometheus datasources will be unavailable.");
     }
 
     // Create namespace
     await createNamespaceIfNotExists(namespace);
-    const prometheusUrl = await ensurePrometheus(namespace, prometheusScrapeTargets, logger);
-
-    datasources.push({
-      name: "Prometheus",
-      type: "prometheus",
-      uid: DATASOURCE_UIDS.prometheus,
-      url: prometheusUrl,
-      access: "proxy",
-      isDefault: true,
-    });
 
     // Prepare dashboards: process JSON files, create ConfigMaps
     const dashboardProviders = await prepareDashboards(
