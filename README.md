@@ -151,6 +151,117 @@ To stop the DevNet and remove all services, run:
 
 ---
 
+## Node Source Modes
+
+The devnet supports three modes for how EL/CL nodes are provided:
+
+### 1. Kurtosis (default)
+
+Full local devnet with Kurtosis-managed nodes. This is the legacy mode.
+
+```sh
+./bin/run.js chain up                          # default, same as kurtosis
+./bin/run.js chain up --mode kurtosis          # explicit
+./bin/run.js chain up --mode kurtosis --preset fusaka-devnet2
+```
+
+### 2. Self-Hosted
+
+Deploy your own EL/CL nodes in Kubernetes using Helm charts (`lido-el-node`, `lido-cl-node`). Useful for running on real testnets (Hoodi, Holesky) or custom ethpandaops devnets.
+
+```sh
+# Deploy nodes on Hoodi
+./bin/run.js chain up --mode self-hosted --network hoodi --elClient geth --clClient lighthouse
+```
+
+#### Custom ethpandaops devnets
+
+For custom devnets (e.g., ethpandaops ePBS/Fusaka devnets), you need to:
+
+1. **Download network config** from the ethpandaops GitHub:
+```sh
+./bin/run.js chain fetch-network-config --repo epbs-devnets --devnet devnet-0
+```
+This downloads `genesis.json`, `config.yaml`, `genesis.ssz`, `enodes.txt`, `bootstrap_nodes.yaml` into `artifacts/<stand>/network-config/`.
+
+2. **Deploy with custom Docker images** and genesis.ssz URL (for large genesis files that exceed the 1MB K8s ConfigMap limit):
+```sh
+./bin/run.js chain up --mode self-hosted \
+  --network epbs-devnet-0 \
+  --elClient geth --clClient prysm \
+  --elImage ethpandaops/geth:epbs-devnet-0 \
+  --clImage ethpandaops/prysm-beacon-chain:epbs-devnet-0-sync \
+  --genesisSSZUrl https://raw.githubusercontent.com/ethpandaops/epbs-devnets/master/network-configs/devnet-0/metadata/genesis.ssz
+```
+
+**Self-hosted flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--elClient` | EL client: `geth` (default) or `reth` |
+| `--clClient` | CL client: `lighthouse`, `prysm`, or `teku` |
+| `--elImage` | Custom Docker image for EL (e.g., `ethpandaops/geth:epbs-devnet-0`) |
+| `--clImage` | Custom Docker image for CL (e.g., `ethpandaops/prysm-beacon-chain:epbs-devnet-0-sync`) |
+| `--genesisSSZUrl` | URL to download genesis.ssz (for files >1MB, downloaded via init container) |
+| `--checkpointSyncUrl` | Checkpoint sync URL for the CL client |
+
+**Notes on custom devnets:**
+- Bootnodes are automatically read from `enodes.txt` (EL) and `bootstrap_nodes.yaml` (CL) in the network-config directory
+- For custom networks, geth uses `--syncmode=full` (not snap) to enable sequential block processing
+- For ePBS devnets, use **Prysm** with the `-sync` tag instead of Lighthouse (Lighthouse has a known sync stall at the Gloas fork boundary)
+- Lighthouse requires `--epochs-per-migration=99999` for ePBS networks (added automatically)
+
+### 3. External
+
+Attach to already running external nodes without launching anything.
+
+```sh
+./bin/run.js chain up --mode external --el-url http://my-el:8545 --cl-url http://my-cl:5052
+./bin/run.js chain up --mode external --el-url http://my-el:8545 --cl-url http://my-cl:5052 --el-ws-url ws://my-el:8546
+```
+
+### Wallet Management
+
+For self-hosted and external modes, wallets can be managed via `wallets.yml`:
+
+```yaml
+# artifacts/<stand>/wallets.yml
+deployer:
+  privateKey: "0x..."
+  publicKey: "0x..."
+oracle1:
+  privateKey: "0x..."
+  publicKey: "0x..."
+# ... etc.
+```
+
+Sync wallets from/to K8s ConfigMap:
+```sh
+./bin/run.js chain wallet-sync-from-k8s-configmap
+./bin/run.js chain wallet-sync-to-k8s-configmap
+```
+
+Sync state from/to K8s ConfigMap:
+```sh
+./bin/run.js chain state-sync-from-k8s-configmap
+./bin/run.js chain state-sync-to-k8s-configmap
+```
+
+### Hoodi Example
+
+See `config.hoodi.example.yml` for a complete Hoodi testnet configuration with real contract addresses from [docs.lido.fi](https://docs.lido.fi/deployed-contracts/hoodi).
+
+```sh
+# Quick start with the Hoodi stand
+./bin/run.js stands hoodi-self-hosted
+
+# Or step by step:
+./bin/run.js chain up --mode self-hosted --network hoodi
+./bin/run.js kapi-k8s up
+```
+
+---
+
 ## Running Multiple Environments
 
 To run multiple devnets on a single cluster, change the `DEVNET_NAME=<another_devnet>` variable in `.env` file

@@ -1,0 +1,77 @@
+# Consensus Layer Node configuration
+# Supports lighthouse, teku, prysm
+
+client: lighthouse
+
+# Network name: hoodi, holesky, mainnet, or custom devnet name
+network: hoodi
+
+# For custom devnets: set to true to mount config/genesis from ConfigMap
+customNetwork: false
+# ConfigMap name containing config.yaml and genesis.ssz (used when customNetwork=true)
+networkConfigMapName: ""
+# URL to download genesis.ssz (for large files that exceed ConfigMap 1MB limit)
+genesisSSZUrl: ""
+
+# Execution layer endpoint for engine API
+executionEndpoint: "http://lido-el-node:8551"
+
+# Checkpoint sync URL (optional, speeds up initial sync)
+checkpointSyncUrl: ""
+
+replicaCount: 1
+
+image:
+  lighthouse:
+    registry: docker.io
+    repository: sigp/lighthouse
+    tag: "v6.0.1"
+  teku:
+    registry: docker.io
+    repository: consensys/teku
+    tag: "24.12.0"
+  prysm:
+    registry: docker.io
+    repository: gcr.io/prysmatic-labs/prysm/beacon-chain
+    tag: "v5.2.0"
+  pullPolicy: IfNotPresent
+
+# JWT secret for CL<->EL authentication
+jwt:
+  # Existing secret name containing jwt.hex key
+  existingSecret: ""
+  # Or provide hex value directly (without 0x prefix)
+  secret: ""
+
+# Ports
+ports:
+  http: 5052
+  metrics: 5054
+  p2p: 9000
+
+# Bootnodes for peer discovery (comma-separated ENR strings)
+bootnodes: ""
+
+# Extra arguments for the client
+extraArgs: []
+
+# Persistent volume for beacon data
+persistence:
+  enabled: true
+  size: 100Gi
+  storageClass: ""
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: false
+  className: "public"
+  annotations: {}
+  hosts: []
+  tls: []
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

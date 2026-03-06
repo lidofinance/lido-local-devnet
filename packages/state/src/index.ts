@@ -7,6 +7,7 @@ import path from "node:path";
 import { BaseState } from "./base-state.js";
 import { WALLET_KEYS_COUNT } from "./constants.js";
 import {
+  ChainMode,
   ChainState,
   DataBusConfigSchema,
   ParsedConsensusGenesisStateSchema,
@@ -14,8 +15,10 @@ import {
 } from "./schemas.js";
 import { sharedWallet } from "./shared-wallet.js";
 import { generateKeysFromMnemonicOnce } from "./wallet/index.js";
+import { readWalletFile } from "./wallet-file.js";
 
-export { Config, NotificationsConfig } from './schemas.js';
+export { ChainMode, ChainState, Config, NotificationsConfig } from './schemas.js';
+export { readWalletFile, writeWalletFile } from './wallet-file.js';
 
 export interface StateInterface extends State {
   // augmented in user code
@@ -33,6 +36,10 @@ export class State extends BaseState {
       ChainState,
       must,
     );
+  }
+
+  async getChainMode(): Promise<ChainMode> {
+    return this.config.chainMode ?? "kurtosis";
   }
 
   async getDataBus<M extends boolean = true>(must: M = true as M) {
@@ -58,7 +65,7 @@ export class State extends BaseState {
       const parsed = JSON.parse(raw);
       return parsed?.depositData as ({ used?: boolean } & DepositData)[];
     } catch {
-      return undefined;
+      
     }
   }
 
@@ -74,11 +81,18 @@ export class State extends BaseState {
       const parsed = JSON.parse(raw);
       return parsed?.keystores as Keystores[];
     } catch {
-      return undefined;
+      
     }
   }
 
   async getNamedWallet() {
+    const chainMode = await this.getChainMode();
+
+    if (chainMode === "self-hosted" || chainMode === "external") {
+      const fileWallet = await readWalletFile(this.artifactsRoot);
+      if (fileWallet) return fileWallet;
+    }
+
     const [
       deployer,
       secondDeployer,
@@ -133,14 +147,18 @@ export class State extends BaseState {
     return state && !isEmptyObject(state);
   }
 
-
-
   async removeChain() {
     await this.updateProperties("chain", {});
   }
 
+
+
   async updateChain(state: ChainState) {
     await this.updateProperties("chain", state);
+  }
+
+  async updateChainMode(mode: ChainMode) {
+    await this.updateProperties("chainMode", mode);
   }
 
   async updateDataBus(jsonData: unknown) {

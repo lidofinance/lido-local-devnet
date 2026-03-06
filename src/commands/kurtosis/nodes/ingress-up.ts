@@ -64,21 +64,7 @@ export const KurtosisK8sNodesIngressUp = command.cli({
     );
 
 
-    const vcIngresses = await pipe(
-      nodes.vc,
-      NEA.mapWithIndex((index, node) => {
-        const hostname = `${process.env.GLOBAL_INGRESS_HOST_PREFIX}-validator${index > 0 ? index : ''}.${ETH_NODES_INGRESS_HOSTNAME}`;
-
-        return { ...node, hostname };
-      }),
-      NEA.mapWithIndex((index, node) =>
-        TE.tryCatchK(validatorClientIngressTmpl, E.toError)(dre, node.k8sService, node.httpValidatorPort, index, node.hostname)
-      ),
-      NEA.sequence(TE.ApplicativeSeq),
-      TE.execute
-    );
-
-    await Promise.all([...elIngresses, ...clIngresses, ...vcIngresses].map(async (ingress) => {
+    const applyIngress = async (ingress: { metadata: { name: string }; spec: { rules: { host: string }[] } }) => {
       const url = `http://${ingress.spec.rules[0].host}`;
 
       const exists = await checkK8sIngressExists(dre, { name: ingress.metadata.name});
@@ -93,7 +79,27 @@ export const KurtosisK8sNodesIngressUp = command.cli({
       );
 
       logger.log(`Successfully created Ingress: [${result.metadata?.name}]. URL: [${url}]`);
-    }));
+    };
+
+    await Promise.all([...elIngresses, ...clIngresses].map((element) => applyIngress(element)));
+
+    let vcIngresses: Awaited<ReturnType<typeof validatorClientIngressTmpl>>[] | undefined;
+    if (nodes.vc) {
+      vcIngresses = await pipe(
+        nodes.vc,
+        NEA.mapWithIndex((index, node) => {
+          const hostname = `${process.env.GLOBAL_INGRESS_HOST_PREFIX}-validator${index > 0 ? index : ''}.${ETH_NODES_INGRESS_HOSTNAME}`;
+
+          return { ...node, hostname };
+        }),
+        NEA.mapWithIndex((index, node) =>
+          TE.tryCatchK(validatorClientIngressTmpl, E.toError)(dre, node.k8sService, node.httpValidatorPort, index, node.hostname)
+        ),
+        NEA.sequence(TE.ApplicativeSeq),
+        TE.execute
+      );
+      await Promise.all(vcIngresses.map((element) => applyIngress(element)));
+    }
 
     const el = pipe(elIngresses, NEA.map(ingress => ({
       publicIngressUrl: `http://${ingress.spec.rules[0].host}`,
@@ -103,16 +109,20 @@ export const KurtosisK8sNodesIngressUp = command.cli({
       publicIngressUrl: `http://${ingress.spec.rules[0].host}`,
     })));
 
-    const vc = pipe(vcIngresses, NEA.map(ingress => ({
-      publicIngressUrl: `http://${ingress.spec.rules[0].host}`,
-    })));
-
-    await state.updateNodesIngress(
-      {
+    if (vcIngresses) {
+      const vc = vcIngresses.map(ingress => ({
+        publicIngressUrl: `http://${ingress.spec.rules[0].host}`,
+      }));
+      await state.updateNodesIngress({
         el: assertNonEmpty(el),
         cl: assertNonEmpty(cl),
-        vc: assertNonEmpty(vc)
-      }
-    );
+        vc: assertNonEmpty(vc),
+      });
+    } else {
+      await state.updateNodesIngress({
+        el: assertNonEmpty(el),
+        cl: assertNonEmpty(cl),
+      });
+    }
   },
 });

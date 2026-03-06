@@ -1,6 +1,6 @@
 import { command } from "@devnet/command";
 import * as keyManager from "@devnet/key-manager-api";
-import { assert, sleep } from "@devnet/utils";
+import { assert, DevNetError, sleep } from "@devnet/utils";
 import { pipe, A, RA, TE, NEA, E } from "@devnet/fp";
 
 import { ValidatorRestart } from "./restart.js";
@@ -17,6 +17,14 @@ export const ValidatorAdd = command.cli({
     },
   }) {
     const { validatorsApiPublic } = await dre.state.getChain();
+
+    if (!validatorsApiPublic) {
+      throw new DevNetError(
+        "Validators API endpoint is not configured. " +
+        "This is expected for external/self-hosted chains without a validator client. " +
+        "Use 'chain kurtosis up' to run a full devnet with validators.",
+      );
+    }
     const token =
       process.env.VALIDATOR_KEYMANAGER_TOKEN ??
       keyManager.KEY_MANAGER_DEFAULT_API_TOKEN;

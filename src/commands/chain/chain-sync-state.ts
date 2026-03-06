@@ -1,4 +1,5 @@
 import {command} from "@devnet/command";
+import { ChainState } from "@devnet/state";
 
 export const ChainSyncState = command.isomorphic({
   description:
@@ -6,14 +7,13 @@ export const ChainSyncState = command.isomorphic({
   params: {},
   async handler({ dre: { logger, state , network} }) {
     logger.log(
-      "Syncing chain nodes state form k8s",
+      "Syncing chain nodes state from k8s",
     );
-    // TODO check that devnet is in k8s or in docker
 
     const nodes = await state.getNodes();
     const nodesIngress = await state.getNodesIngress();
 
-    await state.updateChain({
+    const chainState: ChainState = {
       clPrivate: `http://${nodes.cl[0].k8sService}.kt-${network.name}.svc.cluster.local:${nodes.cl[0].httpPort}`,
       clPublic: nodesIngress.cl[0].publicIngressUrl,
 
@@ -23,9 +23,15 @@ export const ChainSyncState = command.isomorphic({
 
       elWsPrivate: `http://${nodes.el[0].k8sService}.kt-${network.name}.svc.cluster.local:${nodes.el[0].wsPort}`,
       elWsPublic: nodesIngress.el[0].publicIngressUrl,
+    };
 
-      validatorsApiPublic: nodesIngress.vc[0].publicIngressUrl,
-      validatorsApiPrivate: `http://${nodes.vc[0].k8sService}.kt-${network.name}.svc.cluster.local:${nodes.vc[0].httpValidatorPort}`,
-    });
+    if (nodes.vc?.[0] && nodesIngress.vc?.[0]) {
+      chainState.validatorsApiPublic = nodesIngress.vc[0].publicIngressUrl;
+      chainState.validatorsApiPrivate = `http://${nodes.vc[0].k8sService}.kt-${network.name}.svc.cluster.local:${nodes.vc[0].httpValidatorPort}`;
+    } else {
+      logger.log("No validator client nodes found, skipping validators API endpoints");
+    }
+
+    await state.updateChain(chainState);
   },
 });

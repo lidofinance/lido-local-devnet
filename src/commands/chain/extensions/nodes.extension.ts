@@ -41,7 +41,7 @@ export const NodesState = z.object({
       k8sService: z.string(),
       httpValidatorPort: z.number(),
     }),
-  ).nonempty(),
+  ).nonempty().optional(),
 });
 
 export type NodesState = z.infer<typeof NodesState>;

@@ -25,7 +25,7 @@ export const NodesIngressState = z.object({
   })).nonempty(),
   vc: z.array(z.object({
     publicIngressUrl: z.string().url(),
-  })).nonempty(),
+  })).nonempty().optional(),
 });
 
 export type NodesIngressState = z.infer<typeof NodesIngressState>;
