@@ -4,6 +4,7 @@ import { DevNetError } from "@devnet/utils";
 import { ChainExternalUp } from "./external-up.js";
 import { ChainKurtosisUp } from "./kurtosis-up.js";
 import { ChainSelfHostedUp } from "./self-hosted-up.js";
+import { ChainValidatorUp } from "./validator-up.js";
 
 export const ChainUp = command.isomorphic({
   description:
@@ -21,8 +22,11 @@ export const ChainUp = command.isomorphic({
     elImage: Params.string({ description: "Custom EL Docker image (self-hosted mode)." }),
     clImage: Params.string({ description: "Custom CL Docker image (self-hosted mode)." }),
     genesisSSZUrl: Params.string({ description: "URL to download genesis.ssz (self-hosted mode)." }),
+    vcClient: Params.string({ description: "Validator client: lighthouse | teku | prysm (self-hosted mode)." }),
+    vcImage: Params.string({ description: "Custom validator Docker image (self-hosted mode)." }),
+    ingress: Params.boolean({ description: "Enable ingress for node APIs (self-hosted mode).", default: false }),
   },
-  async handler({ dre, dre: { state, logger }, params }) {
+  async handler({ dre, dre: { state }, params }) {
     const chainMode = params.mode ?? (await state.getChainMode());
 
     switch (chainMode) {
@@ -40,7 +44,20 @@ export const ChainUp = command.isomorphic({
           elImage: params.elImage,
           clImage: params.clImage,
           genesisSSZUrl: params.genesisSSZUrl,
+          ingress: params.ingress,
         });
+
+        // Deploy validator client if vcClient is specified
+        if (params.vcClient) {
+          await dre.runCommand(ChainValidatorUp, {
+            vcClient: params.vcClient,
+            vcImage: params.vcImage,
+            feeRecipient: undefined,
+            graffiti: "lido-devnet",
+            ingress: params.ingress,
+          });
+        }
+
         break;
       }
 

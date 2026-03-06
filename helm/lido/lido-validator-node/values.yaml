@@ -1,0 +1,79 @@
+# Validator Client configuration
+# Supports lighthouse, teku, prysm
+
+client: lighthouse
+
+# Network name: hoodi, holesky, mainnet, or custom devnet name
+network: hoodi
+
+# For custom devnets: set to true to mount config from ConfigMap
+customNetwork: false
+# ConfigMap name containing config.yaml (used when customNetwork=true)
+networkConfigMapName: ""
+
+# Beacon node endpoint (CL HTTP API)
+beaconEndpoint: "http://lido-cl-node:5052"
+
+# Beacon node gRPC endpoint (Prysm only, CL gRPC API)
+beaconGrpcEndpoint: "lido-cl-node:4000"
+
+# Fee recipient address for proposed blocks
+feeRecipient: "0x0000000000000000000000000000000000000000"
+
+# Graffiti text included in proposed blocks
+graffiti: "lido-devnet"
+
+# K8s Secret containing keystore JSON files
+keystoresSecret: ""
+# K8s Secret containing keystore password
+keystorePasswordSecret: ""
+
+replicaCount: 1
+
+image:
+  lighthouse:
+    registry: docker.io
+    repository: sigp/lighthouse
+    tag: "v6.0.1"
+  teku:
+    registry: docker.io
+    repository: consensys/teku
+    tag: "24.12.0"
+  prysm:
+    registry: docker.io
+    repository: gcr.io/prysmatic-labs/prysm/validator
+    tag: "v5.2.0"
+  pullPolicy: IfNotPresent
+
+# Key Manager API (for runtime key management)
+keyManagerApi:
+  enabled: true
+  port: 5062
+
+# Extra arguments for the client
+extraArgs: []
+
+# Persistent volume for validator data
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClass: ""
+
+service:
+  type: ClusterIP
+
+ports:
+  keymanager: 5062
+  metrics: 5064
+
+ingress:
+  enabled: false
+  className: "public"
+  annotations: {}
+  hosts: []
+  tls: []
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

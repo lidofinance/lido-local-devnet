@@ -1,0 +1,235 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lido-validator-node.fullname" . }}
+  labels:
+    {{- include "lido-validator-node.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  {{- if .Values.persistence.enabled }}
+  strategy:
+    type: Recreate
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "lido-validator-node.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "lido-validator-node.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: init-keystores
+          {{- if eq .Values.client "prysm" }}
+          image: "{{ .Values.image.prysm.registry }}/{{ .Values.image.prysm.repository }}:{{ .Values.image.prysm.tag }}"
+          {{- else }}
+          image: busybox:1.36
+          {{- end }}
+          command: ["sh", "-c"]
+          args:
+            - |
+              {{- if eq .Values.client "lighthouse" }}
+              echo "Setting up Lighthouse validator directories..."
+              mkdir -p /data/validators
+              for f in /keystores/*.json; do
+                [ -f "$f" ] || continue
+                fname=$(basename "$f")
+                pubkey=$(cat "$f" | grep -o '"pubkey":"[^"]*"' | head -1 | cut -d'"' -f4)
+                if [ -z "$pubkey" ]; then
+                  echo "Skipping $fname: no pubkey found"
+                  continue
+                fi
+                dir="/data/validators/0x${pubkey}"
+                mkdir -p "$dir"
+                cp "$f" "$dir/voting-keystore.json"
+                cp /passwords/password.txt "$dir/voting-keystore.password"
+                echo "Imported $fname -> $dir"
+              done
+              echo "Lighthouse keystores ready."
+              {{- else if eq .Values.client "teku" }}
+              echo "Setting up Teku validator directories..."
+              mkdir -p /data/keys /data/passwords
+              for f in /keystores/*.json; do
+                [ -f "$f" ] || continue
+                fname=$(basename "$f")
+                cp "$f" "/data/keys/$fname"
+                cp /passwords/password.txt "/data/passwords/${fname%.json}.txt"
+                echo "Imported $fname"
+              done
+              echo "Teku keystores ready."
+              {{- else if eq .Values.client "prysm" }}
+              echo "Setting up Prysm wallet from keystores..."
+              mkdir -p /data/wallet /data/passwords /tmp/keystores
+              cp /passwords/password.txt /data/passwords/wallet-password.txt
+              # Copy only .json keystore files (skip K8s Secret symlinks like ..data)
+              for f in /keystores/*.json; do
+                [ -f "$f" ] || continue
+                cp "$f" /tmp/keystores/
+                echo "Found keystore: $(basename "$f")"
+              done
+              /app/cmd/validator/validator accounts import \
+                --keys-dir=/tmp/keystores \
+                --wallet-dir=/data/wallet \
+                --wallet-password-file=/data/passwords/wallet-password.txt \
+                --account-password-file=/passwords/password.txt \
+                --accept-terms-of-use
+              echo "Prysm wallet ready."
+              {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: keystores
+              mountPath: /keystores
+              readOnly: true
+            - name: keystore-password
+              mountPath: /passwords
+              readOnly: true
+      containers:
+        - name: {{ .Values.client }}
+          {{- if eq .Values.client "lighthouse" }}
+          image: "{{ .Values.image.lighthouse.registry }}/{{ .Values.image.lighthouse.repository }}:{{ .Values.image.lighthouse.tag }}"
+          {{- else if eq .Values.client "teku" }}
+          image: "{{ .Values.image.teku.registry }}/{{ .Values.image.teku.repository }}:{{ .Values.image.teku.tag }}"
+          {{- else if eq .Values.client "prysm" }}
+          image: "{{ .Values.image.prysm.registry }}/{{ .Values.image.prysm.repository }}:{{ .Values.image.prysm.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if eq .Values.client "lighthouse" }}
+          command:
+            - lighthouse
+            - vc
+          args:
+            {{- if .Values.customNetwork }}
+            - --testnet-dir=/network-config
+            {{- else }}
+            - --network={{ .Values.network }}
+            {{- end }}
+            - --beacon-nodes={{ .Values.beaconEndpoint }}
+            - --validators-dir=/data/validators
+            - --suggested-fee-recipient={{ .Values.feeRecipient }}
+            - --graffiti={{ .Values.graffiti }}
+            - --metrics
+            - --metrics-address=0.0.0.0
+            - --metrics-port={{ .Values.ports.metrics }}
+            {{- if .Values.keyManagerApi.enabled }}
+            - --http
+            - --http-address=0.0.0.0
+            - --http-port={{ .Values.ports.keymanager }}
+            - --http-allow-origin=*
+            - --unencrypted-http-transport
+            {{- end }}
+            {{- range .Values.extraArgs }}
+            - {{ . }}
+            {{- end }}
+          {{- else if eq .Values.client "teku" }}
+          command:
+            - teku
+            - validator-client
+          args:
+            {{- if .Values.customNetwork }}
+            - --network=/network-config/config.yaml
+            {{- else }}
+            - --network={{ .Values.network }}
+            {{- end }}
+            - --beacon-node-api-endpoint={{ .Values.beaconEndpoint }}
+            - --validator-keys=/data/keys:/data/passwords
+            - --validators-proposer-default-fee-recipient={{ .Values.feeRecipient }}
+            - --validators-graffiti={{ .Values.graffiti }}
+            - --metrics-enabled=true
+            - --metrics-interface=0.0.0.0
+            - --metrics-port={{ .Values.ports.metrics }}
+            {{- if .Values.keyManagerApi.enabled }}
+            - --validator-api-enabled=true
+            - --validator-api-interface=0.0.0.0
+            - --validator-api-port={{ .Values.ports.keymanager }}
+            - --validator-api-host-allowlist=*
+            {{- end }}
+            {{- range .Values.extraArgs }}
+            - {{ . }}
+            {{- end }}
+          {{- else if eq .Values.client "prysm" }}
+          args:
+            {{- if .Values.customNetwork }}
+            - --chain-config-file=/network-config/config.yaml
+            {{- else }}
+            - --{{ .Values.network }}
+            {{- end }}
+            - --beacon-rpc-provider={{ .Values.beaconGrpcEndpoint }}
+            - --beacon-rest-api-provider={{ .Values.beaconEndpoint }}
+            - --wallet-dir=/data/wallet
+            - --wallet-password-file=/data/passwords/wallet-password.txt
+            - --suggested-fee-recipient={{ .Values.feeRecipient }}
+            - --graffiti={{ .Values.graffiti }}
+            - --monitoring-host=0.0.0.0
+            - --monitoring-port={{ .Values.ports.metrics }}
+            - --accept-terms-of-use
+            {{- if .Values.keyManagerApi.enabled }}
+            - --web
+            - --grpc-gateway-host=0.0.0.0
+            - --grpc-gateway-port={{ .Values.ports.keymanager }}
+            - --grpc-gateway-corsdomain=*
+            {{- end }}
+            {{- range .Values.extraArgs }}
+            - {{ . }}
+            {{- end }}
+          {{- end }}
+          ports:
+            - name: keymanager
+              containerPort: {{ .Values.ports.keymanager }}
+              protocol: TCP
+            - name: metrics
+              containerPort: {{ .Values.ports.metrics }}
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            {{- if .Values.customNetwork }}
+            - name: network-config-cm
+              mountPath: /network-config
+              readOnly: true
+            {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: keymanager
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: keymanager
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: keystores
+          secret:
+            secretName: {{ .Values.keystoresSecret }}
+        - name: keystore-password
+          secret:
+            secretName: {{ .Values.keystorePasswordSecret }}
+        {{- if .Values.customNetwork }}
+        - name: network-config-cm
+          configMap:
+            name: {{ .Values.networkConfigMapName }}
+        {{- end }}
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "lido-validator-node.fullname" . }}-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

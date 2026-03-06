@@ -1,4 +1,4 @@
-import { Params, command } from "@devnet/command";
+import { NETWORK_NAME_SUBSTITUTION, Params, command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { createNamespaceIfNotExists, getK8s } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
@@ -7,6 +7,8 @@ import { $ } from "execa";
 import { randomBytes } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
+
+import { nodesIngressExtension } from "./extensions/nodes-ingress.extension.js";
 
 const KNOWN_NETWORKS = new Set(["mainnet", "hoodi", "holesky", "sepolia", "goerli"]);
 const CONFIGMAP_MAX_BINARY_SIZE = 900 * 1024; // 900KB — leave headroom for ConfigMap 1MB limit
@@ -33,9 +35,12 @@ export const ChainSelfHostedUp = command.isomorphic({
     elImage: Params.string({ description: "Custom EL Docker image (e.g. ethpandaops/geth:epbs-devnet-0)." }),
     clImage: Params.string({ description: "Custom CL Docker image (e.g. ethpandaops/lighthouse:epbs-devnet-0)." }),
     genesisSSZUrl: Params.string({ description: "URL to download genesis.ssz (for large files that exceed ConfigMap 1MB limit)." }),
+    ingress: Params.boolean({ description: "Enable ingress for EL/CL APIs. Uses ETH_NODES_INGRESS_HOSTNAME from .env.", default: false }),
   },
+  extensions: [nodesIngressExtension],
   async handler({ dre: { logger, state, network: dreNetwork }, params }) {
     const { elClient, clClient, checkpointSyncUrl, elImage, clImage, genesisSSZUrl } = params;
+    const enableIngress = params.ingress ?? false;
     const targetNetwork = params.network;
 
     if (!targetNetwork) {
@@ -62,15 +67,19 @@ export const ChainSelfHostedUp = command.isomorphic({
     const elRelease = `${dreNetwork.name}-el`;
     const clRelease = `${dreNetwork.name}-cl`;
 
+    const ingressArgs = enableIngress
+      ? { el: buildIngressArgs("execution", dreNetwork.name), cl: buildIngressArgs("consensus", dreNetwork.name) }
+      : { cl: [] as string[], el: [] as string[] };
+
     await deployElNode({
       release: elRelease, namespace, elClient: elClient!, targetNetwork,
-      isCustomNetwork, jwtSecretName, netConfig, elImage, logger,
+      isCustomNetwork, jwtSecretName, netConfig, elImage, ingressArgs: ingressArgs.el, logger,
     });
 
     await deployClNode({
       release: clRelease, namespace, clClient: clClient!, targetNetwork,
       isCustomNetwork, jwtSecretName, netConfig, clImage, elRelease,
-      checkpointSyncUrl, genesisSSZUrl, logger,
+      checkpointSyncUrl, genesisSSZUrl, ingressArgs: ingressArgs.cl, logger,
     });
 
     // 5. Save state and deploy info
@@ -78,6 +87,28 @@ export const ChainSelfHostedUp = command.isomorphic({
       state, namespace, elRelease, clRelease, elClient: elClient!, clClient: clClient!,
       targetNetwork, isCustomNetwork, elImage, clImage, logger,
     });
+
+    // 6. Update ingress state if enabled
+    if (enableIngress) {
+      const elHostname = buildIngressHostname("execution", dreNetwork.name);
+      const clHostname = buildIngressHostname("consensus", dreNetwork.name);
+
+      if (elHostname && clHostname) {
+        try {
+          await state.updateNodesIngress({
+            el: [{ publicIngressUrl: `http://${elHostname}` }],
+            cl: [{ publicIngressUrl: `http://${clHostname}` }],
+          });
+
+          logger.log(`EL ingress: http://${elHostname}`);
+          logger.log(`CL ingress: http://${clHostname}`);
+        } catch {
+          logger.log("Warning: Could not update ingress state.");
+        }
+      } else {
+        logger.log("Warning: ETH_NODES_INGRESS_HOSTNAME or GLOBAL_INGRESS_HOST_PREFIX not set in .env. Ingress enabled but hostname not configured.");
+      }
+    }
   },
 });
 
@@ -151,11 +182,11 @@ async function ensureJwtSecret(
 // ── Helm deploy helpers ─────────────────────────────────────────────────────
 
 async function deployElNode(opts: {
-  elClient: string; elImage?: string; isCustomNetwork: boolean;
+  elClient: string; elImage?: string; ingressArgs: string[]; isCustomNetwork: boolean;
   jwtSecretName: string; logger: Logger; namespace: string;
   netConfig: NetworkConfig; release: string; targetNetwork: string;
 }) {
-  const { release, namespace, elClient, targetNetwork, isCustomNetwork, jwtSecretName, netConfig, elImage, logger } = opts;
+  const { release, namespace, elClient, targetNetwork, isCustomNetwork, jwtSecretName, netConfig, elImage, ingressArgs, logger } = opts;
   const chartPath = path.join(HELM_VENDOR_CHARTS_ROOT_PATH, "lido/lido-el-node");
   const imageArgs = elImage ? parseImageOverride(elImage, elClient) : [];
 
@@ -170,6 +201,7 @@ async function deployElNode(opts: {
     ...(isCustomNetwork ? [`networkConfigMapName=${netConfig.configMapName}`, `syncMode=full`] : []),
     ...(netConfig.elBootnodes ? [`bootnodes=${netConfig.elBootnodes}`] : []),
     ...imageArgs,
+    ...ingressArgs,
   ];
 
   await helmUpgradeInstall(release, chartPath, namespace, setArgs);
@@ -178,11 +210,11 @@ async function deployElNode(opts: {
 
 async function deployClNode(opts: {
   checkpointSyncUrl?: string; clClient: string; clImage?: string;
-  elRelease: string; genesisSSZUrl?: string; isCustomNetwork: boolean;
+  elRelease: string; genesisSSZUrl?: string; ingressArgs: string[]; isCustomNetwork: boolean;
   jwtSecretName: string; logger: Logger; namespace: string;
   netConfig: NetworkConfig; release: string; targetNetwork: string;
 }) {
-  const { release, namespace, clClient, targetNetwork, isCustomNetwork, jwtSecretName, netConfig, clImage, elRelease, checkpointSyncUrl, genesisSSZUrl, logger } = opts;
+  const { release, namespace, clClient, targetNetwork, isCustomNetwork, jwtSecretName, netConfig, clImage, elRelease, checkpointSyncUrl, genesisSSZUrl, ingressArgs, logger } = opts;
   const chartPath = path.join(HELM_VENDOR_CHARTS_ROOT_PATH, "lido/lido-cl-node");
   const elServiceUrl = `http://${elRelease}-lido-el-node.${namespace}.svc.cluster.local:8551`;
   const imageArgs = clImage ? parseImageOverride(clImage, clClient) : [];
@@ -203,6 +235,7 @@ async function deployClNode(opts: {
     ...imageArgs,
     // Lighthouse ePBS fix: disable hot-cold DB migration to avoid sync stall at Gloas fork
     ...(clClient === "lighthouse" ? [`extraArgs[0]=--epochs-per-migration=99999`] : []),
+    ...ingressArgs,
   ];
 
   await helmUpgradeInstall(release, chartPath, namespace, setArgs);
@@ -364,6 +397,42 @@ async function uploadNetworkConfigAsConfigMap(
   }
 
   return skippedFiles;
+}
+
+// ── Ingress helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Builds ingress Helm --set args from .env variables.
+ */
+function buildIngressArgs(nodeType: string, networkName: string): string[] {
+  const hostname = buildIngressHostname(nodeType, networkName);
+  if (!hostname) return [];
+
+  return [
+    `ingress.enabled=true`,
+    `ingress.className=public`,
+    `ingress.hosts[0].host=${hostname}`,
+    `ingress.hosts[0].paths[0].path=/`,
+    `ingress.hosts[0].paths[0].pathType=Prefix`,
+  ];
+}
+
+/**
+ * Builds ingress hostname from .env variables.
+ * Pattern: <PREFIX>-<nodeType>.<ETH_NODES_INGRESS_HOSTNAME>
+ */
+function buildIngressHostname(nodeType: string, networkName: string): string {
+  const baseHostname = process.env.ETH_NODES_INGRESS_HOSTNAME?.replace(
+    NETWORK_NAME_SUBSTITUTION,
+    networkName,
+  );
+  const prefix = process.env.GLOBAL_INGRESS_HOST_PREFIX;
+
+  if (!baseHostname || !prefix) {
+    return "";
+  }
+
+  return `${prefix}-${nodeType}.${baseHostname}`;
 }
 
 async function createK8sJwtSecret(namespace: string, name: string, jwtHex: string): Promise<void> {

@@ -46,6 +46,7 @@ jwt:
 # Ports
 ports:
   http: 5052
+  grpc: 4000
   metrics: 5054
   p2p: 9000
 

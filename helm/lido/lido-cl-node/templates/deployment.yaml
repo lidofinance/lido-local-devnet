@@ -6,6 +6,10 @@ metadata:
     {{- include "lido-cl-node.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  {{- if .Values.persistence.enabled }}
+  strategy:
+    type: Recreate
+  {{- end }}
   selector:
     matchLabels:
       {{- include "lido-cl-node.selectorLabels" . | nindent 6 }}
@@ -112,6 +116,8 @@ spec:
             {{- end }}
             - --execution-endpoint={{ .Values.executionEndpoint }}
             - --jwt-secret=/jwt/jwt.hex
+            - --rpc-host=0.0.0.0
+            - --rpc-port={{ .Values.ports.grpc }}
             - --grpc-gateway-host=0.0.0.0
             - --grpc-gateway-port={{ .Values.ports.http }}
             - --grpc-gateway-corsdomain=*
@@ -133,6 +139,11 @@ spec:
             - name: http
               containerPort: {{ .Values.ports.http }}
               protocol: TCP
+            {{- if eq .Values.client "prysm" }}
+            - name: grpc
+              containerPort: {{ .Values.ports.grpc }}
+              protocol: TCP
+            {{- end }}
             - name: metrics
               containerPort: {{ .Values.ports.metrics }}
               protocol: TCP

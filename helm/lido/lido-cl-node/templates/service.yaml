@@ -11,6 +11,12 @@ spec:
       port: {{ .Values.ports.http }}
       targetPort: http
       protocol: TCP
+    {{- if eq .Values.client "prysm" }}
+    - name: grpc
+      port: {{ .Values.ports.grpc }}
+      targetPort: grpc
+      protocol: TCP
+    {{- end }}
     - name: metrics
       port: {{ .Values.ports.metrics }}
       targetPort: metrics
