@@ -1,6 +1,7 @@
 import "./bigint.js";
 export * from "./command.js";
 export * from "./context.js";
+export { sendFundingTransaction } from "./network/utils.js";
 export * as Params from "./params.js";
 export * from "./rpc.js";
 export { DevNetRuntimeEnvironmentInterface } from "./runtime-env.js";

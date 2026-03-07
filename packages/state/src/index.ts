@@ -18,6 +18,8 @@ import { generateKeysFromMnemonicOnce } from "./wallet/index.js";
 import { readWalletFile } from "./wallet-file.js";
 
 export { ChainMode, ChainState, Config, NotificationsConfig } from './schemas.js';
+export { generateKeysFromMnemonic, generateMnemonicAndKeys } from './wallet/index.js';
+export type { NamedWallet } from './wallet-file.js';
 export { readWalletFile, writeWalletFile } from './wallet-file.js';
 
 export interface StateInterface extends State {

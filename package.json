@@ -138,6 +138,9 @@
       },
       "voting": {
         "description": "Command set for managing Voting scripts."
+      },
+      "wallet": {
+        "description": "Command set for managing wallets: creating wallets, checking balances, and transferring ETH."
       }
     },
     "hooks": {}

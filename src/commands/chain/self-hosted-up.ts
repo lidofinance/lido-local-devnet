@@ -35,7 +35,7 @@ export const ChainSelfHostedUp = command.isomorphic({
     elImage: Params.string({ description: "Custom EL Docker image (e.g. ethpandaops/geth:epbs-devnet-0)." }),
     clImage: Params.string({ description: "Custom CL Docker image (e.g. ethpandaops/lighthouse:epbs-devnet-0)." }),
     genesisSSZUrl: Params.string({ description: "URL to download genesis.ssz (for large files that exceed ConfigMap 1MB limit)." }),
-    ingress: Params.boolean({ description: "Enable ingress for EL/CL APIs. Uses ETH_NODES_INGRESS_HOSTNAME from .env.", default: false }),
+    ingress: Params.boolean({ description: "Enable ingress for EL/CL APIs. Uses ETH_NODES_INGRESS_HOSTNAME from .env.", default: true }),
   },
   extensions: [nodesIngressExtension],
   async handler({ dre: { logger, state, network: dreNetwork }, params }) {
@@ -82,26 +82,28 @@ export const ChainSelfHostedUp = command.isomorphic({
       checkpointSyncUrl, genesisSSZUrl, ingressArgs: ingressArgs.cl, logger,
     });
 
-    // 5. Save state and deploy info
+    // 5. Resolve ingress hostnames (if enabled) for state
+    const elIngressHostname = enableIngress ? buildIngressHostname("execution", dreNetwork.name) : "";
+    const clIngressHostname = enableIngress ? buildIngressHostname("consensus", dreNetwork.name) : "";
+
+    // 6. Save state and deploy info
     await saveDeployState({
       state, namespace, elRelease, clRelease, elClient: elClient!, clClient: clClient!,
-      targetNetwork, isCustomNetwork, elImage, clImage, logger,
+      targetNetwork, isCustomNetwork, elImage, clImage,
+      elIngressHostname, clIngressHostname, logger,
     });
 
-    // 6. Update ingress state if enabled
+    // 7. Update ingress state if enabled
     if (enableIngress) {
-      const elHostname = buildIngressHostname("execution", dreNetwork.name);
-      const clHostname = buildIngressHostname("consensus", dreNetwork.name);
-
-      if (elHostname && clHostname) {
+      if (elIngressHostname && clIngressHostname) {
         try {
           await state.updateNodesIngress({
-            el: [{ publicIngressUrl: `http://${elHostname}` }],
-            cl: [{ publicIngressUrl: `http://${clHostname}` }],
+            el: [{ publicIngressUrl: `http://${elIngressHostname}` }],
+            cl: [{ publicIngressUrl: `http://${clIngressHostname}` }],
           });
 
-          logger.log(`EL ingress: http://${elHostname}`);
-          logger.log(`CL ingress: http://${clHostname}`);
+          logger.log(`EL ingress: http://${elIngressHostname}`);
+          logger.log(`CL ingress: http://${clIngressHostname}`);
         } catch {
           logger.log("Warning: Could not update ingress state.");
         }
@@ -249,22 +251,26 @@ async function helmUpgradeInstall(release: string, chartPath: string, namespace:
 // ── State persistence ───────────────────────────────────────────────────────
 
 async function saveDeployState(opts: {
-  clClient: string; clImage?: string; clRelease: string;
-  elClient: string; elImage?: string; elRelease: string;
+  clClient: string; clImage?: string; clIngressHostname: string; clRelease: string;
+  elClient: string; elImage?: string; elIngressHostname: string; elRelease: string;
   isCustomNetwork: boolean; logger: Logger; namespace: string;
   state: any; targetNetwork: string;
 }) {
-  const { state, namespace, elRelease, clRelease, elClient, clClient, targetNetwork, isCustomNetwork, elImage, clImage, logger } = opts;
+  const { state, namespace, elRelease, clRelease, elClient, clClient, targetNetwork, isCustomNetwork, elImage, clImage, elIngressHostname, clIngressHostname, logger } = opts;
   const elServiceName = `${elRelease}-lido-el-node`;
   const clServiceName = `${clRelease}-lido-cl-node`;
 
+  const elInternalUrl = `http://${elServiceName}.${namespace}.svc.cluster.local:8545`;
+  const clInternalUrl = `http://${clServiceName}.${namespace}.svc.cluster.local:5052`;
+  const elWsInternalUrl = `ws://${elServiceName}.${namespace}.svc.cluster.local:8546`;
+
   await state.updateChain({
-    elPrivate: `http://${elServiceName}.${namespace}.svc.cluster.local:8545`,
-    elPublic: `http://${elServiceName}.${namespace}.svc.cluster.local:8545`,
-    clPrivate: `http://${clServiceName}.${namespace}.svc.cluster.local:5052`,
-    clPublic: `http://${clServiceName}.${namespace}.svc.cluster.local:5052`,
-    elWsPrivate: `ws://${elServiceName}.${namespace}.svc.cluster.local:8546`,
-    elWsPublic: `ws://${elServiceName}.${namespace}.svc.cluster.local:8546`,
+    elPrivate: elInternalUrl,
+    elPublic: elIngressHostname ? `http://${elIngressHostname}` : elInternalUrl,
+    clPrivate: clInternalUrl,
+    clPublic: clIngressHostname ? `http://${clIngressHostname}` : clInternalUrl,
+    elWsPrivate: elWsInternalUrl,
+    elWsPublic: elIngressHostname ? `http://${elIngressHostname}` : elWsInternalUrl,
     elClientType: elClient,
   });
 
@@ -284,8 +290,10 @@ async function saveDeployState(opts: {
   );
 
   logger.log("Chain started in self-hosted mode.");
-  logger.log(`  EL: http://${elServiceName}.${namespace}.svc.cluster.local:8545`);
-  logger.log(`  CL: http://${clServiceName}.${namespace}.svc.cluster.local:5052`);
+  logger.log(`  EL private: ${elInternalUrl}`);
+  logger.log(`  CL private: ${clInternalUrl}`);
+  if (elIngressHostname) logger.log(`  EL public:  http://${elIngressHostname}`);
+  if (clIngressHostname) logger.log(`  CL public:  http://${clIngressHostname}`);
 }
 
 // ── Utility functions ───────────────────────────────────────────────────────
