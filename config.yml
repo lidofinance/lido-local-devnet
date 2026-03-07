@@ -30,7 +30,7 @@ networks:
     walletMnemonic: test test test test test test test test test test test junk
     notifications:
       slack:
-        enabled: false
+        enabled: true
         webhookUrlEnv: SLACK_WEBHOOK_URL
       events:
         deploy: true
@@ -42,7 +42,7 @@ networks:
     ethereumHeadWatcher:
       alerting:
         slack:
-          enabled: false
+          enabled: true
           routes:
             - id: default
               webhookUrlEnv: ETHEREUM_HEAD_WATCHER_SLACK_WEBHOOK_URL

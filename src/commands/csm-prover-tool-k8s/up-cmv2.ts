@@ -72,7 +72,7 @@ export const CMv2ProverToolK8sUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
-    const { verifier: cmv2Verifier, module: cmv2Module } = await state.getCMv2();
+    const { verifier: cmv2Verifier, module: cmv2Module, validatorStrikes } = await state.getCMv2();
     const { privateUrl: kapiPrivateUrl } = await state.getKapiK8sRunning();
     const { deployer } = await state.getNamedWallet();
     const { image, tag, registryHostname } = await state.getCMv2ProverToolK8sImage();
@@ -89,6 +89,7 @@ export const CMv2ProverToolK8sUp = command.cli({
       KEYSAPI_API_URLS: kapiPrivateUrl,
       CSM_ADDRESS: cmv2Module,
       VERIFIER_ADDRESS: cmv2Verifier,
+      ...(validatorStrikes ? { STRIKES_ADDRESS: validatorStrikes } : {}),
       TX_SIGNER_PRIVATE_KEY: deployer.privateKey,
     };
 
