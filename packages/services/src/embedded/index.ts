@@ -1,5 +1,6 @@
 import { assertoor } from "./assertoor.js";
 import { blockscout } from "./blockscout.js";
+import { dashboard } from "./dashboard.js";
 import { cmv2 } from "./cmv2.js";
 import { council } from "./council-daemon.js";
 import { csm } from "./csm.js";
@@ -25,6 +26,7 @@ import { vroomOnchainMon } from "./vroom-onchain-mon.js";
 
 export const serviceConfigs = {
   blockscout,
+  dashboard,
   lateProverBot,
   lidoCore,
   lidoCLI,

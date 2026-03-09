@@ -1,7 +1,7 @@
 import { Params, command } from "@devnet/command";
 
 import { ChainGetInfo } from "../chain/info.js";
-import { ChainUp } from "../chain/up.js";
+import { ChainKurtosisUp } from "../chain/kurtosis-up.js";
 import { CouncilK8sUp } from "../council-k8s/up.js";
 import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
@@ -39,7 +39,7 @@ export const FusakaZkTestDevNetUp = command.cli({
       ref: "main",
     });
 
-    await dre.runCommand(ChainUp, { preset: 'fusaka-zk-test' });
+    await dre.runCommand(ChainKurtosisUp, { preset: 'fusaka-zk-test' });
     logger.log("✅ Network initialized.");
   },
 });

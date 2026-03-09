@@ -1,9 +1,9 @@
 import { command } from "@devnet/command";
 import { getK8sService } from "@devnet/k8s";
-import { DevNetError } from "@devnet/utils";
 import {
-  assertNonEmpty,
-  isInstance, isNonEmptyArray,
+  DevNetError,
+  assertNonEmpty, isInstance,
+  isNonEmptyArray,
   not,
   throwError
 } from "@devnet/utils";
@@ -134,17 +134,23 @@ export const ChainSyncNodesStateFromK8s = command.cli({
       return throwError(clNodes[0]);
     }
 
-    if (vcNodes.every(isInstance(DevNetError)) && isNonEmptyArray(vcNodes)) {
-      return throwError(vcNodes[0]);
+    const validVcNodes = vcNodes.filter(not(isInstance(DevNetError)));
+
+    if (vcNodes.length > 0 && validVcNodes.length === 0 && isNonEmptyArray(vcNodes)) {
+      logger.warn("No valid validator client nodes found, skipping vc");
     }
 
-    await dre.state.updateNodes({
+    const nodesState: Record<string, unknown> = {
       el: assertNonEmpty(elNodes.filter(not(isInstance(DevNetError))),
         () => new DevNetError('No execution nodes found')),
       cl: assertNonEmpty(clNodes.filter(not(isInstance(DevNetError))),
         () => new DevNetError('No consensus nodes found')),
-      vc: assertNonEmpty(vcNodes.filter(not(isInstance(DevNetError))),
-        () => new DevNetError('No validator client nodes found')),
-    })
+    };
+
+    if (isNonEmptyArray(validVcNodes)) {
+      nodesState.vc = validVcNodes;
+    }
+
+    await dre.state.updateNodes(nodesState as any)
   },
 });

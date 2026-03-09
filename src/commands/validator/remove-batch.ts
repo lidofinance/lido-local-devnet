@@ -1,6 +1,6 @@
 import { Params, command } from "@devnet/command";
 import * as keyManager from "@devnet/key-manager-api";
-import { assert } from "@devnet/utils";
+import { DevNetError, assert } from "@devnet/utils";
 import { Contract, JsonRpcProvider } from "ethers";
 
 import { nodesExtension } from "../chain/extensions/nodes.extension.js";
@@ -76,6 +76,7 @@ export const ValidatorRemoveBatch = command.cli({
     assert(params.fromIndex >= 0, "fromIndex must be >= 0");
 
     const { elPublic, validatorsApiPublic } = await state.getChain();
+    if (!validatorsApiPublic) throw new DevNetError("Validators API not configured");
     const provider = new JsonRpcProvider(elPublic);
     const moduleAddress =
       moduleName === "csm" ? (await state.getCSM()).module : (await state.getCMv2()).module;
@@ -99,6 +100,7 @@ export const ValidatorRemoveBatch = command.cli({
         targetApis = nodesIngress.vc.map((vc) => vc.publicIngressUrl);
       } else {
         const nodes = await state.getNodes();
+        if (!nodes.vc) throw new DevNetError("No validator client nodes found in state");
         targetApis = nodes.vc.map(
           (vc) =>
             `http://${vc.k8sService}.kt-${network.name}.svc.cluster.local:${vc.httpValidatorPort}`,

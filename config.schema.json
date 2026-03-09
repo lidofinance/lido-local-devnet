@@ -14,6 +14,12 @@
             "type": "string",
             "description": "Network identifier name"
           },
+          "chainMode": {
+            "type": "string",
+            "enum": ["kurtosis", "self-hosted", "external"],
+            "default": "kurtosis",
+            "description": "Node source mode: kurtosis (default), self-hosted (own EL/CL in K8s), external (attach to existing nodes)"
+          },
           "chain": {
             "type": "object",
             "description": "Chain configuration with execution and consensus layer endpoints",
@@ -37,6 +43,30 @@
                 "type": "string",
                 "format": "uri",
                 "description": "Public consensus layer endpoint URL"
+              },
+              "elWsPrivate": {
+                "type": "string",
+                "format": "uri",
+                "description": "Private execution layer WebSocket endpoint URL"
+              },
+              "elWsPublic": {
+                "type": "string",
+                "format": "uri",
+                "description": "Public execution layer WebSocket endpoint URL"
+              },
+              "validatorsApiPublic": {
+                "type": "string",
+                "format": "uri",
+                "description": "Public validators API endpoint URL (optional for external/self-hosted)"
+              },
+              "validatorsApiPrivate": {
+                "type": "string",
+                "format": "uri",
+                "description": "Private validators API endpoint URL (optional for external/self-hosted)"
+              },
+              "elClientType": {
+                "type": "string",
+                "description": "Execution layer client type (geth, reth, etc.)"
               }
             },
             "required": ["elPrivate", "clPrivate", "elPublic", "clPublic"],
@@ -135,6 +165,34 @@
               }
             },
             "required": ["accounting", "earlyAdoption", "feeDistributor", "feeOracle", "module", "verifier", "gateSeal", "hashConsensus", "lidoLocator"],
+            "additionalProperties": false
+          },
+          "selfHosted": {
+            "type": "object",
+            "description": "Self-hosted node configuration",
+            "properties": {
+              "elClient": {
+                "type": "string",
+                "enum": ["geth", "reth"],
+                "default": "geth",
+                "description": "Execution layer client"
+              },
+              "clClient": {
+                "type": "string",
+                "enum": ["lighthouse", "teku", "prysm"],
+                "default": "lighthouse",
+                "description": "Consensus layer client"
+              },
+              "network": {
+                "type": "string",
+                "description": "Target network (hoodi, holesky, or any custom devnet name)"
+              },
+              "checkpointSyncUrl": {
+                "type": "string",
+                "format": "uri",
+                "description": "Checkpoint sync URL for CL"
+              }
+            },
             "additionalProperties": false
           },
           "walletMnemonic": {
@@ -279,7 +337,7 @@
             "additionalProperties": false
           }
         },
-        "required": ["name", "chain", "lido", "csm", "walletMnemonic"],
+        "required": ["name"],
         "additionalProperties": false
       },
       "minItems": 1

@@ -75,3 +75,60 @@ TransactionDetails): Promise<TransactionReceipt | undefined> => {
   return attemptToSendTransaction();
   // return Promise.race([attemptToSendTransaction(), timeoutPromise]);
 };
+
+interface FundingTransactionDetails {
+  amount: string;
+  privateKey: string;
+  providerUrl: string;
+  retries?: number;
+  toAddress: string;
+}
+
+/**
+ * Sends an ETH transfer transaction with bounded retries.
+ * Unlike sendTransactionWithRetry, this function works on any chain
+ * regardless of block number, making it suitable for established devnets.
+ */
+export async function sendFundingTransaction({
+  amount,
+  privateKey,
+  providerUrl,
+  retries = 3,
+  toAddress,
+}: FundingTransactionDetails): Promise<TransactionReceipt> {
+  const provider = new JsonRpcProvider(providerUrl);
+  const wallet = new ethers.Wallet(privateKey, provider);
+
+  const tx = {
+    to: toAddress,
+    value: parseEther(amount),
+  };
+
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const txResponse = await wallet.sendTransaction(tx);
+      const receipt = await txResponse.wait();
+
+      assert(receipt !== null, "empty receipt");
+
+      return receipt;
+    } catch (error: unknown) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : String(error);
+
+      if (message.includes("transaction indexing is in progress")) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        continue;
+      }
+
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        continue;
+      }
+    }
+  }
+
+  throw lastError ?? new Error("sendFundingTransaction failed after retries");
+}

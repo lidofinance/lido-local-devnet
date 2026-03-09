@@ -2,7 +2,7 @@ import { Params, command } from "@devnet/command";
 
 import { BlockscoutUp } from "../blockscout/up.js";
 import { ChainGetInfo } from "../chain/info.js";
-import { ChainUp } from "../chain/up.js";
+import { ChainKurtosisUp } from "../chain/kurtosis-up.js";
 import { CouncilK8sUp } from "../council-k8s/up.js";
 import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
@@ -57,7 +57,7 @@ export const PectraDevNetUp = command.cli({
       ref: "develop",
     });
 
-    await dre.runCommand(ChainUp, { preset: "csm-v2" });
+    await dre.runCommand(ChainKurtosisUp, { preset: "csm-v2" });
     logger.log("✅ Network initialized.");
 
     // if (!params.full) {

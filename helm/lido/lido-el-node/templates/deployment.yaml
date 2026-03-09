@@ -1,0 +1,190 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lido-el-node.fullname" . }}
+  labels:
+    {{- include "lido-el-node.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  {{- if .Values.persistence.enabled }}
+  strategy:
+    type: Recreate
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "lido-el-node.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "lido-el-node.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if and .Values.customNetwork (eq .Values.client "geth") }}
+      initContainers:
+        - name: geth-init
+          image: "{{ .Values.image.geth.registry }}/{{ .Values.image.geth.repository }}:{{ .Values.image.geth.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["sh", "-c"]
+          args:
+            - |
+              if [ ! -d /data/geth/chaindata ]; then
+                echo "Initializing geth with custom genesis..."
+                geth init --datadir /data /network-config/genesis.json
+              else
+                echo "Datadir already initialized, skipping."
+              fi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: network-config
+              mountPath: /network-config
+              readOnly: true
+      {{- end }}
+      containers:
+        - name: {{ .Values.client }}
+          {{- if eq .Values.client "geth" }}
+          image: "{{ .Values.image.geth.registry }}/{{ .Values.image.geth.repository }}:{{ .Values.image.geth.tag }}"
+          {{- else if eq .Values.client "reth" }}
+          image: "{{ .Values.image.reth.registry }}/{{ .Values.image.reth.repository }}:{{ .Values.image.reth.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if eq .Values.client "geth" }}
+          command:
+            - geth
+          args:
+            {{- if .Values.customNetwork }}
+            - --datadir=/data
+            {{- else }}
+            - --{{ .Values.network }}
+            {{- end }}
+            - --http
+            - --http.addr=0.0.0.0
+            - --http.port={{ .Values.ports.rpc }}
+            - --http.api=eth,net,web3,debug,admin,txpool
+            - --http.corsdomain=*
+            - --http.vhosts=*
+            - --ws
+            - --ws.addr=0.0.0.0
+            - --ws.port={{ .Values.ports.ws }}
+            - --ws.api=eth,net,web3,debug,admin,txpool
+            - --ws.origins=*
+            - --authrpc.addr=0.0.0.0
+            - --authrpc.port={{ .Values.ports.authrpc }}
+            - --authrpc.jwtsecret=/jwt/jwt.hex
+            - --authrpc.vhosts=*
+            - --metrics
+            - --metrics.addr=0.0.0.0
+            - --metrics.port={{ .Values.ports.metrics }}
+            - --syncmode={{ .Values.syncMode }}
+            {{- if .Values.bootnodes }}
+            - --bootnodes={{ .Values.bootnodes }}
+            {{- end }}
+            {{- range .Values.extraArgs }}
+            - {{ . }}
+            {{- end }}
+          {{- else if eq .Values.client "reth" }}
+          command:
+            - reth
+            - node
+          args:
+            {{- if .Values.customNetwork }}
+            - --chain=/network-config/genesis.json
+            {{- else }}
+            - --chain={{ .Values.network }}
+            {{- end }}
+            - --http
+            - --http.addr=0.0.0.0
+            - --http.port={{ .Values.ports.rpc }}
+            - --http.api=eth,net,web3,debug,admin,txpool
+            - --http.corsdomain=*
+            - --ws
+            - --ws.addr=0.0.0.0
+            - --ws.port={{ .Values.ports.ws }}
+            - --ws.api=eth,net,web3,debug,admin,txpool
+            - --ws.origins=*
+            - --authrpc.addr=0.0.0.0
+            - --authrpc.port={{ .Values.ports.authrpc }}
+            - --authrpc.jwtsecret=/jwt/jwt.hex
+            - --metrics=0.0.0.0:{{ .Values.ports.metrics }}
+            {{- if .Values.bootnodes }}
+            - --bootnodes={{ .Values.bootnodes }}
+            {{- end }}
+            {{- range .Values.extraArgs }}
+            - {{ . }}
+            {{- end }}
+          {{- end }}
+          ports:
+            - name: rpc
+              containerPort: {{ .Values.ports.rpc }}
+              protocol: TCP
+            - name: ws-rpc
+              containerPort: {{ .Values.ports.ws }}
+              protocol: TCP
+            - name: authrpc
+              containerPort: {{ .Values.ports.authrpc }}
+              protocol: TCP
+            - name: metrics
+              containerPort: {{ .Values.ports.metrics }}
+              protocol: TCP
+            - name: p2p-tcp
+              containerPort: {{ .Values.ports.p2p }}
+              protocol: TCP
+            - name: p2p-udp
+              containerPort: {{ .Values.ports.p2p }}
+              protocol: UDP
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: jwt
+              mountPath: /jwt
+              readOnly: true
+            {{- if .Values.customNetwork }}
+            - name: network-config
+              mountPath: /network-config
+              readOnly: true
+            {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: rpc
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: rpc
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: jwt
+          secret:
+            {{- if .Values.jwt.existingSecret }}
+            secretName: {{ .Values.jwt.existingSecret }}
+            {{- else }}
+            secretName: {{ include "lido-el-node.fullname" . }}-jwt
+            {{- end }}
+        {{- if .Values.customNetwork }}
+        - name: network-config
+          configMap:
+            name: {{ .Values.networkConfigMapName }}
+        {{- end }}
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "lido-el-node.fullname" . }}-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

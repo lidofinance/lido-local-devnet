@@ -19,16 +19,21 @@ export const NodesChainConfigSchema = z.object({
   clNodesSpecs: z.array(ContainerInfoSchema),
 });
 
+export const ChainMode = z.enum(["kurtosis", "self-hosted", "external"]);
+export type ChainMode = z.infer<typeof ChainMode>;
+
 export const ChainState = z.object({
   clPrivate: z.string().url(),
   clPublic: z.string().url(),
   elClientType: z.string(), // geth | reth | ...
   elPrivate: z.string().url(),
   elPublic: z.string().url(),
-  elWsPublic: z.string().url(),
   elWsPrivate: z.string().url(),
-  validatorsApiPublic: z.string().url(),
-  validatorsApiPrivate: z.string().url(),
+  elWsPublic: z.string().url(),
+  validatorsApiPrivate: z.string().url().optional(),
+  validatorsApiPublic: z.string().url().optional(),
+  vcClientType: z.string().optional(), // lighthouse | teku | prysm
+  vcRelease: z.string().optional(), // Helm release name
 });
 
 export type ChainState = z.infer<typeof ChainState>;
@@ -104,6 +109,7 @@ export const EthereumHeadWatcherConfigSchema = z.object({
 });
 
 const ConfigSchema = z.object({
+  chainMode: ChainMode.optional(),
   chain: ChainState.partial().optional(),
   wallet: WalletSchema.optional(),
   walletMnemonic: WalletMnemonic.optional(),

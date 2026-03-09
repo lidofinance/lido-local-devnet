@@ -1,7 +1,7 @@
 import { Params, command } from "@devnet/command";
 
 import { BlockscoutUp } from "../blockscout/up.js";
-import { ChainUp } from "../chain/up.js";
+import { ChainKurtosisUp } from "../chain/kurtosis-up.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
 import { GitCheckout } from "../git/checkout.js";
 import { DeployLidoContracts } from "../lido-core/deploy.js";
@@ -28,7 +28,7 @@ export const PectraContractsOnlyDevNetUp = command.cli({
       ref: "develop",
     });
 
-    await dre.runCommand(ChainUp, { preset: params.preset });
+    await dre.runCommand(ChainKurtosisUp, { preset: params.preset });
     logger.log("✅ Network initialized.");
 
     const deployArgs = { verify: params.verify };

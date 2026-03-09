@@ -76,6 +76,9 @@
       "chain": {
         "description": "Command set for managing EL (Execution) and CL (Consensus) nodes."
       },
+      "dashboard": {
+        "description": "Command set for managing the DevNet Dashboard web UI."
+      },
       "config": {
         "description": "Print public DevNet config."
       },
@@ -124,6 +127,9 @@
       "oracles": {
         "description": "Command set for managing Oracles."
       },
+      "test": {
+        "description": "Inspect and validate spec-driven test scenarios and suites."
+      },
       "stands": {
         "description": "A collection of ready-made environments for testing."
       },
@@ -138,6 +144,9 @@
       },
       "voting": {
         "description": "Command set for managing Voting scripts."
+      },
+      "wallet": {
+        "description": "Command set for managing wallets: creating wallets, checking balances, and transferring ETH."
       }
     },
     "hooks": {}

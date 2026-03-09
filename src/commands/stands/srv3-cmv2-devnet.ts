@@ -2,7 +2,7 @@ import { Params, command } from "@devnet/command";
 import { resolve } from "node:path";
 
 import { ChainGetInfo } from "../chain/info.js";
-import { ChainUp } from "../chain/up.js";
+import { ChainKurtosisUp } from "../chain/kurtosis-up.js";
 import { ActivateCMv2 } from "../cmv2/activate.js";
 import { LidoAddCMv2OperatorWithKeys } from "../cmv2/add-operator.js";
 import { CMv2BuildAllowlist } from "../cmv2/build-allowlist.js";
@@ -65,7 +65,7 @@ export const SRv3CMv2DevnetUp = command.cli({
       ref: "devnet-fixes",
     });
 
-    await dre.runCommand(ChainUp, { preset: params.preset });
+    await dre.runCommand(ChainKurtosisUp, { preset: params.preset });
     logger.log("✅ Network initialized.");
 
     logger.log("🚀 Deploying Lido Core contracts...");
