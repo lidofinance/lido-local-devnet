@@ -1,0 +1,12 @@
+apiVersion: v2
+name: lido-dashboard
+description: Lido DevNet Dashboard — static info page
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+kubeVersion: '>=1.19.0-0'
+dependencies:
+  - name: "lido-app"
+    alias: "web"
+    version: "1.0.1"
+    repository: "file://../lido-app"

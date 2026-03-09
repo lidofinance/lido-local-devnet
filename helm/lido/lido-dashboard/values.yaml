@@ -1,0 +1,63 @@
+web:
+  nameOverride: lido-dashboard
+
+  replicaCount: 1
+
+  image:
+    registry: docker.io
+    repository: lido/dashboard
+    tag: "dev"
+    pullPolicy: Always
+    imagePullSecrets:
+      - name: registry-pull-secret
+
+  service:
+    type: ClusterIP
+    ports:
+     - name: http
+       port: 80
+       targetPort: 80
+       protocol: TCP
+
+  command: [ ]
+  args: []
+
+  ingress:
+    enabled: true
+    className: "public"
+    annotations: {}
+    hosts:
+      - host: dashboard.devnet.local
+        paths:
+          - path: /
+            pathType: Prefix
+            port: http
+    tls: []
+
+  env:
+    variables: {}
+
+  resources: { }
+  nodeSelector: { }
+  tolerations: [ ]
+  affinity: { }
+  securityContext: { }
+  podSecurityContext: { }
+
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 3
+    periodSeconds: 5
+
+  additionalLabels: { }
+  additionalAnnotations: { }
+  pvcs: [ ]
