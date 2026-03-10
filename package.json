@@ -109,6 +109,9 @@
       "install": {
         "description": "Start DevNet from scratch."
       },
+      "logging": {
+        "description": "Command set for managing centralized logging (Loki + Promtail)."
+      },
       "kapi": {
         "description": "Command set for managing Kapi."
       },

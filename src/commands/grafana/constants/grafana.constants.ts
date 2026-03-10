@@ -11,6 +11,7 @@ export const DATASOURCE_UIDS = {
   clickhouse: "devnet-clickhouse",
   prometheus: "devnet-prometheus",
   jsonApi: "devnet-json-api",
+  loki: "devnet-loki",
 } as const;
 
 /** Original UIDs from infra-mainnet dashboard JSONs that need replacement */

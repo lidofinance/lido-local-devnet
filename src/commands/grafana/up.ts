@@ -11,6 +11,7 @@ import {
 
 import { NAMESPACE as EVM_NAMESPACE } from "../evm/constants/evm.constants.js";
 import { evmExtension } from "../evm/extensions/evm.extension.js";
+import { loggingExtension } from "../logging/extensions/logging.extension.js";
 import {
   DATASOURCE_UIDS,
   HELM_RELEASE,
@@ -34,7 +35,7 @@ type GrafanaDatasource = {
 export const GrafanaUp = command.cli({
   description: `Start ${SERVICE_NAME} with dashboards on K8s`,
   params: {},
-  extensions: [grafanaExtension, evmExtension],
+  extensions: [grafanaExtension, evmExtension, loggingExtension],
   async handler({ dre, dre: { state, services: { grafana }, logger, network } }) {
     if (await state.isGrafanaRunning()) {
       logger.log(`${SERVICE_NAME} already running`);
@@ -104,6 +105,21 @@ export const GrafanaUp = command.cli({
       logger.log(`Prometheus datasource: ${evmRunning.prometheusPrivateUrl}`);
     } else {
       logger.log("EVM is not running. ClickHouse, JSON API, and Prometheus datasources will be unavailable.");
+    }
+
+    if (await state.isLoggingRunning()) {
+      const logging = await state.getLogging();
+      datasources.push({
+        name: "Loki",
+        type: "loki",
+        uid: DATASOURCE_UIDS.loki,
+        url: logging.lokiPrivateUrl,
+        access: "proxy",
+        isDefault: false,
+      });
+      logger.log(`Loki datasource: ${logging.lokiPrivateUrl}`);
+    } else {
+      logger.log("Logging is not running. Loki datasource will be unavailable.");
     }
 
     // Create namespace

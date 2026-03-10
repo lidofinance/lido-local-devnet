@@ -1175,6 +1175,7 @@ __metadata:
     eslint-plugin-prettier: "npm:^5.2.2"
     prettier: "npm:^3.4.2"
     typescript: "npm:^5"
+    yaml: "npm:^2.6.1"
     zod: "npm:^3.24.1"
   languageName: unknown
   linkType: soft
