@@ -59,9 +59,19 @@ spec:
               value: {{ $value | quote }}
             {{- end }}
           {{- end }}
-          {{- if .Values.pvcs }}
+          {{- if or .Values.pvcs .Values.configMapVolumes }}
           volumeMounts:
             {{- range .Values.pvcs }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              {{- if .subPath }}
+              subPath: {{ .subPath }}
+              {{- end }}
+              {{- if .readOnly }}
+              readOnly: {{ .readOnly }}
+              {{- end }}
+            {{- end }}
+            {{- range .Values.configMapVolumes }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
               {{- if .subPath }}
@@ -112,7 +122,7 @@ spec:
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
-          {{- if .Values.pvcs }}
+          {{- if or .Values.pvcs .Values.configMapVolumes }}
           volumeMounts:
             {{- range .Values.pvcs }}
             - name: {{ .name }}
@@ -124,13 +134,32 @@ spec:
               readOnly: {{ .readOnly }}
               {{- end }}
             {{- end }}
+            {{- range .Values.configMapVolumes }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              {{- if .subPath }}
+              subPath: {{ .subPath }}
+              {{- end }}
+              {{- if .readOnly }}
+              readOnly: {{ .readOnly }}
+              {{- end }}
+            {{- end }}
           {{- end }}
-      {{- if .Values.pvcs }}
+      {{- if or .Values.pvcs .Values.configMapVolumes }}
       volumes:
         {{- range .Values.pvcs }}
         - name: {{ .name }}
           persistentVolumeClaim:
             claimName: {{ include "app.fullname" $ }}-{{ .name }}
+        {{- end }}
+        {{- range .Values.configMapVolumes }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ .configMapName }}
+            {{- if .items }}
+            items:
+              {{- toYaml .items | nindent 14 }}
+            {{- end }}
         {{- end }}
       {{- end }}
       {{- with .Values.nodeSelector }}

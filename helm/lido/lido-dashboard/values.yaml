@@ -61,3 +61,30 @@ web:
   additionalLabels: { }
   additionalAnnotations: { }
   pvcs: [ ]
+
+  # Mount data files from ConfigMap so they can be refreshed without rebuilding the image
+  configMapVolumes:
+    - name: state-data
+      configMapName: devnet-state
+      items:
+        - key: state.json
+          path: state.json
+      mountPath: /usr/share/nginx/html/data/state.json
+      subPath: state.json
+      readOnly: true
+    - name: deployed-config
+      configMapName: devnet-state
+      items:
+        - key: deployed-local-devnet.json
+          path: deployed-local-devnet.json
+      mountPath: /usr/share/nginx/html/data/configs/deployed-local-devnet.json
+      subPath: deployed-local-devnet.json
+      readOnly: true
+    - name: extra-deployed-config
+      configMapName: devnet-state
+      items:
+        - key: extra-deployed-local-devnet.json
+          path: extra-deployed-local-devnet.json
+      mountPath: /usr/share/nginx/html/data/configs/extra-deployed-local-devnet.json
+      subPath: extra-deployed-local-devnet.json
+      readOnly: true

@@ -133,6 +133,16 @@ additionalLabels: {}
 # Additional annotations
 additionalAnnotations: {}
 
+# ConfigMap volume mounts
+configMapVolumes: []
+# Example:
+# configMapVolumes:
+#   - name: state-data
+#     configMapName: devnet-state
+#     mountPath: /usr/share/nginx/html/data/state.json
+#     subPath: state.json
+#     readOnly: true
+
 # Persistent Volume Claims configuration
 pvcs: []
 # Example PVC configuration:
