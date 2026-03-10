@@ -3,7 +3,7 @@ import { DevnetServiceConfig } from "../devnet-service-config.js";
 export const evm = new DevnetServiceConfig({
   repository: {
     url: "https://github.com/lidofinance/ethereum-validators-monitoring.git",
-    branch: "main",
+    branch: "develop",
   },
   workspace: "workspaces/evm",
   name: "evm" as const,

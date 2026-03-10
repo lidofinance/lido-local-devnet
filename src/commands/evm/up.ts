@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import {
   DEFAULT_NETWORK_NAME,
   NETWORK_NAME_SUBSTITUTION,
@@ -76,17 +79,28 @@ const ensureClickHouse = async (
   await helmSh`helm upgrade --install ${CLICKHOUSE_RELEASE} ${clickhouseChartPath} --namespace ${namespace} --create-namespace --timeout 5m --set image.repository=${repository} --set image.tag=${tag}`;
 };
 
+const ALERT_RULES_PATH = "docker/prometheus/alerts_rules.yml";
+
 const ensurePrometheus = async (
   evmService: { sh: Function },
   namespace: string,
   evmHelmRelease: string,
+  artifactRoot: string,
   logger: { log: (msg: string) => void },
 ) => {
   const prometheusChartPath = `${HELM_VENDOR_CHARTS_ROOT_PATH}/vendor/prometheus`;
   const evmScrapeTarget = `${evmHelmRelease}:8080`;
   logger.log(`Deploying Prometheus (scrape target: ${evmScrapeTarget})`);
+
+  const alertRulesFile = path.join(artifactRoot, ALERT_RULES_PATH);
+  const hasAlertRules = fs.existsSync(alertRulesFile);
+  if (hasAlertRules) {
+    logger.log(`Loading alert rules from ${ALERT_RULES_PATH}`);
+  }
+
+  const setFileArg = hasAlertRules ? `--set-file alertRules=${alertRulesFile}` : "";
   const helmSh = evmService.sh({ env: { NAMESPACE: namespace } });
-  await helmSh`helm upgrade --install ${PROMETHEUS_RELEASE} ${prometheusChartPath} --namespace ${namespace} --create-namespace --timeout 5m --set scrapeTargets[0].host=${evmScrapeTarget} --set scrapeTargets[0].jobName=evm`;
+  await helmSh`helm upgrade --install ${PROMETHEUS_RELEASE} ${prometheusChartPath} --namespace ${namespace} --create-namespace --timeout 5m --set scrapeTargets[0].host=${evmScrapeTarget} --set scrapeTargets[0].jobName=evm ${setFileArg}`;
 };
 
 /**
@@ -179,7 +193,7 @@ export const EvmUp = command.cli({
     // Deploy ClickHouse and Prometheus
     await createNamespaceIfNotExists(namespace);
     await ensureClickHouse(evm, namespace, logger);
-    await ensurePrometheus(evm, namespace, HELM_RELEASE, logger);
+    await ensurePrometheus(evm, namespace, HELM_RELEASE, evm.artifact.root, logger);
 
     // Create pull secret
     await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace });

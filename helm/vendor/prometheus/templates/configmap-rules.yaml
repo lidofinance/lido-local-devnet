@@ -1,0 +1,11 @@
+{{- if .Values.alertRules }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-rules
+  labels:
+    app: {{ .Release.Name }}
+data:
+  alert_rules.yml: |
+{{ .Values.alertRules | indent 4 }}
+{{- end }}

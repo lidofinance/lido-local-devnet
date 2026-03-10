@@ -17,3 +17,6 @@ resources:
 scrapeTargets: []
   # - host: "lido-evm-1:8080"
   #   jobName: evm
+
+# Alert rules content (passed via --set-file alertRules=path/to/rules.yml)
+alertRules: ""

@@ -43,7 +43,16 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/prometheus
+            {{- if .Values.alertRules }}
+            - name: rules
+              mountPath: /etc/prometheus/rules
+            {{- end }}
       volumes:
         - name: config
           configMap:
             name: {{ .Release.Name }}-config
+        {{- if .Values.alertRules }}
+        - name: rules
+          configMap:
+            name: {{ .Release.Name }}-rules
+        {{- end }}
