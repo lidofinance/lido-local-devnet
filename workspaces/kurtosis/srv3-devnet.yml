@@ -3,7 +3,7 @@ participants:
   # TEKU should be first to ensure it gets VC index 0
   - el_type: geth
     el_image: ethereum/client-go:v1.16.8
-    el_extra_params: [ --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive ]
+    el_extra_params: [ --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive --state.scheme=hash ]
     el_min_cpu: 0
     el_max_cpu: 0
     el_min_mem: 0
@@ -26,7 +26,7 @@ participants:
 
   - el_type: geth
     el_image: ethereum/client-go:v1.16.8
-    el_extra_params: [ --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive ]
+    el_extra_params: [ --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive --state.scheme=hash ]
     el_min_cpu: 0
     el_max_cpu: 0
     el_min_mem: 0
