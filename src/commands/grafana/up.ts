@@ -13,6 +13,11 @@ import { NAMESPACE as EVM_NAMESPACE } from "../evm/constants/evm.constants.js";
 import { evmExtension } from "../evm/extensions/evm.extension.js";
 import { loggingExtension } from "../logging/extensions/logging.extension.js";
 import {
+  ensureGrafanaBasicAuth,
+  ensureGrafanaBasicAuthSecret,
+  getGrafanaIngressBasicAuthHelmArgs,
+} from "./auth.helpers.js";
+import {
   DATASOURCE_UIDS,
   HELM_RELEASE,
   NAMESPACE,
@@ -124,6 +129,8 @@ export const GrafanaUp = command.cli({
 
     // Create namespace
     await createNamespaceIfNotExists(namespace);
+    const basicAuth = await ensureGrafanaBasicAuth(dre);
+    await ensureGrafanaBasicAuthSecret({ basicAuth, logger, namespace });
 
     // Prepare dashboards: process JSON files, create ConfigMaps
     const dashboardProviders = await prepareDashboards(
@@ -146,6 +153,7 @@ export const GrafanaUp = command.cli({
         GRAFANA_PLUGINS: [...plugins].join("\\,"),
         DATASOURCES_JSON: JSON.stringify(datasources),
         DASHBOARD_PROVIDERS_JSON: JSON.stringify(dashboardProviders),
+        HELM_EXTRA_SET: getGrafanaIngressBasicAuthHelmArgs(),
       },
     });
 
@@ -163,6 +171,8 @@ export const GrafanaUp = command.cli({
     logger.log(`${SERVICE_NAME} started.`);
     logger.log(`Public URL: ${publicUrl}`);
     logger.log(`Private URL: ${privateUrl}`);
+    logger.log(`Ingress basic auth username: ${basicAuth.username}`);
+    logger.log(`Ingress basic auth password: ${basicAuth.password}`);
     logger.log(`Admin password: admin`);
   },
 });

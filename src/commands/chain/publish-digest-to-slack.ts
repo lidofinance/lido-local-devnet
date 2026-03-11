@@ -6,6 +6,7 @@ import { execa } from "execa";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { sanitizeStateJsonForPublicSharing } from "../../shared/public-state.helpers.js";
 import { postMessageViaWebhook, resolveWebhookUrl } from "./slack.helpers.js";
 
 type ServiceInfo = {
@@ -56,6 +57,10 @@ const collectServicesInfo = async (artifactsRoot: string): Promise<ServiceInfo[]
 /**
  * Syncs dashboard data files to a K8s ConfigMap in the given namespace.
  * Creates the ConfigMap if it doesn't exist, replaces it otherwise.
+ * @param data ConfigMap key-value payload.
+ * @param namespace Target namespace.
+ * @param logger Command logger.
+ * @returns Promise that resolves after ConfigMap create or replace.
  */
 const syncDataToConfigMap = async (
   data: Record<string, string>,
@@ -85,7 +90,11 @@ const syncDataToConfigMap = async (
   }
 };
 
-/** Read a file, return its content or null if missing. */
+/**
+ * Reads a file and returns its content or null if missing.
+ * @param filePath Absolute or relative file path.
+ * @returns File content or null when the file is absent.
+ */
 const readFileOrNull = async (filePath: string): Promise<null | string> => {
   try {
     return await fs.readFile(filePath, "utf-8");
@@ -96,6 +105,9 @@ const readFileOrNull = async (filePath: string): Promise<null | string> => {
 
 /**
  * Restarts the dashboard deployment so it picks up the fresh ConfigMap data.
+ * @param namespace Target namespace.
+ * @param logger Command logger.
+ * @returns Promise that resolves after the restart attempt completes.
  */
 const restartDashboard = async (namespace: string, logger: { log: (msg: string) => void }) => {
   try {
@@ -155,6 +167,9 @@ export const ChainPublishDigestToSlack = command.cli({
     const dashboardData = (stateData.dashboard as Record<string, unknown> | undefined)?.running as
       | Record<string, string>
       | undefined;
+    const grafanaData = stateData.grafana as Record<string, unknown> | undefined;
+    const grafanaBasicAuth = (grafanaData?.basicAuth as Record<string, string> | undefined);
+    const publicStateContent = sanitizeStateJsonForPublicSharing(stateContent);
 
     // 2. Read fresh deployed configs from lidoCLI
     const { DEPLOYED_NETWORK_CONFIG_PATH, DEPLOYED_NETWORK_CONFIG_EXTRA_PATH } =
@@ -175,7 +190,7 @@ export const ChainPublishDigestToSlack = command.cli({
       logger.log("Refreshing dashboard with latest data...");
 
       const configMapData: Record<string, string> = {
-        "state.json": stateContent,
+        "state.json": publicStateContent,
       };
       if (deployedContent) configMapData[deployedFileName] = deployedContent;
       if (extraDeployedContent) configMapData[extraDeployedFileName] = extraDeployedContent;
@@ -211,6 +226,13 @@ export const ChainPublishDigestToSlack = command.cli({
 
       if (extraDeployedContent) {
         lines.push(`• <${dashboardData.publicUrl}/data/configs/${extraDeployedFileName}|${extraDeployedFileName}>`);
+      }
+    }
+
+    if (typeof grafanaData?.publicUrl === "string") {
+      lines.push(``, `📈 *Grafana:* ${grafanaData.publicUrl}`);
+      if (grafanaBasicAuth?.username && grafanaBasicAuth.password) {
+        lines.push(`• Basic auth: \`${grafanaBasicAuth.username}\` / \`${grafanaBasicAuth.password}\``);
       }
     }
 

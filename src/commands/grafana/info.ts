@@ -8,18 +8,38 @@ export const GrafanaGetInfo = command.cli({
   params: {},
   extensions: [grafanaExtension],
   async handler({ dre: { logger, state } }) {
+    const basicAuth = await state.getGrafanaBasicAuth(false);
+
     if (!(await state.isGrafanaRunning())) {
       logger.log(`${SERVICE_NAME} is not running`);
+      if (basicAuth.username && basicAuth.password) {
+        logger.table(
+          ["Key", "Value"],
+          [
+            ["grafana-basic-auth-user", basicAuth.username],
+            ["grafana-basic-auth-password", basicAuth.password],
+          ],
+        );
+      }
+
       return;
     }
 
     const grafanaInfo = await state.getGrafana();
+    const rows = [
+      ["grafana-ui", grafanaInfo.publicUrl],
+      ["grafana-internal", grafanaInfo.privateUrl],
+      ...(basicAuth.username && basicAuth.password
+        ? [
+          ["grafana-basic-auth-user", basicAuth.username],
+          ["grafana-basic-auth-password", basicAuth.password],
+        ]
+        : []),
+    ];
+
     logger.table(
-      ["Service", "URL"],
-      [
-        ["grafana-ui", grafanaInfo.publicUrl],
-        ["grafana-internal", grafanaInfo.privateUrl],
-      ],
+      ["Key", "Value"],
+      rows,
     );
   },
 });

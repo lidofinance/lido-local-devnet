@@ -12,6 +12,10 @@ ingress:
   enabled: true
   className: "public"
   host: grafana.devnet.local
+  basicAuth:
+    enabled: false
+    secretName: ""
+    realm: "Grafana"
 
 resources:
   limits:

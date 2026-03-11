@@ -4,6 +4,7 @@ import { DevNetError } from "@devnet/utils";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { sanitizeStateJsonForPublicSharing } from "../../shared/public-state.helpers.js";
 import { SERVICE_NAME } from "./constants/dashboard.constants.js";
 import { dashboardExtension } from "./extensions/dashboard.extension.js";
 
@@ -41,7 +42,11 @@ export const DashboardBuild = command.cli({
     // ── 1. Copy state.json ────────────────────────────────────────────────
     const statePath = path.join(state.artifactsRoot, "state.json");
     try {
-      await fs.copyFile(statePath, path.join(dataDir, "state.json"));
+      const stateContent = await fs.readFile(statePath, "utf-8");
+      await fs.writeFile(
+        path.join(dataDir, "state.json"),
+        sanitizeStateJsonForPublicSharing(stateContent),
+      );
       logger.log("Copied state.json");
     } catch {
       throw new DevNetError(`state.json not found at ${statePath}`);

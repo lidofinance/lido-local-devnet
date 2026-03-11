@@ -5,6 +5,9 @@ export const NAMESPACE = (dre: DevNetRuntimeEnvironmentInterface) =>
 
 export const SERVICE_NAME = "Grafana";
 export const HELM_RELEASE = "grafana";
+export const BASIC_AUTH_SECRET_NAME = "grafana-basic-auth";
+export const BASIC_AUTH_REALM = "Grafana";
+export const BASIC_AUTH_USERNAME = "grafana";
 
 /** Well-known datasource UIDs for devnet provisioning */
 export const DATASOURCE_UIDS = {

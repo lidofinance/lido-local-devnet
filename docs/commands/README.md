@@ -15,6 +15,7 @@ Below is a list of available commands. You can read their documentation by follo
 - [data-bus](./data-bus.md) - Command set for managing Data-Bus contract.
 - [down](./down.md) - Stop full DevNet.
 - [dsm-bots](./dsm-bots.md) - Command set for managing DSM-Bots.
+- [grafana](./grafana.md) - Command set for managing Grafana dashboards.
 - [git](./git.md) - Switch the Git branch in the specified service.
 - [kapi](./kapi.md) - Command set for managing Kapi.
 - [lido-cli](./lido-cli.md) - Command set for managing Lido-CLI dependencies.
