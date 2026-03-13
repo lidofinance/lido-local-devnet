@@ -302,7 +302,7 @@ export const OracleK8sUp = command.cli({
 
     await ensurePerformanceDb(oracle, namespace);
 
-    const allowReportingInBunkerMode = dre.network.name === "srv3-cmv2-devnet" ? "true" : "false";
+    const allowReportingInBunkerMode = dre.network.name.startsWith("srv3-cmv2-devnet") ? "true" : "false";
 
     const env: Record<string, number | string> = {
       ...oracle.config.constants,

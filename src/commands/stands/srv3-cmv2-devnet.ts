@@ -57,12 +57,12 @@ export const SRv3CMv2DevnetUp = command.cli({
 
     await dre.runCommand(GitCheckout, {
       service: "csm",
-      ref: "devnet-fixes",
+      ref: "develop",
     });
 
     await dre.runCommand(GitCheckout, {
       service: "cmv2",
-      ref: "devnet-fixes",
+      ref: "develop",
     });
 
     await dre.runCommand(ChainKurtosisUp, { preset: params.preset });
@@ -170,17 +170,18 @@ export const SRv3CMv2DevnetUp = command.cli({
     logger.log("✅ CMv2 Module keys generated and allocated.");
 
     logger.log("🚀 Building CMv2 allowlist and updating gate tree...");
+    const cmv2MerkleDir = resolve("artifacts", dre.network.name, "merkle");
+    const allowlistPath = resolve(cmv2MerkleDir, "allowlist.json");
     await dre.runCommand(CMv2BuildAllowlist, {
       addresses: undefined,
       includeDeployer: true,
       includeSecondDeployer: true,
-      output: "artifacts/merkle/allowlist.json",
+      output: allowlistPath,
     });
-    const allowlistPath = resolve("artifacts/merkle/allowlist.json");
     await dre.services.lidoCLI.sh`./run.sh cmv2 grant-set-tree-role-vote`;
     await dre.runCommand(CMv2SetGateTree, {
       input: allowlistPath,
-      outputDir: undefined,
+      outputDir: cmv2MerkleDir,
       setRoot: true,
       vote: true,
       treeCid: "devnet-allowlist",
@@ -192,7 +193,7 @@ export const SRv3CMv2DevnetUp = command.cli({
     for (let i = 0; i < CMV2_OPERATORS_COUNT; i++) {
       await dre.runCommand(LidoAddCMv2OperatorWithKeys, {
         name: `${CMV2_OPERATOR_PREFIX}${i}`,
-        signer: "deployer",
+        signer: i === 0 ? "deployer" : "secondDeployer",
       });
       logger.log(`✅ Keys for operator ${CMV2_OPERATOR_PREFIX}${i} added.`);
     }
@@ -217,7 +218,7 @@ export const SRv3CMv2DevnetUp = command.cli({
       accountingTag: oracleTags.accounting,
       ejectorBranch: "feat/srv3-vebo-upgrade",
       ejectorTag: oracleTags.ejector,
-      csmBranch: "csm-next",
+      csmBranch: "feat/csm-cm-changes",
       csmTag: oracleTags.csm,
       image: "lido/oracle",
       fetch: true,

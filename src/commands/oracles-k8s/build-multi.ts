@@ -45,7 +45,7 @@ export const OracleK8sBuildMulti = command.cli({
     }),
     csmBranch: Params.string({
       description: "Branch for CSM/CM/Performance Oracle image",
-      default: "csm-next",
+      default: "feat/csm-cm-changes",
       required: false,
     }),
     csmTag: Params.string({

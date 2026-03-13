@@ -23,7 +23,7 @@ export const LidoAddCMv2OperatorWithKeys = command.cli({
 
     await dre.network.waitEL();
 
-    const proofFile = resolve("artifacts/merkle/merkle-proofs.json");
+    const proofFile = resolve("artifacts", dre.network.name, "merkle", "merkle-proofs.json");
     const { deployer, secondDeployer } = await dre.state.getNamedWallet();
     const signer = params.signer === "secondDeployer" ? secondDeployer : deployer;
     await lidoCLI.sh({ env: { PRIVATE_KEY: signer.privateKey }})`./run.sh cmv2 add-operator-with-keys-from-file generated-keys/${params.name}.json -f ${proofFile}`;

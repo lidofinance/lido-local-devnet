@@ -130,7 +130,7 @@ export const CMv2SetGateTree = command.cli({
     const addresses = [...unique.values()];
     const { root, proofs, tree } = buildTree(addresses);
 
-    const outDir = resolve(outputDir ?? "artifacts/merkle");
+    const outDir = resolve(outputDir ?? resolve("artifacts", dre.network.name, "merkle"));
     mkdirSync(outDir, { recursive: true });
     writeFileSync(`${outDir}/addresses.json`, JSON.stringify(addresses, null, 2));
     writeFileSync(`${outDir}/merkle-tree.json`, JSON.stringify({ root, tree }, null, 2));

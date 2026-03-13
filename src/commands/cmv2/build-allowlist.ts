@@ -1,7 +1,7 @@
 import { Params, command } from "@devnet/command";
 import { getAddress } from "ethers";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 
 export const CMv2BuildAllowlist = command.cli({
   description: "Builds an allowlist file for CMv2 gate tree.",
@@ -23,7 +23,6 @@ export const CMv2BuildAllowlist = command.cli({
     output: Params.string({
       description: "Output file path.",
       required: false,
-      default: "artifacts/merkle/allowlist.json",
     }),
   },
   async handler({ params, dre, dre: { logger } }) {
@@ -52,8 +51,10 @@ export const CMv2BuildAllowlist = command.cli({
       throw new Error("Allowlist is empty.");
     }
 
-    const outputPath = resolve(params.output);
-    mkdirSync(resolve(outputPath, ".."), { recursive: true });
+    const outputPath = params.output
+      ? resolve(params.output)
+      : resolve("artifacts", dre.network.name, "merkle", "allowlist.json");
+    mkdirSync(dirname(outputPath), { recursive: true });
     writeFileSync(outputPath, JSON.stringify(list, null, 2));
     logger.log(`Allowlist written to: ${outputPath}`);
   },

@@ -15,8 +15,18 @@ type ServiceInfo = {
   name: string;
 };
 
+type MultiBuildManifest = {
+  builds?: Array<{
+    branch?: string;
+    commit?: string;
+    role?: string;
+  }>;
+};
+
 const CONFIGMAP_NAME = "devnet-state";
 const DASHBOARD_HELM_RELEASE = "lido-dashboard-1";
+
+const shortenCommit = (commit: string) => commit.slice(0, 8);
 
 const getServiceGitInfo = async (serviceDir: string): Promise<{ branch: string; commit: string } | null> => {
   try {
@@ -39,19 +49,49 @@ const getServiceGitInfo = async (serviceDir: string): Promise<{ branch: string; 
   }
 };
 
+const getServiceMultiBuildInfo = async (serviceDir: string, serviceName: string): Promise<ServiceInfo[] | null> => {
+  try {
+    const manifestContent = await fs.readFile(path.join(serviceDir, "build-multi-manifest.json"), "utf-8");
+    const manifest = JSON.parse(manifestContent) as MultiBuildManifest;
+
+    if (!Array.isArray(manifest.builds) || manifest.builds.length === 0) {
+      return null;
+    }
+
+    const builds = manifest.builds
+      .filter((build): build is Required<NonNullable<MultiBuildManifest["builds"]>[number]> =>
+        typeof build.role === "string" &&
+        typeof build.branch === "string" &&
+        typeof build.commit === "string")
+      .map((build) => ({
+        name: `${serviceName}/${build.role}`,
+        branch: build.branch,
+        commit: shortenCommit(build.commit),
+      }));
+
+    return builds.length > 0 ? builds : null;
+  } catch {
+    return null;
+  }
+};
+
 const collectServicesInfo = async (artifactsRoot: string): Promise<ServiceInfo[]> => {
   const entries = await fs.readdir(artifactsRoot, { withFileTypes: true });
   const dirs = entries.filter((e) => e.isDirectory());
 
   const results = await Promise.all(
     dirs.map(async (dir) => {
-      const info = await getServiceGitInfo(path.join(artifactsRoot, dir.name));
-      if (!info) return null;
-      return { name: dir.name, ...info };
+      const serviceDir = path.join(artifactsRoot, dir.name);
+      const multiBuildInfo = await getServiceMultiBuildInfo(serviceDir, dir.name);
+      if (multiBuildInfo) return multiBuildInfo;
+
+      const info = await getServiceGitInfo(serviceDir);
+      if (!info) return [];
+      return [{ name: dir.name, branch: info.branch, commit: shortenCommit(info.commit) }];
     }),
   );
 
-  return results.filter((r): r is ServiceInfo => r !== null).sort((a, b) => a.name.localeCompare(b.name));
+  return results.flat().sort((a, b) => a.name.localeCompare(b.name));
 };
 
 /**

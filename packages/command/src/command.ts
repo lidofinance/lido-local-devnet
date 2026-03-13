@@ -27,8 +27,19 @@ const DEPLOY_COMMANDS = new Set(["up", "up-full", "chain up"]);
 const DELETE_COMMANDS = new Set(["down", "down-offchain"]);
 const RESTART_ACTIONS = new Set(["restart", "restart-service"]);
 
-const getCommandAction = (commandName: string) =>
-  commandName.trim().split(" ").at(-1);
+const getCommandAction = (commandName: string) => {
+  const action = commandName.trim().split(" ").at(-1) ?? "";
+
+  if (action.endsWith("-up")) {
+    return "up";
+  }
+
+  if (action.endsWith("-down")) {
+    return "down";
+  }
+
+  return action;
+};
 
 const getServiceName = (
   commandName: string,
@@ -40,6 +51,15 @@ const getServiceName = (
 
   const parts = commandName.trim().split(" ");
   if (parts.length > 1) {
+    const action = parts.at(-1) ?? "";
+    if (action.endsWith("-up")) {
+      return [...parts.slice(0, -1), action.slice(0, -3)].join(" ");
+    }
+
+    if (action.endsWith("-down")) {
+      return [...parts.slice(0, -1), action.slice(0, -5)].join(" ");
+    }
+
     return parts.slice(0, -1).join(" ");
   }
 
