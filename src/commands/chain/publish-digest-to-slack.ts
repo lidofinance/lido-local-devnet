@@ -23,6 +23,10 @@ type MultiBuildManifest = {
   }>;
 };
 
+type DevnetMetadata = {
+  deployedAt?: string;
+};
+
 const CONFIGMAP_NAME = "devnet-state";
 const DASHBOARD_HELM_RELEASE = "lido-dashboard-1";
 
@@ -201,6 +205,7 @@ export const ChainPublishDigestToSlack = command.cli({
 
     const stateData = JSON.parse(stateContent) as Record<string, unknown>;
     const chainData = (stateData.chain ?? {}) as Record<string, string>;
+    const devnetData = (stateData.devnet ?? {}) as DevnetMetadata;
     const kapiData = (stateData.kapiK8s as Record<string, unknown> | undefined)?.running as
       | Record<string, string>
       | undefined;
@@ -245,7 +250,7 @@ export const ChainPublishDigestToSlack = command.cli({
     // 5. Build and send digest message
     const lines = [
       `📋 *Devnet Digest: ${network.name}*`,
-      `📅 ${new Date().toISOString()}`,
+      `📅 Devnet deployed: ${devnetData.deployedAt ?? "n/a"}`,
       ``,
       `*Chain endpoints:*`,
       `• EL public: \`${chainData.elPublic || "n/a"}\``,

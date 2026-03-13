@@ -1,4 +1,26 @@
 import { command } from "@devnet/command";
+import fs from "node:fs/promises";
+import path from "node:path";
+
+type DevnetState = {
+  deployedAt?: string;
+};
+
+type UpdatableState = {
+  artifactsRoot: string;
+  updateProperties: (key: string, value: Record<string, unknown>) => Promise<void>;
+};
+
+const readDevnetState = async (artifactsRoot: string): Promise<DevnetState> => {
+  try {
+    const statePath = path.join(artifactsRoot, "state.json");
+    const raw = await fs.readFile(statePath, "utf-8");
+    const parsed = JSON.parse(raw) as { devnet?: DevnetState };
+    return parsed.devnet ?? {};
+  } catch {
+    return {};
+  }
+};
 
 export const LidoCoreUpdateState = command.cli({
   description:
@@ -7,19 +29,28 @@ export const LidoCoreUpdateState = command.cli({
   async handler({ dre }) {
     const { state, services } = dre;
     const { lidoCore } = services;
+    const existingDevnetState = await readDevnetState(state.artifactsRoot);
 
     const { deployer } = await state.getNamedWallet();
     const { elPublic, clPublic } = await state.getChain();
 
-    const jsonData = await lidoCore.readJson(
-      lidoCore.config.constants.NETWORK_STATE_FILE,
-    );
+    const networkStateFile = lidoCore.config.constants.NETWORK_STATE_FILE;
+    const jsonData = await lidoCore.readJson(networkStateFile);
     const burnerProxy =
       jsonData?.burner?.proxy?.address ??
       jsonData?.burner?.proxyAddress ??
       jsonData?.burner?.address;
 
     await state.updateLido(jsonData);
+
+    const deployedAt = existingDevnetState.deployedAt ?? new Date().toISOString();
+
+    if (deployedAt) {
+      await (state as unknown as UpdatableState).updateProperties("devnet", {
+        ...existingDevnetState,
+        deployedAt,
+      });
+    }
 
     const { lidoCLI } = services;
 

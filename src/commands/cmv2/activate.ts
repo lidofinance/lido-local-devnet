@@ -19,62 +19,6 @@ type CMv2ActivateENV = {
   PRIVATE_KEY: string;
 };
 
-type LidoCLIFileService = {
-  readFile: (relativePath: string) => Promise<string>;
-  writeFile: (relativePath: string, fileContent: string) => Promise<void>;
-};
-
-const patchDevnetCmv2StartMetaRegistryGrant = async (
-  lidoCLI: LidoCLIFileService,
-  logger: { log: (message: string) => void; warn: (message: string) => void },
-) => {
-  const scriptPath = "programs/omnibus-scripts/devnet-cmv2-start.ts";
-  const current = await lidoCLI.readFile(scriptPath);
-  const marker = "skipping direct MANAGE_OPERATOR_GROUPS_ROLE grant and relying on the follow-up vote flow";
-
-  if (current.includes(marker)) {
-    return;
-  }
-
-  const original = `    if (!hasManageOperatorGroupsRole) {
-      if (walletAddress != metaRegistryAdmin) {
-        throw new Error(
-          \`Wallet \${walletAddress} is not MetaRegistry admin \${metaRegistryAdmin}. Cannot grant MANAGE_OPERATOR_GROUPS_ROLE.\`,
-        );
-      }
-
-      await (
-        await metaRegistryAccessControl.grantRole(
-          await getRoleHashByAddress(metaRegistryAddress, 'MANAGE_OPERATOR_GROUPS_ROLE'),
-          CS_META_REGISTRY_ROLE_GRANTEE,
-        )
-      ).wait();
-    }`;
-
-  const patched = `    if (!hasManageOperatorGroupsRole) {
-      if (walletAddress != metaRegistryAdmin) {
-        console.log(
-          \`[cmv2] Wallet \${walletAddress} is not MetaRegistry admin \${metaRegistryAdmin}; skipping direct MANAGE_OPERATOR_GROUPS_ROLE grant and relying on the follow-up vote flow\`,
-        );
-      } else {
-        await (
-          await metaRegistryAccessControl.grantRole(
-            await getRoleHashByAddress(metaRegistryAddress, 'MANAGE_OPERATOR_GROUPS_ROLE'),
-            CS_META_REGISTRY_ROLE_GRANTEE,
-          )
-        ).wait();
-      }
-    }`;
-
-  if (!current.includes(original)) {
-    logger.warn("Unable to patch devnetCMv2Start MetaRegistry grant block automatically");
-    return;
-  }
-
-  await lidoCLI.writeFile(scriptPath, current.replace(original, patched));
-  logger.log("Patched devnetCMv2Start to skip direct MetaRegistry grant when admin is the agent");
-};
-
 export const ActivateCMv2 = command.cli({
   description:
     "Activates CMv2 by deploying smart contracts and configuring the environment based on the current network state.",
@@ -154,8 +98,6 @@ export const ActivateCMv2 = command.cli({
     logger.logJson(env);
 
     logger.log("Deploying and configuring CMv2 components...");
-    await patchDevnetCmv2StartMetaRegistryGrant(lidoCLI, logger);
-
     await lidoCLI.sh({ env })`./run.sh omnibus script devnetCMv2Start`;
 
     logger.log("Granting MANAGE_OPERATOR_GROUPS_ROLE on CMv2 MetaRegistry...");
