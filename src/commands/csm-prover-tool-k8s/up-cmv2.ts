@@ -72,6 +72,7 @@ export const CMv2ProverToolK8sUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
+    const chainId = await dre.network.getChainId();
     const { verifier: cmv2Verifier, module: cmv2Module, validatorStrikes } = await state.getCMv2();
     const { privateUrl: kapiPrivateUrl } = await state.getKapiK8sRunning();
     const { deployer } = await state.getNamedWallet();
@@ -79,7 +80,7 @@ export const CMv2ProverToolK8sUp = command.cli({
     const env: Record<string, number | string> = {
       ...csmProverTool.config.constants,
 
-      CHAIN_ID: "32382",
+      CHAIN_ID: chainId,
       EL_RPC_URLS: elPrivate,
       CL_API_URLS: resolveConsensusApiUrls({
         networkName: dre.network.name,

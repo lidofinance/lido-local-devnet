@@ -54,7 +54,7 @@ export const PectraContractsOnlyDevNetUp = command.cli({
     logger.log("✅ Lido contracts deployed.");
 
     logger.log("🚀 Deploying CSM contracts...");
-    await dre.runCommand(DeployCSMContracts, deployArgs);
+    await dre.runCommand(DeployCSMContracts, { ...deployArgs, verifierUrl: undefined });
     logger.log("✅ CSM contracts deployed.");
   },
 });

@@ -11,7 +11,7 @@ export const DataBusDeploy = command.cli({
 
     const { deployer } = await state.getNamedWallet();
     const { elPublic } = await state.getChain();
-    const { api, url } = await state.getBlockscout();
+    const blockscout = await state.getBlockscout(false);
 
     await dre.runCommand(DataBusInstall, {});
 
@@ -23,8 +23,8 @@ export const DataBusDeploy = command.cli({
         PK_KEY: deployer.privateKey,
 
         // DEVNET_CHAINID: env.DEVNET_CHAINID,
-        DEVNET_EXPLORER: url,
-        DEVNET_EXPLORER_API: api,
+        DEVNET_EXPLORER: blockscout?.url ?? "",
+        DEVNET_EXPLORER_API: blockscout?.api ?? "",
       },
     })`yarn deploy --network local-devnet`;
 

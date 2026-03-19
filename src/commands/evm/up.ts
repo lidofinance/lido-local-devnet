@@ -166,6 +166,7 @@ export const EvmUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
+    const chainId = await dre.network.getChainId();
     const { elRpcUrls, clApiUrls } = resolveEvmRpcUrls({
       defaultClPrivate: clPrivate,
       defaultElPrivate: elPrivate,
@@ -210,7 +211,7 @@ export const EvmUp = command.cli({
         INGRESS_HOSTNAME,
         EL_RPC_URLS: elRpcUrls,
         CL_API_URLS: clApiUrls,
-        CHAIN_ID: "32382",
+        CHAIN_ID: chainId,
         VALIDATOR_REGISTRY_KEYSAPI_SOURCE_URLS: kapiPrivateUrl,
         DB_HOST: clickhouseHost,
         START_EPOCH: startEpoch,

@@ -60,6 +60,7 @@ export const DeployCMv2Contracts = command.cli({
 
     const { agent, locator, treasury } = await state.getLido();
     const { elPublic } = await state.getChain();
+    const chainId = await network.getChainId();
     const { deployer, secondDeployer, oracle1, oracle2, oracle3 } =
       await state.getNamedWallet();
 
@@ -95,7 +96,7 @@ export const DeployCMv2Contracts = command.cli({
       DEVNET_CAPELLA_EPOCH: CAPELLA_FORK_EPOCH,
       DEPLOY_CONFIG: constants.DEPLOY_CONFIG,
       DEPLOYER_PRIVATE_KEY: deployer.privateKey,
-      DEVNET_CHAIN_ID: "32382",
+      DEVNET_CHAIN_ID: chainId,
 
       DEVNET_ELECTRA_EPOCH: ELECTRA_FORK_EPOCH,
       DEVNET_GENESIS_TIME: genesis_time,
@@ -123,7 +124,7 @@ export const DeployCMv2Contracts = command.cli({
 
     const args = ["deploy-curated-live-no-confirm", "-g", "200", "--legacy", "--private-key", "$DEPLOYER_PRIVATE_KEY"];
     if (params.verify) {
-      args.push("--verify", "--verifier", "blockscout", "--chain", "32382");
+      args.push("--verify", "--verifier", "blockscout", "--chain", chainId);
     }
 
     await cmv2Sh`just ${args}`;

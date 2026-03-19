@@ -50,12 +50,14 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.LOG_LEVEL="${LOG_LEVEL}" \
 	--set lido-app.env.variables.LOG_FORMAT="${LOG_FORMAT}" \
 	--set lido-app.env.variables.RPC_URL="${RPC_URL}" \
+	--set lido-app.env.variables.CHAIN_ID="${CHAIN_ID}" \
 	--set lido-app.env.variables.WALLET_PRIVATE_KEY="${WALLET_PRIVATE_KEY}" \
 	--set lido-app.env.variables.KEYS_API_HOST="${KEYS_API_HOST}" \
 	--set lido-app.env.variables.KEYS_API_PORT="${KEYS_API_PORT}" \
 	--set lido-app.env.variables.PUBSUB_SERVICE="${PUBSUB_SERVICE}" \
 	--set lido-app.env.variables.EVM_CHAIN_DATA_BUS_ADDRESS="${EVM_CHAIN_DATA_BUS_ADDRESS}" \
 	--set lido-app.env.variables.EVM_CHAIN_DATA_BUS_PROVIDER_URL="${EVM_CHAIN_DATA_BUS_PROVIDER_URL}" \
+	--set lido-app.env.variables.EVM_CHAIN_DATA_BUS_CHAIN_ID="${EVM_CHAIN_DATA_BUS_CHAIN_ID}" \
 	--set lido-app.env.variables.LOCATOR_DEVNET_ADDRESS="${LOCATOR_DEVNET_ADDRESS}" \
 	--set lido-app.env.variables.RABBITMQ_PASSCODE="${RABBITMQ_PASSCODE}" \
 	--set lido-app.env.variables.RABBITMQ_LOGIN="${RABBITMQ_LOGIN}" \

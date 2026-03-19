@@ -46,6 +46,7 @@ export const VerifyCSMContracts = command.cli({
 
     const { agent, locator, treasury } = await state.getLido();
     const { elPublic } = await state.getChain();
+    const chainId = await network.getChainId();
     const { deployer, secondDeployer, oracle1, oracle2, oracle3 } = await state.getNamedWallet();
 
     await network.waitCL();
@@ -79,7 +80,7 @@ export const VerifyCSMContracts = command.cli({
       DEVNET_CAPELLA_EPOCH: CAPELLA_FORK_EPOCH,
       DEPLOY_CONFIG: constants.DEPLOY_CONFIG,
       DEPLOYER_PRIVATE_KEY: deployer.privateKey,
-      DEVNET_CHAIN_ID: "32382",
+      DEVNET_CHAIN_ID: chainId,
 
       DEVNET_ELECTRA_EPOCH: ELECTRA_FORK_EPOCH,
       DEVNET_GENESIS_TIME: genesis_time,
@@ -97,6 +98,6 @@ export const VerifyCSMContracts = command.cli({
     logger.logJson(env);
 
     const csmSh = csm.sh({ env });
-    await csmSh`just verify-live --verifier blockscout --chain 32382`;
+    await csmSh`just verify-live --verifier blockscout --chain ${chainId}`;
   },
 });

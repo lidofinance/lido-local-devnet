@@ -89,7 +89,7 @@ export const SRv3CMv2DevnetUp = command.cli({
     logger.log("✅ Lido contracts deployed.");
 
     logger.log("🚀 Deploying CSM contracts...");
-    await dre.runCommand(DeployCSMContracts, deployArgs);
+    await dre.runCommand(DeployCSMContracts, { ...deployArgs, verifierUrl: undefined });
     logger.log("✅ CSM contracts deployed.");
 
     logger.log("🚀 Deploying CMv2 contracts...");

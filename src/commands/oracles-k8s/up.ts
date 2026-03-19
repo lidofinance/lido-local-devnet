@@ -93,22 +93,26 @@ const getHelmReleases = ({
   oracle2,
   oracle3,
 }: {
-  cmv2Module: string;
+  cmv2Module?: string;
   csmModule: string;
   oracle1: { privateKey: string };
   oracle2: { privateKey: string };
   oracle3: { privateKey: string };
 }): HelmRelease[] => [
-  { HELM_RELEASE: "oracle-performance-collector", command: "performance_collector", privateKey: oracle3, stakingModuleAddress: csmModule },
-  { HELM_RELEASE: "oracle-performance-web", command: "performance_web_server", privateKey: oracle3, stakingModuleAddress: csmModule },
+  ...(cmv2Module ? [
+    { HELM_RELEASE: "oracle-performance-collector", command: "performance_collector", privateKey: oracle3, stakingModuleAddress: csmModule },
+    { HELM_RELEASE: "oracle-performance-web", command: "performance_web_server", privateKey: oracle3, stakingModuleAddress: csmModule },
+  ] : []),
   { HELM_RELEASE: "oracle-accounting-1", command: "accounting", privateKey: oracle1, stakingModuleAddress: csmModule },
   { HELM_RELEASE: "oracle-accounting-2", command: "accounting", privateKey: oracle2, stakingModuleAddress: csmModule },
   { HELM_RELEASE: "oracle-ejector-1", command: "ejector", privateKey: oracle1, stakingModuleAddress: csmModule },
   { HELM_RELEASE: "oracle-ejector-2", command: "ejector", privateKey: oracle2, stakingModuleAddress: csmModule },
   { HELM_RELEASE: "oracle-csm-1", command: "csm", privateKey: oracle1, stakingModuleAddress: csmModule },
   { HELM_RELEASE: "oracle-csm-2", command: "csm", privateKey: oracle2, stakingModuleAddress: csmModule },
-  { HELM_RELEASE: "oracle-cm-1", command: "cm", privateKey: oracle1, stakingModuleAddress: cmv2Module },
-  { HELM_RELEASE: "oracle-cm-2", command: "cm", privateKey: oracle3, stakingModuleAddress: cmv2Module },
+  ...(cmv2Module ? [
+    { HELM_RELEASE: "oracle-cm-1", command: "cm", privateKey: oracle1, stakingModuleAddress: cmv2Module },
+    { HELM_RELEASE: "oracle-cm-2", command: "cm", privateKey: oracle3, stakingModuleAddress: cmv2Module },
+  ] : []),
 ];
 
 const getConsensusPicker = (consensusClientUris: string | undefined, clPrivate: string) => {
@@ -148,13 +152,16 @@ const resolveConsensusRouting = ({
     };
   }
 
+  // For self-hosted chains, clPrivate is the only CL endpoint
+  // For Kurtosis chains, try known pod names
   const chainNamespace = `kt-${networkName}`;
   const teku = `http://cl-1-teku-geth.${chainNamespace}.svc.cluster.local:4000`;
   const lighthouse = `http://cl-2-lighthouse-geth.${chainNamespace}.svc.cluster.local:4000`;
+  const kurtosisUris = `${teku},${lighthouse}`;
 
   return {
-    consensusClientUris: `${teku},${lighthouse}`,
-    performanceConsensusClientUri: lighthouse,
+    consensusClientUris: clPrivate.includes("lido-cl-node") ? clPrivate : kurtosisUris,
+    performanceConsensusClientUri: clPrivate.includes("lido-cl-node") ? clPrivate : lighthouse,
     auto: true,
   };
 };
@@ -287,9 +294,11 @@ export const OracleK8sUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
+    const chainId = await dre.network.getChainId();
     const { locator } = await state.getLido();
     const { module: csmModule } = await state.getCSM();
-    const { module: cmv2Module } = await state.getCMv2();
+    const cmv2 = await state.getCMv2(false);
+    const cmv2Module = cmv2?.module;
     const { oracle1, oracle2, oracle3 } = await state.getNamedWallet();
     const { privateUrl: kapiPrivateUrl } = await state.getKapiK8sRunning();
 
@@ -300,13 +309,15 @@ export const OracleK8sUp = command.cli({
     const performanceWebService = `${PERFORMANCE_WEB_RELEASE}-lido-oracle`;
     const performanceCollectorUri = `http://${performanceWebService}.${namespace}.svc.cluster.local:9020/`;
 
-    await ensurePerformanceDb(oracle, namespace);
+    if (cmv2Module) {
+      await ensurePerformanceDb(oracle, namespace);
+    }
 
     const allowReportingInBunkerMode = dre.network.name.startsWith("srv3-cmv2-devnet") ? "true" : "false";
 
     const env: Record<string, number | string> = {
       ...oracle.config.constants,
-      CHAIN_ID: "32382",
+      CHAIN_ID: chainId,
       EXECUTION_CLIENT_URI: elPrivate,
       CONSENSUS_CLIENT_URI: clPrivate,
       LIDO_LOCATOR_ADDRESS: locator,
@@ -316,12 +327,14 @@ export const OracleK8sUp = command.cli({
       ALLOW_REPORTING_IN_BUNKER_MODE: allowReportingInBunkerMode,
       PINATA_JWT: process.env.CSM_ORACLE_PINATA_JWT ?? "",
       KUBO_HOST: kuboPrivateUrl.replace(":5001", ""),
-      PERFORMANCE_COLLECTOR_URI: performanceCollectorUri,
-      PERFORMANCE_DB_HOST: performanceDbHost,
-      PERFORMANCE_DB_PORT: "5432",
-      PERFORMANCE_DB_NAME: "performance",
-      PERFORMANCE_DB_USER: "performance",
-      PERFORMANCE_DB_PASSWORD: "performance",
+      ...(cmv2Module ? {
+        PERFORMANCE_COLLECTOR_URI: performanceCollectorUri,
+        PERFORMANCE_DB_HOST: performanceDbHost,
+        PERFORMANCE_DB_PORT: "5432",
+        PERFORMANCE_DB_NAME: "performance",
+        PERFORMANCE_DB_USER: "performance",
+        PERFORMANCE_DB_PASSWORD: "performance",
+      } : {}),
     };
 
     const helmReleases = getHelmReleases({
@@ -361,6 +374,7 @@ export const OracleK8sUp = command.cli({
         ...env,
         STAKING_MODULE_ADDRESS: stakingModuleAddress,
         CONSENSUS_CLIENT_URI: releaseConsensusUri,
+        ...(command === "csm" ? { CSM_MODULE_ADDRESS: stakingModuleAddress } : {}),
       };
 
       const { releaseImage, releaseTag } = resolveReleaseImageTag({

@@ -1,4 +1,5 @@
 import { Params, command } from "@devnet/command";
+import { JsonRpcProvider } from "ethers";
 
 import { csmExtension } from "./extensions/csm.extension.js";
 import { CSMInstall } from "./install.js";
@@ -41,6 +42,10 @@ export const DeployCSMContracts = command.cli({
     verify: Params.boolean({
       description: "Verify smart contracts",
     }),
+    verifierUrl: Params.string({
+      description:
+        "External block explorer API URL for contract verification (e.g. https://explorer.epbs-devnet-0.ethpandaops.io/api). Overrides Blockscout from state.",
+    }),
   },
   extensions: [csmExtension],
   async handler({ params, dre, dre: { logger } }) {
@@ -62,6 +67,10 @@ export const DeployCSMContracts = command.cli({
     const { deployer, secondDeployer, oracle1, oracle2, oracle3 } =
       await state.getNamedWallet();
 
+    const provider = new JsonRpcProvider(elPublic);
+    const { chainId } = await provider.getNetwork();
+    const chainIdStr = chainId.toString();
+
     await network.waitCL();
     const clClient = await network.getCLClient();
 
@@ -73,7 +82,16 @@ export const DeployCSMContracts = command.cli({
       data: { ELECTRA_FORK_EPOCH, SLOTS_PER_EPOCH, CAPELLA_FORK_EPOCH },
     } = await clClient.getConfig();
 
-    const blockscoutConfig = await state.getBlockscout();
+    let verifierUrl = "";
+
+    if (params.verifierUrl) {
+      verifierUrl = params.verifierUrl;
+    } else if (process.env.EXTERNAL_VERIFIER_URL) {
+      verifierUrl = process.env.EXTERNAL_VERIFIER_URL;
+    } else if (params.verify) {
+      const blockscoutConfig = await state.getBlockscout();
+      verifierUrl = blockscoutConfig.api;
+    }
 
     const env: CSMENVConfig = {
       FOUNDRY_PROFILE: constants.FOUNDRY_PROFILE,
@@ -93,7 +111,7 @@ export const DeployCSMContracts = command.cli({
       DEVNET_CAPELLA_EPOCH: CAPELLA_FORK_EPOCH,
       DEPLOY_CONFIG: constants.DEPLOY_CONFIG,
       DEPLOYER_PRIVATE_KEY: deployer.privateKey,
-      DEVNET_CHAIN_ID: "32382",
+      DEVNET_CHAIN_ID: chainIdStr,
 
       DEVNET_ELECTRA_EPOCH: ELECTRA_FORK_EPOCH,
       DEVNET_GENESIS_TIME: genesis_time,
@@ -104,7 +122,7 @@ export const DeployCSMContracts = command.cli({
       UPGRADE_CONFIG: constants.UPGRADE_CONFIG,
       VERIFIER_API_KEY: constants.VERIFIER_API_KEY,
 
-      VERIFIER_URL: blockscoutConfig.api,
+      VERIFIER_URL: verifierUrl,
       FOUNDRY_BLOCK_GAS_LIMIT: "1000000000"
     };
 
@@ -117,7 +135,7 @@ export const DeployCSMContracts = command.cli({
 
     const args = ["deploy-live-no-confirm", "-g", "200", "--legacy", "--private-key", "$DEPLOYER_PRIVATE_KEY"];
     if (params.verify) {
-      args.push("--verify", "--verifier", "blockscout", "--chain", "32382");
+      args.push("--verify", "--verifier", "blockscout", "--chain", chainIdStr);
     }
 
     await csmSh`just ${args}`;

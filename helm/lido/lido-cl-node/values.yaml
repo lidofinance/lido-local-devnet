@@ -76,3 +76,7 @@ resources: {}
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+# Use host network for P2P connectivity (bypasses NAT issues)
+hostNetwork: false
+dnsPolicy: ClusterFirst

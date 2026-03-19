@@ -81,6 +81,7 @@ export const AddNewOperator = command.cli({
     await dre.runCommand(LidoDeposit, {
       id: STAKING_MODULE_ID,
       deposits: DEPOSIT_COUNT,
+      amount: 10000,
       ...depositArgs,
     });
     logger.log("✅ Deposit to NOR completed.");

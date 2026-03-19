@@ -83,7 +83,7 @@ export const FusakaDevNetUp = command.cli({
     logger.log("✅ Lido contracts deployed.");
 
     logger.log("🚀 Deploying CSM contracts...");
-    await dre.runCommand(DeployCSMContracts, deployArgs);
+    await dre.runCommand(DeployCSMContracts, { ...deployArgs, verifierUrl: undefined });
     logger.log("✅ CSM contracts deployed.");
 
     await dre.network.waitCLFinalizedEpoch(1);
@@ -171,11 +171,11 @@ export const FusakaDevNetUp = command.cli({
     }
 
     logger.log("🚀 Making deposit to NOR...");
-    await dre.runCommand(LidoDeposit, { id: 1, deposits: 30, ...depositArgs });
+    await dre.runCommand(LidoDeposit, { id: 1, deposits: 30, amount: 10000, ...depositArgs });
     logger.log("✅ Deposit to NOR completed.");
 
     logger.log("🚀 Making deposit to CSM...");
-    await dre.runCommand(LidoDeposit, { id: 3, deposits: 30, ...depositArgs });
+    await dre.runCommand(LidoDeposit, { id: 3, deposits: 30, amount: 10000, ...depositArgs });
     logger.log("✅ Deposit to CSM completed.");
 
     logger.log("🚀 Adding keys to the validator...");

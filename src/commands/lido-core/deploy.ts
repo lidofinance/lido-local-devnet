@@ -1,4 +1,7 @@
 import { Params, command } from "@devnet/command";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { getAddress } from "viem";
 
 import { lidoCoreExtension } from "./extensions/lido-core.extension.js";
 import { PrepareLidoCore } from "./prepare-repository.js";
@@ -137,7 +140,15 @@ export const DeployLidoContracts = command.cli({
       exitEventsLookbackWindowInSlots: params.exitEventsLookbackWindowInSlots,
     });
 
-    const DEPOSIT_CONTRACT_ADDRESS = await dre.services.kurtosis.config.getters.DEPOSIT_CONTRACT_ADDRESS(dre.services.kurtosis);
+    let DEPOSIT_CONTRACT_ADDRESS: string;
+
+    const networkConfigGenesis = path.join(state.artifactsRoot, "network-config", "genesis.json");
+    try {
+      const genesis = JSON.parse(await readFile(networkConfigGenesis, "utf-8"));
+      DEPOSIT_CONTRACT_ADDRESS = getAddress(genesis.config.depositContractAddress);
+    } catch {
+      DEPOSIT_CONTRACT_ADDRESS = await dre.services.kurtosis.config.getters.DEPOSIT_CONTRACT_ADDRESS(dre.services.kurtosis);
+    }
 
     logger.log(DEPOSIT_CONTRACT_ADDRESS);
 

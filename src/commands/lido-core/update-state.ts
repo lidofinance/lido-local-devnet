@@ -27,7 +27,7 @@ export const LidoCoreUpdateState = command.cli({
     "Reads the network state file for lido-core and updates the JSON database accordingly.",
   params: {},
   async handler({ dre }) {
-    const { state, services } = dre;
+    const { state, services, network } = dre;
     const { lidoCore } = services;
     const existingDevnetState = await readDevnetState(state.artifactsRoot);
 
@@ -63,10 +63,12 @@ export const LidoCoreUpdateState = command.cli({
       jsonData,
     );
 
+    const chainId = await network.getChainId();
+
     const lidoCliEnv = {
       PRIVATE_KEY: deployer.privateKey,
       DEPLOYED: lidoCLIConstants.DEPLOYED_NETWORK_CONFIG_NAME,
-      EL_CHAIN_ID: "32382",
+      EL_CHAIN_ID: chainId,
       EL_NETWORK_NAME: "local-devnet",
       EL_API_PROVIDER: elPublic,
       CL_API_PROVIDER: clPublic,

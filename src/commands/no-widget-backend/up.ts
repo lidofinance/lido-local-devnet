@@ -48,6 +48,7 @@ export const NoWidgetBackendUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
+    const chainId = await dre.network.getChainId();
 
     const { locator, lido, stakingRouter, curatedModule } = await state.getLido();
     const { module: csmModule } = await state.getCSM();
@@ -59,7 +60,7 @@ export const NoWidgetBackendUp = command.cli({
     const env: Record<string, number | string> = {
       ...noWidgetBackend.config.constants,
       IS_DEVNET_MODE: "1",
-      CHAIN_ID: "32382",
+      CHAIN_ID: chainId,
       LIDO_DEVNET_ADDRESS: lido,
       DEVNET_GENESIS_FORK_VERSION: GENESIS_FORK_VERSION.replace("0x", ""),
       KEYS_API_HOST: privateUrl,

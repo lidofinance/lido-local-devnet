@@ -89,7 +89,7 @@ export const PectraDevNetUp = command.cli({
     logger.log("✅ Lido contracts deployed.");
 
     logger.log("🚀 Deploying CSM contracts...");
-    await dre.runCommand(DeployCSMContracts, deployArgs);
+    await dre.runCommand(DeployCSMContracts, { ...deployArgs, verifierUrl: undefined });
     logger.log("✅ CSM contracts deployed.");
 
     await dre.runCommand(CSMUpdateState, {});
@@ -170,6 +170,7 @@ export const PectraDevNetUp = command.cli({
     await dre.runCommand(LidoDeposit, {
       id: 3,
       deposits: 100,
+      amount: 10000,
       ...depositArgs,
     });
     logger.log("✅ Deposit to CSM completed.");

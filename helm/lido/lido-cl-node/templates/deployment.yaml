@@ -18,6 +18,10 @@ spec:
       labels:
         {{- include "lido-cl-node.selectorLabels" . | nindent 8 }}
     spec:
+      {{- if .Values.hostNetwork }}
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      {{- end }}
       {{- if and .Values.customNetwork .Values.genesisSSZUrl }}
       initContainers:
         - name: fetch-genesis-ssz

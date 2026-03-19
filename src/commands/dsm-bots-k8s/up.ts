@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
 import { command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import {
@@ -5,6 +8,7 @@ import {
   getNamespacedDeployedHelmReleases,
 } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
+import { getAddress } from "viem";
 
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { DSMBotsK8sBuild } from "./build.js";
@@ -40,7 +44,15 @@ export const DSMBotsK8sUp = command.cli({
 
     const { address: dataBusAddress } = await state.getDataBus();
 
-    const DEPOSIT_CONTRACT_ADDRESS = await dre.services.kurtosis.config.getters.DEPOSIT_CONTRACT_ADDRESS(dre.services.kurtosis);
+    let DEPOSIT_CONTRACT_ADDRESS: string;
+
+    const networkConfigGenesis = path.join(state.artifactsRoot, "network-config", "genesis.json");
+    try {
+      const genesis = JSON.parse(await readFile(networkConfigGenesis, "utf-8"));
+      DEPOSIT_CONTRACT_ADDRESS = getAddress(genesis.config.depositContractAddress);
+    } catch {
+      DEPOSIT_CONTRACT_ADDRESS = await dre.services.kurtosis.config.getters.DEPOSIT_CONTRACT_ADDRESS(dre.services.kurtosis);
+    }
 
     const env: Record<string, string> = {
       WEB3_RPC_ENDPOINTS: elPrivate,

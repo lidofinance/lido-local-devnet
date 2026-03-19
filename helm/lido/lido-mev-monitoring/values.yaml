@@ -1,0 +1,94 @@
+lido-app:
+  nameOverride: lido-mev-monitoring
+
+  # Number of replicas for the deployment
+  replicaCount: 1
+
+  # Image configuration
+  image:
+    registry: docker.io
+    repository: lido/mev-monitoring
+    tag: "dev"
+    pullPolicy: Always
+    imagePullSecrets:
+      - name: registry-pull-secret
+
+  service:
+    type: ClusterIP
+    ports:
+      - name: http
+        port: 3000
+        targetPort: 3000
+        protocol: TCP
+
+  # Ingress configuration
+  ingress:
+    enabled: false
+    className: "public"
+    annotations: {}
+    hosts: []
+    tls: []
+
+  # Environment variables
+  env:
+    variables:
+      NODE_ENV: production
+      PORT: "3000"
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+      CHAIN_ID: "32382"
+      EL_RPC_URLS: ""
+      CL_API_URLS: ""
+      KEYS_API_URL: ""
+      BEACON_START_SLOT: "0"
+      DB_NAME: mev_monitoring
+      DB_PORT: "5432"
+      DB_HOST: mev-mon-postgresql
+      DB_USER: mev_user
+      DB_PASSWORD: mev_password
+      DB_MAX_POOL_SIZE: "25"
+      REDIS_PORT: "6379"
+      REDIS_HOST: mev-mon-redis-master
+      JOB_INDEXING_BLOCK_DATA_INTERVAL: "*/30 * * * * *"
+      JOB_INDEXING_BLOCK_DATA_CONCURRENCY: "8"
+      JOB_INDEXING_BLOCK_DATA_ACTIVE_JOBS: "200"
+      JOB_INDEXING_VALIDATOR_INTERVAL: "*/30 * * * * *"
+      JOB_INDEXING_VALIDATOR_CONCURRENCY: "8"
+      JOB_INDEXING_VALIDATOR_ACTIVE_JOBS: "200"
+      JOB_INDEXING_OPERATOR_INTERVAL: "*/30 * * * * *"
+      JOB_INDEXING_OPERATOR_CONCURRENCY: "8"
+      JOB_INDEXING_OPERATOR_ACTIVE_JOBS: "200"
+      JOB_INDEXING_PAYLOAD_INTERVAL: "*/30 * * * * *"
+      JOB_INDEXING_PAYLOAD_CONCURRENCY: "4"
+      JOB_INDEXING_PAYLOAD_ACTIVE_JOBS: "100"
+      JOB_INDEXING_BIDS_RANGE_INTERVAL: "*/30 * * * * *"
+      JOB_INDEXING_BIDS_RANGE_CONCURRENCY: "1"
+      JOB_INDEXING_BIDS_RANGE_ACTIVE_JOBS: "2000"
+      JOB_INDEXING_BIDS_RANGE_RATE_LIMIT_WINDOW_MS: "60000"
+      JOB_INDEXING_BIDS_RANGE_RATE_LIMIT_MAX_REQUESTS: "20"
+      RELAY_ENDPOINTS: "[]"
+      MEV_BOOST_RELAYS: "[]"
+
+  # Resource limits and requests
+  resources:
+    limits:
+      memory: 2Gi
+
+  # Liveness probe
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+
+  # Readiness probe
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 10

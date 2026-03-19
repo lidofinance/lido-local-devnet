@@ -33,13 +33,14 @@ export const LateProverBotK8sUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
+    const chainId = await dre.network.getChainId();
     const { locator } = await state.getLido();
     const { deployer } = await state.getNamedWallet();
     const { image, tag, registryHostname } = await state.getLateProverBotK8sImage();
     const env: Record<string, number | string> = {
       ...lateProverBot.config.constants,
 
-      CHAIN_ID: "32382",
+      CHAIN_ID: chainId,
       LIDO_LOCATOR_ADDRESS: locator,
       EL_RPC_URLS: elPrivate,
       CL_API_URLS: clPrivate,

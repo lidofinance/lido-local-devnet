@@ -17,6 +17,7 @@ import { kurtosis } from "./kurtosis.js"
 import { lateProverBot } from "./late-prover-bot.js";
 import { lidoCLI } from "./lido-cli.js";
 import { lidoCore } from "./lido-core.js";
+import { mevMonitoring } from "./mev-monitoring.js";
 import { noWidget } from "./no-widget.js";
 import { noWidgetBackend } from "./no-widget-backend.js";
 import { onchainMon } from "./onchain-mon.js";
@@ -38,6 +39,7 @@ export const serviceConfigs = {
   evm,
   grafana,
   kapi,
+  mevMonitoring,
   oracle,
   voting,
   assertoor,

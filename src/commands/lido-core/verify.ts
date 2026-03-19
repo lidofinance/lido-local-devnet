@@ -25,6 +25,7 @@ export const LidoCoreVerify = command.cli({
     const { constants } = lidoCore.config;
 
     const { elPublic } = await state.getChain();
+    const chainId = await dre.network.getChainId();
     const { deployer } = await state.getNamedWallet();
     const blockscoutState = await state.getBlockscout();
 
@@ -46,7 +47,7 @@ export const LidoCoreVerify = command.cli({
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,
       LOCAL_DEVNET_EXPLORER_API_URL: blockscoutState.api,
       LOCAL_DEVNET_EXPLORER_URL: blockscoutState.url,
-      LOCAL_DEVNET_CHAIN_ID: process.env.LOCAL_DEVNET_CHAIN_ID ?? "32382",
+      LOCAL_DEVNET_CHAIN_ID: process.env.LOCAL_DEVNET_CHAIN_ID ?? chainId,
     };
 
     await lidoCore.sh({

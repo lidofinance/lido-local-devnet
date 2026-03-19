@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
 import { command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import {
@@ -44,16 +47,28 @@ export const CouncilK8sUp = command.cli({
 
     const { address: dataBusAddress } = await state.getDataBus();
 
+    // Resolve chain ID from network-config genesis or EL RPC
+    let chainId: string;
+    const networkConfigGenesis = path.join(state.artifactsRoot, "network-config", "genesis.json");
+    try {
+      const genesis = JSON.parse(await readFile(networkConfigGenesis, "utf-8"));
+      chainId = String(genesis.config.chainId);
+    } catch {
+      chainId = String(await dre.network.getChainId());
+    }
+
     const env: Record<string, string> = {
       PORT: "9040",
       LOG_LEVEL: "debug",
       LOG_FORMAT: "json",
       RPC_URL: elPrivate,
+      CHAIN_ID: chainId,
       KEYS_API_HOST: privateUrl.replace(":3000", ""), // TODO make more beautiful
       KEYS_API_PORT: "3000",
       PUBSUB_SERVICE: "evm-chain",
       EVM_CHAIN_DATA_BUS_ADDRESS: dataBusAddress,
       EVM_CHAIN_DATA_BUS_PROVIDER_URL: elPrivate,
+      EVM_CHAIN_DATA_BUS_CHAIN_ID: chainId,
       LOCATOR_DEVNET_ADDRESS: locator,
     };
 

@@ -14,8 +14,8 @@ export const WalletFund = command.isomorphic({
       description: "ETH amount to send to each account.",
     }),
     privateKey: Params.string({
-      description: "Private key of the funding account (0x-prefixed hex).",
-      required: true,
+      description:
+        "Private key of the funding account (0x-prefixed hex). Defaults to deployer key from wallets.yml.",
     }),
     providerUrl: Params.string({
       description: "EL RPC URL. If not provided, uses chain state.",
@@ -26,10 +26,19 @@ export const WalletFund = command.isomorphic({
   },
   async handler({ dre: { logger, state }, params }) {
     const amount = params.amount ?? "1000";
-    const { privateKey } = params;
 
+    // Resolve private key: explicit param → deployer from wallets.yml
+    let { privateKey } = params;
     if (!privateKey) {
-      throw new DevNetError("--privateKey is required.");
+      const w = await readWalletFile(state.artifactsRoot);
+      if (!w) {
+        throw new DevNetError(
+          "No wallet found and --privateKey not provided. Run 'wallet create' first or pass --privateKey.",
+        );
+      }
+
+      privateKey = w.deployer.privateKey;
+      logger.log("Using deployer key from wallets.yml as funder.");
     }
 
     // Resolve provider URL
@@ -78,10 +87,20 @@ export const WalletFund = command.isomorphic({
     logger.log(`Sending ${amount} ETH to ${entries.length} accounts...`);
     logger.log("");
 
+    // Derive funder address to skip self-funding
+    const funderAddress = new ethers.Wallet(privateKey).address.toLowerCase();
+
     let funded = 0;
+    let skipped = 0;
     let failed = 0;
 
     for (const [role, account] of entries) {
+      if (account.publicKey.toLowerCase() === funderAddress) {
+        logger.log(`  ${role.padEnd(16)} ${account.publicKey} ... skipped (funder)`);
+        skipped++;
+        continue;
+      }
+
       try {
         logger.log(`  ${role.padEnd(16)} ${account.publicKey} ... `);
 
@@ -104,6 +123,10 @@ export const WalletFund = command.isomorphic({
 
     logger.log("");
     logger.log(`Funded ${funded}/${entries.length} accounts with ${amount} ETH each.`);
+    if (skipped > 0) {
+      logger.log(`${skipped} skipped (funder account).`);
+    }
+
     if (failed > 0) {
       logger.log(`${failed} transfers failed.`);
     }

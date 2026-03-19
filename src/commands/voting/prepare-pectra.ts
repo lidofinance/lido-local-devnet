@@ -11,10 +11,13 @@ export const PreparePectraVoting = command.cli({
   async handler({
     dre: {
       state,
+      network,
       services: { voting: votingService },
     },
   }) {
     const { elPublic } = await state.getChain();
+    const chainId = await network.getChainId();
+    const chainIdNum = Number(chainId);
     const {
       agent,
       voting,
@@ -108,7 +111,7 @@ export const PreparePectraVoting = command.cli({
       cmd: "./ganache.sh",
       cmd_settings: {
         accounts: 10,
-        chain_id: 32382,
+        chain_id: chainIdNum,
         gas_limit: 30000000,
         mnemonic: "brownie",
         port,

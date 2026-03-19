@@ -22,6 +22,7 @@ export const DeployCSVerifier = command.cli({
     const { withdrawalVault } = await state.getLido();
     const { module: CSMModule } = await state.getCSM();
     const { elPublic } = await state.getChain();
+    const chainId = await network.getChainId();
     const { deployer } = await state.getNamedWallet();
 
     const clClient = await network.getCLClient();
@@ -38,7 +39,7 @@ export const DeployCSVerifier = command.cli({
       CSM_WITHDRAWAL_VAULT: withdrawalVault,
       DEPLOY_CONFIG: constants.DEPLOY_CONFIG,
       DEPLOYER_PRIVATE_KEY: deployer.privateKey,
-      DEVNET_CHAIN_ID: "32382",
+      DEVNET_CHAIN_ID: chainId,
       DEVNET_ELECTRA_EPOCH: ELECTRA_FORK_EPOCH,
       DEVNET_SLOTS_PER_EPOCH: SLOTS_PER_EPOCH,
 
@@ -68,7 +69,7 @@ export const DeployCSVerifier = command.cli({
         "--verifier",
         "blockscout",
         "--chain",
-        "32382",
+        chainId,
         "--verifier-url",
         blockscoutConfig.api,
         // "--verifier-api-key",

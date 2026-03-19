@@ -59,6 +59,8 @@ export const ActivateCSM = command.cli({
 
     await dre.network.waitEL();
 
+    const chainId = await network.getChainId();
+
     const { HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME } = oracle.config.constants;
 
     let currentEpoch = await clClient.getHeadEpoch();
@@ -78,7 +80,7 @@ export const ActivateCSM = command.cli({
       CS_ORACLE_INITIAL_EPOCH: initialEpoch.toString(),
       EL_NETWORK_NAME: "local-devnet",
       EL_API_PROVIDER: elPublic,
-      EL_CHAIN_ID: "32382",
+      EL_CHAIN_ID: chainId,
       PRIVATE_KEY: deployer.privateKey,
       ...(csmEjector ? { CS_EJECTOR_ADDRESS: csmEjector } : {}),
       ...(triggerableWithdrawalsGateway

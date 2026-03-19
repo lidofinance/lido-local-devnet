@@ -44,6 +44,7 @@ export const KapiK8sUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
+    const chainId = await dre.network.getChainId();
 
     const { locator, stakingRouter, curatedModule } = await state.getLido();
     const { module: csmModule } = await state.getCSM();
@@ -53,7 +54,7 @@ export const KapiK8sUp = command.cli({
       ...kapi.config.constants,
 
       IS_DEVNET_MODE: "1",
-      CHAIN_ID: "32382",
+      CHAIN_ID: chainId,
       CSM_MODULE_DEVNET_ADDRESS: csmModule,
       CURATED_MODULE_DEVNET_ADDRESS: curatedModule,
       LIDO_LOCATOR_DEVNET_ADDRESS: locator,

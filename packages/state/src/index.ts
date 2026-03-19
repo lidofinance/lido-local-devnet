@@ -41,7 +41,16 @@ export class State extends BaseState {
   }
 
   async getChainMode(): Promise<ChainMode> {
-    return this.config.chainMode ?? "kurtosis";
+    if (this.config.chainMode) return this.config.chainMode;
+
+    const stored = await this.getProperties(
+      "chainMode",
+      "chainMode",
+      ChainMode,
+      false,
+    );
+
+    return (stored as ChainMode) || "kurtosis";
   }
 
   async getDataBus<M extends boolean = true>(must: M = true as M) {

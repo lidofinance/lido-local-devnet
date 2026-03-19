@@ -7,6 +7,10 @@ import { Params, command } from "@devnet/command";
 export const LidoDeposit = command.cli({
   description: "Handles deposits to the Lido protocol.",
   params: {
+    amount: Params.integer({
+      description: "Amount of ETH to submit to the protocol.",
+      default: 10000,
+    }),
     deposits: Params.integer({
       description: "Number of deposits.",
       default: 30,
@@ -30,8 +34,7 @@ export const LidoDeposit = command.cli({
     await lidoCLI.sh`./run.sh lido depositable-ether`;
 
     logger.log("Submitting Ether to the protocol...");
-    // TODO: Fetch the amount dynamically if required
-    await lidoCLI.sh`./run.sh lido submit 10000`;
+    await lidoCLI.sh`./run.sh lido submit ${params.amount}`;
 
     if (!params.dsm) {
       logger.log(
