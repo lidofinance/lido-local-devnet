@@ -7,6 +7,7 @@ NAMESPACE ?= test-namespace
 # Helm chart paths
 HELM_CHART_ROOT_PATH ?= ../../helm
 HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/lido/lido-oracle
+HELM_VENDOR_CHART_PATH = $(HELM_CHART_ROOT_PATH)/vendor
 HELM_VALUES_PATH ?=
 
 ifneq ($(HELM_VALUES_PATH),)
@@ -34,6 +35,9 @@ HELM_CHART_VERSION ?=
 
 # Extra helm set overrides (optional)
 HELM_EXTRA_SET ?=
+
+# Performance DB release name
+PERFORMANCE_DB_RELEASE ?= oracle-performance-db
 
 # Version flags (only add if version is specified)
 ifneq ($(HELM_CHART_VERSION),)
@@ -134,3 +138,20 @@ upgrade:
 .PHONY: uninstall
 uninstall:
 	helm uninstall $(HELM_RELEASE) --namespace $(NAMESPACE) --ignore-not-found
+
+# ── Infrastructure targets ─────────────────────────────────────────
+
+# Install Performance DB (PostgreSQL)
+.PHONY: install-performance-db
+install-performance-db:
+	helm upgrade --install $(PERFORMANCE_DB_RELEASE) $(HELM_VENDOR_CHART_PATH)/postgresql \
+		--namespace $(NAMESPACE) \
+		--set auth.username=performance \
+		--set auth.password=performance \
+		--set auth.database=performance \
+		--set auth.postgresPassword=postgres
+
+# Uninstall Performance DB
+.PHONY: uninstall-performance-db
+uninstall-performance-db:
+	helm uninstall $(PERFORMANCE_DB_RELEASE) --namespace $(NAMESPACE) --ignore-not-found

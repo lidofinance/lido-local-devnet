@@ -67,45 +67,11 @@ const resolveClickHouseImage = () => ({
   tag: process.env.EVM_CLICKHOUSE_IMAGE_TAG?.trim() || "latest",
 });
 
-const ensureClickHouse = async (
-  evmService: { sh: Function },
-  namespace: string,
-  logger: { log: (msg: string) => void },
-) => {
-  const clickhouseChartPath = `${HELM_VENDOR_CHARTS_ROOT_PATH}/vendor/clickhouse`;
-  const { repository, tag } = resolveClickHouseImage();
-  logger.log(`Using ClickHouse image ${repository}:${tag}`);
-  const helmSh = evmService.sh({ env: { NAMESPACE: namespace } });
-  await helmSh`helm upgrade --install ${CLICKHOUSE_RELEASE} ${clickhouseChartPath} --namespace ${namespace} --create-namespace --timeout 5m --set image.repository=${repository} --set image.tag=${tag}`;
-};
-
 const ALERT_RULES_PATH = "docker/prometheus/alerts_rules.yml";
-
-const ensurePrometheus = async (
-  evmService: { sh: Function },
-  namespace: string,
-  evmHelmRelease: string,
-  artifactRoot: string,
-  logger: { log: (msg: string) => void },
-) => {
-  const prometheusChartPath = `${HELM_VENDOR_CHARTS_ROOT_PATH}/vendor/prometheus`;
-  const evmScrapeTarget = `${evmHelmRelease}:8080`;
-  logger.log(`Deploying Prometheus (scrape target: ${evmScrapeTarget})`);
-
-  const alertRulesFile = path.join(artifactRoot, ALERT_RULES_PATH);
-  const hasAlertRules = fs.existsSync(alertRulesFile);
-  if (hasAlertRules) {
-    logger.log(`Loading alert rules from ${ALERT_RULES_PATH}`);
-  }
-
-  const setFileArg = hasAlertRules ? `--set-file alertRules=${alertRulesFile}` : "";
-  const helmSh = evmService.sh({ env: { NAMESPACE: namespace } });
-  await helmSh`helm upgrade --install ${PROMETHEUS_RELEASE} ${prometheusChartPath} --namespace ${namespace} --create-namespace --timeout 5m --set scrapeTargets[0].host=${evmScrapeTarget} --set scrapeTargets[0].jobName=evm ${setFileArg}`;
-};
 
 /**
  * Calculates the start epoch for indexing (approximately 1 day back from the current finalized epoch).
- * Queries the CL node via kubectl exec on EL pod (which has wget) using CL internal DNS.
+ * Queries the CL node via kubectl exec on EL pod (has wget) using CL internal DNS.
  */
 const getStartEpochForLastDay = async (
   elPrivateUrl: string,
@@ -191,13 +157,9 @@ export const EvmUp = command.cli({
     const slotTimeSec = Number(evm.config.constants.CHAIN_SLOT_TIME_SECONDS) || 12;
     const startEpoch = await getStartEpochForLastDay(elRpcUrls, clApiUrls, chainNamespace, slotTimeSec, logger);
 
-    // Deploy ClickHouse and Prometheus
-    await createNamespaceIfNotExists(namespace);
-    await ensureClickHouse(evm, namespace, logger);
-    await ensurePrometheus(evm, namespace, HELM_RELEASE, evm.artifact.root, logger);
-
-    // Create pull secret
-    await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace });
+    const { repository: clickhouseRepo, tag: clickhouseTag } = resolveClickHouseImage();
+    const alertRulesFile = path.join(evm.artifact.root, ALERT_RULES_PATH);
+    const hasAlertRules = fs.existsSync(alertRulesFile);
 
     const helmSh = evm.sh({
       env: {
@@ -215,8 +177,26 @@ export const EvmUp = command.cli({
         VALIDATOR_REGISTRY_KEYSAPI_SOURCE_URLS: kapiPrivateUrl,
         DB_HOST: clickhouseHost,
         START_EPOCH: startEpoch,
+        CLICKHOUSE_RELEASE,
+        CLICKHOUSE_IMAGE_REPOSITORY: clickhouseRepo,
+        CLICKHOUSE_IMAGE_TAG: clickhouseTag,
+        PROMETHEUS_RELEASE,
+        EVM_SCRAPE_TARGET: `${HELM_RELEASE}:8080`,
+        ALERT_RULES_FILE: hasAlertRules ? alertRulesFile : "",
       },
     });
+
+    // Deploy infrastructure
+    await createNamespaceIfNotExists(namespace);
+
+    logger.log(`Deploying ClickHouse (${clickhouseRepo}:${clickhouseTag})`);
+    await helmSh`make install-clickhouse`;
+
+    logger.log(`Deploying Prometheus (scrape target: ${HELM_RELEASE}:8080)`);
+    await helmSh`make install-prometheus`;
+
+    // Create pull secret
+    await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace });
 
     await helmSh`make debug`;
     await helmSh`make lint`;

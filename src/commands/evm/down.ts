@@ -50,16 +50,22 @@ export const EvmDown = command.cli({
       await helmSh`make uninstall`;
     }
 
-    // Uninstall Prometheus
+    // Uninstall infrastructure via Makefile
+    const infraHelmSh = evm.sh({
+      env: {
+        NAMESPACE: namespace,
+        HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
+        PROMETHEUS_RELEASE,
+        CLICKHOUSE_RELEASE,
+      },
+    });
+
     if (releases.includes(PROMETHEUS_RELEASE)) {
-      const helmSh = evm.sh({ env: { NAMESPACE: namespace } });
-      await helmSh`helm uninstall ${PROMETHEUS_RELEASE} --namespace ${namespace} --ignore-not-found`;
+      await infraHelmSh`make uninstall-prometheus`;
     }
 
-    // Uninstall ClickHouse
     if (releases.includes(CLICKHOUSE_RELEASE)) {
-      const helmSh = evm.sh({ env: { NAMESPACE: namespace } });
-      await helmSh`helm uninstall ${CLICKHOUSE_RELEASE} --namespace ${namespace} --ignore-not-found`;
+      await infraHelmSh`make uninstall-clickhouse`;
     }
 
     // Remove ClickHouse PVC

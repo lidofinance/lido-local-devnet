@@ -1,4 +1,4 @@
-# Makefile for Helm Operations - Ethereum Validators Monitoring
+# Makefile for Helm Operations - MEV Monitoring
 # This Makefile provides convenient commands for managing Helm charts
 
 # Default namespace for Helm operations
@@ -6,7 +6,7 @@ NAMESPACE ?= test-namespace
 
 # Helm chart paths
 HELM_CHART_ROOT_PATH ?= ../../helm
-HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/lido/lido-evm
+HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/lido/lido-mev-monitoring
 HELM_VENDOR_CHART_PATH = $(HELM_CHART_ROOT_PATH)/vendor
 HELM_VALUES_PATH ?=
 
@@ -17,7 +17,9 @@ else
 endif
 
 # Release names
-HELM_RELEASE ?= lido-evm
+HELM_RELEASE ?= mev-monitoring
+POSTGRESQL_RELEASE ?= mev-mon-postgresql
+REDIS_RELEASE ?= mev-mon-redis
 
 # Default Helm timeout
 TIMEOUT ?= 5m
@@ -41,36 +43,36 @@ else
 endif
 
 # Default ENV Variables specific to chart
-IMAGE ?= lido/ethereum-validators-monitoring
+IMAGE ?= lido/mev-monitoring
 TAG ?= dev
 REGISTRY_HOSTNAME ?= docker.io
 EL_RPC_URLS ?= http://execution
 CL_API_URLS ?= http://consensus
-VALIDATOR_REGISTRY_KEYSAPI_SOURCE_URLS ?= http://kapi:3000/v1
-INGRESS_HOSTNAME ?= evm.devnet.testnet.fi
-DB_HOST ?= http://evm-clickhouse
+KEYS_API_URL ?= http://kapi:3600
 CHAIN_ID ?= 32382
 
-# Extra Helm flags for overrides from command
-HELM_EXTRA_SET ?=
+# Database
+DB_HOST ?= mev-mon-postgresql-postgresql
+DB_PORT ?= 5432
+DB_NAME ?= mev_monitoring
+DB_USER ?= mev_user
+DB_PASSWORD ?= mev_password
+DB_MAX_POOL_SIZE ?= 25
 
-# Infrastructure release names
-CLICKHOUSE_RELEASE ?= lido-evm-clickhouse
-PROMETHEUS_RELEASE ?= lido-evm-prometheus
+# Redis
+REDIS_HOST ?= mev-mon-redis-redis-master
+REDIS_PORT ?= 6379
 
-# ClickHouse image
-CLICKHOUSE_IMAGE_REPOSITORY ?= yandex/clickhouse-server
-CLICKHOUSE_IMAGE_TAG ?= latest
+# App
+PORT ?= 3000
+NODE_ENV ?= production
+LOG_LEVEL ?= debug
+LOG_FORMAT ?= json
+BEACON_START_SLOT ?= 0
 
-# Prometheus
-EVM_SCRAPE_TARGET ?= lido-evm-1:8080
-ALERT_RULES_FILE ?=
-
-ifneq ($(ALERT_RULES_FILE),)
-	ALERT_RULES_SET = --set-file alertRules=$(ALERT_RULES_FILE)
-else
-	ALERT_RULES_SET =
-endif
+# Relay endpoints (JSON arrays)
+RELAY_ENDPOINTS ?= []
+MEV_BOOST_RELAYS ?= []
 
 # HELM overrides
 define HELM_CHART_VALUES_OVERRIDES
@@ -79,20 +81,23 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.image.registry="${REGISTRY_HOSTNAME}" \
 	--set lido-app.env.variables.EL_RPC_URLS="${EL_RPC_URLS}" \
 	--set lido-app.env.variables.CL_API_URLS="${CL_API_URLS}" \
-	--set lido-app.env.variables.ETH_NETWORK="${CHAIN_ID}" \
-	--set lido-app.env.variables.VALIDATOR_REGISTRY_KEYSAPI_SOURCE_URLS="${VALIDATOR_REGISTRY_KEYSAPI_SOURCE_URLS}" \
+	--set lido-app.env.variables.KEYS_API_URL="${KEYS_API_URL}" \
+	--set lido-app.env.variables.CHAIN_ID="${CHAIN_ID}" \
 	--set lido-app.env.variables.DB_HOST="${DB_HOST}" \
 	--set lido-app.env.variables.DB_PORT="${DB_PORT}" \
+	--set lido-app.env.variables.DB_NAME="${DB_NAME}" \
 	--set lido-app.env.variables.DB_USER="${DB_USER}" \
 	--set lido-app.env.variables.DB_PASSWORD="${DB_PASSWORD}" \
-	--set lido-app.env.variables.DB_NAME="${DB_NAME}" \
-	--set lido-app.env.variables.START_EPOCH="${START_EPOCH}" \
-	--set lido-app.env.variables.FETCH_INTERVAL_SLOTS="${FETCH_INTERVAL_SLOTS}" \
-	--set lido-app.env.variables.CHAIN_SLOT_TIME_SECONDS="${CHAIN_SLOT_TIME_SECONDS}" \
+	--set lido-app.env.variables.DB_MAX_POOL_SIZE="${DB_MAX_POOL_SIZE}" \
+	--set lido-app.env.variables.REDIS_HOST="${REDIS_HOST}" \
+	--set lido-app.env.variables.REDIS_PORT="${REDIS_PORT}" \
+	--set lido-app.env.variables.PORT="${PORT}" \
+	--set lido-app.env.variables.NODE_ENV="${NODE_ENV}" \
 	--set lido-app.env.variables.LOG_LEVEL="${LOG_LEVEL}" \
 	--set lido-app.env.variables.LOG_FORMAT="${LOG_FORMAT}" \
-	--set-json lido-app.ingress.hosts='[{ "host": "${INGRESS_HOSTNAME}", "paths": [{ "path": "/", "pathType": "Prefix", "port": "http"}]}]' \
-	${HELM_EXTRA_SET}
+	--set lido-app.env.variables.BEACON_START_SLOT="${BEACON_START_SLOT}" \
+	--set-json 'lido-app.env.variables.RELAY_ENDPOINTS=${RELAY_ENDPOINTS}' \
+	--set-json 'lido-app.env.variables.MEV_BOOST_RELAYS=${MEV_BOOST_RELAYS}'
 endef
 
 # Debug: print variables
@@ -152,33 +157,35 @@ uninstall:
 
 # ── Infrastructure targets ─────────────────────────────────────────
 
-# Install ClickHouse
-.PHONY: install-clickhouse
-install-clickhouse:
-	helm upgrade --install $(CLICKHOUSE_RELEASE) $(HELM_VENDOR_CHART_PATH)/clickhouse \
+# Install PostgreSQL
+.PHONY: install-postgres
+install-postgres:
+	helm upgrade --install $(POSTGRESQL_RELEASE) $(HELM_VENDOR_CHART_PATH)/postgresql \
 		--namespace $(NAMESPACE) \
 		--create-namespace \
 		--timeout $(TIMEOUT) \
-		--set image.repository=$(CLICKHOUSE_IMAGE_REPOSITORY) \
-		--set image.tag=$(CLICKHOUSE_IMAGE_TAG)
+		--set auth.username=$(DB_USER) \
+		--set auth.password=$(DB_PASSWORD) \
+		--set auth.database=$(DB_NAME) \
+		--set primary.persistence.size=10Gi
 
-# Uninstall ClickHouse
-.PHONY: uninstall-clickhouse
-uninstall-clickhouse:
-	helm uninstall $(CLICKHOUSE_RELEASE) --namespace $(NAMESPACE) --ignore-not-found
+# Uninstall PostgreSQL
+.PHONY: uninstall-postgres
+uninstall-postgres:
+	helm uninstall $(POSTGRESQL_RELEASE) --namespace $(NAMESPACE) --ignore-not-found
 
-# Install Prometheus
-.PHONY: install-prometheus
-install-prometheus:
-	helm upgrade --install $(PROMETHEUS_RELEASE) $(HELM_VENDOR_CHART_PATH)/prometheus \
+# Install Redis
+.PHONY: install-redis
+install-redis:
+	helm upgrade --install $(REDIS_RELEASE) oci://registry-1.docker.io/bitnamicharts/redis \
 		--namespace $(NAMESPACE) \
 		--create-namespace \
 		--timeout $(TIMEOUT) \
-		--set scrapeTargets[0].host=$(EVM_SCRAPE_TARGET) \
-		--set scrapeTargets[0].jobName=evm \
-		$(ALERT_RULES_SET)
+		--set auth.enabled=false \
+		--set architecture=standalone \
+		--set master.persistence.size=1Gi
 
-# Uninstall Prometheus
-.PHONY: uninstall-prometheus
-uninstall-prometheus:
-	helm uninstall $(PROMETHEUS_RELEASE) --namespace $(NAMESPACE) --ignore-not-found
+# Uninstall Redis
+.PHONY: uninstall-redis
+uninstall-redis:
+	helm uninstall $(REDIS_RELEASE) --namespace $(NAMESPACE) --ignore-not-found

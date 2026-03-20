@@ -80,10 +80,15 @@ const getImageConfig = async ({
 };
 
 const ensurePerformanceDb = async (oracle: OracleServiceLike, namespace: string) => {
-  const PERFORMANCE_DB_RELEASE = "oracle-performance-db";
-  const postgresChartPath = `${HELM_VENDOR_CHARTS_ROOT_PATH}/vendor/postgresql`;
-  const helmPostgresSh = oracle.sh({ env: { NAMESPACE: namespace } });
-  await helmPostgresSh`helm upgrade --install ${PERFORMANCE_DB_RELEASE} ${postgresChartPath} --namespace ${namespace} --set auth.username=performance --set auth.password=performance --set auth.database=performance --set auth.postgresPassword=postgres`;
+  const helmSh = oracle.sh({
+    env: {
+      NAMESPACE: namespace,
+      HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
+      PERFORMANCE_DB_RELEASE: "oracle-performance-db",
+    },
+  });
+
+  await helmSh`make install-performance-db`;
 };
 
 const getHelmReleases = ({
