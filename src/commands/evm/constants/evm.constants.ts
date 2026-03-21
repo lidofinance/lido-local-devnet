@@ -8,3 +8,5 @@ export const SERVICE_NAME = "Ethereum Validators Monitoring";
 export const CLICKHOUSE_RELEASE = "evm-clickhouse";
 
 export const PROMETHEUS_RELEASE = "evm-prometheus";
+
+export const ALERTMANAGER_RELEASE = "evm-alertmanager";

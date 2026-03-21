@@ -65,11 +65,29 @@ CLICKHOUSE_IMAGE_TAG ?= latest
 # Prometheus
 EVM_SCRAPE_TARGET ?= lido-evm-1:8080
 ALERT_RULES_FILE ?=
+ALERTMANAGER_URL ?=
 
 ifneq ($(ALERT_RULES_FILE),)
 	ALERT_RULES_SET = --set-file alertRules=$(ALERT_RULES_FILE)
 else
 	ALERT_RULES_SET =
+endif
+
+ifneq ($(ALERTMANAGER_URL),)
+	ALERTMANAGER_URL_SET = --set alertmanagerUrl=$(ALERTMANAGER_URL)
+else
+	ALERTMANAGER_URL_SET =
+endif
+
+# Alertmanager
+ALERTMANAGER_RELEASE ?= evm-alertmanager
+EVM_DISCORD_WEBHOOK_URL ?=
+ALERTMANAGER_CONFIG_FILE ?=
+
+ifneq ($(ALERTMANAGER_CONFIG_FILE),)
+	ALERTMANAGER_CONFIG_SET = --set-file configOverride=$(ALERTMANAGER_CONFIG_FILE)
+else
+	ALERTMANAGER_CONFIG_SET =
 endif
 
 # HELM overrides
@@ -176,9 +194,26 @@ install-prometheus:
 		--timeout $(TIMEOUT) \
 		--set scrapeTargets[0].host=$(EVM_SCRAPE_TARGET) \
 		--set scrapeTargets[0].jobName=evm \
-		$(ALERT_RULES_SET)
+		$(ALERT_RULES_SET) \
+		$(ALERTMANAGER_URL_SET)
 
 # Uninstall Prometheus
 .PHONY: uninstall-prometheus
 uninstall-prometheus:
 	helm uninstall $(PROMETHEUS_RELEASE) --namespace $(NAMESPACE) --ignore-not-found
+
+# Install Alertmanager + alertmanager-discord
+.PHONY: install-alertmanager
+install-alertmanager:
+	helm upgrade --install $(ALERTMANAGER_RELEASE) $(HELM_VENDOR_CHART_PATH)/alertmanager \
+		--namespace $(NAMESPACE) \
+		--create-namespace \
+		--timeout $(TIMEOUT) \
+		--set discord.webhookUrl=$(EVM_DISCORD_WEBHOOK_URL) \
+		--set discord.hookSlug=evm \
+		$(ALERTMANAGER_CONFIG_SET)
+
+# Uninstall Alertmanager
+.PHONY: uninstall-alertmanager
+uninstall-alertmanager:
+	helm uninstall $(ALERTMANAGER_RELEASE) --namespace $(NAMESPACE) --ignore-not-found

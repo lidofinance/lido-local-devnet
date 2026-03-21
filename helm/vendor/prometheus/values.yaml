@@ -20,3 +20,6 @@ scrapeTargets: []
 
 # Alert rules content (passed via --set-file alertRules=path/to/rules.yml)
 alertRules: ""
+
+# Alertmanager target (e.g. "evm-alertmanager:9093"). Empty = no alertmanager.
+alertmanagerUrl: ""

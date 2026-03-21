@@ -6,7 +6,7 @@ import {
   getNamespacedDeployedHelmReleases,
 } from "@devnet/k8s";
 
-import { CLICKHOUSE_RELEASE, NAMESPACE, PROMETHEUS_RELEASE, SERVICE_NAME } from "./constants/evm.constants.js";
+import { ALERTMANAGER_RELEASE, CLICKHOUSE_RELEASE, NAMESPACE, PROMETHEUS_RELEASE, SERVICE_NAME } from "./constants/evm.constants.js";
 import { evmExtension } from "./extensions/evm.extension.js";
 
 export const EvmDown = command.cli({
@@ -34,7 +34,7 @@ export const EvmDown = command.cli({
     }
 
     // Uninstall EVM app release (filter out infra releases)
-    const infraReleases = new Set([CLICKHOUSE_RELEASE, PROMETHEUS_RELEASE]);
+    const infraReleases = new Set([CLICKHOUSE_RELEASE, PROMETHEUS_RELEASE, ALERTMANAGER_RELEASE]);
     const evmReleases = releases.filter((r: string) => !infraReleases.has(r));
     for (const release of evmReleases) {
       const helmSh = evm.sh({
@@ -57,8 +57,13 @@ export const EvmDown = command.cli({
         HELM_CHART_ROOT_PATH: HELM_VENDOR_CHARTS_ROOT_PATH,
         PROMETHEUS_RELEASE,
         CLICKHOUSE_RELEASE,
+        ALERTMANAGER_RELEASE,
       },
     });
+
+    if (releases.includes(ALERTMANAGER_RELEASE)) {
+      await infraHelmSh`make uninstall-alertmanager`;
+    }
 
     if (releases.includes(PROMETHEUS_RELEASE)) {
       await infraHelmSh`make uninstall-prometheus`;

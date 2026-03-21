@@ -1,0 +1,47 @@
+{{- if .Values.discord.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-discord
+  labels:
+    app: {{ .Release.Name }}
+    component: discord
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: discord
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        component: discord
+    spec:
+      containers:
+        - name: alertmanager-discord
+          image: "{{ .Values.discord.image.repository }}:{{ .Values.discord.image.tag }}"
+          imagePullPolicy: {{ .Values.discord.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.discord.port }}
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- with .Values.discord.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/alertmanager-discord.yml
+              subPath: alertmanager-discord.yml
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-discord-config
+{{- end }}

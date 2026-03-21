@@ -1,6 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
-
 import {
   DEFAULT_NETWORK_NAME,
   NETWORK_NAME_SUBSTITUTION,
@@ -12,16 +9,18 @@ import {
   createNamespaceIfNotExists,
 } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
+import fs from "node:fs";
+import path from "node:path";
 
 import { dockerRegistryExtension } from "../docker-registry/extensions/docker-registry.extension.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { kapiK8sExtension } from "../kapi-k8s/extensions/kapi-k8s.extension.js";
 import { EvmBuild } from "./build.js";
-import { CLICKHOUSE_RELEASE, NAMESPACE, PROMETHEUS_RELEASE, SERVICE_NAME } from "./constants/evm.constants.js";
+import { ALERTMANAGER_RELEASE, CLICKHOUSE_RELEASE, NAMESPACE, PROMETHEUS_RELEASE, SERVICE_NAME } from "./constants/evm.constants.js";
 import { evmExtension } from "./extensions/evm.extension.js";
 
 const SLOTS_PER_EPOCH = 32;
-const SECONDS_PER_DAY = 86400;
+const SECONDS_PER_DAY = 86_400;
 
 const resolveEvmRpcUrls = ({
   defaultClPrivate,
@@ -68,6 +67,7 @@ const resolveClickHouseImage = () => ({
 });
 
 const ALERT_RULES_PATH = "docker/prometheus/alerts_rules.yml";
+const ALERTMANAGER_CONFIG_PATH = "docker/alertmanager/alertmanager.yml";
 
 /**
  * Calculates the start epoch for indexing (approximately 1 day back from the current finalized epoch).
@@ -88,7 +88,7 @@ const getStartEpochForLastDay = async (
     const { execaCommand } = await import('execa');
     const result = await execaCommand(
       `kubectl exec -n ${chainNamespace} ${elPodName} -c user-service-container -- wget -qO- "${clPrivateUrl}/eth/v1/beacon/headers/finalized"`,
-      { shell: true, timeout: 15000 },
+      { shell: true, timeout: 15_000 },
     );
 
     const data = JSON.parse(result.stdout);
@@ -161,6 +161,10 @@ export const EvmUp = command.cli({
     const alertRulesFile = path.join(evm.artifact.root, ALERT_RULES_PATH);
     const hasAlertRules = fs.existsSync(alertRulesFile);
 
+    const discordWebhookUrl = process.env.EVM_DISCORD_WEBHOOK_URL?.trim();
+    const alertmanagerConfigFile = path.join(evm.artifact.root, ALERTMANAGER_CONFIG_PATH);
+    const hasAlertmanagerConfig = fs.existsSync(alertmanagerConfigFile);
+
     const helmSh = evm.sh({
       env: {
         ...evm.config.constants,
@@ -183,6 +187,10 @@ export const EvmUp = command.cli({
         PROMETHEUS_RELEASE,
         EVM_SCRAPE_TARGET: `${HELM_RELEASE}:8080`,
         ALERT_RULES_FILE: hasAlertRules ? alertRulesFile : "",
+        ALERTMANAGER_RELEASE,
+        EVM_DISCORD_WEBHOOK_URL: discordWebhookUrl || "",
+        ALERTMANAGER_URL: discordWebhookUrl ? `${ALERTMANAGER_RELEASE}:9093` : "",
+        ALERTMANAGER_CONFIG_FILE: hasAlertmanagerConfig ? alertmanagerConfigFile : "",
       },
     });
 
@@ -194,6 +202,13 @@ export const EvmUp = command.cli({
 
     logger.log(`Deploying Prometheus (scrape target: ${HELM_RELEASE}:8080)`);
     await helmSh`make install-prometheus`;
+
+    if (discordWebhookUrl) {
+      logger.log("Deploying Alertmanager + alertmanager-discord");
+      await helmSh`make install-alertmanager`;
+    } else {
+      logger.log("Skipping Alertmanager (EVM_DISCORD_WEBHOOK_URL not set)");
+    }
 
     // Create pull secret
     await dre.runCommand(DockerRegistryPushPullSecretToK8s, { namespace });

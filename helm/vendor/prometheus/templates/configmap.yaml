@@ -9,6 +9,13 @@ data:
     global:
       scrape_interval: 10s
       evaluation_interval: 15s
+    {{- if .Values.alertmanagerUrl }}
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - {{ .Values.alertmanagerUrl }}
+    {{- end }}
     {{- if .Values.alertRules }}
     rule_files:
       - /etc/prometheus/rules/*.yml
