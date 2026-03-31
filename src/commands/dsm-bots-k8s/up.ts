@@ -11,6 +11,7 @@ import { DevNetError } from "@devnet/utils";
 import { getAddress } from "viem";
 
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
+import { kapiK8sExtension } from "../kapi-k8s/extensions/kapi-k8s.extension.js";
 import { DSMBotsK8sBuild } from "./build.js";
 import { NAMESPACE } from "./constants/dsm-bots-k8s.constants.js";
 import { dsmBotsK8sExtension } from "./extensions/dsm-bots-k8s.extension.js";
@@ -19,7 +20,7 @@ import { dsmBotsK8sExtension } from "./extensions/dsm-bots-k8s.extension.js";
 export const DSMBotsK8sUp = command.cli({
   description: "Start DSM bots in K8s",
   params: {},
-  extensions: [dsmBotsK8sExtension],
+  extensions: [dsmBotsK8sExtension, kapiK8sExtension],
   async handler({ dre, dre: { services, state, network, logger } }) {
     const { dsmBots } = services;
 
@@ -35,9 +36,14 @@ export const DSMBotsK8sUp = command.cli({
       throw new DevNetError("CSM is not deployed");
     }
 
+    if (!(await state.isKapiK8sRunning())) {
+      throw new DevNetError("KAPI is not deployed");
+    }
+
     await dre.runCommand(DSMBotsK8sBuild, {});
 
-    const { elPrivate } = await state.getChain();
+    const { elPrivate, clPrivate } = await state.getChain();
+    const { privateUrl: kapiPrivateUrl } = await state.getKapiK8sRunning();
     const { locator } = await state.getLido();
     const { deployer } = await state.getNamedWallet();
     const { image, tag, registryHostname } = await state.getDsmBotsK8sImage();
@@ -68,6 +74,8 @@ export const DSMBotsK8sUp = command.cli({
       CREATE_TRANSACTIONS: "true",
       DEPOSIT_MODULES_WHITELIST: "1\\,2\\,3", // necessary wrapping for helm
       PROMETHEUS_PREFIX: "depositor_bot",
+      KEYS_API_URLS: kapiPrivateUrl,
+      CL_API_URLS: clPrivate,
     };
 
     const helmReleases = [

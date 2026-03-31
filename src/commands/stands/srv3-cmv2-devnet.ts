@@ -24,8 +24,9 @@ import { DeployLidoContracts } from "../lido-core/deploy.js";
 import { GenerateLidoDevNetKeys } from "../lido-core/keys/generate.js";
 import { UseLidoDevNetKeys } from "../lido-core/keys/use.js";
 import { ReplaceDSM } from "../lido-core/replace-dsm.js";
-import { OracleK8sBuildMulti } from "../oracles-k8s/build-multi.js";
-import { OracleK8sUp } from "../oracles-k8s/up.js";
+// TODO: uncomment when ready to deploy oracles
+// import { OracleK8sBuildMulti } from "../oracles-k8s/build-multi.js";
+// import { OracleK8sUp } from "../oracles-k8s/up.js";
 
 export const SRv3CMv2DevnetUp = command.cli({
   description: "Staking Router V3 with CMv2 Devnet1",
@@ -198,6 +199,11 @@ export const SRv3CMv2DevnetUp = command.cli({
       logger.log(`✅ Keys for operator ${CMV2_OPERATOR_PREFIX}${i} added.`);
     }
 
+    await dre.runCommand(GitCheckout, {
+      service: "kapi",
+      ref: "feat/withdrawal-creds-type",
+    });
+
     logger.log("🚀 Run KAPI service in K8s.");
     await dre.runCommand(KapiK8sUp, {});
 
@@ -207,50 +213,61 @@ export const SRv3CMv2DevnetUp = command.cli({
       logger.log("✅ Ethereum Head Watcher service started.");
     }
 
-    logger.log("🚀 Run Oracle service in K8s.");
-    const oracleTags = {
-      accounting: `kt-${dre.network.name}-ao`,
-      ejector: `kt-${dre.network.name}-vebo`,
-      csm: `kt-${dre.network.name}-csm`,
-    };
-    await dre.runCommand(OracleK8sBuildMulti, {
-      accountingBranch: "feat/srv3-accounting",
-      accountingTag: oracleTags.accounting,
-      ejectorBranch: "feat/srv3-vebo-upgrade",
-      ejectorTag: oracleTags.ejector,
-      csmBranch: "feat/csm-cm-changes",
-      csmTag: oracleTags.csm,
-      image: "lido/oracle",
-      fetch: true,
-      keepWorktrees: true,
-    });
-    const { registryHostname } = await dre.state.getDockerRegistry();
-    const chainNamespace = `kt-${dre.network.name}`;
-    const clTeku = `http://cl-1-teku-geth.${chainNamespace}.svc.cluster.local:4000`;
-    const clLighthouse = `http://cl-2-lighthouse-geth.${chainNamespace}.svc.cluster.local:4000`;
-    await dre.runCommand(OracleK8sUp, {
-      image: "lido/oracle",
-      registryHostname,
-      tag: oracleTags.csm,
-      accountingImage: undefined,
-      accountingTag: oracleTags.accounting,
-      csmImage: undefined,
-      ejectorTag: oracleTags.ejector,
-      csmTag: oracleTags.csm,
-      ejectorImage: undefined,
-      consensusClientUris: `${clTeku},${clLighthouse}`,
-      performanceConsensusClientUri: clLighthouse,
-      build: false,
-    });
+    // TODO: uncomment when ready to deploy oracles
+    // logger.log("🚀 Run Oracle service in K8s.");
+    // const oracleTags = {
+    //   accounting: `kt-${dre.network.name}-ao`,
+    //   ejector: `kt-${dre.network.name}-vebo`,
+    //   csm: `kt-${dre.network.name}-csm`,
+    // };
+    // await dre.runCommand(OracleK8sBuildMulti, {
+    //   accountingBranch: "feat/srv3-accounting",
+    //   accountingTag: oracleTags.accounting,
+    //   ejectorBranch: "feat/srv3-vebo-upgrade",
+    //   ejectorTag: oracleTags.ejector,
+    //   csmBranch: "feat/csm-cm-changes",
+    //   csmTag: oracleTags.csm,
+    //   image: "lido/oracle",
+    //   fetch: true,
+    //   keepWorktrees: true,
+    // });
+    // const { registryHostname } = await dre.state.getDockerRegistry();
+    // const chainNamespace = `kt-${dre.network.name}`;
+    // const clTeku = `http://cl-1-teku-geth.${chainNamespace}.svc.cluster.local:4000`;
+    // const clLighthouse = `http://cl-2-lighthouse-geth.${chainNamespace}.svc.cluster.local:4000`;
+    // await dre.runCommand(OracleK8sUp, {
+    //   image: "lido/oracle",
+    //   registryHostname,
+    //   tag: oracleTags.csm,
+    //   accountingImage: undefined,
+    //   accountingTag: oracleTags.accounting,
+    //   csmImage: undefined,
+    //   ejectorTag: oracleTags.ejector,
+    //   csmTag: oracleTags.csm,
+    //   ejectorImage: undefined,
+    //   consensusClientUris: `${clTeku},${clLighthouse}`,
+    //   performanceConsensusClientUri: clLighthouse,
+    //   build: false,
+    // });
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");
       await dre.runCommand(DataBusDeploy, {});
       logger.log("✅ Data-bus deployed.");
 
+      await dre.runCommand(GitCheckout, {
+        service: "council",
+        ref: "feat/sr-67-wc-two-types-devnet",
+      });
+
       logger.log("🚀 Running Council service...");
       await dre.runCommand(CouncilK8sUp, {});
       logger.log("✅ Council service started.");
+
+      await dre.runCommand(GitCheckout, {
+        service: "dsmBots",
+        ref: "fix/0x02-modules-support",
+      });
 
       logger.log("🚀 Running DSM-bots service...");
       await dre.runCommand(DSMBotsK8sUp, {});

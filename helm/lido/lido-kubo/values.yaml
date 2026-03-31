@@ -66,6 +66,7 @@ lido-app:
   initCommands:
     - 'if [ ! -f /data/ipfs/config ]; then ipfs init --profile=server; fi'
     - 'if [ -n "${KUBO_SWARM_EXTERNAL_HOST:-}" ]; then ipfs config --json Addresses.AppendAnnounce "[\"/ip4/${KUBO_SWARM_EXTERNAL_HOST}/tcp/${KUBO_SWARM_EXTERNAL_TCP_PORT}\",\"/ip4/${KUBO_SWARM_EXTERNAL_HOST}/udp/${KUBO_SWARM_EXTERNAL_UDP_PORT}/quic-v1\"]"; fi'
+    - 'chown -R 1000:100 /data/ipfs'
 
   # Environment variables
   env:
