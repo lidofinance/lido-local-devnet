@@ -3,6 +3,7 @@ import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { createNamespaceIfNotExists } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { dockerRegistryExtension } from "../docker-registry/extensions/docker-registry.extension.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { kapiK8sExtension } from "../kapi-k8s/extensions/kapi-k8s.extension.js";
@@ -55,6 +56,8 @@ export const MevMonitoringK8sUp = command.cli({
     const relayEndpoints = process.env.MEV_MONITORING_RELAY_ENDPOINTS?.trim() || "[]";
     const mevBoostRelays = process.env.MEV_MONITORING_MEV_BOOST_RELAYS?.trim() || "[]";
 
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(mevMonitoring.artifact.root);
+
     const helmSh = mevMonitoring.sh({
       env: {
         NAMESPACE: namespace,
@@ -84,6 +87,8 @@ export const MevMonitoringK8sUp = command.cli({
         BEACON_START_SLOT: mevMonitoring.config.constants.BEACON_START_SLOT,
         RELAY_ENDPOINTS: relayEndpoints,
         MEV_BOOST_RELAYS: mevBoostRelays,
+        DEPLOY_COMMIT,
+        DEPLOY_TIME,
       },
     });
 

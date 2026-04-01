@@ -34,6 +34,9 @@ IMAGE ?= lido/vroom-onchain-mon
 TAG ?= dev
 REGISTRY_HOSTNAME ?= docker.io
 
+DEPLOY_COMMIT ?=
+DEPLOY_TIME ?=
+
 define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.image.repository="${IMAGE}" \
 	--set lido-app.image.tag="${TAG}" \
@@ -53,7 +56,9 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.ENABLED_AGENTS="${ENABLED_AGENTS}" \
 	--set lido-app.env.variables.CURATED_NODE_OPERATOR_REGISTRY_MODULE_ID="${CURATED_NODE_OPERATOR_REGISTRY_MODULE_ID}" \
 	--set lido-app.env.variables.SIMPLE_DVT_NODE_OPERATOR_REGISTRY_MODULE_ID="${SIMPLE_DVT_NODE_OPERATOR_REGISTRY_MODULE_ID}" \
-	--set lido-app.env.variables.CSM_NODE_OPERATOR_REGISTRY_MODULE_ID="${CSM_NODE_OPERATOR_REGISTRY_MODULE_ID}"
+	--set lido-app.env.variables.CSM_NODE_OPERATOR_REGISTRY_MODULE_ID="${CSM_NODE_OPERATOR_REGISTRY_MODULE_ID}" \
+	--set lido-app.deployMeta.commit="${DEPLOY_COMMIT}" \
+	--set lido-app.deployMeta.deployedAt="${DEPLOY_TIME}"
 endef
 
 .PHONY: debug

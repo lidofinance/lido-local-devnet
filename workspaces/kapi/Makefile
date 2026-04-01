@@ -48,6 +48,9 @@ PROVIDERS_URLS ?= http://execution
 CL_API_URLS ?= http://consensus
 CHAIN_ID ?= 32382
 
+DEPLOY_COMMIT ?=
+DEPLOY_TIME ?=
+
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
@@ -70,7 +73,9 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.CURATED_MODULE_DEVNET_ADDRESS="${CURATED_MODULE_DEVNET_ADDRESS}" \
 	--set lido-app.env.variables.CSM_MODULE_DEVNET_ADDRESS="${CSM_MODULE_DEVNET_ADDRESS}" \
 	--set lido-app.env.variables.STAKING_ROUTER_DEVNET_ADDRESS="${STAKING_ROUTER_DEVNET_ADDRESS}" \
-	--set-json lido-app.ingress.hosts='[{ "host": "${INGRESS_HOSTNAME}", "paths": [{ "path": "/", "pathType": "Prefix", "port": "http"}]}]'
+	--set-json lido-app.ingress.hosts='[{ "host": "${INGRESS_HOSTNAME}", "paths": [{ "path": "/", "pathType": "Prefix", "port": "http"}]}]' \
+	--set lido-app.deployMeta.commit="${DEPLOY_COMMIT}" \
+	--set lido-app.deployMeta.deployedAt="${DEPLOY_TIME}"
 endef
 
 

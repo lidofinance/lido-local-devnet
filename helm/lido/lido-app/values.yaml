@@ -127,6 +127,12 @@ readinessProbe: {}
 #  initialDelaySeconds: 5
 #  periodSeconds: 5
 
+# Deploy metadata labels (auto-added to pod template for log filtering)
+# Set via --set deployMeta.commit=abc123 --set deployMeta.deployedAt=2026-03-31T12:00:00Z
+deployMeta:
+  commit: ""
+  deployedAt: ""
+
 # Additional labels
 additionalLabels: {}
 

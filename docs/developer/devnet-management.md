@@ -171,6 +171,54 @@ Key env vars: `KEYS_API_URI`, `CONSENSUS_CLIENT_URI`, `LIDO_LOCATOR_ADDRESS`, `C
 
 > **Known issue:** Kubo init container runs as root and creates `/data/ipfs/config`, but the main container runs as `ipfs` (UID 1000). The helm chart includes a `chown -R 1000:100 /data/ipfs` init command to fix permissions.
 
+## Log Filtering & Deploy Metadata
+
+All services using the `lido-app` helm subchart automatically add pod labels for log filtering:
+
+| Label | Source | Example |
+|-------|--------|---------|
+| `deploy_commit` | `git rev-parse --short HEAD` at deploy time | `0bea377` |
+| `deploy_time` | ISO timestamp at deploy time | `2026-03-31T12-00-00-000Z` |
+| `bot_role` | DSM bots only: depositor/pauser/unvetter | `depositor` |
+
+### How it works
+
+1. **`lido-app` subchart** (`helm/lido/lido-app/templates/deployment.yaml`) adds `deployMeta.commit` and `deployMeta.deployedAt` as pod template labels
+2. **Each `up.ts`** calls `getDeployMeta(service.artifact.root)` from `src/shared/deploy-meta.ts` — resolves git commit + timestamp
+3. **Each Makefile** passes `DEPLOY_COMMIT` and `DEPLOY_TIME` via `--set lido-app.deployMeta.commit=...`
+4. **Promtail** (`helm/vendor/promtail/templates/configmap.yaml`) collects these labels and forwards to Loki
+
+### LogQL queries in Grafana
+
+```logql
+# Filter by service namespace
+{namespace="kt-srv3-cmv2-devnet3-dsm-bots"}
+
+# Filter DSM bots by role
+{namespace="kt-srv3-cmv2-devnet3-dsm-bots", bot_role="depositor"}
+{namespace="kt-srv3-cmv2-devnet3-dsm-bots", bot_role="pauser"}
+
+# Filter by deploy commit
+{namespace=~"kt-srv3-cmv2-devnet3-.*", deploy_commit="0bea377"}
+
+# Filter by pod name regex (works without custom labels)
+{namespace="kt-srv3-cmv2-devnet3-oracles", pod=~"oracle-accounting.*"}
+```
+
+### Adding deploy metadata to a new service
+
+1. Import helper in `up.ts`: `import { getDeployMeta } from "../../shared/deploy-meta.js";`
+2. Call: `const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(service.artifact.root);`
+3. Pass `DEPLOY_COMMIT` and `DEPLOY_TIME` in the helm shell env object
+4. Add to Makefile:
+   ```makefile
+   DEPLOY_COMMIT ?=
+   DEPLOY_TIME ?=
+   # In HELM_CHART_VALUES_OVERRIDES:
+   --set lido-app.deployMeta.commit="${DEPLOY_COMMIT}" \
+   --set lido-app.deployMeta.deployedAt="${DEPLOY_TIME}"
+   ```
+
 ## K8s Naming Conventions
 
 | Entity | Pattern | Example |

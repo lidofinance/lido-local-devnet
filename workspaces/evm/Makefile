@@ -90,6 +90,9 @@ else
 	ALERTMANAGER_CONFIG_SET =
 endif
 
+DEPLOY_COMMIT ?=
+DEPLOY_TIME ?=
+
 # HELM overrides
 define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.image.repository="${IMAGE}" \
@@ -110,7 +113,9 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.LOG_LEVEL="${LOG_LEVEL}" \
 	--set lido-app.env.variables.LOG_FORMAT="${LOG_FORMAT}" \
 	--set-json lido-app.ingress.hosts='[{ "host": "${INGRESS_HOSTNAME}", "paths": [{ "path": "/", "pathType": "Prefix", "port": "http"}]}]' \
-	${HELM_EXTRA_SET}
+	${HELM_EXTRA_SET} \
+	--set lido-app.deployMeta.commit="${DEPLOY_COMMIT}" \
+	--set lido-app.deployMeta.deployedAt="${DEPLOY_TIME}"
 endef
 
 # Debug: print variables

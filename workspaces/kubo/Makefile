@@ -45,6 +45,9 @@ KUBO_SWARM_EXTERNAL_HOST ?=
 KUBO_SWARM_EXTERNAL_TCP_PORT ?= 32355
 KUBO_SWARM_EXTERNAL_UDP_PORT ?= 32355
 
+DEPLOY_COMMIT ?=
+DEPLOY_TIME ?=
+
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
@@ -56,7 +59,9 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set-string lido-app.env.variables.KUBO_SWARM_EXTERNAL_TCP_PORT="${KUBO_SWARM_EXTERNAL_TCP_PORT}" \
 	--set-string lido-app.env.variables.KUBO_SWARM_EXTERNAL_UDP_PORT="${KUBO_SWARM_EXTERNAL_UDP_PORT}" \
 	--set-json swarmExternalService.ports='[{ "name": "swarm-tcp", "port": 4001, "targetPort": 4001, "protocol": "TCP", "nodePort": ${KUBO_SWARM_EXTERNAL_TCP_PORT} }, { "name": "swarm-udp", "port": 4001, "targetPort": 4001, "protocol": "UDP", "nodePort": ${KUBO_SWARM_EXTERNAL_UDP_PORT} }]' \
-	--set-json lido-app.ingress.hosts='[{ "host": "${KUBO_INGRESS_HOSTNAME}", "paths": [{ "path": "/api/v0", "pathType": "Prefix", "port": "http-api"}, { "path": "/", "pathType": "Prefix", "port": "http"}]}]'
+	--set-json lido-app.ingress.hosts='[{ "host": "${KUBO_INGRESS_HOSTNAME}", "paths": [{ "path": "/api/v0", "pathType": "Prefix", "port": "http-api"}, { "path": "/", "pathType": "Prefix", "port": "http"}]}]' \
+	--set lido-app.deployMeta.commit="${DEPLOY_COMMIT}" \
+	--set lido-app.deployMeta.deployedAt="${DEPLOY_TIME}"
 endef
 
 

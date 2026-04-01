@@ -4,6 +4,7 @@ import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { createNamespaceIfNotExists } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { cmv2Extension } from "../cmv2/extensions/cmv2.extension.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { CSMProverToolK8sBuild } from "./build.js";
@@ -94,6 +95,8 @@ export const CMv2ProverToolK8sUp = command.cli({
       TX_SIGNER_PRIVATE_KEY: deployer.privateKey,
     };
 
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(csmProverTool.artifact.root);
+
     const HELM_RELEASE = 'lido-cmv2-prover-tool';
     const helmSh = csmProverTool.sh({
       env: {
@@ -104,6 +107,8 @@ export const CMv2ProverToolK8sUp = command.cli({
         IMAGE: image,
         TAG: tag,
         REGISTRY_HOSTNAME: registryHostname,
+        DEPLOY_COMMIT,
+        DEPLOY_TIME,
       },
     });
 

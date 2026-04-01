@@ -3,6 +3,7 @@ import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { createNamespaceIfNotExists } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { kapiK8sExtension } from "../kapi-k8s/extensions/kapi-k8s.extension.js";
 import { CHAIN_ID, CONTRACTS_NETWORK, NAMESPACE, SERVICE_NAME } from "./constants/vroom-onchain-mon-k8s.constants.js";
@@ -75,6 +76,8 @@ export const VroomOnchainMonK8sUp = command.cli({
         || vroomOnchainMon.config.constants.CSM_NODE_OPERATOR_REGISTRY_MODULE_ID,
     };
 
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(vroomOnchainMon.artifact.root);
+
     const helmSh = vroomOnchainMon.sh({
       env: {
         ...env,
@@ -84,6 +87,8 @@ export const VroomOnchainMonK8sUp = command.cli({
         IMAGE: image,
         TAG: tag,
         REGISTRY_HOSTNAME: registryHostname,
+        DEPLOY_COMMIT,
+        DEPLOY_TIME,
       },
     });
 

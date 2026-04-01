@@ -34,10 +34,15 @@ IMAGE ?= lido/ethereum-head-watcher
 TAG ?= dev
 REGISTRY_HOSTNAME ?= docker.io
 
+DEPLOY_COMMIT ?=
+DEPLOY_TIME ?=
+
 define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.image.repository="${IMAGE}" \
 	--set lido-app.image.tag="${TAG}" \
-	--set lido-app.image.registry="${REGISTRY_HOSTNAME}"
+	--set lido-app.image.registry="${REGISTRY_HOSTNAME}" \
+	--set lido-app.deployMeta.commit="${DEPLOY_COMMIT}" \
+	--set lido-app.deployMeta.deployedAt="${DEPLOY_TIME}"
 endef
 
 .PHONY: debug

@@ -40,6 +40,9 @@ endif
 
 # Default ENV Variables specific to chart
 
+DEPLOY_COMMIT ?=
+DEPLOY_TIME ?=
+
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
@@ -61,7 +64,9 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.LOCATOR_DEVNET_ADDRESS="${LOCATOR_DEVNET_ADDRESS}" \
 	--set lido-app.env.variables.RABBITMQ_PASSCODE="${RABBITMQ_PASSCODE}" \
 	--set lido-app.env.variables.RABBITMQ_LOGIN="${RABBITMQ_LOGIN}" \
-	--set lido-app.env.variables.RABBITMQ_URL="${RABBITMQ_URL}"
+	--set lido-app.env.variables.RABBITMQ_URL="${RABBITMQ_URL}" \
+	--set lido-app.deployMeta.commit="${DEPLOY_COMMIT}" \
+	--set lido-app.deployMeta.deployedAt="${DEPLOY_TIME}"
 endef
 
 # Lint Helm chart

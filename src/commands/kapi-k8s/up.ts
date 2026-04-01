@@ -10,6 +10,7 @@ import {
 } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { KapiK8sBuild } from "./build.js";
 import { NAMESPACE, SERVICE_NAME } from "./constants/kapi-k8s.constants.js";
@@ -72,6 +73,8 @@ export const KapiK8sUp = command.cli({
 
     const INGRESS_HOSTNAME = addPrefixToIngressHostname(hostname);
 
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(kapi.artifact.root);
+
     const HELM_RELEASE = 'lido-kapi-1';
     const helmSh = kapi.sh({
       env: {
@@ -84,6 +87,8 @@ export const KapiK8sUp = command.cli({
         REGISTRY_HOSTNAME: registryHostname,
         INGRESS_HOSTNAME,
         DB_HOST: `${HELM_RELEASE}-postgresql`,
+        DEPLOY_COMMIT,
+        DEPLOY_TIME,
       },
     });
 

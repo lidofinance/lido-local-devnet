@@ -9,6 +9,7 @@ import {
 } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { CouncilK8sBuild } from "./build.js";
 import { NAMESPACE } from "./constants/council-k8s.constants.js";
@@ -72,6 +73,8 @@ export const CouncilK8sUp = command.cli({
       LOCATOR_DEVNET_ADDRESS: locator,
     };
 
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(council.artifact.root);
+
     const helmReleases = [
       { HELM_RELEASE: 'lido-council-1',  privateKey: council1.privateKey },
       { HELM_RELEASE: 'lido-council-2',  privateKey: council2.privateKey },
@@ -96,6 +99,8 @@ export const CouncilK8sUp = command.cli({
           TAG: tag,
           REGISTRY_HOSTNAME: registryHostname,
           WALLET_PRIVATE_KEY: privateKey,
+          DEPLOY_COMMIT,
+          DEPLOY_TIME,
         },
       });
 

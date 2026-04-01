@@ -47,6 +47,9 @@ EL_RPC_URLS ?= http://execution
 CL_API_URLS ?= http://consensus
 CHAIN_ID ?= 32382
 
+DEPLOY_COMMIT ?=
+DEPLOY_TIME ?=
+
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
@@ -57,7 +60,9 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.CL_API_URLS="${CL_API_URLS}" \
 	--set lido-app.env.variables.CHAIN_ID="${CHAIN_ID}" \
 	--set lido-app.env.variables.LIDO_LOCATOR_ADDRESS="${LIDO_LOCATOR_ADDRESS}" \
-	--set lido-app.env.variables.TX_SIGNER_PRIVATE_KEY="${TX_SIGNER_PRIVATE_KEY}"
+	--set lido-app.env.variables.TX_SIGNER_PRIVATE_KEY="${TX_SIGNER_PRIVATE_KEY}" \
+	--set lido-app.deployMeta.commit="${DEPLOY_COMMIT}" \
+	--set lido-app.deployMeta.deployedAt="${DEPLOY_TIME}"
 endef
 
 

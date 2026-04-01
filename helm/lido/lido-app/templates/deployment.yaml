@@ -27,6 +27,14 @@ spec:
         {{- with .Values.additionalLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- if .Values.deployMeta }}
+        {{- if .Values.deployMeta.commit }}
+        deploy-commit: {{ .Values.deployMeta.commit | quote }}
+        {{- end }}
+        {{- if .Values.deployMeta.deployedAt }}
+        deploy-time: {{ .Values.deployMeta.deployedAt | quote }}
+        {{- end }}
+        {{- end }}
       {{- with .Values.additionalAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}

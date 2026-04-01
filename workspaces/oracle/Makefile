@@ -54,6 +54,9 @@ PROVIDERS_URLS ?= http://execution
 CL_API_URLS ?= http://consensus
 CHAIN_ID ?= 32382
 
+DEPLOY_COMMIT ?=
+DEPLOY_TIME ?=
+
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
@@ -78,7 +81,9 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.PERFORMANCE_DB_PORT="${PERFORMANCE_DB_PORT}" \
 	--set lido-app.env.variables.PERFORMANCE_DB_NAME="${PERFORMANCE_DB_NAME}" \
 	--set lido-app.env.variables.PERFORMANCE_DB_USER="${PERFORMANCE_DB_USER}" \
-	--set lido-app.env.variables.PERFORMANCE_DB_PASSWORD="${PERFORMANCE_DB_PASSWORD}"
+	--set lido-app.env.variables.PERFORMANCE_DB_PASSWORD="${PERFORMANCE_DB_PASSWORD}" \
+	--set lido-app.deployMeta.commit="${DEPLOY_COMMIT}" \
+	--set lido-app.deployMeta.deployedAt="${DEPLOY_TIME}"
 endef
 
 # Lint Helm chart

@@ -12,6 +12,7 @@ import {
 import { DevNetError } from "@devnet/utils";
 import { execa } from "execa";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { KuboK8sBuild } from "./build.js";
 import { NAMESPACE } from "./constants/kubo-k8s.constants.js";
@@ -203,6 +204,8 @@ export const KuboK8sUp = command.cli({
       ? `/ip4/${KUBO_SWARM_EXTERNAL_HOST}/udp/${KUBO_SWARM_EXTERNAL_UDP_PORT}/quic-v1`
       : "";
 
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(kubo.artifact.root);
+
     const helmLidoKuboSh = kubo.sh({
       env: {
         ...env,
@@ -216,6 +219,8 @@ export const KuboK8sUp = command.cli({
         KUBO_SWARM_EXTERNAL_HOST,
         KUBO_SWARM_EXTERNAL_TCP_PORT,
         KUBO_SWARM_EXTERNAL_UDP_PORT,
+        DEPLOY_COMMIT,
+        DEPLOY_TIME,
       },
     });
 

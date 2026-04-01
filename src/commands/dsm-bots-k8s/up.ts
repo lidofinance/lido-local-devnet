@@ -10,6 +10,7 @@ import {
 import { DevNetError } from "@devnet/utils";
 import { getAddress } from "viem";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { kapiK8sExtension } from "../kapi-k8s/extensions/kapi-k8s.extension.js";
 import { DSMBotsK8sBuild } from "./build.js";
@@ -49,6 +50,8 @@ export const DSMBotsK8sUp = command.cli({
     const { image, tag, registryHostname } = await state.getDsmBotsK8sImage();
 
     const { address: dataBusAddress } = await state.getDataBus();
+
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(dsmBots.artifact.root);
 
     let DEPOSIT_CONTRACT_ADDRESS: string;
 
@@ -104,6 +107,9 @@ export const DSMBotsK8sUp = command.cli({
           REGISTRY_HOSTNAME: registryHostname,
           WALLET_PRIVATE_KEY: privateKey,
           COMMAND: command,
+          BOT_ROLE: command,
+          DEPLOY_COMMIT,
+          DEPLOY_TIME,
         },
       });
 

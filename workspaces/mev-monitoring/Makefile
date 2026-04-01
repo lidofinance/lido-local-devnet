@@ -74,6 +74,9 @@ BEACON_START_SLOT ?= 0
 RELAY_ENDPOINTS ?= []
 MEV_BOOST_RELAYS ?= []
 
+DEPLOY_COMMIT ?=
+DEPLOY_TIME ?=
+
 # HELM overrides
 define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.image.repository="${IMAGE}" \
@@ -97,7 +100,9 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.LOG_FORMAT="${LOG_FORMAT}" \
 	--set lido-app.env.variables.BEACON_START_SLOT="${BEACON_START_SLOT}" \
 	--set-json 'lido-app.env.variables.RELAY_ENDPOINTS=${RELAY_ENDPOINTS}' \
-	--set-json 'lido-app.env.variables.MEV_BOOST_RELAYS=${MEV_BOOST_RELAYS}'
+	--set-json 'lido-app.env.variables.MEV_BOOST_RELAYS=${MEV_BOOST_RELAYS}' \
+	--set lido-app.deployMeta.commit="${DEPLOY_COMMIT}" \
+	--set lido-app.deployMeta.deployedAt="${DEPLOY_TIME}"
 endef
 
 # Debug: print variables

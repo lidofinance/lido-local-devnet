@@ -12,6 +12,7 @@ import { DevNetError } from "@devnet/utils";
 import fs from "node:fs";
 import path from "node:path";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { dockerRegistryExtension } from "../docker-registry/extensions/docker-registry.extension.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { kapiK8sExtension } from "../kapi-k8s/extensions/kapi-k8s.extension.js";
@@ -165,6 +166,8 @@ export const EvmUp = command.cli({
     const alertmanagerConfigFile = path.join(evm.artifact.root, ALERTMANAGER_CONFIG_PATH);
     const hasAlertmanagerConfig = fs.existsSync(alertmanagerConfigFile);
 
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(evm.artifact.root);
+
     const helmSh = evm.sh({
       env: {
         ...evm.config.constants,
@@ -191,6 +194,8 @@ export const EvmUp = command.cli({
         EVM_DISCORD_WEBHOOK_URL: discordWebhookUrl || "",
         ALERTMANAGER_URL: discordWebhookUrl ? `${ALERTMANAGER_RELEASE}:9093` : "",
         ALERTMANAGER_CONFIG_FILE: hasAlertmanagerConfig ? alertmanagerConfigFile : "",
+        DEPLOY_COMMIT,
+        DEPLOY_TIME,
       },
     });
 

@@ -27,6 +27,12 @@ data:
             target_label: container
           - source_labels: [__meta_kubernetes_pod_label_app]
             target_label: app
+          - source_labels: [__meta_kubernetes_pod_label_bot_role]
+            target_label: bot_role
+          - source_labels: [__meta_kubernetes_pod_label_deploy_commit]
+            target_label: deploy_commit
+          - source_labels: [__meta_kubernetes_pod_label_deploy_time]
+            target_label: deploy_time
           - action: replace
             replacement: /var/log/pods/*$1/*.log
             separator: /

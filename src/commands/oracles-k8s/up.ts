@@ -3,6 +3,7 @@ import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { createNamespaceIfNotExists, getNamespacedDeployedHelmReleases } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { cmv2Extension } from "../cmv2/extensions/cmv2.extension.js";
 import { dockerRegistryExtension } from "../docker-registry/extensions/docker-registry.extension.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
@@ -362,6 +363,8 @@ export const OracleK8sUp = command.cli({
 
     const nextConsensusUri = getConsensusPicker(routing.consensusClientUris, clPrivate);
 
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(oracle.artifact.root);
+
     for (const release of helmReleases) {
       const { HELM_RELEASE, privateKey, command, stakingModuleAddress } = release;
       const isRunning = await isReleaseRunning(namespace, HELM_RELEASE);
@@ -412,6 +415,8 @@ export const OracleK8sUp = command.cli({
         REGISTRY_HOSTNAME: registryHostname,
         MEMBER_PRIV_KEY: privateKey.privateKey,
         COMMAND: command,
+        DEPLOY_COMMIT,
+        DEPLOY_TIME,
       },
     });
 

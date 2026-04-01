@@ -6,6 +6,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import * as YAML from "yaml";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { csmExtension } from "../csm/extensions/csm.extension.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { kapiK8sExtension } from "../kapi-k8s/extensions/kapi-k8s.extension.js";
@@ -321,6 +322,8 @@ export const EhwUp = command.cli({
       },
     });
 
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(ehw.artifact.root);
+
     const helmSh = ehw.sh({
       env: {
         NAMESPACE: namespace,
@@ -330,6 +333,8 @@ export const EhwUp = command.cli({
         IMAGE: image,
         TAG: tag,
         REGISTRY_HOSTNAME: registryHostname,
+        DEPLOY_COMMIT,
+        DEPLOY_TIME,
       },
     });
 
