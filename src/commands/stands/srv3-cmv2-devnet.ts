@@ -72,6 +72,7 @@ export const SRv3CMv2DevnetUp = command.cli({
     logger.log("🚀 Deploying Lido Core contracts...");
     await dre.runCommand(DeployLidoContracts, {
       ...deployArgs,
+      voteDuration: 60,
       gasMaxFee: "60",
       gasPriorityFee: "1",
       gasLimit: "16000000",

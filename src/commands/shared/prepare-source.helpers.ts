@@ -47,7 +47,7 @@ const pathExists = async (targetPath: string) =>
 const copyDirectoryContents = async (
   sourceRoot: string,
   targetRoot: string,
-  excludeNames: string[] = [".git", "overrides"],
+  excludeNames: string[] = [".git", "overrides", "source"],
 ) => {
   const excluded = new Set(excludeNames);
   const entries = await fs.readdir(sourceRoot, { withFileTypes: true });

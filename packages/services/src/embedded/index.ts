@@ -1,13 +1,14 @@
 import { assertoor } from "./assertoor.js";
 import { blockscout } from "./blockscout.js";
-import { dashboard } from "./dashboard.js";
 import { cmv2 } from "./cmv2.js";
 import { council } from "./council-daemon.js";
 import { csm } from "./csm.js";
 import { csmProverTool } from "./csm-prover-tool.js";
+import { dashboard } from "./dashboard.js";
 import { dataBus } from "./data-bus.js";
 import { dockerRegistry } from "./docker-registry.js";
 import { dsmBots } from "./dsm-bots.js";
+import { easyTrack } from "./easy-track.js";
 import { ehw } from "./ethereum-head-watcher.js";
 import { evm } from "./evm.js";
 import { grafana } from "./grafana.js";
@@ -47,6 +48,7 @@ export const serviceConfigs = {
   dataBus,
   dsmBots,
   dockerRegistry,
+  easyTrack,
   kubo,
   noWidgetBackend,
   noWidget,

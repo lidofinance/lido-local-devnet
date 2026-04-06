@@ -71,6 +71,7 @@ export const PectraDevNetUp = command.cli({
     logger.log("🚀 Deploying Lido Core contracts...");
     await dre.runCommand(DeployLidoContracts, {
       ...deployArgs,
+      voteDuration: 60,
       gasMaxFee: dre.services.lidoCore.config.constants.GAS_MAX_FEE,
       gasPriorityFee: dre.services.lidoCore.config.constants.GAS_PRIORITY_FEE,
       gasLimit: "16000000",

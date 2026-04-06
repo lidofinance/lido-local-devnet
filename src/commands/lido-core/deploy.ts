@@ -32,6 +32,11 @@ export const DeployLidoContracts = command.cli({
       description: "Path to configuration file (supports .toml and .json)",
       required: true,
     }),
+    voteDuration: Params.integer({
+      description: "Aragon voting duration in seconds",
+      default: 60,
+      required: false,
+    }),
     verify: Params.boolean({
       description: "Verify smart contracts",
       default: false,
@@ -126,7 +131,7 @@ export const DeployLidoContracts = command.cli({
     await dre.runCommand(PrepareLidoCore, {
       configFile: params.configFile,
       objectionPhaseDuration: 5,
-      voteDuration: 60,
+      voteDuration: params.voteDuration,
       vesting: "820000000000000000000000",
       normalizedClRewardPerEpoch: params.normalizedClRewardPerEpoch,
       normalizedClRewardMistakeRateBp: params.normalizedClRewardMistakeRateBp,

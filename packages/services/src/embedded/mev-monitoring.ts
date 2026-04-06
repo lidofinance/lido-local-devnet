@@ -2,8 +2,8 @@ import { DevnetServiceConfig } from "../devnet-service-config.js";
 
 export const mevMonitoring = new DevnetServiceConfig({
   repository: {
-    url: "https://github.com/lidofinance/lido-mev-monitoring.git",
-    branch: "master",
+    url: "git@github.com:lidofinance/lido-mev-monitoring.git",
+    branch: "main",
   },
   workspace: "workspaces/mev-monitoring",
   name: "mevMonitoring" as const,

@@ -37,7 +37,7 @@ export const VroomOnchainMonK8sBuild = command.cli({
     await buildAndPushDockerImage({
       cwd: vroomOnchainMon.artifact.root,
       registryHostname: dockerRegistry.registryHostname,
-      buildContext: "source",
+      buildContext: "source/bots/l1-unified",
       imageName: IMAGE,
       tag: TAG,
       password: process.env.DOCKER_REGISTRY_PASSWORD ?? "admin",

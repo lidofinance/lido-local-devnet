@@ -139,8 +139,9 @@ export const prepareVroomOnchainMonSource = async (dre: DevNetRuntimeEnvironment
 
   const contractsNetwork = CONTRACTS_NETWORK();
 
-  const contractsPath = path.join(sourceRoot, "src/contracts/networks", `${contractsNetwork}.contracts.json`);
-  const networkOverridesPath = path.join(sourceRoot, "src/common/constants/network-overrides.json");
+  const botRoot = path.join(sourceRoot, "bots/l1-unified");
+  const contractsPath = path.join(botRoot, "src/contracts/networks", `${contractsNetwork}.contracts.json`);
+  const networkOverridesPath = path.join(botRoot, "src/common/constants/network-overrides.json");
 
   await fs.mkdir(path.dirname(contractsPath), { recursive: true });
   await fs.mkdir(path.dirname(networkOverridesPath), { recursive: true });
