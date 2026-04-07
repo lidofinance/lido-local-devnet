@@ -1,4 +1,3 @@
-{{- if .Values.nats.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,39 +22,37 @@ spec:
     spec:
       containers:
       - name: nats
-        image: {{ .Values.nats.image }}
-        imagePullPolicy: {{ .Values.nats.pullPolicy }}
+        image: nats:2.10.29-alpine
+        imagePullPolicy: IfNotPresent
         args:
           - "-js"
           - "-sd"
           - "/data/nats"
           - "-m"
-          - "{{ .Values.nats.monitorPort }}"
+          - "8222"
           - "-p"
-          - "{{ .Values.nats.port }}"
+          - "4222"
         ports:
           - name: client
-            containerPort: {{ .Values.nats.port }}
+            containerPort: 4222
             protocol: TCP
           - name: monitor
-            containerPort: {{ .Values.nats.monitorPort }}
+            containerPort: 8222
             protocol: TCP
         volumeMounts:
           - name: nats-data
             mountPath: /data/nats
         readinessProbe:
           tcpSocket:
-            port: {{ .Values.nats.port }}
+            port: 4222
           initialDelaySeconds: 3
           periodSeconds: 5
         livenessProbe:
           tcpSocket:
-            port: {{ .Values.nats.port }}
+            port: 4222
           initialDelaySeconds: 10
           periodSeconds: 10
-        resources:
-          {{- toYaml .Values.nats.resources | nindent 10 }}
+        resources: {}
       volumes:
         - name: nats-data
           emptyDir: {}
-{{- end }}

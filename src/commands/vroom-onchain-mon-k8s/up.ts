@@ -49,7 +49,10 @@ export const VroomOnchainMonK8sUp = command.cli({
     const { image, tag, registryHostname } = await state.getVroomOnchainMonK8sImage();
 
     const HELM_RELEASE = "lido-vroom-onchain-mon";
-    const natsServiceUrl = `nats://${HELM_RELEASE}-nats:4222`;
+    // Use NATS from onchain-mon namespace (shared between feeder, forwarder, and vroom)
+    const onchainMonNs = `kt-${dre.network.name}-onchain-mon`;
+    const natsServiceUrl = process.env.VROOM_ONCHAIN_MON_NATS_SERVERS
+      || `nats://lido-onchain-mon-nats.${onchainMonNs}.svc.cluster.local:4222`;
 
     const enabledAgents = escapeHelmCommas(
       process.env.VROOM_ONCHAIN_MON_ENABLED_AGENTS
@@ -105,7 +108,7 @@ export const VroomOnchainMonK8sUp = command.cli({
     await state.updateVroomOnchainMonK8sRunning({
       helmRelease: HELM_RELEASE,
       privateUrl: `http://${HELM_RELEASE}.${NAMESPACE(dre)}.svc.cluster.local:3000`,
-      natsUrl: `nats://${HELM_RELEASE}-nats.${NAMESPACE(dre)}.svc.cluster.local:4222`,
+      natsUrl: `nats://lido-onchain-mon-nats.${onchainMonNs}.svc.cluster.local:4222`,
     });
 
     logger.log(`${SERVICE_NAME} started.`);

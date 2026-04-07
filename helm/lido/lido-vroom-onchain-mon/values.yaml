@@ -78,7 +78,7 @@ lido-app:
   pvcs: [ ]
 
 nats:
-  enabled: true
+  enabled: false
   image: nats:2.10.29-alpine
   pullPolicy: IfNotPresent
   port: 4222

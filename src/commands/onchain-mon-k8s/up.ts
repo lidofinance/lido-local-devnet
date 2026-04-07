@@ -105,7 +105,18 @@ export const OnchainMonK8sUp = command.cli({
 
     const { elPrivate } = await state.getChain();
     const { image, tag, registryHostname } = await state.getOnchainMonK8sImage();
-    const { natsUrl } = await state.getVroomOnchainMonK8sRunning();
+    const HELM_RELEASE_ONCHAIN = "lido-onchain-mon";
+    const onchainMonNatsUrl = `nats://${HELM_RELEASE_ONCHAIN}-nats.${NAMESPACE(dre)}.svc.cluster.local:4222`;
+    // Fallback to vroom NATS if available
+    let natsUrl: string;
+    try {
+      const vroomState = await state.getVroomOnchainMonK8sRunning();
+      natsUrl = vroomState.natsUrl;
+    } catch {
+      natsUrl = onchainMonNatsUrl;
+    }
+    // Always prefer onchain-mon's own NATS
+    natsUrl = onchainMonNatsUrl;
 
     const blockSubject = process.env.ONCHAIN_MON_BLOCK_TOPIC
       || process.env.VROOM_ONCHAIN_MON_NATS_LISTEN_TOPIC

@@ -2,6 +2,18 @@ import { DevNetRuntimeEnvironmentInterface } from "@devnet/command";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+async function readRawLidoState(artifactsRoot: string) {
+  const statePath = path.join(artifactsRoot, "state.json");
+  const raw = await fs.readFile(statePath, "utf-8");
+  const parsed = JSON.parse(raw);
+  const lido = parsed.lidoCore ?? {};
+  return {
+    simpleDvt: lido["app:simple-dvt"]?.proxy?.address ?? lido["app:simple-dvt"]?.address ?? "",
+    hashConsensusForAO: lido.hashConsensusForAccountingOracle?.address ?? "",
+    hashConsensusForVEBO: lido.hashConsensusForValidatorsExitBusOracle?.address ?? "",
+  };
+}
+
 import { prepareRepositoryBackedServiceSource } from "../shared/prepare-source.helpers.js";
 import { CHAIN_ID, CONTRACTS_NETWORK } from "./constants/vroom-onchain-mon-k8s.constants.js";
 
@@ -49,6 +61,7 @@ const resolveAddress = (value: string | undefined) => value || ZERO_ADDRESS;
 const buildContractsPayload = async (dre: DevNetRuntimeEnvironmentInterface) => {
   const { lido, locator, curatedModule, acl, agent, triggerableWithdrawalsGateway } = await dre.state.getLido();
   const csmState = await dre.state.getCSM(false);
+  const rawLido = await readRawLidoState(dre.state.artifactsRoot);
 
   return {
     CCR: ZERO_ADDRESS,
@@ -56,7 +69,7 @@ const buildContractsPayload = async (dre: DevNetRuntimeEnvironmentInterface) => 
 
     CSM_MODULE_REGISTRY: resolveAddress(csmState.module),
     CURATED_MODULE_REGISTRY: curatedModule,
-    SIMPLE_DVT_NO_REGISTRY: lido,
+    SIMPLE_DVT_NO_REGISTRY: resolveAddress(rawLido.simpleDvt),
 
     SPLIT_WALLET_FACTORY_OBOL_CLUSTER_ADDRESS: ZERO_ADDRESS,
     SPLIT_WALLET_FACTORY_SSV_WITHOUT_FEE_CLUSTER_ADDRESS: ZERO_ADDRESS,
@@ -67,9 +80,9 @@ const buildContractsPayload = async (dre: DevNetRuntimeEnvironmentInterface) => 
     LIDO_LOCATOR: locator,
     MEV_ALLOWED_LIST_ADDRESS: ZERO_ADDRESS,
 
-    ACCOUNTING_HASH_CONSENSUS_ADDRESS: ZERO_ADDRESS,
+    ACCOUNTING_HASH_CONSENSUS_ADDRESS: resolveAddress(rawLido.hashConsensusForAO),
     ARAGON_ACL: acl,
-    EXITBUS_HASH_CONSENSUS: ZERO_ADDRESS,
+    EXITBUS_HASH_CONSENSUS: resolveAddress(rawLido.hashConsensusForVEBO),
     CSFEE_HASH_CONSENSUS_ADDRESS: resolveAddress(csmState.hashConsensus),
     CSFEE_ORACLE_ADDRESS: resolveAddress(csmState.feeOracle),
     CSEJECTOR: resolveAddress(csmState.ejector),

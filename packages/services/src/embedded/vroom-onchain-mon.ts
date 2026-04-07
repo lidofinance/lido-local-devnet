@@ -3,7 +3,7 @@ import { DevnetServiceConfig } from "../devnet-service-config.js";
 export const vroomOnchainMon = new DevnetServiceConfig({
   repository: {
     url: "git@github.com:lidofinance/valset-onchain-mon-bots.git",
-    branch: "feature/vroom-435-staking-router-v3-devnet1-with-cmv2",
+    branch: "feat/sr-v3",
   },
   workspace: "workspaces/vroom-onchain-mon",
   name: "vroomOnchainMon" as const,
