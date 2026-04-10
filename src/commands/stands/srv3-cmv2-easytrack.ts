@@ -25,9 +25,11 @@ import { GenerateLidoDevNetKeys } from "../lido-core/keys/generate.js";
 import { UseLidoDevNetKeys } from "../lido-core/keys/use.js";
 import { ReplaceDSM } from "../lido-core/replace-dsm.js";
 import { LoggingUp } from "../logging/up.js";
+import { OnchainMonK8sUp } from "../onchain-mon-k8s/up.js";
 import { OracleK8sBuildMulti } from "../oracles-k8s/build-multi.js";
 import { OracleK8sUp } from "../oracles-k8s/up.js";
 import { ValidatorAdd } from "../validator/add.js";
+import { VroomOnchainMonK8sUp } from "../vroom-onchain-mon-k8s/up.js";
 
 export const SRv3CMv2EasyTrackDevnetUp = command.cli({
   description: "SRv3 + CMv2 + Easy Track Devnet (upgrade testing)",
@@ -233,9 +235,17 @@ export const SRv3CMv2EasyTrackDevnetUp = command.cli({
     await dre.runCommand(LoggingUp, {});
     logger.log("✅ Logging deployed.");
 
-    logger.log("🚀 Deploying Grafana...");
-    await dre.runCommand(GrafanaUp, {});
-    logger.log("✅ Grafana deployed.");
+    // === Phase 8: Onchain monitoring ===
+
+    await dre.runCommand(GitCheckout, { service: "vroomOnchainMon", ref: "feat/sr-v3" });
+
+    logger.log("🚀 Deploying vroom-onchain-mon...");
+    await dre.runCommand(VroomOnchainMonK8sUp, {});
+    logger.log("✅ vroom-onchain-mon deployed.");
+
+    logger.log("🚀 Deploying onchain-mon (feeder + forwarder)...");
+    await dre.runCommand(OnchainMonK8sUp, {});
+    logger.log("✅ onchain-mon deployed.");
 
     logger.log("🚀 Publishing digest to Slack...");
     await dre.runCommand(ChainPublishDigestToSlack, {

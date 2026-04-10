@@ -24,6 +24,7 @@ import { DeployLidoContracts } from "../lido-core/deploy.js";
 import { GenerateLidoDevNetKeys } from "../lido-core/keys/generate.js";
 import { UseLidoDevNetKeys } from "../lido-core/keys/use.js";
 import { ReplaceDSM } from "../lido-core/replace-dsm.js";
+import { ValidatorAdd } from "../validator/add.js";
 // TODO: uncomment when ready to deploy oracles
 // import { OracleK8sBuildMulti } from "../oracles-k8s/build-multi.js";
 // import { OracleK8sUp } from "../oracles-k8s/up.js";
@@ -199,6 +200,10 @@ export const SRv3CMv2DevnetUp = command.cli({
       });
       logger.log(`✅ Keys for operator ${CMV2_OPERATOR_PREFIX}${i} added.`);
     }
+
+    logger.log("🚀 Adding keys to the validator client...");
+    await dre.runCommand(ValidatorAdd, {});
+    logger.log("✅ Validator keys added.");
 
     await dre.runCommand(GitCheckout, {
       service: "kapi",

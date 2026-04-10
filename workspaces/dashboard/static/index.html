@@ -56,6 +56,7 @@
       <div class="flex gap-1" id="tabs">
         <button onclick="showTab('status')" class="px-4 py-2 text-sm font-medium tab-active" id="tab-status">Status</button>
         <button onclick="showTab('docs')" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400" id="tab-docs">Docs</button>
+        <button onclick="showTab('oracles')" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400" id="tab-oracles">Oracles</button>
         <button onclick="showTab('downloads')" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400" id="tab-downloads">Downloads</button>
       </div>
       <div class="ml-auto flex items-center gap-3">
@@ -86,6 +87,9 @@
       </div>
     </div>
 
+    <!-- Oracles page -->
+    <div id="page-oracles" class="hidden p-6 space-y-6"></div>
+
     <!-- Downloads page -->
     <div id="page-downloads" class="hidden p-6"></div>
   </div>
@@ -115,6 +119,7 @@ function toggleTheme() {
   // Re-render if data loaded (updates card/row colors)
   if (STATE) {
     renderStatus(STATE);
+    renderOracles(STATE);
     renderDownloads(MANIFEST);
   }
 }
@@ -242,52 +247,248 @@ function renderStatus(state) {
     if (rows) html += card('Explorers & Monitoring', rows);
   }
 
-  // Lido Core contracts
-  if (state.lidoCore) {
-    const lido = state.lidoCore;
-    const importantKeys = [
-      'lidoLocator', 'lido', 'stakingRouter', 'accountingOracle',
-      'depositSecurityModule', 'withdrawalQueue', 'curatedModule',
-      'agent', 'voting', 'tokenManager', 'finance',
-    ];
+  // Services (from manifest)
+  if (MANIFEST && MANIFEST.services && MANIFEST.services.length > 0) {
     let rows = '';
-    for (const key of importantKeys) {
-      if (lido[key]) {
-        const raw = lido[key];
-        const addr = typeof raw === 'object' ? (raw.proxy || raw.address || JSON.stringify(raw)) : raw;
-        rows += kvRow(key, addr, true);
-      }
+    for (const svc of MANIFEST.services) {
+      const branchLink = svc.repoUrl
+        ? `<a href="${svc.repoUrl}/tree/${encodeURIComponent(svc.branch)}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">${svc.branch}</a>`
+        : `<span class="font-mono text-sm">${svc.branch}</span>`;
+      const shortCommit = svc.commit.slice(0, 8);
+      const commitLink = svc.repoUrl
+        ? `<a href="${svc.repoUrl}/commit/${svc.commit}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline font-mono">${shortCommit}</a>`
+        : `<span class="font-mono text-sm">${shortCommit}</span>`;
+
+      rows += `<div class="flex items-center py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
+        <span class="text-gray-700 dark:text-gray-300 text-sm w-44 flex-shrink-0 font-medium">${svc.name}</span>
+        <span class="text-sm flex-1">${branchLink}</span>
+        <span class="text-sm w-24 text-right">${commitLink}</span>
+      </div>`;
     }
-    const allKeys = Object.keys(lido).filter(k => !importantKeys.includes(k) && k !== 'chainId' && k !== 'chainSpec');
-    if (allKeys.length > 0) {
-      rows += `<div class="text-xs text-gray-400 dark:text-gray-500 mt-2">+ ${allKeys.length} more contracts (download state.json for full list)</div>`;
-    }
-    if (rows) html += card('Lido Core Contracts', rows);
+    html += card(`Services (${MANIFEST.services.length})`, rows);
   }
 
-  // CSM contracts
-  if (state.csm) {
-    let rows = '';
-    for (const [key, val] of Object.entries(state.csm)) {
-      if (typeof val === 'string' && val.startsWith('0x')) {
-        rows += kvRow(key, val, true);
-      }
-    }
-    if (rows) html += card('CSM Contracts', rows);
-  }
-
-  // CMv2 contracts
-  if (state.cmv2) {
-    let rows = '';
-    for (const [key, val] of Object.entries(state.cmv2)) {
-      if (typeof val === 'string' && val.startsWith('0x')) {
-        rows += kvRow(key, val, true);
-      }
-    }
-    if (rows) html += card('CMv2 Contracts', rows);
-  }
 
   page.innerHTML = html;
+}
+
+// ── Oracles page rendering ──────────────────────────────────────────────
+
+async function ethCall(rpc, to, data) {
+  const res = await fetch(rpc, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_call', params: [{ to, data }, 'latest'], id: Date.now() })
+  });
+  const json = await res.json();
+  return json.result;
+}
+
+function blockscoutLink(address) {
+  const url = STATE?.blockscout?.url;
+  if (!address) return '<span class="text-gray-400">-</span>';
+  const short = address.slice(0, 8) + '...' + address.slice(-6);
+  if (!url) return `<span class="font-mono text-sm">${address}</span>`;
+  return `<a href="${url}/address/${address}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-sm" title="${address}">${short}</a>`;
+}
+
+function blockscoutLinkFull(address) {
+  const url = STATE?.blockscout?.url;
+  if (!address) return '<span class="text-gray-400">-</span>';
+  if (!url) return `<span class="font-mono text-sm break-all">${address}</span>`;
+  return `<a href="${url}/address/${address}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-sm break-all">${address}</a>`;
+}
+
+function statusBadge(ok, labelTrue = 'Yes', labelFalse = 'No') {
+  if (ok) return `<span class="px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs rounded-full font-medium">${labelTrue}</span>`;
+  return `<span class="px-2 py-0.5 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 text-xs rounded-full font-medium">${labelFalse}</span>`;
+}
+
+function getAddr(obj) {
+  if (!obj) return '';
+  if (typeof obj === 'string') return obj;
+  if (obj.proxy?.address) return obj.proxy.address;
+  if (obj.address) return obj.address;
+  return '';
+}
+
+function renderOracles(state) {
+  const page = document.getElementById('page-oracles');
+  if (!page) return;
+  const lido = state.lidoCore || {};
+  const csm = state.csm || {};
+  const rpc = state.chain?.elPublic;
+
+  let html = '<h2 class="text-xl font-bold mb-4">Oracle Status</h2>';
+
+  // Oracle contracts card
+  const contracts = [
+    { name: 'Accounting Oracle', addr: getAddr(lido.accountingOracle) },
+    { name: 'Validators Exit Bus Oracle', addr: getAddr(lido.validatorsExitBusOracle) },
+    { name: 'HashConsensus (AO)', addr: getAddr(lido.hashConsensusForAccountingOracle) },
+    { name: 'HashConsensus (VEBO)', addr: getAddr(lido.hashConsensusForValidatorsExitBusOracle) },
+    { name: 'Oracle Daemon Config', addr: getAddr(lido.oracleDaemonConfig) },
+    { name: 'Oracle Report Sanity Checker', addr: getAddr(lido.oracleReportSanityChecker) },
+    { name: 'Lazy Oracle', addr: getAddr(lido.lazyOracle) },
+    { name: 'CSM HashConsensus', addr: csm.hashConsensus || '' },
+    { name: 'CSM Fee Oracle', addr: csm.feeOracle || '' },
+  ].filter(c => c.addr);
+
+  let contractRows = '';
+  for (const c of contracts) {
+    contractRows += `<div class="flex items-start py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
+      <span class="text-gray-500 dark:text-gray-400 text-sm w-56 flex-shrink-0">${c.name}</span>
+      <span class="text-sm flex-1">${blockscoutLinkFull(c.addr)}</span>
+      <button class="copy-btn text-xs text-blue-500 dark:text-blue-400 ml-2" onclick="copyToClipboard('${c.addr}', this)">copy</button>
+    </div>`;
+  }
+  html += card('Oracle Contracts', contractRows || '<span class="text-gray-400">No oracle contracts found</span>');
+
+  // Frame status card (live data placeholder)
+  html += `<div id="oracle-frames-card">${card('Oracle Frame Status',
+    '<div class="text-gray-400 text-sm" id="oracle-frames-loading">Loading live data from RPC...</div>'
+  )}</div>`;
+
+  // Oracle members card (live data placeholder)
+  html += `<div id="oracle-members-card">${card('Oracle Members (Accounting)',
+    '<div class="text-gray-400 text-sm" id="oracle-members-loading">Loading live data from RPC...</div>'
+  )}</div>`;
+
+  page.innerHTML = html;
+
+  // Load live data
+  if (rpc) {
+    loadOracleFrames(rpc, lido);
+    loadOracleMembers(rpc, lido);
+  }
+}
+
+async function loadOracleFrames(rpc, lido) {
+  const container = document.getElementById('oracle-frames-card');
+  if (!container) return;
+
+  try {
+    const oracles = [
+      { name: 'Accounting Oracle', addr: getAddr(lido.accountingOracle), hc: getAddr(lido.hashConsensusForAccountingOracle) },
+      { name: 'Validators Exit Bus', addr: getAddr(lido.validatorsExitBusOracle), hc: getAddr(lido.hashConsensusForValidatorsExitBusOracle) },
+    ].filter(o => o.addr);
+
+    let rows = '';
+    for (const oracle of oracles) {
+      // getProcessingState() = 0x8f7797c2
+      const psResult = await ethCall(rpc, oracle.addr, '0x8f7797c2');
+      // getLastProcessingRefSlot() = 0x3584d59c
+      const lastSlotResult = await ethCall(rpc, oracle.addr, '0x3584d59c');
+
+      let refSlot = '-', mainSubmitted = false, extraSubmitted = false, lastRefSlot = 0;
+
+      if (psResult && psResult.length > 66) {
+        const data = psResult.slice(2);
+        refSlot = parseInt(data.slice(0, 64), 16);
+        mainSubmitted = parseInt(data.slice(192, 256), 16) !== 0;
+        extraSubmitted = parseInt(data.slice(384, 448), 16) !== 0;
+      }
+
+      if (lastSlotResult) {
+        lastRefSlot = parseInt(lastSlotResult, 16);
+      }
+
+      rows += `<tr class="border-b border-gray-100 dark:border-gray-800">
+        <td class="py-2 pr-4 text-sm font-medium">${oracle.name}</td>
+        <td class="py-2 pr-4 text-sm font-mono">${refSlot}</td>
+        <td class="py-2 pr-4">${statusBadge(mainSubmitted, 'Submitted', 'Pending')}</td>
+        <td class="py-2 pr-4">${statusBadge(extraSubmitted, 'Submitted', 'Pending')}</td>
+        <td class="py-2 text-sm font-mono text-gray-500">${lastRefSlot || '-'}</td>
+      </tr>`;
+    }
+
+    const table = `<div class="flex items-center justify-between mb-3">
+      <span></span>
+      <button onclick="loadOracleFrames('${rpc}', STATE.lidoCore)" class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400">↻ Refresh</button>
+    </div>
+    <table class="w-full text-left">
+      <thead><tr class="text-xs text-gray-500 dark:text-gray-400 uppercase">
+        <th class="pb-2 pr-4">Oracle</th>
+        <th class="pb-2 pr-4">Current Frame</th>
+        <th class="pb-2 pr-4">Main Data</th>
+        <th class="pb-2 pr-4">Extra Data</th>
+        <th class="pb-2">Last Completed</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+    container.innerHTML = card('Oracle Frame Status', table);
+  } catch (e) {
+    container.innerHTML = card('Oracle Frame Status', `<span class="text-red-500 text-sm">Error: ${e.message}</span>`);
+  }
+}
+
+async function loadOracleMembers(rpc, lido) {
+  const container = document.getElementById('oracle-members-card');
+  if (!container) return;
+
+  const hcAddr = getAddr(lido.hashConsensusForAccountingOracle);
+  if (!hcAddr) {
+    container.innerHTML = card('Oracle Members', '<span class="text-gray-400 text-sm">HashConsensus address not found</span>');
+    return;
+  }
+
+  try {
+    // getMembers() = 0x9eab5253
+    const membersResult = await ethCall(rpc, hcAddr, '0x9eab5253');
+
+    if (!membersResult || membersResult.length < 130) {
+      container.innerHTML = card('Oracle Members (Accounting)', '<span class="text-gray-400 text-sm">No members data</span>');
+      return;
+    }
+
+    // Decode getMembers() → (address[] addresses, uint256[] lastReportedSlots)
+    const data = membersResult.slice(2);
+    // offset to addresses array
+    const addrOffset = parseInt(data.slice(0, 64), 16) * 2;
+    const addrCount = parseInt(data.slice(addrOffset, addrOffset + 64), 16);
+
+    const addresses = [];
+    for (let i = 0; i < addrCount; i++) {
+      const raw = data.slice(addrOffset + 64 + i * 64, addrOffset + 128 + i * 64);
+      addresses.push('0x' + raw.slice(24));
+    }
+
+    // offset to lastReportedSlots array
+    const slotsOffset = parseInt(data.slice(64, 128), 16) * 2;
+    const slotsCount = parseInt(data.slice(slotsOffset, slotsOffset + 64), 16);
+    const lastSlots = [];
+    for (let i = 0; i < slotsCount; i++) {
+      const raw = data.slice(slotsOffset + 64 + i * 64, slotsOffset + 128 + i * 64);
+      lastSlots.push(parseInt(raw, 16));
+    }
+
+    let rows = '';
+    for (let i = 0; i < addresses.length; i++) {
+      const addr = addresses[i];
+      const lastSlot = lastSlots[i] || 0;
+      rows += `<tr class="border-b border-gray-100 dark:border-gray-800">
+        <td class="py-2 pr-4 text-sm">${blockscoutLink(addr)}</td>
+        <td class="py-2 pr-4 text-sm font-mono">${lastSlot || '<span class="text-gray-400">never</span>'}</td>
+      </tr>`;
+    }
+
+    const table = `<div class="flex items-center justify-between mb-3">
+      <span class="text-xs text-gray-400">${addresses.length} members</span>
+      <button onclick="loadOracleMembers('${rpc}', STATE.lidoCore)" class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400">↻ Refresh</button>
+    </div>
+    <table class="w-full text-left">
+      <thead><tr class="text-xs text-gray-500 dark:text-gray-400 uppercase">
+        <th class="pb-2 pr-4">Member Address</th>
+        <th class="pb-2">Last Reported Slot</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+    container.innerHTML = card('Oracle Members (Accounting)', table);
+  } catch (e) {
+    container.innerHTML = card('Oracle Members (Accounting)', `<span class="text-red-500 text-sm">Error: ${e.message}</span>`);
+  }
 }
 
 // ── Docs page rendering ─────────────────────────────────────────────────
@@ -393,6 +594,7 @@ async function init() {
     }
 
     renderStatus(STATE);
+    renderOracles(STATE);
     renderDocsSidebar(MANIFEST);
     renderDownloads(MANIFEST);
   } catch (e) {

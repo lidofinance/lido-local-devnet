@@ -1,12 +1,84 @@
 import { command } from "@devnet/command";
 import { buildAndPushDockerImage } from "@devnet/docker";
 import { DevNetError } from "@devnet/utils";
+import { execa } from "execa";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 import { sanitizeStateJsonForPublicSharing } from "../../shared/public-state.helpers.js";
 import { SERVICE_NAME } from "./constants/dashboard.constants.js";
 import { dashboardExtension } from "./extensions/dashboard.extension.js";
+
+type ServiceGitInfo = {
+  name: string;
+  branch: string;
+  commit: string;
+  repoUrl: string;
+};
+
+function sshToHttps(url: string): string {
+  return url
+    .replace(/^git@github\.com:/, "https://github.com/")
+    .replace(/\.git$/, "");
+}
+
+async function collectServicesGitInfo(
+  artifactsRoot: string,
+  services: Record<string, { artifact: { root: string }; config: { repository?: { url: string } } }>,
+): Promise<ServiceGitInfo[]> {
+  const results: ServiceGitInfo[] = [];
+
+  for (const [name, svc] of Object.entries(services)) {
+    const dir = svc.artifact.root;
+    const repoUrl = svc.config.repository?.url ?? "";
+
+    // Check for multi-build manifest (oracle uses worktrees with different branches)
+    const manifestPath = path.join(dir, "build-multi-manifest.json");
+    try {
+      const manifestContent = await fs.readFile(manifestPath, "utf-8");
+      const manifest = JSON.parse(manifestContent);
+      if (Array.isArray(manifest.builds) && manifest.builds.length > 0) {
+        for (const build of manifest.builds) {
+          if (build.branch && build.commit) {
+            results.push({
+              name: `${name}/${build.role}`,
+              branch: build.branch,
+              commit: build.commit,
+              repoUrl: sshToHttps(repoUrl),
+            });
+          }
+        }
+        continue;
+      }
+    } catch {
+      // no manifest, use git info
+    }
+
+    try {
+      await fs.access(path.join(dir, ".git"));
+    } catch {
+      continue;
+    }
+
+    try {
+      const [branchResult, commitResult] = await Promise.all([
+        execa("git", ["-C", dir, "rev-parse", "--abbrev-ref", "HEAD"]),
+        execa("git", ["-C", dir, "rev-parse", "HEAD"]),
+      ]);
+
+      results.push({
+        name,
+        branch: branchResult.stdout.trim(),
+        commit: commitResult.stdout.trim(),
+        repoUrl: sshToHttps(repoUrl),
+      });
+    } catch {
+      // skip
+    }
+  }
+
+  return results.sort((a, b) => a.name.localeCompare(b.name));
+}
 
 /**
  * Collects data files (state.json, lido-cli configs, network config, docs)
@@ -114,13 +186,21 @@ export const DashboardBuild = command.cli({
     await copyDocsRecursive(projectDocsDir, docsDir, "");
     logger.log(`Copied ${docFiles.length} doc files`);
 
-    // ── 5. Generate manifest.json ─────────────────────────────────────────
+    // ── 5. Collect services git info ────────────────────────────────────────
+    const servicesInfo = await collectServicesGitInfo(
+      state.artifactsRoot,
+      services as unknown as Record<string, { artifact: { root: string }; config: { repository?: { url: string } } }>,
+    );
+    logger.log(`Collected git info for ${servicesInfo.length} services`);
+
+    // ── 6. Generate manifest.json ─────────────────────────────────────────
     const manifest = {
       buildTime: new Date().toISOString(),
       network: network.name,
       configs: configNames,
       docs: docFiles.sort(),
       hasNetworkConfig,
+      services: servicesInfo,
     };
 
     await fs.writeFile(
@@ -129,7 +209,7 @@ export const DashboardBuild = command.cli({
     );
     logger.log("Generated manifest.json");
 
-    // ── 6. Build & push Docker image ──────────────────────────────────────
+    // ── 7. Build & push Docker image ──────────────────────────────────────
     const TAG = `kt-${network.name}`;
     const IMAGE = "lido/dashboard";
 

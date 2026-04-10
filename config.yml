@@ -74,3 +74,15 @@ networks:
       gateSeal: "0xTestnetGateSealAddress"
       hashConsensus: "0xTestnetHashConsensusAddress"
       lidoLocator: "0xTestnetLidoLocatorAddress"
+
+  - name: main-with-easytrack
+    notifications:
+      slack:
+        enabled: true
+        webhookUrlEnv: SLACK_WEBHOOK_URL
+      events:
+        deploy: true
+        redeploy: true
+        serviceUp: true
+        serviceDown: true
+        serviceRestart: true

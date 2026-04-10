@@ -92,6 +92,13 @@ const getNotificationEvent = async (
     };
   }
 
+  if (action === "deploy") {
+    return {
+      type: "deploy",
+      service: getServiceName(commandName, context.params as Record<string, unknown>),
+    };
+  }
+
   if (action === "down") {
     return {
       type: "serviceDown",

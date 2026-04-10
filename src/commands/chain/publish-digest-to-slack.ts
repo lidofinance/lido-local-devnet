@@ -244,10 +244,7 @@ export const ChainPublishDigestToSlack = command.cli({
       await restartDashboard(dashboardNs, logger);
     }
 
-    // 4. Collect services git info
-    const servicesInfo = await collectServicesInfo(state.artifactsRoot);
-
-    // 5. Build and send digest message
+    // 4. Build and send digest message
     const lines = [
       `📋 *Devnet Digest: ${network.name}*`,
       `📅 Devnet deployed: ${devnetData.deployedAt ?? "n/a"}`,
@@ -278,13 +275,6 @@ export const ChainPublishDigestToSlack = command.cli({
       lines.push(``, `📈 *Grafana:* ${grafanaData.publicUrl}`);
       if (grafanaBasicAuth?.username && grafanaBasicAuth.password) {
         lines.push(`• Basic auth: \`${grafanaBasicAuth.username}\` / \`${grafanaBasicAuth.password}\``);
-      }
-    }
-
-    if (servicesInfo.length > 0) {
-      lines.push(``, `*Services (${servicesInfo.length}):*`);
-      for (const svc of servicesInfo) {
-        lines.push(`• \`${svc.name}\`: \`${svc.branch}\` @ \`${svc.commit}\``);
       }
     }
 
