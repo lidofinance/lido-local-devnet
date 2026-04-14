@@ -1,5 +1,4 @@
 import {
-  DEFAULT_NETWORK_NAME,
   NETWORK_NAME_SUBSTITUTION,
   command,
 } from "@devnet/command";
@@ -70,7 +69,7 @@ export const NoWidgetUp = command.cli({
     };
 
     const hostname = process.env.NO_WIDGET_INGRESS_HOSTNAME?.
-      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+      replace(NETWORK_NAME_SUBSTITUTION, dre.network.name);
 
     if (!hostname) {
       throw new DevNetError(`NO_WIDGET_INGRESS_HOSTNAME env variable is not set`);

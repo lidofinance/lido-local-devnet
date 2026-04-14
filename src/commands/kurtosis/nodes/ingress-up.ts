@@ -1,5 +1,4 @@
 import {
-  DEFAULT_NETWORK_NAME,
   NETWORK_NAME_SUBSTITUTION,
   command,
 } from "@devnet/command";
@@ -29,7 +28,7 @@ export const KurtosisK8sNodesIngressUp = command.cli({
     const k8sNetworkApi = kc.makeApiClient(k8s.NetworkingV1Api);
 
     const ETH_NODES_INGRESS_HOSTNAME = process.env.ETH_NODES_INGRESS_HOSTNAME?.
-      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+      replace(NETWORK_NAME_SUBSTITUTION, dre.network.name);
 
     if (!ETH_NODES_INGRESS_HOSTNAME) {
       throw new DevNetError(`ETH_NODES_INGRESS_HOSTNAME env variable is not set`);

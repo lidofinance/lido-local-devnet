@@ -1,5 +1,4 @@
 import {
-  DEFAULT_NETWORK_NAME,
   NETWORK_NAME_SUBSTITUTION,
   command,
 } from "@devnet/command";
@@ -50,7 +49,7 @@ export const GrafanaUp = command.cli({
     const namespace = NAMESPACE(dre);
 
     const hostname = process.env.GRAFANA_INGRESS_HOSTNAME?.
-      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+      replace(NETWORK_NAME_SUBSTITUTION, network.name);
 
     const INGRESS_HOSTNAME = hostname
       ? addPrefixToIngressHostname(hostname)
@@ -58,7 +57,7 @@ export const GrafanaUp = command.cli({
     const publicUrl = `http://${INGRESS_HOSTNAME}`;
 
     const doraHostname = process.env.DORA_INGRESS_HOSTNAME?.
-      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+      replace(NETWORK_NAME_SUBSTITUTION, network.name);
     const doraPublicUrl = doraHostname
       ? `http://${addPrefixToIngressHostname(doraHostname)}`
       : ORIGINAL_DASHBOARD_URLS.beaconExplorerHost;

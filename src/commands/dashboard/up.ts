@@ -1,5 +1,4 @@
 import {
-  DEFAULT_NETWORK_NAME,
   NETWORK_NAME_SUBSTITUTION,
   command,
 } from "@devnet/command";
@@ -39,7 +38,7 @@ export const DashboardUp = command.cli({
 
     const hostname = process.env.DASHBOARD_INGRESS_HOSTNAME?.replace(
       NETWORK_NAME_SUBSTITUTION,
-      DEFAULT_NETWORK_NAME,
+      dre.network.name,
     );
 
     if (!hostname) {

@@ -1,6 +1,5 @@
 import {
   command,
-  DEFAULT_NETWORK_NAME,
   NETWORK_NAME_SUBSTITUTION,
 } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
@@ -23,14 +22,14 @@ export const BlockscoutUp = command.cli({
     }
 
     const blockscoutIngressHostname = process.env.BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME?.
-      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+      replace(NETWORK_NAME_SUBSTITUTION, dre.network.name);
 
     if (!blockscoutIngressHostname) {
       throw new DevNetError(`BLOCKSCOUT_BACKEND_INGRESS_HOSTNAME env variable is not set`);
     }
 
     const blockscoutFrontendIngressHostname = process.env.BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME?.
-      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+      replace(NETWORK_NAME_SUBSTITUTION, dre.network.name);
 
     if (!blockscoutFrontendIngressHostname) {
       throw new DevNetError(`BLOCKSCOUT_FRONTEND_INGRESS_HOSTNAME env variable is not set`);

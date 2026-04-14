@@ -264,7 +264,9 @@ See `config.hoodi.example.yml` for a complete Hoodi testnet configuration with r
 
 ## Running Multiple Environments
 
-To run multiple devnets on a single cluster, change the `DEVNET_NAME=<another_devnet>` variable in `.env` file
+To run multiple devnets on a single cluster, change the `DEVNET_NAME=<another_devnet>` variable in `.env` file.
+If `DEVNET_NAME` is empty, root deploy commands such as `stands ...` or `chain up` will auto-generate a readable name and save it to `.env`.
+You can still override the name manually with `--network <name>`; that flag also works for service build/rebuild commands.
 All the commands will be executed in the context of the current devnet.
 ---
 

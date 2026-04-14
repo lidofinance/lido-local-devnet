@@ -10,6 +10,7 @@ import { ZodError } from "zod";
 import { CustomDevNetContext, DevNetContext } from "./context.js";
 import { CustomDevNetExtension } from "./extension.js";
 import { string } from "./params.js";
+import { resolveCliNetworkName } from "./network-name.js";
 import { DevNetRuntimeEnvironment, DevNetRuntimeEnvironmentInterface } from "./runtime-env.js";
 import { ExtractFlags } from "./types.js";
 
@@ -234,14 +235,31 @@ export class DevNetCommand extends BaseCommand {
       flags: this.ctor.flags,
       strict: this.ctor.strict,
     });
+    const resolvedNetwork = await resolveCliNetworkName({
+      commandName: this.id ?? "anonymous",
+      rawArgv: this.argv,
+      rawNetworkName: params.network,
+    });
     const dre = await DevNetRuntimeEnvironment.create(
-      Network.parse(params.network),
+      Network.parse(resolvedNetwork.name),
       this.id ?? "anonymous",
       this.config,
     );
+    if (resolvedNetwork.generated) {
+      dre.logger.log(
+        `Generated devnet name: ${resolvedNetwork.name} (saved to .env as DEVNET_NAME).`,
+      );
+    } else if (resolvedNetwork.persisted) {
+      dre.logger.log(
+        `Using devnet name: ${resolvedNetwork.name} (saved to .env as DEVNET_NAME).`,
+      );
+    }
     this.ctx = new DevNetContext({
       dre,
-      params,
+      params: {
+        ...params,
+        network: resolvedNetwork.name,
+      },
     });
   }
 

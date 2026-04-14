@@ -1,5 +1,4 @@
 import {
-  DEFAULT_NETWORK_NAME,
   NETWORK_NAME_SUBSTITUTION,
   command,
 } from "@devnet/command";
@@ -146,7 +145,7 @@ export const EvmUp = command.cli({
     const chainNamespace = `kt-${network.name}`;
 
     const hostname = process.env.EVM_INGRESS_HOSTNAME?.
-      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+      replace(NETWORK_NAME_SUBSTITUTION, network.name);
 
     const INGRESS_HOSTNAME = hostname
       ? addPrefixToIngressHostname(hostname)

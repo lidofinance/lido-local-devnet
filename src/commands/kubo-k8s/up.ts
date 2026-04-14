@@ -1,5 +1,4 @@
 import {
-  DEFAULT_NETWORK_NAME,
   NETWORK_NAME_SUBSTITUTION,
   command,
 } from "@devnet/command";
@@ -129,7 +128,7 @@ export const KuboK8sUp = command.cli({
     };
 
     const kuboHostname = process.env.KUBO_INGRESS_HOSTNAME?.
-      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+      replace(NETWORK_NAME_SUBSTITUTION, dre.network.name);
 
     if (!kuboHostname) {
       throw new DevNetError(`KUBO_INGRESS_HOSTNAME env variable is not set`);

@@ -20,6 +20,8 @@ export const ServiceRebuild = command.cli({
     }),
   },
   async handler({ params, dre, dre: { logger } }) {
+    const networkFlag = `--network ${dre.network.name}`;
+
     logger.log(`🔀 Checking out ${params.service} @ ${params.ref}`);
     await dre.runCommand(GitCheckout, {
       service: params.service,
@@ -35,10 +37,10 @@ export const ServiceRebuild = command.cli({
       `✅ ${params.service} checked out to ${params.ref} with dependencies installed`,
     );
     logger.log(
-      `ℹ️  To complete the rebuild, run the service build and deploy commands:`,
+      `ℹ️  To complete the rebuild in devnet ${dre.network.name}, run the service build and deploy commands:`,
     );
     logger.log(
-      `   ./bin/run.js ${params.service} build && ./bin/run.js ${params.service} up`,
+      `   ./bin/run.js ${params.service} build ${networkFlag} && ./bin/run.js ${params.service} up ${networkFlag}`,
     );
   },
 });
