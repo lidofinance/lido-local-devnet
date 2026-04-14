@@ -64,18 +64,43 @@ export const KurtosisK8sNodesIngressUp = command.cli({
     );
 
 
-    const applyIngress = async (ingress: { metadata: { name: string }; spec: { rules: { host: string }[] } }) => {
-      const url = `http://${ingress.spec.rules[0].host}`;
+    const applyIngress = async (ingress: k8s.V1Ingress) => {
+      const ingressName = ingress.metadata?.name;
+      const ingressHost = ingress.spec?.rules?.[0]?.host;
+      const namespace = `kt-${dre.network.name}`;
 
-      const exists = await checkK8sIngressExists(dre, { name: ingress.metadata.name});
+      if (!ingressName || !ingressHost) {
+        throw new DevNetError("Generated ingress is missing required metadata.name or spec.rules[0].host.");
+      }
+
+      const url = `http://${ingressHost}`;
+
+      const exists = await checkK8sIngressExists(dre, { name: ingressName });
 
       if (exists) {
-        logger.log(`Ingress with name ${ingress.metadata.name} already exists. URL: [${url}]. Skipping creation.`);
+        const existingIngress = await k8sNetworkApi.readNamespacedIngress({
+          namespace,
+          name: ingressName,
+        });
+
+        await k8sNetworkApi.replaceNamespacedIngress({
+          namespace,
+          name: ingressName,
+          body: {
+            ...ingress,
+            metadata: {
+              ...ingress.metadata,
+              resourceVersion: existingIngress.metadata?.resourceVersion,
+            },
+          },
+        });
+
+        logger.log(`Ingress with name ${ingressName} already exists. URL: [${url}]. Updated.`);
         return;
       }
 
       const result = await k8sNetworkApi.createNamespacedIngress(
-        { namespace: `kt-${dre.network.name}` , body: ingress },
+        { namespace, body: ingress },
       );
 
       logger.log(`Successfully created Ingress: [${result.metadata?.name}]. URL: [${url}]`);

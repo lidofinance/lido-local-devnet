@@ -21,6 +21,7 @@ export const vroomOnchainMon = new DevnetServiceConfig({
     SIMPLE_DVT_NODE_OPERATOR_REGISTRY_MODULE_ID: "2",
     CSM_NODE_OPERATOR_REGISTRY_MODULE_ID: "3",
   },
+  installCommand: "yarn",
   labels: {},
   getters: {},
 });

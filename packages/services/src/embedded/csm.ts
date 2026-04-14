@@ -21,6 +21,7 @@ export const csm = new DevnetServiceConfig({
   hooks: {
     install: "csm:install",
   },
+  installCommand: "just deps",
   labels: {},
   getters: {},
 });

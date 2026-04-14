@@ -20,6 +20,7 @@ export const evm = new DevnetServiceConfig({
     FETCH_INTERVAL_SLOTS: "32",
     CHAIN_SLOT_TIME_SECONDS: "12",
   },
+  installCommand: "yarn",
   labels: { evm: "devnet_service_name=evm" },
   getters: {},
 });

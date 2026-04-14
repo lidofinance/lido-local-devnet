@@ -21,6 +21,7 @@ export const cmv2 = new DevnetServiceConfig({
   hooks: {
     install: "cmv2:install",
   },
+  installCommand: "just deps",
   labels: {},
   getters: {},
 });

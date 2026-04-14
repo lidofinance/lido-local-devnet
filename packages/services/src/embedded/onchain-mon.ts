@@ -18,6 +18,7 @@ export const onchainMon = new DevnetServiceConfig({
     QUORUM_SIZE: "1",
     BLOCK_EXPLORER: "etherscan.io",
   },
+  installCommand: "yarn",
   labels: {},
   getters: {},
 });

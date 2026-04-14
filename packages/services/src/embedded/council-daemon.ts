@@ -8,6 +8,7 @@ export const council = new DevnetServiceConfig({
   workspace: "workspaces/council",
   name: "council" as const,
   constants: {},
+  installCommand: "yarn",
   labels: {},
   getters: {},
 });

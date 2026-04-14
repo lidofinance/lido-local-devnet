@@ -19,6 +19,7 @@ export const lidoCLI = new DevnetServiceConfig({
   hooks: {
     install: "lido-cli:install",
   },
+  installCommand: "yarn",
   labels: {},
   getters: {},
 });

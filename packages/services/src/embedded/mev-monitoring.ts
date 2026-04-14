@@ -20,6 +20,7 @@ export const mevMonitoring = new DevnetServiceConfig({
     PORT: "3000",
     REDIS_PORT: "6379",
   },
+  installCommand: "yarn",
   labels: { mevMonitoring: "devnet_service_name=mev-monitoring" },
   getters: {},
 });

@@ -8,6 +8,7 @@ export const noWidget = new DevnetServiceConfig({
   workspace: "workspaces/no-widget",
   name: "noWidget" as const,
   constants: {},
+  installCommand: "yarn",
   labels: {},
   getters: {},
 });

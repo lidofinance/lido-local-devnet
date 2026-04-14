@@ -18,6 +18,7 @@ export const noWidgetBackend = new DevnetServiceConfig({
     GLOBAL_CACHE_TTL: "1",
     SENTRY_DSN: "",
   },
+  installCommand: "yarn",
   labels: {},
   getters: {},
 });

@@ -12,6 +12,7 @@ export const lateProverBot = new DevnetServiceConfig({
     LOG_FORMAT: "simple",
     LOG_LEVEL: "debug",
   },
+  installCommand: "yarn",
   labels: {},
   getters: {},
 });

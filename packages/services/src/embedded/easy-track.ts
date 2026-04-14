@@ -8,6 +8,7 @@ export const easyTrack = new DevnetServiceConfig({
   workspace: "workspaces/easy-track",
   name: "easyTrack" as const,
   constants: {},
+  installCommand: "npm install",
   labels: {},
   getters: {},
 });

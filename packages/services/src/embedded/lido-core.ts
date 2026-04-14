@@ -21,6 +21,7 @@ export const lidoCore = new DevnetServiceConfig({
   hooks: {
     install: "lido-core:install",
   },
+  installCommand: "yarn",
   labels: {},
   getters: {},
 });

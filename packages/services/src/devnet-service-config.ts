@@ -21,6 +21,8 @@ export class DevnetServiceConfig<
     install?: string;
   };
 
+  installCommand?: string;
+
   labels: Labels;
   name: string;
   repository?: { branch: string, url: string };
@@ -32,6 +34,7 @@ export class DevnetServiceConfig<
     env,
     getters,
     hooks,
+    installCommand,
     name,
     repository,
     constants,
@@ -43,6 +46,7 @@ export class DevnetServiceConfig<
     exposedPorts?: number[];
     getters: CustomServiceGetters;
     hooks?: { build?: string; destroy?: string; install?: string };
+    installCommand?: string;
     labels: Labels;
     name: string;
     repository?: { branch: string, url: string };
@@ -51,6 +55,7 @@ export class DevnetServiceConfig<
     this.workspace = workspace;
     this.env = env;
     this.hooks = hooks;
+    this.installCommand = installCommand;
     this.getters = getters;
     this.name = name;
     this.repository = repository;

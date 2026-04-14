@@ -19,6 +19,7 @@ export const ehw = new DevnetServiceConfig({
     ALERTMANAGER_REQUEST_RETRY_COUNT: "2",
     ALERTMANAGER_REQUEST_SLEEP_BEFORE_RETRY_IN_SECONDS: "1",
   },
+  installCommand: "yarn",
   labels: {},
   getters: {},
 });
