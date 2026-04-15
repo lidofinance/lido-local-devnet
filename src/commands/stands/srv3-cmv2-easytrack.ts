@@ -163,7 +163,7 @@ export const SRv3CMv2EasyTrackDevnetUp = command.cli({
 
     // === Phase 5: Infrastructure services ===
 
-    await dre.runCommand(GitCheckout, { service: "kapi", ref: "feat/withdrawal-creds-type" });
+    await dre.runCommand(GitCheckout, { service: "kapi", ref: "develop" });
 
     logger.log("🚀 Run KAPI service in K8s.");
     await dre.runCommand(KapiK8sUp, {});
@@ -199,6 +199,7 @@ export const SRv3CMv2EasyTrackDevnetUp = command.cli({
       consensusClientUris: undefined,
       performanceConsensusClientUri: undefined,
       build: false,
+      releaseSuffix: undefined,
     });
 
     // === Phase 6: DSM + Easy Track Permissions ===

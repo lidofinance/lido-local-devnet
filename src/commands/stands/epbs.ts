@@ -186,6 +186,7 @@ export const EPBSDevNetUp = command.cli({
       ejectorImage: undefined,
       ejectorTag: undefined,
       build: false,
+      releaseSuffix: undefined,
     });
 
     // ── 9. DSM (always on) ──────────────────────────────────────────────

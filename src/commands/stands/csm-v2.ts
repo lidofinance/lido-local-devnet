@@ -151,6 +151,7 @@ export const PectraDevNetUp = command.cli({
       ejectorImage: undefined,
       ejectorTag: undefined,
       build: false,
+      releaseSuffix: undefined,
     });
 
     if (params.dsm) {

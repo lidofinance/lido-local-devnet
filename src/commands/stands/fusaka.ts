@@ -155,6 +155,7 @@ export const FusakaDevNetUp = command.cli({
       ejectorImage: undefined,
       ejectorTag: undefined,
       build: false,
+      releaseSuffix: undefined,
     });
 
     if (params.dsm) {

@@ -275,6 +275,10 @@ export const OracleK8sUp = command.cli({
       default: false,
       required: false,
     }),
+    releaseSuffix: Params.string({
+      description: "Suffix to append to helm release names (e.g. '-v8') for deploying parallel oracle sets. When set, performance-* and oracle-cm-* are skipped (they stay on the un-suffixed primary set).",
+      required: false,
+    }),
   },
   extensions: [oraclesK8sExtension, dockerRegistryExtension, cmv2Extension],
   async handler({ dre: { logger, state, services: { oracle } }, dre, params }) {
@@ -304,7 +308,12 @@ export const OracleK8sUp = command.cli({
     const { locator } = await state.getLido();
     const { module: csmModule } = await state.getCSM();
     const cmv2 = await state.getCMv2(false);
-    const cmv2Module = cmv2?.module;
+    const cmv2ModuleRaw = cmv2?.module;
+    // When deploying a parallel suffixed set, skip cmv2-triggered extras
+    // (performance-db/collector/web and oracle-cm-1/2) — they live on the primary (unsuffixed) set.
+    // But keep PERFORMANCE_* env vars populated so v8 oracles can import variables.py without crashing.
+    const releaseSuffix = params.releaseSuffix ?? "";
+    const cmv2Module = releaseSuffix ? undefined : cmv2ModuleRaw;
     const { oracle1, oracle2, oracle3 } = await state.getNamedWallet();
     const { privateUrl: kapiPrivateUrl } = await state.getKapiK8sRunning();
 
@@ -333,7 +342,7 @@ export const OracleK8sUp = command.cli({
       ALLOW_REPORTING_IN_BUNKER_MODE: allowReportingInBunkerMode,
       PINATA_JWT: process.env.CSM_ORACLE_PINATA_JWT ?? "",
       KUBO_HOST: kuboPrivateUrl.replace(":5001", ""),
-      ...(cmv2Module ? {
+      ...(cmv2ModuleRaw ? {
         PERFORMANCE_COLLECTOR_URI: performanceCollectorUri,
         PERFORMANCE_DB_HOST: performanceDbHost,
         PERFORMANCE_DB_PORT: "5432",
@@ -366,7 +375,8 @@ export const OracleK8sUp = command.cli({
     const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(oracle.artifact.root);
 
     for (const release of helmReleases) {
-      const { HELM_RELEASE, privateKey, command, stakingModuleAddress } = release;
+      const { privateKey, command, stakingModuleAddress } = release;
+      const HELM_RELEASE = `${release.HELM_RELEASE}${releaseSuffix}`;
       const isRunning = await isReleaseRunning(namespace, HELM_RELEASE);
       const shouldUpgrade = command === "performance_collector" || command === "performance_web_server";
       if (isRunning && !shouldUpgrade) {
