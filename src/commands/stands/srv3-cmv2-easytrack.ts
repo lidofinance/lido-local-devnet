@@ -120,7 +120,7 @@ export const SRv3CMv2EasyTrackDevnetUp = command.cli({
 
     const validators = 30;
     logger.log("🚀 Adding curated operator with validators...");
-    await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 0, stakingModuleId: 1, depositCount: validators });
+    await dre.runCommand(AddNewOperator, { ...depositArgs, operatorId: 0, stakingModuleId: 1, depositCount: validators, skipDeposit: false });
     logger.log("✅ 1 curated operator with validators added.");
 
     const CSM_OPERATOR_PREFIX = "devnet_csm_";

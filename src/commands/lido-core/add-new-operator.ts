@@ -11,7 +11,7 @@ import { ValidatorAdd } from "../validator/add.js";
 
 export const AddNewOperator = command.cli({
   description:
-    "Generate keys, add operator, add keys to operator and reload validator client.",
+    "Generate keys, add or reuse operator, add keys, and optionally deposit and reload validator client.",
   params: {
     operatorId: Params.integer({
       description: "Operator index (0-based) to be used for the new operator.",
@@ -27,6 +27,10 @@ export const AddNewOperator = command.cli({
     }),
     dsm: Params.boolean({
       description: "Use full DSM setup.",
+      default: false,
+    }),
+    skipDeposit: Params.boolean({
+      description: "Skip deposit and validator import steps (keys only).",
       default: false,
     }),
   },
@@ -52,16 +56,18 @@ export const AddNewOperator = command.cli({
 
     const operatorId = OPERATOR_ID;
 
-    assert(!operatorExists, `Operator ${NOR_DEVNET_OPERATOR} already exists.`);
-
     logger.log("🚀 Generating and allocating keys for NOR Module...");
     await dre.runCommand(GenerateLidoDevNetKeys, { validators: DEPOSIT_COUNT, wcType: "0x01" });
     await dre.runCommand(UseLidoDevNetKeys, { name: NOR_DEVNET_OPERATOR, wcType: "0x01" });
     logger.log("✅ NOR Module keys generated and allocated.");
 
-    logger.log("🚀 Adding NOR operator...");
-    await dre.runCommand(LidoAddOperator, { name: NOR_DEVNET_OPERATOR });
-    logger.log(`✅ Operator ${NOR_DEVNET_OPERATOR} added.`);
+    if (!operatorExists) {
+      logger.log("🚀 Adding NOR operator...");
+      await dre.runCommand(LidoAddOperator, { name: NOR_DEVNET_OPERATOR });
+      logger.log(`✅ Operator ${NOR_DEVNET_OPERATOR} added.`);
+    } else {
+      logger.log(`ℹ️ Operator ${NOR_DEVNET_OPERATOR} already exists, skipping creation.`);
+    }
 
     logger.log("🚀 Adding NOR keys...");
     await dre.runCommand(LidoAddKeys, {
@@ -77,17 +83,21 @@ export const AddNewOperator = command.cli({
     });
     logger.log("✅ Staking limit for NOR increased.");
 
-    logger.log("🚀 Making deposit to NOR...");
-    await dre.runCommand(LidoDeposit, {
-      id: STAKING_MODULE_ID,
-      deposits: DEPOSIT_COUNT,
-      amount: 10000,
-      ...depositArgs,
-    });
-    logger.log("✅ Deposit to NOR completed.");
+    if (!params.skipDeposit) {
+      logger.log("🚀 Making deposit to NOR...");
+      await dre.runCommand(LidoDeposit, {
+        id: STAKING_MODULE_ID,
+        deposits: DEPOSIT_COUNT,
+        amount: 10000,
+        ...depositArgs,
+      });
+      logger.log("✅ Deposit to NOR completed.");
 
-    logger.log("🚀 Adding keys to the validator...");
-    await dre.runCommand(ValidatorAdd, {});
-    logger.log("✅ Validator keys added.");
+      logger.log("🚀 Adding keys to the validator...");
+      await dre.runCommand(ValidatorAdd, {});
+      logger.log("✅ Validator keys added.");
+    } else {
+      logger.log("ℹ️ Skipping deposit and validator import (skipDeposit=true).");
+    }
   },
 });
