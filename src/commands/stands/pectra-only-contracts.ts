@@ -51,6 +51,7 @@ export const PectraContractsOnlyDevNetUp = command.cli({
       predictionDurationInSlots: 50_400,
       finalizationMaxNegativeRebaseEpochShift: 1350,
       exitEventsLookbackWindowInSlots: 7200,
+      consolidationMigratorTargetModuleId: undefined,
     });
     logger.log("✅ Lido contracts deployed.");
 

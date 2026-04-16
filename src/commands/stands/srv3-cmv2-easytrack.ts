@@ -77,6 +77,7 @@ export const SRv3CMv2EasyTrackDevnetUp = command.cli({
       predictionDurationInSlots: 50_400,
       finalizationMaxNegativeRebaseEpochShift: 1350,
       exitEventsLookbackWindowInSlots: 7200,
+      consolidationMigratorTargetModuleId: 4,
     });
     logger.log("✅ Lido contracts deployed.");
 

@@ -104,6 +104,10 @@ export const DeployLidoContracts = command.cli({
       description: "Gas limit for deployments (overrides config)",
       required: false,
     }),
+    consolidationMigratorTargetModuleId: Params.integer({
+      description: "Target module ID for consolidation migrator (e.g., 4 for CMv2).",
+      required: false,
+    }),
   },
   extensions:[lidoCoreExtension],
   async handler({ dre, dre: { logger }, params }) {
@@ -171,6 +175,9 @@ export const DeployLidoContracts = command.cli({
       RPC_URL: elPublic,
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,
       GAS_LIMIT: params.gasLimit ?? '16000000',
+      ...(params.consolidationMigratorTargetModuleId != null && {
+        CONSOLIDATION_MIGRATOR_TARGET_MODULE_ID: String(params.consolidationMigratorTargetModuleId),
+      }),
     };
 
     // print git branch information
