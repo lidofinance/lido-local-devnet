@@ -52,6 +52,8 @@ export interface DevNetRuntimeEnvironmentInterface {
     CMD extends FactoryResult<F, R>,
   >(cmd: CMD, args: CMD["_internalParams"]): Promise<R>;
 
+  runCommandByName(commandName: string, params: Record<string, any>): Promise<unknown>;
+
   runHooks(): Promise<void>;
 
   readonly services: DevnetServiceRegistry["services"];
@@ -160,6 +162,27 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
     CMD extends FactoryResult<F, R>,
   >(cmd: CMD, args: CMD["_internalParams"]): Promise<R> {
     return cmd.exec(this, args);
+  }
+
+  public async runCommandByName(
+    commandName: string,
+    params: Record<string, any>,
+  ): Promise<unknown> {
+    const cmd = this.oclifConfig.findCommand(commandName);
+
+    assert(
+      cmd !== undefined,
+      `Command "${commandName}" does not exist`,
+    );
+
+    const CommandClass = (await cmd.load()) as FactoryResult<any, any>;
+
+    assert(
+      CommandClass.exec !== undefined,
+      `Command "${commandName}" cannot be invoked by name`,
+    );
+
+    return await CommandClass.exec(this.clone(commandName), params);
   }
 
   public async runHooks() {
