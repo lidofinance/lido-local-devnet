@@ -1,5 +1,6 @@
-import { Params, command } from "@devnet/command";
+import { Params, command, resolveExpressions } from "@devnet/command";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 import * as YAML from "yaml";
 import { z } from "zod";
 
@@ -29,14 +30,26 @@ export const StandRun = command.cli({
     logger.log(`🚀 Running stand: ${stand.name}`);
     if (stand.description) logger.log(stand.description);
 
+    const expressionContext = {
+      services: dre.services,
+      network: { name: dre.network.name },
+      artifacts: path.resolve("artifacts", dre.network.name),
+    };
+
     for (const [index, step] of stand.steps.entries()) {
       logger.log(
         `\n[${index + 1}/${stand.steps.length}] ${step.command}`,
       );
+
+      const resolvedParams = resolveExpressions(
+        step.params ?? {},
+        expressionContext,
+      );
+
       // Convert space-separated command name (user-friendly)
       // to oclif ID format (colon-separated)
       const commandId = step.command.trim().split(/\s+/).join(":");
-      await dre.runCommandByName(commandId, step.params ?? {});
+      await dre.runCommandByName(commandId, resolvedParams);
     }
 
     logger.log(`\n✅ Stand ${stand.name} completed`);
