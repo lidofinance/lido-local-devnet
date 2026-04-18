@@ -129,6 +129,12 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
       oclifConfig,
     );
 
+    registry.hookRunner = async (cmds, serviceName) => {
+      for (const cmd of cmds) {
+        await dre.runCommandByString(cmd, serviceName);
+      }
+    };
+
     return dre;
   }
 

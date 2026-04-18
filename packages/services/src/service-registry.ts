@@ -6,14 +6,17 @@ import path from "node:path";
 
 import { ARTIFACTS_ROOT } from "./constants.js";
 import { DevNetService } from "./devnet-service.js";
+import { ArtifactHookRunner } from "./devnet-service-artifact.js";
 import { DevNetServicesConfigs } from "./services-configs.js";
 
 
 export class DevnetServiceRegistry {
-  protected readonly network: Network;
+  public hookRunner: ArtifactHookRunner | null = null;
+  public readonly network: Network;
   public readonly root: NetworkArtifactRoot;
   public readonly services: { [K in keyof DevNetServicesConfigs]: DevNetService<K> };
   private readonly cache = new Map<string, DevNetService<any>>();
+  private readonly getHookRunner = (): ArtifactHookRunner | null => this.hookRunner;
 
   protected constructor(
     network: Network,
@@ -40,6 +43,7 @@ export class DevnetServiceRegistry {
           logger,
           commandName,
           prop as keyof DevNetServicesConfigs,
+          this.getHookRunner,
         );
         this.cache.set(prop, service);
         return service;
@@ -85,13 +89,16 @@ export class DevnetServiceRegistry {
       clonedCache.set(key, service.clone(commandName, logger));
     }
 
-    return new DevnetServiceRegistry(
+    const cloned = new DevnetServiceRegistry(
       this.network,
       this.root,
       commandName,
       logger,
       clonedCache,
     );
+
+    cloned.hookRunner = this.hookRunner;
+    return cloned;
   }
 
   public getMaterialized(): DevNetService<any>[] {

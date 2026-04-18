@@ -7,6 +7,11 @@ import path from "node:path";
 
 import { DevnetServiceConfig } from "./devnet-service-config.js";
 
+export type ArtifactHookRunner = (
+  commands: string[],
+  serviceName: string,
+) => Promise<void>;
+
 export class DevnetServiceArtifact {
   public config: DevnetServiceConfig;
   public emittedCommands: string[] = [];
@@ -14,28 +19,33 @@ export class DevnetServiceArtifact {
   public readonly root: ServiceArtifactRoot;
 
   private ensurePromise: Promise<void> | null = null;
+  private readonly getHookRunner: () => ArtifactHookRunner | null;
   private logger: DevNetLogger;
   protected constructor(
     networkArtifactRoot: NetworkArtifactRoot,
     service: DevnetServiceConfig,
     logger: DevNetLogger,
+    getHookRunner: () => ArtifactHookRunner | null = () => null,
   ) {
     this.root = ServiceArtifactRoot.parse(
       path.join(networkArtifactRoot, service.name),
     );
     this.config = service;
     this.logger = logger;
+    this.getHookRunner = getHookRunner;
   }
 
   static create(
     networkArtifactRoot: NetworkArtifactRoot,
     serviceConfig: DevnetServiceConfig,
     logger: DevNetLogger,
+    getHookRunner?: () => ArtifactHookRunner | null,
   ): DevnetServiceArtifact {
     return new DevnetServiceArtifact(
       networkArtifactRoot,
       serviceConfig,
       logger,
+      getHookRunner,
     );
   }
 
@@ -79,19 +89,11 @@ export class DevnetServiceArtifact {
     }
   }
 
-  public ensure(): Promise<void> {
-    if (this.ensured) return Promise.resolve();
+  public async ensure(): Promise<void> {
+    if (this.ensured) return;
     if (this.ensurePromise) return this.ensurePromise;
-    this.ensurePromise = this.materialize().then(
-      () => {
-        this.ensured = true;
-        this.ensurePromise = null;
-      },
-      (error) => {
-        this.ensurePromise = null;
-        throw error;
-      },
-    );
+
+    this.ensurePromise = this.runEnsure();
     return this.ensurePromise;
   }
 
@@ -144,6 +146,27 @@ export class DevnetServiceArtifact {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  private async runEnsure(): Promise<void> {
+    try {
+      await this.materialize();
+      // Mark ensured before firing hooks so recursive ensure() calls
+      // (e.g. from inside the install hook) short-circuit immediately.
+      this.ensured = true;
+
+      if (this.emittedCommands.length > 0) {
+        const runner = this.getHookRunner();
+
+        if (runner) {
+          const pending = [...this.emittedCommands];
+          this.emittedCommands = [];
+          await runner(pending, this.config.name);
+        }
+      }
+    } finally {
+      this.ensurePromise = null;
     }
   }
 }

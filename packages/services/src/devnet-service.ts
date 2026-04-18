@@ -24,7 +24,7 @@ import {
 import path from "node:path";
 import * as YAML from "yaml";
 
-import { DevnetServiceArtifact } from "./devnet-service-artifact.js";
+import { ArtifactHookRunner, DevnetServiceArtifact } from "./devnet-service-artifact.js";
 import { serviceConfigs } from "./embedded/index.js";
 import { DevNetServicesConfigs } from "./services-configs.js";
 import { createShellWrapper } from "./shell-wrapper.js";
@@ -64,11 +64,13 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
     logger: DevNetLogger,
     commandName: string,
     name: Name,
+    getHookRunner?: () => ArtifactHookRunner | null,
   ): DevNetService<Name> {
     const artifact = DevnetServiceArtifact.create(
       networkArtifactRootPath,
       serviceConfigs[name],
       logger,
+      getHookRunner,
     );
     return new DevNetService(
       name,
