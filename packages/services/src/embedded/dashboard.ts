@@ -4,6 +4,7 @@ export const dashboard = new DevnetServiceConfig({
   workspace: "workspaces/dashboard",
   name: "dashboard" as const,
   constants: {},
+  k8sTopic: "dashboard",
   labels: {},
   getters: {},
 });

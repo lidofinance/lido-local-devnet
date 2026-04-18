@@ -9,6 +9,7 @@ export const dsmBots = new DevnetServiceConfig({
   name: "dsmBots" as const,
   constants: {},
   installCommand: "yarn",
+  k8sTopic: "dsm-bots-k8s",
   labels: {},
   getters: {},
 });

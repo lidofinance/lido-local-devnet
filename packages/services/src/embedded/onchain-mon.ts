@@ -19,6 +19,7 @@ export const onchainMon = new DevnetServiceConfig({
     BLOCK_EXPLORER: "etherscan.io",
   },
   installCommand: "yarn",
+  k8sTopic: "onchain-mon-k8s",
   labels: {},
   getters: {},
 });

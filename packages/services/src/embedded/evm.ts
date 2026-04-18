@@ -21,6 +21,7 @@ export const evm = new DevnetServiceConfig({
     CHAIN_SLOT_TIME_SECONDS: "12",
   },
   installCommand: "yarn",
+  k8sTopic: "evm",
   labels: { evm: "devnet_service_name=evm" },
   getters: {},
 });

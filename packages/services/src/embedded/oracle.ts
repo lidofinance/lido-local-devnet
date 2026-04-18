@@ -13,6 +13,7 @@ export const oracle = new DevnetServiceConfig({
     HASH_CONSENSUS_CSM_EPOCHS_PER_FRAME: 24
   },
   installCommand: "yarn",
+  k8sTopic: "oracles-k8s",
   labels: {},
   getters: {},
 });

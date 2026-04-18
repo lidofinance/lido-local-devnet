@@ -33,10 +33,6 @@ export const KapiK8sUp = command.cli({
       throw new DevNetError("Lido is not deployed");
     }
 
-    if (!(await state.isCSMDeployed())) {
-      throw new DevNetError("CSM is not deployed");
-    }
-
     await dre.runCommand(KapiK8sBuild, {});
 
     if (!(await state.isKapiK8sImageReady())) {
@@ -47,7 +43,11 @@ export const KapiK8sUp = command.cli({
     const chainId = await dre.network.getChainId();
 
     const { locator, stakingRouter, curatedModule } = await state.getLido();
-    const { module: csmModule } = await state.getCSM();
+
+    // CSM is optional — fall back to zero address if not deployed
+    const csmModule = (await state.isCSMDeployed())
+      ? (await state.getCSM()).module
+      : "0x0000000000000000000000000000000000000000";
     const { image, tag, registryHostname } = await state.getKapiK8sImage();
 
     const env: Record<string, number | string> = {

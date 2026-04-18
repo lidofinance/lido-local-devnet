@@ -20,6 +20,7 @@ export const ehw = new DevnetServiceConfig({
     ALERTMANAGER_REQUEST_SLEEP_BEFORE_RETRY_IN_SECONDS: "1",
   },
   installCommand: "yarn",
+  k8sTopic: "ehw",
   labels: {},
   getters: {},
 });

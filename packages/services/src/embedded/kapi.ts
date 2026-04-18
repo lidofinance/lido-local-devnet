@@ -24,6 +24,7 @@ export const kapi = new DevnetServiceConfig({
     VALIDATOR_REGISTRY_ENABLE: "false",
   },
   installCommand: "yarn",
+  k8sTopic: "kapi-k8s",
   labels: { kapi: "devnet_service_name=kapi" },
   getters: {},
 });

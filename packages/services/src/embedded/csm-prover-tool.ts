@@ -13,6 +13,7 @@ export const csmProverTool = new DevnetServiceConfig({
     LOG_LEVEL: "debug",
   },
   installCommand: "yarn",
+  k8sTopic: "csm-prover-tool-k8s",
   labels: {},
   getters: {},
 });
