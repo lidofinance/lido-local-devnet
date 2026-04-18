@@ -58,32 +58,31 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
     this.sh = createShellWrapper(this.config, this.artifact, network, commandName);
   }
 
-  public static async create<Name extends keyof DevNetServicesConfigs>(
+  public static create<Name extends keyof DevNetServicesConfigs>(
     networkArtifactRootPath: NetworkArtifactRoot,
     network: Network,
     logger: DevNetLogger,
     commandName: string,
     name: Name,
-  ): Promise<DevNetService<Name>> {
-    const artifact = await DevnetServiceArtifact.create(
+  ): DevNetService<Name> {
+    const artifact = DevnetServiceArtifact.create(
       networkArtifactRootPath,
       serviceConfigs[name],
       logger,
     );
-    const service = new DevNetService(
+    return new DevNetService(
       name,
       network,
       logger,
       commandName,
       artifact,
     );
-
-    return service;
   }
 
   // TODO: move to command and use as hook
   public async applyWorkspace() {
     if (!this.config.workspace) return;
+    await this.artifact.ensure();
     await this.artifact.copyFilesFrom(this.config.workspace);
   }
 
@@ -98,6 +97,7 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
   }
 
   public async fileExists(relativePath: Path | string): Promise<boolean> {
+    await this.artifact.ensure();
     const servicePath = this.artifact.root;
     const fullPath = path.join(servicePath, relativePath);
 
@@ -171,6 +171,7 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
   }
 
   public async mkdirp(relativePath: string) {
+    await this.artifact.ensure();
     const servicePath = this.artifact.root;
     const fullPath = path.join(servicePath, relativePath);
 
@@ -182,6 +183,7 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
   }
 
   public async readFile(relativePath: string) {
+    await this.artifact.ensure();
     const servicePath = this.artifact.root;
     this.logger.log(
       `Reading artifact for service "${this.config.name}" at path: "${relativePath}"`,
@@ -209,6 +211,7 @@ export class DevNetService<Name extends keyof DevNetServicesConfigs> {
   }
 
   public async writeFile(relativePath: string, fileContent: string) {
+    await this.artifact.ensure();
     const servicePath = this.artifact.root;
     this.logger.log(
       `Writing artifact for service "${this.config.name}" to path: "${relativePath}"`,

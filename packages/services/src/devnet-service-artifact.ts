@@ -10,43 +10,33 @@ import { DevnetServiceConfig } from "./devnet-service-config.js";
 export class DevnetServiceArtifact {
   public config: DevnetServiceConfig;
   public emittedCommands: string[] = [];
+  public ensured = false;
   public readonly root: ServiceArtifactRoot;
 
+  private ensurePromise: Promise<void> | null = null;
   private logger: DevNetLogger;
   protected constructor(
     networkArtifactRoot: NetworkArtifactRoot,
     service: DevnetServiceConfig,
     logger: DevNetLogger,
   ) {
-    this.root = ServiceArtifactRoot.parse(path.join(networkArtifactRoot, service.name));
+    this.root = ServiceArtifactRoot.parse(
+      path.join(networkArtifactRoot, service.name),
+    );
     this.config = service;
     this.logger = logger;
   }
 
-  static async create(
+  static create(
     networkArtifactRoot: NetworkArtifactRoot,
     serviceConfig: DevnetServiceConfig,
     logger: DevNetLogger,
-  ) {
-    const artifact = new DevnetServiceArtifact(networkArtifactRoot, serviceConfig, logger);
-
-    // Check if the destination path already exists
-    const destinationExists = await artifact.pathExists(artifact.root);
-    if (destinationExists) {
-      return artifact;
-    }
-
-    if (artifact.config.hooks?.install) {
-      artifact.emittedCommands.push(artifact.config.hooks?.install);
-    }
-
-    await artifact.gitInit(serviceConfig);
-
-    if (serviceConfig.workspace) {
-      await artifact.copyFilesFrom(serviceConfig.workspace);
-    }
-
-    return artifact;
+  ): DevnetServiceArtifact {
+    return new DevnetServiceArtifact(
+      networkArtifactRoot,
+      serviceConfig,
+      logger,
+    );
   }
 
   public async clean() {
@@ -89,6 +79,22 @@ export class DevnetServiceArtifact {
     }
   }
 
+  public ensure(): Promise<void> {
+    if (this.ensured) return Promise.resolve();
+    if (this.ensurePromise) return this.ensurePromise;
+    this.ensurePromise = this.materialize().then(
+      () => {
+        this.ensured = true;
+        this.ensurePromise = null;
+      },
+      (error) => {
+        this.ensurePromise = null;
+        throw error;
+      },
+    );
+    return this.ensurePromise;
+  }
+
   private async gitInit(serviceConfig: DevnetServiceConfig): Promise<void> {
     try {
       if (!serviceConfig.repository) {
@@ -106,6 +112,23 @@ export class DevnetServiceArtifact {
     } catch (error: any) {
       this.logger.error(`Error copying files: ${error.message}`);
       throw error;
+    }
+  }
+
+  private async materialize(): Promise<void> {
+    const destinationExists = await this.pathExists(this.root);
+    if (destinationExists) {
+      return;
+    }
+
+    if (this.config.hooks?.install) {
+      this.emittedCommands.push(this.config.hooks.install);
+    }
+
+    await this.gitInit(this.config);
+
+    if (this.config.workspace) {
+      await this.copyFilesFrom(this.config.workspace);
     }
   }
 

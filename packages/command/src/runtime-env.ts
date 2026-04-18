@@ -115,7 +115,7 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
     const networkConfig =
       userConfig?.networks?.find((net) => net?.name === network) ?? {};
 
-    const registry = await DevnetServiceRegistry.create(
+    const registry = DevnetServiceRegistry.create(
       network,
       commandName,
       logger,
@@ -133,11 +133,6 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
   }
 
   public async clean() {
-    for (const service of Object.values(this.services)) {
-      // TODO: call destroy hook here
-      await service.artifact.clean();
-    }
-
     await rm(this.registry.root, { recursive: true, force: true });
   }
 
@@ -186,7 +181,7 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
   }
 
   public async runHooks() {
-    for (const service of Object.values(this.registry.services)) {
+    for (const service of this.registry.getMaterialized()) {
       for (const command of service.artifact.emittedCommands) {
         await this.runCommandByString(command, service.config.name);
       }

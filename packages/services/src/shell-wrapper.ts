@@ -20,7 +20,7 @@ export const createShellWrapper = <Name extends keyof DevNetServicesConfigs>(
   const commandColor = DevNetLogger.getColor(network, commandName);
 
 
-  const sh = execa({
+  const rawSh = execa({
     cwd: serviceArtifactRoot,
     env,
     shell: true,
@@ -80,6 +80,24 @@ export const createShellWrapper = <Name extends keyof DevNetServicesConfigs>(
       }
     },
   });
+
+  const wrapInvocation = (target: any): any =>
+    new Proxy(target, {
+      apply(fn, thisArg, args) {
+        if (Array.isArray(args[0])) {
+          // template-literal invocation — ensure artifact exists, then run
+          return (async () => {
+            await serviceArtifact.ensure();
+            return Reflect.apply(fn, thisArg, args);
+          })();
+        }
+
+        // options-configuration invocation — wrap returned tag function recursively
+        return wrapInvocation(Reflect.apply(fn, thisArg, args));
+      },
+    });
+
+  const sh = wrapInvocation(rawSh);
 
   return sh as unknown as ExecaMethod<{
     cwd: string;

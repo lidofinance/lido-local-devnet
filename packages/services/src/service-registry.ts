@@ -1,7 +1,7 @@
 import { DevNetLogger } from "@devnet/logger";
 import { serviceConfigs } from "@devnet/service";
 import { Network, NetworkArtifactRoot } from "@devnet/types";
-import { mkdir, rm } from "node:fs/promises";
+import { rm } from "node:fs/promises";
 import path from "node:path";
 
 import { ARTIFACTS_ROOT } from "./constants.js";
@@ -13,49 +13,57 @@ export class DevnetServiceRegistry {
   protected readonly network: Network;
   public readonly root: NetworkArtifactRoot;
   public readonly services: { [K in keyof DevNetServicesConfigs]: DevNetService<K> };
+  private readonly cache = new Map<string, DevNetService<any>>();
 
   protected constructor(
     network: Network,
     root: NetworkArtifactRoot,
-    services: { [K in keyof DevNetServicesConfigs]: DevNetService<K> },
+    commandName: string,
+    logger: DevNetLogger,
+    initialCache?: Map<string, DevNetService<any>>,
   ) {
     this.root = root;
     this.network = network;
-    this.services = services;
-  }
+    if (initialCache) {
+      this.cache = initialCache;
+    }
 
-  public static async create(
-    network: Network,
-    commandName: string,
-    logger: DevNetLogger,
-  ): Promise<DevnetServiceRegistry> {
-    await this.createRootDir(network);
-    const rootDir = this.getRoot(network);
-
-    const servicesList = await Promise.all(
-      Object.entries(serviceConfigs).map(async ([key]) => [
-        key,
-        await DevNetService.create(
-          rootDir,
+    this.services = new Proxy({} as { [K in keyof DevNetServicesConfigs]: DevNetService<K> }, {
+      get: (_target, prop) => {
+        if (typeof prop !== "string") return;
+        if (!(prop in serviceConfigs)) return;
+        const cached = this.cache.get(prop);
+        if (cached) return cached;
+        const service = DevNetService.create(
+          root,
           network,
           logger,
           commandName,
-          key as keyof DevNetServicesConfigs,
-        ),
-      ]),
-    );
-
-    return new DevnetServiceRegistry(
-      network,
-      rootDir,
-      Object.fromEntries(servicesList) as {
-        [K in keyof DevNetServicesConfigs]: DevNetService<K>;
+          prop as keyof DevNetServicesConfigs,
+        );
+        this.cache.set(prop, service);
+        return service;
       },
-    );
+      has: (_target, prop) => typeof prop === "string" && prop in serviceConfigs,
+      ownKeys: () => Object.keys(serviceConfigs),
+      getOwnPropertyDescriptor: (_target, prop) => {
+        if (typeof prop !== "string" || !(prop in serviceConfigs)) return;
+        return {
+          configurable: true,
+          enumerable: true,
+          value: (this.services as any)[prop],
+        };
+      },
+    });
   }
 
-  protected static async createRootDir(network: Network) {
-    await mkdir(this.getRoot(network), { recursive: true });
+  public static create(
+    network: Network,
+    commandName: string,
+    logger: DevNetLogger,
+  ): DevnetServiceRegistry {
+    const rootDir = this.getRoot(network);
+    return new DevnetServiceRegistry(network, rootDir, commandName, logger);
   }
 
   protected static getRoot(network: Network): NetworkArtifactRoot {
@@ -71,12 +79,28 @@ export class DevnetServiceRegistry {
   }
 
   public clone(commandName: string, logger: DevNetLogger) {
-    const clonedServices = Object.fromEntries(
-      Object.entries(this.services).map(([key, service]) => [
-        key,
-        service.clone(commandName, logger),
-      ])
-    ) as { [K in keyof DevNetServicesConfigs]: DevNetService<K> };
-    return new DevnetServiceRegistry(this.network, this.root, clonedServices);
+    const clonedCache = new Map<string, DevNetService<any>>();
+
+    for (const [key, service] of this.cache) {
+      clonedCache.set(key, service.clone(commandName, logger));
+    }
+
+    return new DevnetServiceRegistry(
+      this.network,
+      this.root,
+      commandName,
+      logger,
+      clonedCache,
+    );
+  }
+
+  public getMaterialized(): DevNetService<any>[] {
+    const result: DevNetService<any>[] = [];
+
+    for (const service of this.cache.values()) {
+      if (service.artifact.ensured) result.push(service);
+    }
+
+    return result;
   }
 }
