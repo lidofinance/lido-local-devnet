@@ -72,8 +72,22 @@ export const startKurtosisGateway = async (dre: DevNetRuntimeEnvironmentInterfac
     return;
   }
 
+  // Skip gateway when running inside the k8s cluster (e.g. cli-pod): gateway
+  // is only needed to access the engine from outside the cluster, and it
+  // crashes with "dial tcp: connection refused" when trying to reach
+  // kubernetes.default.svc without a proper external kubeconfig.
+  if (isInCluster()) {
+    dre.logger.log(`Skipping kurtosis gateway — running in-cluster`);
+    return;
+  }
+
   dre.logger.log(`Starting kurtosis gateway in the background`);
   kurtosisGatewayProcess = execa('kurtosis', ['gateway'], { detached: true, stdio: 'ignore' });
+  // Swallow rejection so a dead gateway doesn't crash the whole process
+  // via unhandledRejection (Node 15+ behaviour).
+  kurtosisGatewayProcess.catch((error) => {
+    dre.logger.error(`Kurtosis gateway exited: ${error.message}`);
+  });
   dre.logger.log(`Started kurtosis gateway`);
 
   // unref so it doesn’t keep the parent alive
@@ -87,6 +101,18 @@ export const startKurtosisGateway = async (dre: DevNetRuntimeEnvironmentInterfac
   process.on('exit', cleanup);
   process.on('SIGINT', () => { cleanup(); });
   process.on('SIGTERM', () => { cleanup(); });
+};
+
+// Detect whether the CLI is running inside a Kubernetes pod.
+// Pods always have a projected ServiceAccount token at this path.
+const isInCluster = () => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, unicorn/prefer-module
+    const fs = require("node:fs");
+    return fs.existsSync("/var/run/secrets/kubernetes.io/serviceaccount/token");
+  } catch {
+    return false;
+  }
 };
 
 export const stopKurtosisGateway = async (dre: DevNetRuntimeEnvironmentInterface) => {

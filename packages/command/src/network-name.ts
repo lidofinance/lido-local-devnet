@@ -3,7 +3,7 @@ import { randomInt } from "node:crypto";
 import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const DEPLOY_COMMANDS = new Set(["up", "up-full", "chain up"]);
+const DEPLOY_COMMANDS = new Set(["up", "up-full", "chain up", "stand run", "stand:run"]);
 const ENV_CONFIG_PATH = path.join(process.cwd(), ".env");
 const ARTIFACTS_ROOT = path.join(process.cwd(), "artifacts");
 

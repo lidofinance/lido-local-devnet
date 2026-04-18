@@ -1,10 +1,12 @@
 import { DevnetServiceConfig } from "../devnet-service-config.js";
 
 export const noWidgetBackend = new DevnetServiceConfig({
-  repository: {
-    url: "git@github.com:lidofinance/node-operators-widget-backend-ts.git",
-    branch: "feat/fusaka-devnet",
-  },
+  // TODO: repository lidofinance/node-operators-widget-backend-ts is currently private —
+  // re-enable once we have GitHub App auth in the cli-pod.
+  // repository: {
+  //   url: "git@github.com:lidofinance/node-operators-widget-backend-ts.git",
+  //   branch: "feat/fusaka-devnet",
+  // },
   workspace: "workspaces/no-widget-backend",
   name: "noWidgetBackend" as const,
   constants: {

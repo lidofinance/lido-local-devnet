@@ -64,11 +64,24 @@ export async function pushDockerImage(options: DockerPushOptions): Promise<void>
 export async function buildAndPushDockerImage(
   options: { buildContext: string, cwd: string; dockerfile?: string } & DockerPushOptions
 ): Promise<void> {
-  const { imageName, tag, registryHostname, username, password, buildContext, dockerfile } = options;
+  const { imageName, tag, registryHostname, username, password, buildContext, dockerfile, cwd } = options;
+  const fullImageName = `${registryHostname}/${imageName}:${tag}`;
 
   try {
-    // Build the Docker image
-    const buildArgs = ["build", "--platform", "linux/amd64", "-t", `${imageName}:${tag}`];
+    // Login to the registry first (buildx picks up creds from ~/.docker/config.json)
+    console.log(`Logging in to Docker registry: ${registryHostname}`);
+    await execa("docker", ["login", registryHostname, "--username", username, "--password-stdin"], {
+      input: password,
+      stdio: ["pipe", "inherit", "inherit"],
+    });
+
+    // Build and push in one step using BuildKit via docker buildx
+    const buildArgs = [
+      "buildx", "build",
+      "--platform", "linux/amd64",
+      "-t", fullImageName,
+      "--push",
+    ];
 
     if (dockerfile) {
       buildArgs.push("-f", dockerfile);
@@ -76,16 +89,13 @@ export async function buildAndPushDockerImage(
 
     buildArgs.push(buildContext);
 
-    console.log(`Building Docker image: ${imageName}:${tag}`);
+    console.log(`Building and pushing via buildx: ${fullImageName}`);
     await execa("docker", buildArgs, {
-      cwd: options.cwd,
-      stdio: "inherit"
+      cwd,
+      stdio: "inherit",
     });
 
-    console.log(`Successfully built image: ${imageName}:${tag}`);
-
-    // Push the built image
-    await pushDockerImage({ imageName, tag, registryHostname, username, password });
+    console.log(`Successfully built and pushed image: ${fullImageName}`);
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

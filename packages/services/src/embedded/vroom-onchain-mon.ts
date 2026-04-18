@@ -1,10 +1,12 @@
 import { DevnetServiceConfig } from "../devnet-service-config.js";
 
 export const vroomOnchainMon = new DevnetServiceConfig({
-  repository: {
-    url: "git@github.com:lidofinance/valset-onchain-mon-bots.git",
-    branch: "feat/sr-v3",
-  },
+  // TODO: repository lidofinance/valset-onchain-mon-bots is currently private —
+  // re-enable once we have GitHub App auth in the cli-pod.
+  // repository: {
+  //   url: "git@github.com:lidofinance/valset-onchain-mon-bots.git",
+  //   branch: "feat/sr-v3",
+  // },
   workspace: "workspaces/vroom-onchain-mon",
   name: "vroomOnchainMon" as const,
   exposedPorts: [3000],

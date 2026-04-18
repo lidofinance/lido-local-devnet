@@ -1,10 +1,12 @@
 import { DevnetServiceConfig } from "../devnet-service-config.js";
 
 export const mevMonitoring = new DevnetServiceConfig({
-  repository: {
-    url: "git@github.com:lidofinance/lido-mev-monitoring.git",
-    branch: "main",
-  },
+  // TODO: repository lidofinance/lido-mev-monitoring is currently private —
+  // re-enable once we have GitHub App auth in the cli-pod.
+  // repository: {
+  //   url: "git@github.com:lidofinance/lido-mev-monitoring.git",
+  //   branch: "main",
+  // },
   workspace: "workspaces/mev-monitoring",
   name: "mevMonitoring" as const,
   constants: {
