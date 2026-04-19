@@ -22,7 +22,7 @@ export const createShellWrapper = <Name extends keyof DevNetServicesConfigs>(
 
   const rawSh = execa({
     cwd: serviceArtifactRoot,
-    env,
+    env: { TERM: "xterm", ...env },
     shell: true,
     stdout: [
       // async function* (chunk: any) {
