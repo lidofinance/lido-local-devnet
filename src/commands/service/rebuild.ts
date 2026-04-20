@@ -2,7 +2,6 @@ import { Params, command } from "@devnet/command";
 import { serviceConfigs } from "@devnet/service";
 
 import { GitCheckout } from "../git/checkout.js";
-
 import { ServiceInstallDeps } from "./install-deps.js";
 
 export const ServiceRebuild = command.cli({
