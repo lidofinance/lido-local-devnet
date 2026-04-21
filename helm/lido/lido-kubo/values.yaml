@@ -136,7 +136,9 @@ lido-app:
 swarmExternalService:
   enabled: true
   type: NodePort
-  externalTrafficPolicy: Cluster
+  # Local preserves client source IP — required for libp2p/bitswap over NodePort.
+  # Cluster does SNAT, which breaks identify/ObservedAddress and stalls bitswap streams.
+  externalTrafficPolicy: Local
   annotations: {}
   labels: {}
   ports:

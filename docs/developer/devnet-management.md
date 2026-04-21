@@ -171,6 +171,8 @@ Key env vars: `KEYS_API_URI`, `CONSENSUS_CLIENT_URI`, `LIDO_LOCATOR_ADDRESS`, `C
 
 > **Known issue:** Kubo init container runs as root and creates `/data/ipfs/config`, but the main container runs as `ipfs` (UID 1000). The helm chart includes a `chown -R 1000:100 /data/ipfs` init command to fix permissions.
 
+> **p2p external reachability:** the swarm NodePort service must use `externalTrafficPolicy: Local` (see `swarmExternalService` in `helm/lido/lido-kubo/values.yaml`). With `Cluster`, kube-proxy SNATs the client source IP, which breaks libp2p identify/ObservedAddress and stalls bitswap streams — ports look open, `ipfs swarm connect` succeeds, but external `ipfs cat <CID>` hangs indefinitely. The HTTP gateway (ingress) is unaffected.
+
 ## Log Filtering & Deploy Metadata
 
 All services using the `lido-app` helm subchart automatically add pod labels for log filtering:
@@ -257,6 +259,7 @@ Collects chain endpoints, service branches/commits from artifacts, refreshes das
 | Council: "Chain X is not supported" | Feature branch missing devnet chainId support | Merge with `feat/devnet` |
 | DSM bots: missing `deposit_security_module` | Feature branch missing DSM contract bindings | Merge with `feat/devnet` |
 | Kubo: "permission denied" on `/data/ipfs/config` | Init runs as root, main container as UID 1000 | `chown` in initCommands (already fixed in helm chart) |
+| Kubo: external `ipfs cat <CID>` hangs though swarm connect succeeds | Swarm NodePort SNATs source IP (`externalTrafficPolicy: Cluster`), breaks libp2p ObservedAddress / bitswap streams | Set `swarmExternalService.externalTrafficPolicy: Local` in `helm/lido/lido-kubo/values.yaml`; live patch: `kubectl -n kt-<devnet>-kubo patch svc <release>-swarm -p '{"spec":{"externalTrafficPolicy":"Local"}}'` |
 | Loki OOMKilled | Default 512Mi memory limit too low | Increase to 1Gi in `helm/vendor/loki/values.yaml` |
 | Promtail install fails (ClusterRole exists) | Stale ClusterRole from previous devnet | Delete ClusterRole/Binding manually |
 | Oracle: `ModuleNotFoundError` | Missing dependency in `pyproject.toml` | Add missing package, rebuild |
