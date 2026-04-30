@@ -14,7 +14,7 @@ export const DSMBotsK8sBuild = command.cli({
 
     await dre.runCommand(GitCheckout, {
       service: "dsmBots",
-      ref: "fix/0x02-modules-support", // TODO make configurable from global yaml config
+      ref: "fix/modules-prioritization", // TODO make configurable from global yaml config
     });
 
     await buildAndPushDockerImage({

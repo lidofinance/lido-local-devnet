@@ -77,8 +77,9 @@ export const DSMBotsK8sUp = command.cli({
       CREATE_TRANSACTIONS: "true",
       DEPOSIT_MODULES_WHITELIST: "1\\,2\\,3\\,4", // necessary wrapping for helm
       PROMETHEUS_PREFIX: "depositor_bot",
-      KEYS_API_URLS: kapiPrivateUrl,
+      KEYS_API_URL: kapiPrivateUrl,
       CL_API_URLS: clPrivate,
+      ENABLE_TOP_UP: "true",
     };
 
     const helmReleases = [

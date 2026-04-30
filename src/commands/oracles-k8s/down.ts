@@ -5,11 +5,18 @@ import { deleteNamespace, getNamespacedDeployedHelmReleases } from "@devnet/k8s"
 import { KuboK8sDown } from "../kubo-k8s/down.js";
 import { NAMESPACE } from "./constants/oracles-k8s.constants.js";
 
+const PERFORMANCE_DB_RELEASE = "oracle-performance-db";
+
 export const OracleK8sDown = command.cli({
   description: "Stop Oracle(s) in K8s with Helm",
   params: {
     force: Params.boolean({
       description: "Do not check that the Oracles was already stopped",
+      default: false,
+      required: false,
+    }),
+    keepDb: Params.boolean({
+      description: `Keep ${PERFORMANCE_DB_RELEASE} release, the namespace, and Kubo (preserves performance DB data across redeploys)`,
       default: false,
       required: false,
     }),
@@ -21,11 +28,19 @@ export const OracleK8sDown = command.cli({
       return;
     }
 
-    const releases = await getNamespacedDeployedHelmReleases(NAMESPACE(dre));
+    const allReleases = await getNamespacedDeployedHelmReleases(NAMESPACE(dre));
 
-    if (releases.length === 0) {
+    if (allReleases.length === 0) {
       logger.log(`No Oracles releases found in namespace [${NAMESPACE(dre)}]. Skipping...`);
       return;
+    }
+
+    const releases = params.keepDb
+      ? allReleases.filter((release) => release !== PERFORMANCE_DB_RELEASE)
+      : allReleases;
+
+    if (params.keepDb && releases.length === allReleases.length) {
+      logger.log(`keepDb=true but ${PERFORMANCE_DB_RELEASE} not found in namespace [${NAMESPACE(dre)}]; nothing kept.`);
     }
 
     for (const release of releases) {
@@ -41,6 +56,13 @@ export const OracleK8sDown = command.cli({
       await helmLidoOracleSh`make lint`;
       await helmLidoOracleSh`make uninstall`;
       logger.log(`Oracles [${release}] stopped.`);
+    }
+
+    if (params.keepDb) {
+      logger.log(`Namespace [${NAMESPACE(dre)}] preserved (keepDb=true).`);
+      // Clear only the running marker so up() does not short-circuit; keep image state.
+      await state.updateOraclesK8sRunning({ helmReleases: [] });
+      return;
     }
 
     await deleteNamespace(NAMESPACE(dre));

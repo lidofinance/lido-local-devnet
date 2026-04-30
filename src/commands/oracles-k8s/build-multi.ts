@@ -251,6 +251,14 @@ export const OracleK8sBuildMulti = command.cli({
       "utf8",
     );
 
+    await state.updateOraclesK8sBuildMultiImage({
+      image,
+      registryHostname: dockerRegistry.registryHostname,
+      accountingTag,
+      ejectorTag,
+      csmTag,
+    });
+
     if (!params.keepWorktrees) {
       try {
         await oracleSh`git worktree remove --force ${accountingWorktree}`;

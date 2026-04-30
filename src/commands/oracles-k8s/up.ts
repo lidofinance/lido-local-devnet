@@ -22,6 +22,15 @@ type HelmRelease = {
 type StateLike = any;
 type OracleServiceLike = { config: { constants: Record<string, number | string> }; sh: Function };
 
+const DEFAULT_IMAGE = "lidofinance/oracle";
+const DEFAULT_TAG = "6.0.1";
+
+type PerRoleTags = {
+  accountingTag: string;
+  csmTag: string;
+  ejectorTag: string;
+};
+
 const ensurePrereqs = async (state: StateLike) => {
   if (!(await state.isChainDeployed())) {
     throw new DevNetError("Chain is not deployed");
@@ -53,6 +62,25 @@ const resolveRegistryHostname = async (
   }
 };
 
+const hasNoImageOverrides = (params: {
+  accountingImage?: string;
+  accountingTag?: string;
+  csmImage?: string;
+  csmTag?: string;
+  ejectorImage?: string;
+  ejectorTag?: string;
+  image: string;
+  tag: string;
+}) =>
+  params.image === DEFAULT_IMAGE
+  && params.tag === DEFAULT_TAG
+  && !params.accountingImage
+  && !params.accountingTag
+  && !params.ejectorImage
+  && !params.ejectorTag
+  && !params.csmImage
+  && !params.csmTag;
+
 const getImageConfig = async ({
   params,
   state,
@@ -61,9 +89,24 @@ const getImageConfig = async ({
 }: {
   defaultRegistryHostname?: string;
   dre: { runCommand: Function };
-  params: { build: boolean; image: string; tag: string };
+  params: {
+    accountingImage?: string;
+    accountingTag?: string;
+    build: boolean;
+    csmImage?: string;
+    csmTag?: string;
+    ejectorImage?: string;
+    ejectorTag?: string;
+    image: string;
+    tag: string;
+  };
   state: StateLike;
-}) => {
+}): Promise<{
+  image: string;
+  perRoleTags?: PerRoleTags;
+  registryHostname: string;
+  tag: string;
+}> => {
   if (params.build) {
     await dre.runCommand(OracleK8sBuild, {});
     if (!(await state.isOraclesK8sImageReady())) {
@@ -71,6 +114,27 @@ const getImageConfig = async ({
     }
 
     return await state.getOraclesK8sImage();
+  }
+
+  // No explicit overrides: prefer state (build-multi first, then single :build).
+  if (hasNoImageOverrides(params)) {
+    if (await state.isOraclesK8sBuildMultiImageReady()) {
+      const multi = await state.getOraclesK8sBuildMultiImage();
+      return {
+        image: multi.image,
+        tag: params.tag,
+        registryHostname: multi.registryHostname,
+        perRoleTags: {
+          accountingTag: multi.accountingTag,
+          ejectorTag: multi.ejectorTag,
+          csmTag: multi.csmTag,
+        },
+      };
+    }
+
+    if (await state.isOraclesK8sImageReady()) {
+      return await state.getOraclesK8sImage();
+    }
   }
 
   return {
@@ -177,6 +241,7 @@ const resolveReleaseImageTag = ({
   params,
   image,
   tag,
+  perRoleTags,
 }: {
   command: string;
   image: string;
@@ -188,6 +253,7 @@ const resolveReleaseImageTag = ({
     ejectorImage?: string;
     ejectorTag?: string;
   };
+  perRoleTags?: PerRoleTags;
   tag: string;
 }) => {
   const isCsmFamily = [
@@ -206,11 +272,11 @@ const resolveReleaseImageTag = ({
         : image;
 
   const releaseTag = command === "accounting"
-    ? (params.accountingTag ?? tag)
+    ? (params.accountingTag ?? perRoleTags?.accountingTag ?? tag)
     : command === "ejector"
-      ? (params.ejectorTag ?? tag)
+      ? (params.ejectorTag ?? perRoleTags?.ejectorTag ?? tag)
       : isCsmFamily
-        ? (params.csmTag ?? tag)
+        ? (params.csmTag ?? perRoleTags?.csmTag ?? tag)
         : tag;
 
   return { releaseImage, releaseTag };
@@ -226,7 +292,7 @@ export const OracleK8sUp = command.cli({
   params: {
     image: Params.string({
       description: "Oracle image name",
-      default: "lidofinance/oracle",
+      default: DEFAULT_IMAGE,
       required: false,
     }),
     registryHostname: Params.string({
@@ -235,7 +301,7 @@ export const OracleK8sUp = command.cli({
     }),
     tag: Params.string({
       description: "Oracle image tag",
-      default: "6.0.1",
+      default: DEFAULT_TAG,
       required: false,
     }),
     accountingImage: Params.string({
@@ -292,7 +358,7 @@ export const OracleK8sUp = command.cli({
 
     const { privateUrl: kuboPrivateUrl } = await state.getKuboK8sRunning();
     const defaultRegistryHostname = await resolveRegistryHostname(params, state);
-    const { image, tag, registryHostname } = await getImageConfig({
+    const { image, tag, registryHostname, perRoleTags } = await getImageConfig({
       params,
       state,
       dre,
@@ -400,6 +466,7 @@ export const OracleK8sUp = command.cli({
         params,
         image,
         tag,
+        perRoleTags,
       });
 
       const performanceWebProbeOverrides =
