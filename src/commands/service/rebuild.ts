@@ -14,8 +14,9 @@ export const ServiceRebuild = command.cli({
       required: true,
     })(),
     ref: Params.string({
-      description: "Git branch, tag, or commit hash",
-      required: true,
+      description: "Git branch, tag, or commit hash (defaults to develop)",
+      default: "develop",
+      required: false,
     }),
     skipDeploy: Params.boolean({
       description: "Skip build and deploy steps (only checkout + install deps)",
@@ -54,12 +55,29 @@ export const ServiceRebuild = command.cli({
     // Oracle has three role-specific images (ao/vebo/csm) and a stateful
     // performance DB; route through build-multi + down --keepDb so the DB
     // survives the redeploy and all roles get the new code.
+    // runCommandByName bypasses oclif default-resolution, so subcommand params
+    // arrive as undefined unless mirrored explicitly here.
     if (params.service === "oracle") {
+      const networkName = dre.network.name;
+      // Sanitize like build-multi.sanitizeBranch — docker tags forbid '/' etc.
+      const sanitizedRef = params.ref.replaceAll(/[^\w.-]+/g, "_");
+      const oracleImage = "lido/oracle";
+      // Tags include ref so different refs occupy distinct slots in registry.
+      const accountingTag = `kt-${networkName}-${sanitizedRef}-ao`;
+      const ejectorTag = `kt-${networkName}-${sanitizedRef}-vebo`;
+      const csmTag = `kt-${networkName}-${sanitizedRef}-csm`;
+
       logger.log(`🏗️  Building oracle images via build-multi from ${params.ref}...`);
       await dre.runCommandByName(`${topic}:build-multi`, {
         accountingBranch: params.ref,
         ejectorBranch: params.ref,
         csmBranch: params.ref,
+        image: oracleImage,
+        accountingTag,
+        ejectorTag,
+        csmTag,
+        fetch: true,
+        keepWorktrees: true,
       });
 
       logger.log(`🧹 Tearing down oracle deployment (keeping performance DB)...`);
@@ -74,7 +92,16 @@ export const ServiceRebuild = command.cli({
       }
 
       logger.log(`🚀 Deploying oracle...`);
-      await dre.runCommandByName(`${topic}:up`, {});
+      // Pass per-role tags explicitly: hasNoImageOverrides() returns false,
+      // getImageConfig falls to its bottom return with image="lido/oracle",
+      // and getReleaseImage picks our explicit tags. No placeholder needed.
+      await dre.runCommandByName(`${topic}:up`, {
+        image: oracleImage,
+        accountingTag,
+        ejectorTag,
+        csmTag,
+        build: false,
+      });
 
       logger.log(`✅ oracle rebuilt and deployed`);
       return;

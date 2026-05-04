@@ -62,6 +62,11 @@ export const GitCheckout = command.cli({
     if (localBranchExists) {
       logger.log(`🔀 Switching to local branch: ${branch}`);
       await sh`git checkout ${branch}`;
+      // Fast-forward local branch to origin: without this, an existing local
+      // branch stays pinned at its old commit even after `git fetch` and we
+      // would silently rebuild against stale code.
+      logger.log(`⏩ Resetting ${branch} to origin/${branch}`);
+      await sh`git reset --hard origin/${branch}`;
     } else {
       // Check if the branch exists remotely
       const remoteBranchExists =
