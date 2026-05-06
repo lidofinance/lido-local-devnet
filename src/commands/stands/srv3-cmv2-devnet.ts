@@ -123,6 +123,7 @@ export const SRv3CMv2DevnetUp = command.cli({
       stakeShareLimitBP: 2000,
       priorityExitShareThresholdBP: 2500,
       maxDepositsPerBlock: 30,
+      defaultKeysLimit: "max",
     });
     logger.log("✅ CMv2 module activated.");
 

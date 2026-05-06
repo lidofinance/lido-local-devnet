@@ -9,6 +9,7 @@ Below is a list of available commands. You can read their documentation by follo
 - [assertoor](./assertoor.md) - Command set for managing Assertoor.
 - [blockscout](./blockscout.md) - Command set for managing Blockscout, a Consensus Layer explorer.
 - [chain](./chain.md) - Command set for managing EL (Execution) and CL (Consensus) nodes.
+- [cmv2](./cmv2.md) - Command set for managing CMv2 (Curated Module v2), deploying smart contracts, and configuring the environment based on the current network state.
 - [config](./config.md) - Print public DevNet config.
 - [council](./council.md) - Command set for managing Council.
 - [csm](./csm.md) - Command set for managing CSM, deploying smart contracts, and configuring the environment based on the current network state.

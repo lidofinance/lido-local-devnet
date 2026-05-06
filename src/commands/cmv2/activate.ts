@@ -38,6 +38,12 @@ export const ActivateCMv2 = command.cli({
       required: false,
       default: 30,
     }),
+    defaultKeysLimit: Params.string({
+      description:
+        "Override defaultKeysLimit on CMv2 ParametersRegistry. Pass 'max' for type(uint256).max, decimal for a fixed value, or 'skip' to leave the deploy-time default.",
+      required: false,
+      default: "max",
+    }),
   },
   async handler({ params, dre, dre: { logger, network } }) {
     const { lidoCLI, oracle, cmv2 } = dre.services;
@@ -107,6 +113,22 @@ export const ActivateCMv2 = command.cli({
       await lidoCLI.sh({ env })`./run.sh cmv2 grant-manage-operator-groups-role-vote`;
     } catch {
       logger.warn("Failed to grant MANAGE_OPERATOR_GROUPS_ROLE; proceed manually if needed");
+    }
+
+    if (params.defaultKeysLimit !== "skip") {
+      logger.log(
+        `Granting MANAGE_KEYS_LIMIT_ROLE and setting defaultKeysLimit=${params.defaultKeysLimit} on CMv2 ParametersRegistry...`,
+      );
+      try {
+        await lidoCLI.sh({ env })`./run.sh cmv2 grant-manage-keys-limit-role-vote`;
+        await lidoCLI.sh({ env })`./run.sh cmv2 set-default-keys-limit ${params.defaultKeysLimit}`;
+      } catch {
+        logger.warn(
+          "Failed to raise defaultKeysLimit; large add-keys batches may revert with KeysLimitExceeded. Run lidoCLI `cmv2 grant-manage-keys-limit-role-vote` + `cmv2 set-default-keys-limit <limit>` manually.",
+        );
+      }
+    } else {
+      logger.log("Skipping defaultKeysLimit override (--defaultKeysLimit=skip).");
     }
 
     await state.updateCMv2Activated({ active: true });
