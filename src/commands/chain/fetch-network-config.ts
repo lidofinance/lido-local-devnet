@@ -11,6 +11,7 @@ const ETHPANDAOPS_REPOS: Record<string, string> = {
   "epbs-devnets": "https://raw.githubusercontent.com/ethpandaops/epbs-devnets/master",
   "pectra-devnets": "https://raw.githubusercontent.com/ethpandaops/pectra-devnets/master",
   "fusaka-devnets": "https://raw.githubusercontent.com/ethpandaops/fusaka-devnets/master",
+  "glamsterdam-devnets": "https://raw.githubusercontent.com/ethpandaops/glamsterdam-devnets/master",
 };
 
 /** Files to download from ethpandaops metadata directory */

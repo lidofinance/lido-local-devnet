@@ -51,6 +51,10 @@ export const ChainSelfHostedUp = command.isomorphic({
     const isCustomNetwork = !KNOWN_NETWORKS.has(targetNetwork);
     const networkConfigDir = path.join(state.artifactsRoot, "network-config");
 
+    // ConfigMap and Secret writes below require the namespace to already exist.
+    logger.log(`Creating namespace '${namespace}' if not exists...`);
+    await createNamespaceIfNotExists(namespace);
+
     // 1. Prepare custom network config (validate, upload ConfigMap, read bootnodes)
     const netConfig = await prepareNetworkConfig({
       isCustomNetwork, networkConfigDir, namespace, networkName: dreNetwork.name, genesisSSZUrl, logger,
@@ -59,11 +63,7 @@ export const ChainSelfHostedUp = command.isomorphic({
     // 2. Ensure JWT secret exists in K8s
     const jwtSecretName = await ensureJwtSecret(namespace, dreNetwork.name, state.artifactsRoot, logger);
 
-    // 3. Create namespace
-    logger.log(`Creating namespace '${namespace}' if not exists...`);
-    await createNamespaceIfNotExists(namespace);
-
-    // 4. Deploy EL & CL Helm charts
+    // 3. Deploy EL & CL Helm charts
     const elRelease = `${dreNetwork.name}-el`;
     const clRelease = `${dreNetwork.name}-cl`;
 
