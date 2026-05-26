@@ -1,0 +1,145 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cli-pod
+---
+# ClusterRoleBinding: gives cli-pod full cluster-admin access within the cluster.
+# Needed because the CLI creates namespaces, deploys services, etc.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cli-pod-admin
+subjects:
+  - kind: ServiceAccount
+    name: cli-pod
+    namespace: core-devnets-sandbox
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cli-pod
+  labels:
+    app: cli-pod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cli-pod
+  template:
+    metadata:
+      labels:
+        app: cli-pod
+      annotations:
+        # Required for rootless BuildKit — disables AppArmor confinement for buildkitd
+        container.apparmor.security.beta.kubernetes.io/buildkitd: unconfined
+    spec:
+      serviceAccountName: cli-pod
+      containers:
+        - name: cli
+          image: container-registry.valset-02.testnet.fi/lido/devnet-cli:latest
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi"
+            limits:
+              cpu: "8"
+              memory: "16Gi"
+          env:
+            # GitHub token — optional for now (public repos don't need it)
+            # - name: GITHUB_TOKEN
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: cli-pod-secrets
+            #       key: github-token
+            - name: DOCKER_REGISTRY_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: cli-pod-secrets
+                  key: registry-username
+                  optional: true
+            - name: DOCKER_REGISTRY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cli-pod-secrets
+                  key: registry-password
+                  optional: true
+            # BuildKit sidecar endpoint (same pod → localhost)
+            - name: BUILDKIT_HOST
+              value: tcp://localhost:1234
+          volumeMounts:
+            # Persistent storage for cloned repos and build cache
+            - name: workspace
+              mountPath: /app/artifacts
+        # ──────────────────────────────────────────────────────────
+        # BuildKit rootless sidecar — handles docker buildx operations
+        # ──────────────────────────────────────────────────────────
+        - name: buildkitd
+          image: moby/buildkit:rootless
+          args:
+            - --addr
+            - tcp://0.0.0.0:1234
+            - --oci-worker-no-process-sandbox
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+          securityContext:
+            seccompProfile:
+              type: Unconfined
+            runAsUser: 1000
+            runAsGroup: 1000
+          readinessProbe:
+            exec:
+              command: ["buildctl", "--addr", "tcp://localhost:1234", "debug", "workers"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: buildkit-cache
+              mountPath: /home/user/.local/share/buildkit
+      imagePullSecrets:
+        - name: registry-pull-secret
+      volumes:
+        - name: workspace
+          persistentVolumeClaim:
+            claimName: cli-pod-workspace
+        - name: buildkit-cache
+          emptyDir: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cli-pod-workspace
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+# Setup:
+#
+# 1. Create secrets:
+#
+# kubectl create secret docker-registry registry-pull-secret \
+#   --docker-server=container-registry.valset-02.testnet.fi \
+#   --docker-username=admin \
+#   --docker-password=<PASS>
+#
+# kubectl create secret generic cli-pod-secrets \
+#   --from-literal=registry-username=<USER> \
+#   --from-literal=registry-password=<PASS>
+#
+# 2. Build and push cli-pod image:
+#
+# cd cli-pod && make build-push
+#
+# 3. Deploy:
+#
+# kubectl apply -f k8s-deployment.yaml

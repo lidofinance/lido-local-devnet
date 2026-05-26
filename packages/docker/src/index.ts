@@ -97,6 +97,13 @@ export async function getContainersByServiceLabelsOrNull<
       return null;
     }
 
+    // Docker daemon unreachable (e.g. running inside cli-pod in k8s, no /var/run/docker.sock).
+    // Treat as "no docker available" so callers can fall back to k8s path.
+    const code = (error as NodeJS.ErrnoException)?.code;
+    if (code === "ENOENT" || code === "ECONNREFUSED") {
+      return null;
+    }
+
     throw error;
   }
 }

@@ -1,0 +1,19 @@
+{{- if .Values.discord.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-discord
+  labels:
+    app: {{ .Release.Name }}
+    component: discord
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.discord.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Release.Name }}
+    component: discord
+{{- end }}

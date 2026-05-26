@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const NetworkBrand = Symbol('NetworkBrand');
 
-export const DEFAULT_NETWORK_NAME = process.env.DEVNET_NAME ?? 'my-devnet';
+export const DEFAULT_NETWORK_NAME = process.env.DEVNET_NAME?.trim() || 'my-devnet';
 export const NETWORK_NAME_SUBSTITUTION = '$(DEVNET_NAME)';
 
 /**

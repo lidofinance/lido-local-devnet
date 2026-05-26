@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
 import { command } from "@devnet/command";
 import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import {
@@ -5,8 +8,11 @@ import {
   getNamespacedDeployedHelmReleases,
 } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
+import { getAddress } from "viem";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
+import { kapiK8sExtension } from "../kapi-k8s/extensions/kapi-k8s.extension.js";
 import { DSMBotsK8sBuild } from "./build.js";
 import { NAMESPACE } from "./constants/dsm-bots-k8s.constants.js";
 import { dsmBotsK8sExtension } from "./extensions/dsm-bots-k8s.extension.js";
@@ -15,7 +21,7 @@ import { dsmBotsK8sExtension } from "./extensions/dsm-bots-k8s.extension.js";
 export const DSMBotsK8sUp = command.cli({
   description: "Start DSM bots in K8s",
   params: {},
-  extensions: [dsmBotsK8sExtension],
+  extensions: [dsmBotsK8sExtension, kapiK8sExtension],
   async handler({ dre, dre: { services, state, network, logger } }) {
     const { dsmBots } = services;
 
@@ -31,16 +37,31 @@ export const DSMBotsK8sUp = command.cli({
       throw new DevNetError("CSM is not deployed");
     }
 
+    if (!(await state.isKapiK8sRunning())) {
+      throw new DevNetError("KAPI is not deployed");
+    }
+
     await dre.runCommand(DSMBotsK8sBuild, {});
 
-    const { elPrivate } = await state.getChain();
+    const { elPrivate, clPrivate } = await state.getChain();
+    const { privateUrl: kapiPrivateUrl } = await state.getKapiK8sRunning();
     const { locator } = await state.getLido();
     const { deployer } = await state.getNamedWallet();
     const { image, tag, registryHostname } = await state.getDsmBotsK8sImage();
 
     const { address: dataBusAddress } = await state.getDataBus();
 
-    const DEPOSIT_CONTRACT_ADDRESS = await dre.services.kurtosis.config.getters.DEPOSIT_CONTRACT_ADDRESS(dre.services.kurtosis);
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(dsmBots.artifact.root);
+
+    let DEPOSIT_CONTRACT_ADDRESS: string;
+
+    const networkConfigGenesis = path.join(state.artifactsRoot, "network-config", "genesis.json");
+    try {
+      const genesis = JSON.parse(await readFile(networkConfigGenesis, "utf-8"));
+      DEPOSIT_CONTRACT_ADDRESS = getAddress(genesis.config.depositContractAddress);
+    } catch {
+      DEPOSIT_CONTRACT_ADDRESS = await dre.services.kurtosis.config.getters.DEPOSIT_CONTRACT_ADDRESS(dre.services.kurtosis);
+    }
 
     const env: Record<string, string> = {
       WEB3_RPC_ENDPOINTS: elPrivate,
@@ -54,8 +75,11 @@ export const DSMBotsK8sUp = command.cli({
       RABBIT_MQ_USERNAME: "guest",
       RABBIT_MQ_PASSWORD: "guest",
       CREATE_TRANSACTIONS: "true",
-      DEPOSIT_MODULES_WHITELIST: "1\\,2\\,3", // necessary wrapping for helm
+      DEPOSIT_MODULES_WHITELIST: "1\\,2\\,3\\,4", // necessary wrapping for helm
       PROMETHEUS_PREFIX: "depositor_bot",
+      KEYS_API_URL: kapiPrivateUrl,
+      CL_API_URLS: clPrivate,
+      ENABLE_TOP_UP: "true",
     };
 
     const helmReleases = [
@@ -84,6 +108,9 @@ export const DSMBotsK8sUp = command.cli({
           REGISTRY_HOSTNAME: registryHostname,
           WALLET_PRIVATE_KEY: privateKey,
           COMMAND: command,
+          BOT_ROLE: command,
+          DEPLOY_COMMIT,
+          DEPLOY_TIME,
         },
       });
 

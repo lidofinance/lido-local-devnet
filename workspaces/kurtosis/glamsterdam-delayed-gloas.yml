@@ -1,0 +1,95 @@
+participants:
+
+  - el_type: geth
+    el_image: ethpandaops/geth:bal-devnet-6-73944e3
+    el_extra_params: [ --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive --rpc.gascap=100000000 --rpc.txfeecap=0 ]
+    el_min_cpu: 0
+    el_max_cpu: 0
+    el_min_mem: 0
+    el_max_mem: 0
+    el_volume_size: 51200
+    # CL
+    cl_type: prysm
+    cl_image: ethpandaops/prysm-beacon-chain:glamsterdam-devnet-3
+    cl_extra_params: [ ]
+    use_separate_vc: true
+    vc_type: prysm
+    vc_image: ethpandaops/prysm-validator:glamsterdam-devnet-3
+    supernode: true
+    cl_volume_size: 51200
+    count: 1
+
+  - el_type: geth
+    el_image: ethpandaops/geth:bal-devnet-6-73944e3
+    el_extra_params: [ --syncmode=full --rpc.allow-unprotected-txs --gcmode=archive --rpc.gascap=100000000 --rpc.txfeecap=0 ]
+    el_min_cpu: 0
+    el_max_cpu: 0
+    el_min_mem: 0
+    el_max_mem: 0
+    el_volume_size: 51200
+    # CL
+    cl_type: lighthouse
+    cl_image: ethpandaops/lighthouse:glamsterdam-devnet-3
+    cl_extra_params: [ ]
+    supernode: true
+    cl_volume_size: 51200
+    count: 1
+
+network_params:
+  network_id: "32382"
+  withdrawal_type: "0x02"
+  preset: mainnet
+  shard_committee_period: 1
+
+  # Fork schedule (mirrors fusaka-devnet2 BPO progression + delayed Gloas).
+  # Per epoch: 32 slots × 12s = 384s ≈ 6.4 min.
+  #   epoch 0-2  : Electra (genesis)             — first ~20 min
+  #   epoch 3    : Fusaka (Fulu)                 — ~20 min after genesis
+  #   epoch 32-36: BPO 1..5                      — sequential blob parameter overrides
+  #   epoch 225  : Gloas                         — ~24 h after genesis
+  # Pre-Gloas window (epoch 0..224 ≈ 24 h) — Lido protocol deploys on
+  # standard EVM (EIP-8037 / EIP-7825 not active), so DAO factory and
+  # other heavy Aragon templates fit in regular gas accounting.
+  # Post-Gloas — ePBS + EIP-8037 + EIP-7825 active for testing of
+  # already-deployed protocol against the new rules.
+  # NOTE: prysm-beacon-chain:glamsterdam-devnet-3 historically failed to
+  # upgrade beacon state at the Fusaka→Gloas boundary
+  # ("ProposerLookahead is not supported for electra"). With 24 h
+  # pre-Gloas window, Lido deploy completes long before the boundary;
+  # even if chain freezes at Gloas, protocol is already up.
+  fulu_fork_epoch: 3
+  bpo_1_epoch: 32
+  bpo_1_max_blobs: 12
+  bpo_1_target_blobs: 9
+  bpo_2_epoch: 33
+  bpo_2_max_blobs: 6
+  bpo_2_target_blobs: 4
+  bpo_3_epoch: 34
+  bpo_3_max_blobs: 9
+  bpo_3_target_blobs: 6
+  bpo_4_epoch: 35
+  bpo_4_max_blobs: 18
+  bpo_4_target_blobs: 12
+  bpo_5_epoch: 36
+  bpo_5_max_blobs: 9
+  bpo_5_target_blobs: 6
+  gloas_fork_epoch: 225
+
+persistent: true
+
+additional_services:
+  - dora
+  - spamoor
+
+dora_params:
+  image: ethpandaops/dora:v1.22.6
+
+keymanager_enabled: true
+
+spamoor_params:
+  image: ethpandaops/spamoor:master
+  max_mem: 8000
+  spammers:
+    - scenario: eoatx
+      config:
+        throughput: 5

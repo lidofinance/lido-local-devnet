@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-grafana
+  labels:
+    app: {{ .Release.Name }}-grafana
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: {{ .Release.Name }}-grafana

@@ -1,0 +1,14 @@
+{{- if .Values.discord.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-discord-config
+  labels:
+    app: {{ .Release.Name }}
+    component: discord
+data:
+  alertmanager-discord.yml: |
+    hooks:
+      - slug: {{ .Values.discord.hookSlug }}
+        hook: {{ .Values.discord.webhookUrl }}
+{{- end }}

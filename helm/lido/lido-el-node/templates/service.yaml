@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lido-el-node.fullname" . }}
+  labels:
+    {{- include "lido-el-node.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: rpc
+      port: {{ .Values.ports.rpc }}
+      targetPort: rpc
+      protocol: TCP
+    - name: ws-rpc
+      port: {{ .Values.ports.ws }}
+      targetPort: ws-rpc
+      protocol: TCP
+    - name: authrpc
+      port: {{ .Values.ports.authrpc }}
+      targetPort: authrpc
+      protocol: TCP
+    - name: metrics
+      port: {{ .Values.ports.metrics }}
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    {{- include "lido-el-node.selectorLabels" . | nindent 4 }}

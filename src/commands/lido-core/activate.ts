@@ -22,9 +22,11 @@ export const ActivateLidoProtocol = command.cli({
 
     await dre.network.waitEL();
 
+    const chainId = await network.getChainId();
+
     const deployEnv = {
       DEPLOYED: "deployed-local-devnet.json",
-      EL_CHAIN_ID: "32382",
+      EL_CHAIN_ID: chainId,
       EL_NETWORK_NAME: "local-devnet",
       PRIVATE_KEY: deployer.privateKey,
       EL_API_PROVIDER: elPublic,

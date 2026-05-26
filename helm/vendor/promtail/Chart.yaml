@@ -1,0 +1,7 @@
+apiVersion: v2
+name: promtail
+description: Minimal Promtail DaemonSet Helm chart for devnet
+type: application
+version: 1.0.0
+appVersion: "3.4.2"
+kubeVersion: '>=1.19.0-0'

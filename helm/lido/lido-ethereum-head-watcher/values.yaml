@@ -1,0 +1,91 @@
+lido-app:
+  nameOverride: app
+  replicaCount: 1
+
+  image:
+    registry: docker.io
+    repository: lido/ethereum-head-watcher
+    tag: "dev"
+    pullPolicy: Always
+    imagePullSecrets:
+      - name: registry-pull-secret
+
+  service:
+    type: ClusterIP
+    ports:
+      - name: metrics
+        port: 9000
+        targetPort: 9000
+        protocol: TCP
+      - name: health
+        port: 9010
+        targetPort: 9010
+        protocol: TCP
+
+  ingress:
+    enabled: false
+
+  env:
+    variables:
+      LOG_LEVEL: INFO
+      DRY_RUN: "false"
+      KEYS_SOURCE: keys_api
+      CONSENSUS_CLIENT_URI: http://consensus
+      EXECUTION_CLIENT_URI: http://execution
+      LIDO_LOCATOR_ADDRESS: ""
+      KEYS_API_URI: http://kapi:3000
+      ALERTMANAGER_URI: http://alertmanager:9093
+      NETWORK_NAME: local-devnet
+      ADDITIONAL_ALERTMANAGER_LABELS: "{}"
+      CL_REQUEST_TIMEOUT: "180"
+      PROMETHEUS_PORT: "9000"
+      HEALTHCHECK_SERVER_PORT: "9010"
+
+  readinessProbe:
+    httpGet:
+      path: /pulse/
+      port: health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+
+  livenessProbe:
+    httpGet:
+      path: /pulse/
+      port: health
+    initialDelaySeconds: 20
+    periodSeconds: 15
+
+  resources: {}
+
+prometheus:
+  image:
+    repository: prom/prometheus
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 9090
+  scrapeInterval: 10s
+  evaluationInterval: 15s
+  externalLabels:
+        monitor: ethereum-head-watcher
+        env: devnet
+        source: devnet
+  resources: {}
+
+alertmanager:
+  image:
+    repository: prom/alertmanager
+    tag: v0.28.1
+    pullPolicy: IfNotPresent
+  port: 9093
+  global:
+    resolveTimeout: 60m
+  route:
+    groupBy:
+      - alertname
+      - network
+    receiver: empty
+  resources: {}
+  slack:
+    receivers: []
+    routes: []
+    secretData: {}

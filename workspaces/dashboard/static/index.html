@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lido DevNet Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    };
+  </script>
+  <style>
+    .copy-btn:hover { opacity: 1; }
+    .copy-btn { opacity: 0.5; cursor: pointer; transition: opacity 0.2s; }
+    .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
+    .dark .tab-active { border-bottom-color: #60a5fa; color: #60a5fa; }
+
+    /* Prose (markdown) */
+    .prose a { color: #3b82f6; text-decoration: underline; }
+    .prose code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 0.875em; }
+    .prose pre { background: #1f2937; color: #e5e7eb; padding: 16px; border-radius: 8px; overflow-x: auto; }
+    .prose pre code { background: none; padding: 0; color: inherit; }
+    .prose h1 { font-size: 1.5em; font-weight: 700; margin: 1em 0 0.5em; }
+    .prose h2 { font-size: 1.25em; font-weight: 600; margin: 1em 0 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
+    .prose h3 { font-size: 1.1em; font-weight: 600; margin: 0.8em 0 0.4em; }
+    .prose ul { list-style: disc; padding-left: 1.5em; margin: 0.5em 0; }
+    .prose ol { list-style: decimal; padding-left: 1.5em; margin: 0.5em 0; }
+    .prose li { margin: 0.25em 0; }
+    .prose p { margin: 0.5em 0; }
+    .prose table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+    .prose th, .prose td { border: 1px solid #d1d5db; padding: 8px 12px; text-align: left; }
+    .prose th { background: #f9fafb; font-weight: 600; }
+
+    /* Dark prose overrides */
+    .dark .prose a { color: #60a5fa; }
+    .dark .prose code { background: #374151; color: #e5e7eb; }
+    .dark .prose pre { background: #111827; }
+    .dark .prose h2 { border-bottom-color: #374151; }
+    .dark .prose th, .dark .prose td { border-color: #4b5563; }
+    .dark .prose th { background: #1f2937; }
+
+    .doc-link { cursor: pointer; }
+    .doc-link:hover { background: #eff6ff; }
+    .doc-link-active { background: #eff6ff; color: #2563eb; font-weight: 500; }
+    .dark .doc-link:hover { background: #1e3a5f; }
+    .dark .doc-link-active { background: #1e3a5f; color: #60a5fa; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 min-h-screen transition-colors">
+  <div class="max-w-7xl mx-auto">
+    <!-- Top nav -->
+    <nav class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center gap-6">
+      <div class="font-bold text-lg text-blue-600 dark:text-blue-400">Lido DevNet</div>
+      <div class="flex gap-1" id="tabs">
+        <button onclick="showTab('status')" class="px-4 py-2 text-sm font-medium tab-active" id="tab-status">Status</button>
+        <button onclick="showTab('docs')" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400" id="tab-docs">Docs</button>
+        <button onclick="showTab('oracles')" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400" id="tab-oracles">Oracles</button>
+        <button onclick="showTab('downloads')" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400" id="tab-downloads">Downloads</button>
+      </div>
+      <div class="ml-auto flex items-center gap-3">
+        <span class="text-xs text-gray-400" id="build-time"></span>
+        <button onclick="toggleTheme()" id="theme-toggle" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Toggle dark mode">
+          <svg id="icon-sun" class="w-5 h-5 hidden dark:block text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+          <svg id="icon-moon" class="w-5 h-5 block dark:hidden text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-20 text-gray-500">Loading devnet state...</div>
+    <div id="error" class="hidden text-center py-20 text-red-600 dark:text-red-400"></div>
+
+    <!-- Status page -->
+    <div id="page-status" class="hidden p-6 space-y-6"></div>
+
+    <!-- Docs page -->
+    <div id="page-docs" class="hidden flex" style="min-height: calc(100vh - 57px);">
+      <div class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 p-4 overflow-y-auto" id="docs-sidebar"></div>
+      <div class="flex-1 p-6 prose max-w-none overflow-y-auto" id="docs-content">
+        <p class="text-gray-500">Select a document from the sidebar.</p>
+      </div>
+    </div>
+
+    <!-- Oracles page -->
+    <div id="page-oracles" class="hidden p-6 space-y-6"></div>
+
+    <!-- Downloads page -->
+    <div id="page-downloads" class="hidden p-6"></div>
+  </div>
+
+<script>
+let STATE = null;
+let MANIFEST = null;
+
+// ── Theme ──────────────────────────────────────────────────────────────
+
+function getTheme() {
+  return localStorage.getItem('dashboard-theme') || 'light';
+}
+
+function applyTheme(theme) {
+  if (theme === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
+
+function toggleTheme() {
+  const next = getTheme() === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('dashboard-theme', next);
+  applyTheme(next);
+  // Re-render if data loaded (updates card/row colors)
+  if (STATE) {
+    renderStatus(STATE);
+    renderOracles(STATE);
+    renderDownloads(MANIFEST);
+  }
+}
+
+applyTheme(getTheme());
+
+// ── Tab navigation ──────────────────────────────────────────────────────
+
+function showTab(name) {
+  document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('#tabs button').forEach(btn => {
+    btn.classList.remove('tab-active');
+    btn.classList.add('text-gray-600', 'dark:text-gray-400');
+  });
+  document.getElementById('page-' + name).classList.remove('hidden');
+  const activeBtn = document.getElementById('tab-' + name);
+  activeBtn.classList.add('tab-active');
+  activeBtn.classList.remove('text-gray-600', 'dark:text-gray-400');
+}
+
+// ── Utilities ───────────────────────────────────────────────────────────
+
+function str(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+function escapeAttr(s) {
+  return s.replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function copyToClipboard(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+function linkOrText(value) {
+  const s = str(value);
+  if (!s) return '<span class="text-gray-400 dark:text-gray-600">-</span>';
+  if (s.startsWith('http://') || s.startsWith('https://') || s.startsWith('ws://')) {
+    return `<a href="${escapeAttr(s)}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline break-all">${s}</a>`;
+  }
+  return `<span class="font-mono text-sm break-all">${s}</span>`;
+}
+
+function card(title, content) {
+  return `<div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+    <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">${title}</h3>
+    ${content}
+  </div>`;
+}
+
+function kvRow(key, value, copyable = false) {
+  const s = str(value);
+  const copyBtn = copyable && s
+    ? ` <button class="copy-btn text-xs text-blue-500 dark:text-blue-400 ml-2" onclick="copyToClipboard('${escapeAttr(s)}', this)">copy</button>`
+    : '';
+  return `<div class="flex items-start py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
+    <span class="text-gray-500 dark:text-gray-400 text-sm w-48 flex-shrink-0">${key}</span>
+    <span class="text-sm flex-1">${linkOrText(s)}${copyBtn}</span>
+  </div>`;
+}
+
+// ── Status page rendering ───────────────────────────────────────────────
+
+function renderStatus(state) {
+  const page = document.getElementById('page-status');
+  let html = '';
+
+  // Header
+  const chainMode = state.chainMode || 'unknown';
+  html += `<div class="bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-800 dark:to-blue-950 rounded-lg p-6 text-white">
+    <h1 class="text-2xl font-bold mb-1">DevNet Dashboard</h1>
+    <p class="text-blue-200">Chain mode: <span class="text-white font-medium">${chainMode}</span></p>
+  </div>`;
+
+  // Chain endpoints
+  if (state.chain) {
+    const c = state.chain;
+    html += card('Chain Endpoints', `
+      ${kvRow('EL Client', c.elClientType)}
+      ${kvRow('EL Public', c.elPublic, true)}
+      ${kvRow('EL Private', c.elPrivate, true)}
+      ${kvRow('EL WS Public', c.elWsPublic, true)}
+      ${kvRow('EL WS Private', c.elWsPrivate, true)}
+      ${kvRow('CL Public', c.clPublic, true)}
+      ${kvRow('CL Private', c.clPrivate, true)}
+      ${c.vcClientType ? kvRow('VC Client', c.vcClientType) : ''}
+      ${c.validatorsApiPublic ? kvRow('Validators API', c.validatorsApiPublic, true) : ''}
+    `);
+  }
+
+  // Node ingress
+  if (state.nodesIngress) {
+    const ni = state.nodesIngress;
+    let rows = '';
+    if (ni.el) ni.el.forEach((n, i) => rows += kvRow(`EL ${i}`, n.publicIngressUrl, true));
+    if (ni.cl) ni.cl.forEach((n, i) => rows += kvRow(`CL ${i}`, n.publicIngressUrl, true));
+    if (ni.vc) ni.vc.forEach((n, i) => rows += kvRow(`VC ${i}`, n.publicIngressUrl, true));
+    if (rows) html += card('Node Ingress URLs', rows);
+  }
+
+  // Services
+  {
+    let rows = '';
+    if (state.kapiK8s?.running?.publicUrl) rows += kvRow('Keys API', state.kapiK8s.running.publicUrl, true);
+    if (state.noWidget?.running?.publicUrl) rows += kvRow('NO Widget', state.noWidget.running.publicUrl, true);
+    if (state.dashboard?.running?.publicUrl) rows += kvRow('Dashboard', state.dashboard.running.publicUrl, true);
+    if (state.evm?.running?.publicUrl) rows += kvRow('EVM', state.evm.running.publicUrl, true);
+    if (rows) html += card('Services', rows);
+  }
+
+  // Explorers & monitoring
+  {
+    let rows = '';
+    if (state.dora?.publicUrl) rows += kvRow('Dora', state.dora.publicUrl, true);
+    if (state.blockscout?.url) rows += kvRow('Blockscout', state.blockscout.url, true);
+    if (state.blockscout?.api) rows += kvRow('Blockscout API', state.blockscout.api, true);
+    if (state.grafana?.publicUrl) rows += kvRow('Grafana', state.grafana.publicUrl, true);
+    if (rows) html += card('Explorers & Monitoring', rows);
+  }
+
+  // Services (from manifest)
+  if (MANIFEST && MANIFEST.services && MANIFEST.services.length > 0) {
+    let rows = '';
+    for (const svc of MANIFEST.services) {
+      const branchLink = svc.repoUrl
+        ? `<a href="${svc.repoUrl}/tree/${encodeURIComponent(svc.branch)}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">${svc.branch}</a>`
+        : `<span class="font-mono text-sm">${svc.branch}</span>`;
+      const shortCommit = svc.commit.slice(0, 8);
+      const commitLink = svc.repoUrl
+        ? `<a href="${svc.repoUrl}/commit/${svc.commit}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline font-mono">${shortCommit}</a>`
+        : `<span class="font-mono text-sm">${shortCommit}</span>`;
+
+      rows += `<div class="flex items-center py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
+        <span class="text-gray-700 dark:text-gray-300 text-sm w-44 flex-shrink-0 font-medium">${svc.name}</span>
+        <span class="text-sm flex-1">${branchLink}</span>
+        <span class="text-sm w-24 text-right">${commitLink}</span>
+      </div>`;
+    }
+    html += card(`Services (${MANIFEST.services.length})`, rows);
+  }
+
+
+  page.innerHTML = html;
+}
+
+// ── Oracles page rendering ──────────────────────────────────────────────
+
+async function ethCall(rpc, to, data) {
+  const res = await fetch(rpc, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_call', params: [{ to, data }, 'latest'], id: Date.now() })
+  });
+  const json = await res.json();
+  if (json.error) throw new Error(json.error.message || 'RPC error');
+  return json.result;
+}
+
+function blockscoutLink(address) {
+  const url = STATE?.blockscout?.url;
+  if (!address) return '<span class="text-gray-400">-</span>';
+  const short = address.slice(0, 8) + '...' + address.slice(-6);
+  if (!url) return `<span class="font-mono text-sm">${address}</span>`;
+  return `<a href="${url}/address/${address}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-sm" title="${address}">${short}</a>`;
+}
+
+function blockscoutLinkFull(address) {
+  const url = STATE?.blockscout?.url;
+  if (!address) return '<span class="text-gray-400">-</span>';
+  if (!url) return `<span class="font-mono text-sm break-all">${address}</span>`;
+  return `<a href="${url}/address/${address}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-sm break-all">${address}</a>`;
+}
+
+function statusBadge(ok, labelTrue = 'Yes', labelFalse = 'No') {
+  if (ok) return `<span class="px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs rounded-full font-medium">${labelTrue}</span>`;
+  return `<span class="px-2 py-0.5 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 text-xs rounded-full font-medium">${labelFalse}</span>`;
+}
+
+function getAddr(obj) {
+  if (!obj) return '';
+  if (typeof obj === 'string') return obj;
+  if (obj.proxy?.address) return obj.proxy.address;
+  if (obj.address) return obj.address;
+  return '';
+}
+
+function renderOracles(state) {
+  const page = document.getElementById('page-oracles');
+  if (!page) return;
+  const lido = state.lidoCore || {};
+  const csm = state.csm || {};
+  const rpc = state.chain?.elPublic;
+
+  let html = '<h2 class="text-xl font-bold mb-4">Oracle Status</h2>';
+
+  // Oracle contracts card
+  const contracts = [
+    { name: 'Accounting Oracle', addr: getAddr(lido.accountingOracle) },
+    { name: 'Validators Exit Bus Oracle', addr: getAddr(lido.validatorsExitBusOracle) },
+    { name: 'HashConsensus (AO)', addr: getAddr(lido.hashConsensusForAccountingOracle) },
+    { name: 'HashConsensus (VEBO)', addr: getAddr(lido.hashConsensusForValidatorsExitBusOracle) },
+    { name: 'Oracle Daemon Config', addr: getAddr(lido.oracleDaemonConfig) },
+    { name: 'Oracle Report Sanity Checker', addr: getAddr(lido.oracleReportSanityChecker) },
+    { name: 'Lazy Oracle', addr: getAddr(lido.lazyOracle) },
+    { name: 'CSM HashConsensus', addr: csm.HashConsensus || csm.hashConsensus || '' },
+    { name: 'CSM Fee Oracle', addr: csm.CSFeeOracle || csm.feeOracle || '' },
+  ].filter(c => c.addr);
+
+  let contractRows = '';
+  for (const c of contracts) {
+    contractRows += `<div class="flex items-start py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
+      <span class="text-gray-500 dark:text-gray-400 text-sm w-56 flex-shrink-0">${c.name}</span>
+      <span class="text-sm flex-1">${blockscoutLinkFull(c.addr)}</span>
+      <button class="copy-btn text-xs text-blue-500 dark:text-blue-400 ml-2" onclick="copyToClipboard('${c.addr}', this)">copy</button>
+    </div>`;
+  }
+  html += card('Oracle Contracts', contractRows || '<span class="text-gray-400">No oracle contracts found</span>');
+
+  // Frame status card (live data placeholder)
+  html += `<div id="oracle-frames-card">${card('Oracle Frame Status',
+    '<div class="text-gray-400 text-sm" id="oracle-frames-loading">Loading live data from RPC...</div>'
+  )}</div>`;
+
+  // Oracle members cards (live data placeholder)
+  html += `<div id="oracle-members-card">${card('Oracle Members (Accounting)',
+    '<div class="text-gray-400 text-sm">Loading live data from RPC...</div>'
+  )}</div>`;
+
+  html += `<div id="oracle-members-csm-card">${card('Oracle Members (CSM)',
+    '<div class="text-gray-400 text-sm">Loading live data from RPC...</div>'
+  )}</div>`;
+
+  page.innerHTML = html;
+
+  // Load live data
+  if (rpc) {
+    loadOracleFrames(rpc, lido, csm);
+    loadOracleMembers(rpc, lido, csm);
+    loadOracleMembersGeneric(rpc, csm?.HashConsensus || csm?.hashConsensus, 'oracle-members-csm-card', 'Oracle Members (CSM)');
+  }
+}
+
+async function loadOracleFrames(rpc, lido, csm) {
+  const container = document.getElementById('oracle-frames-card');
+  if (!container) return;
+
+  try {
+    const oracles = [
+      { name: 'Accounting Oracle', addr: getAddr(lido.accountingOracle), hc: getAddr(lido.hashConsensusForAccountingOracle) },
+      { name: 'Validators Exit Bus', addr: getAddr(lido.validatorsExitBusOracle), hc: getAddr(lido.hashConsensusForValidatorsExitBusOracle) },
+      (csm?.CSFeeOracle || csm?.feeOracle) ? { name: 'CSM Fee Oracle', addr: csm.CSFeeOracle || csm.feeOracle, hc: csm.HashConsensus || csm.hashConsensus || '' } : null,
+    ].filter(o => o && o.addr);
+
+    let rows = '';
+    for (const oracle of oracles) {
+      let refSlot = '-', mainSubmitted = false, extraSubmitted = false, lastRefSlot = 0;
+      let hasProcessingState = false;
+      let hasExtraData = false;
+
+      try {
+        // getProcessingState() = 0x8f7797c2
+        const psResult = await ethCall(rpc, oracle.addr, '0x8f7797c2');
+        if (psResult && psResult.length > 66) {
+          const data = psResult.slice(2);
+          refSlot = parseInt(data.slice(0, 64), 16);
+          mainSubmitted = parseInt(data.slice(192, 256), 16) !== 0;
+          extraSubmitted = parseInt(data.slice(384, 448), 16) !== 0;
+          hasProcessingState = true;
+          hasExtraData = true;
+        }
+      } catch {
+        // Fallback: getConsensusReport() = 0x60d64d38 (for CSM Fee Oracle etc.)
+        try {
+          const crResult = await ethCall(rpc, oracle.addr, '0x60d64d38');
+          if (crResult && crResult.length > 66) {
+            const data = crResult.slice(2);
+            refSlot = parseInt(data.slice(64, 128), 16);
+            const processingStarted = parseInt(data.slice(192, 256), 16) !== 0;
+            mainSubmitted = processingStarted;
+            hasProcessingState = true;
+          }
+        } catch { /* no method available */ }
+      }
+
+      try {
+        // getLastProcessingRefSlot() = 0x3584d59c
+        const lastSlotResult = await ethCall(rpc, oracle.addr, '0x3584d59c');
+        if (lastSlotResult) lastRefSlot = parseInt(lastSlotResult, 16);
+      } catch { /* ignore */ }
+
+      const mainCell = hasProcessingState
+        ? statusBadge(mainSubmitted, 'Submitted', 'Pending')
+        : '<span class="text-gray-400 text-xs">N/A</span>';
+      const extraCell = hasExtraData
+        ? statusBadge(extraSubmitted, 'Submitted', 'Pending')
+        : '<span class="text-gray-400 text-xs">N/A</span>';
+
+      rows += `<tr class="border-b border-gray-100 dark:border-gray-800">
+        <td class="py-2 pr-4 text-sm font-medium">${oracle.name}</td>
+        <td class="py-2 pr-4 text-sm font-mono">${refSlot}</td>
+        <td class="py-2 pr-4">${mainCell}</td>
+        <td class="py-2 pr-4">${extraCell}</td>
+        <td class="py-2 text-sm font-mono text-gray-500">${lastRefSlot || '-'}</td>
+      </tr>`;
+    }
+
+    const table = `<div class="flex items-center justify-between mb-3">
+      <span></span>
+      <button onclick="loadOracleFrames('${rpc}', STATE.lidoCore, STATE.csm)" class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400">↻ Refresh</button>
+    </div>
+    <table class="w-full text-left">
+      <thead><tr class="text-xs text-gray-500 dark:text-gray-400 uppercase">
+        <th class="pb-2 pr-4">Oracle</th>
+        <th class="pb-2 pr-4">Current Frame</th>
+        <th class="pb-2 pr-4">Main Data</th>
+        <th class="pb-2 pr-4">Extra Data</th>
+        <th class="pb-2">Last Completed</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+    container.innerHTML = card('Oracle Frame Status', table);
+  } catch (e) {
+    container.innerHTML = card('Oracle Frame Status', `<span class="text-red-500 text-sm">Error: ${e.message}</span>`);
+  }
+}
+
+async function loadOracleMembers(rpc, lido, csm) {
+  const container = document.getElementById('oracle-members-card');
+  if (!container) return;
+
+  const hcAddr = getAddr(lido.hashConsensusForAccountingOracle);
+  if (!hcAddr) {
+    container.innerHTML = card('Oracle Members', '<span class="text-gray-400 text-sm">HashConsensus address not found</span>');
+    return;
+  }
+
+  try {
+    // getMembers() = 0x9eab5253
+    const membersResult = await ethCall(rpc, hcAddr, '0x9eab5253');
+
+    if (!membersResult || membersResult.length < 130) {
+      container.innerHTML = card('Oracle Members (Accounting)', '<span class="text-gray-400 text-sm">No members data</span>');
+      return;
+    }
+
+    // Decode getMembers() → (address[] addresses, uint256[] lastReportedSlots)
+    const data = membersResult.slice(2);
+    // offset to addresses array
+    const addrOffset = parseInt(data.slice(0, 64), 16) * 2;
+    const addrCount = parseInt(data.slice(addrOffset, addrOffset + 64), 16);
+
+    const addresses = [];
+    for (let i = 0; i < addrCount; i++) {
+      const raw = data.slice(addrOffset + 64 + i * 64, addrOffset + 128 + i * 64);
+      addresses.push('0x' + raw.slice(24));
+    }
+
+    // offset to lastReportedSlots array
+    const slotsOffset = parseInt(data.slice(64, 128), 16) * 2;
+    const slotsCount = parseInt(data.slice(slotsOffset, slotsOffset + 64), 16);
+    const lastSlots = [];
+    for (let i = 0; i < slotsCount; i++) {
+      const raw = data.slice(slotsOffset + 64 + i * 64, slotsOffset + 128 + i * 64);
+      lastSlots.push(parseInt(raw, 16));
+    }
+
+    let rows = '';
+    for (let i = 0; i < addresses.length; i++) {
+      const addr = addresses[i];
+      const lastSlot = lastSlots[i] || 0;
+      rows += `<tr class="border-b border-gray-100 dark:border-gray-800">
+        <td class="py-2 pr-4 text-sm">${blockscoutLink(addr)}</td>
+        <td class="py-2 pr-4 text-sm font-mono">${lastSlot || '<span class="text-gray-400">never</span>'}</td>
+      </tr>`;
+    }
+
+    const table = `<div class="flex items-center justify-between mb-3">
+      <span class="text-xs text-gray-400">${addresses.length} members</span>
+      <button onclick="loadOracleMembers('${rpc}', STATE.lidoCore, STATE.csm)" class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400">↻ Refresh</button>
+    </div>
+    <table class="w-full text-left">
+      <thead><tr class="text-xs text-gray-500 dark:text-gray-400 uppercase">
+        <th class="pb-2 pr-4">Member Address</th>
+        <th class="pb-2">Last Reported Slot</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+    container.innerHTML = card('Oracle Members (Accounting)', table);
+  } catch (e) {
+    container.innerHTML = card('Oracle Members (Accounting)', `<span class="text-red-500 text-sm">Error: ${e.message}</span>`);
+  }
+}
+
+async function loadOracleMembersGeneric(rpc, hcAddr, containerId, title) {
+  const container = document.getElementById(containerId);
+  if (!container || !hcAddr) {
+    if (container) container.innerHTML = card(title, '<span class="text-gray-400 text-sm">HashConsensus address not found</span>');
+    return;
+  }
+
+  try {
+    const membersResult = await ethCall(rpc, hcAddr, '0x9eab5253');
+    if (!membersResult || membersResult.length < 130) {
+      container.innerHTML = card(title, '<span class="text-gray-400 text-sm">No members data</span>');
+      return;
+    }
+
+    const data = membersResult.slice(2);
+    const addrOffset = parseInt(data.slice(0, 64), 16) * 2;
+    const addrCount = parseInt(data.slice(addrOffset, addrOffset + 64), 16);
+    const addresses = [];
+    for (let i = 0; i < addrCount; i++) {
+      addresses.push('0x' + data.slice(addrOffset + 64 + i * 64 + 24, addrOffset + 128 + i * 64));
+    }
+    const slotsOffset = parseInt(data.slice(64, 128), 16) * 2;
+    const lastSlots = [];
+    for (let i = 0; i < addrCount; i++) {
+      lastSlots.push(parseInt(data.slice(slotsOffset + 64 + i * 64, slotsOffset + 128 + i * 64), 16));
+    }
+
+    let rows = '';
+    for (let i = 0; i < addresses.length; i++) {
+      rows += `<tr class="border-b border-gray-100 dark:border-gray-800">
+        <td class="py-2 pr-4 text-sm">${blockscoutLink(addresses[i])}</td>
+        <td class="py-2 pr-4 text-sm font-mono">${lastSlots[i] || '<span class="text-gray-400">never</span>'}</td>
+      </tr>`;
+    }
+
+    const table = `<div class="flex items-center justify-between mb-3">
+      <span class="text-xs text-gray-400">${addresses.length} members</span>
+      <button onclick="loadOracleMembersGeneric('${rpc}', '${hcAddr}', '${containerId}', '${title}')" class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400">↻ Refresh</button>
+    </div>
+    <table class="w-full text-left">
+      <thead><tr class="text-xs text-gray-500 dark:text-gray-400 uppercase">
+        <th class="pb-2 pr-4">Member Address</th>
+        <th class="pb-2">Last Reported Slot</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+    container.innerHTML = card(title, table);
+  } catch (e) {
+    container.innerHTML = card(title, `<span class="text-red-500 text-sm">Error: ${e.message}</span>`);
+  }
+}
+
+// ── Docs page rendering ─────────────────────────────────────────────────
+
+function renderDocsSidebar(manifest) {
+  const sidebar = document.getElementById('docs-sidebar');
+  const docs = manifest.docs || [];
+  if (docs.length === 0) {
+    sidebar.innerHTML = '<p class="text-gray-400 text-sm">No docs available.</p>';
+    return;
+  }
+
+  const groups = {};
+  for (const docPath of docs) {
+    const parts = docPath.split('/');
+    const group = parts.length > 1 ? parts.slice(0, -1).join('/') : '';
+    if (!groups[group]) groups[group] = [];
+    groups[group].push(docPath);
+  }
+
+  let html = '<h3 class="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-3">Documentation</h3>';
+  for (const [group, files] of Object.entries(groups)) {
+    if (group) {
+      html += `<div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mt-3 mb-1">${group}</div>`;
+    }
+    for (const file of files) {
+      const name = file.split('/').pop().replace('.md', '');
+      const label = name === 'README' ? 'Overview' : name;
+      html += `<div class="doc-link px-2 py-1.5 rounded text-sm text-gray-700 dark:text-gray-300" onclick="loadDoc('${file}', this)" data-path="${file}">${label}</div>`;
+    }
+  }
+  sidebar.innerHTML = html;
+}
+
+async function loadDoc(path, el) {
+  document.querySelectorAll('.doc-link').forEach(e => e.classList.remove('doc-link-active'));
+  if (el) el.classList.add('doc-link-active');
+
+  const content = document.getElementById('docs-content');
+  try {
+    const resp = await fetch('/docs/' + path);
+    if (!resp.ok) throw new Error('Not found');
+    const md = await resp.text();
+    content.innerHTML = marked.parse(md);
+  } catch (e) {
+    content.innerHTML = `<p class="text-red-500">Failed to load ${path}: ${e.message}</p>`;
+  }
+}
+
+// ── Downloads page rendering ────────────────────────────────────────────
+
+function renderDownloads(manifest) {
+  const page = document.getElementById('page-downloads');
+  let html = '<h2 class="text-xl font-bold mb-4">Downloads</h2>';
+  html += '<div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800">';
+
+  html += downloadRow('state.json', '/data/state.json', 'Full devnet state including all endpoints, contracts, and service URLs');
+
+  if (manifest.configs && manifest.configs.length > 0) {
+    for (const file of manifest.configs) {
+      const desc = file.startsWith('extra-') ? 'Extra deployed contract addresses' : 'Deployed contract addresses';
+      html += downloadRow(file, '/data/configs/' + file, desc);
+    }
+  }
+
+  if (manifest.hasNetworkConfig) {
+    html += downloadRow('config.yaml', '/data/network/config.yaml', 'Consensus layer network configuration');
+  }
+
+  html += '</div>';
+  page.innerHTML = html;
+}
+
+function downloadRow(name, href, description) {
+  return `<div class="flex items-center justify-between p-4">
+    <div>
+      <div class="font-medium text-sm">${name}</div>
+      <div class="text-xs text-gray-500 dark:text-gray-400">${description}</div>
+    </div>
+    <a href="${href}" download class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white text-sm rounded transition-colors">Download</a>
+  </div>`;
+}
+
+// ── Init ────────────────────────────────────────────────────────────────
+
+async function init() {
+  try {
+    const [stateResp, manifestResp] = await Promise.all([
+      fetch('/data/state.json'),
+      fetch('/data/manifest.json'),
+    ]);
+
+    if (!stateResp.ok) throw new Error('Failed to load state.json');
+
+    STATE = await stateResp.json();
+    MANIFEST = manifestResp.ok ? await manifestResp.json() : { configs: [], docs: [], hasNetworkConfig: false };
+
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('page-status').classList.remove('hidden');
+
+    if (MANIFEST.buildTime) {
+      document.getElementById('build-time').textContent = 'Built: ' + new Date(MANIFEST.buildTime).toLocaleString();
+    }
+
+    renderStatus(STATE);
+    renderOracles(STATE);
+    renderDocsSidebar(MANIFEST);
+    renderDownloads(MANIFEST);
+  } catch (e) {
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('error').classList.remove('hidden');
+    document.getElementById('error').textContent = 'Failed to load dashboard: ' + e.message;
+  }
+}
+
+init();
+</script>
+</body>
+</html>

@@ -62,6 +62,18 @@ export const BeaconHeadCheckpointSchema = z.object({
   }),
 });
 
+export const BeaconSyncStatusSchema = z.object({
+  data: z.object({
+    head_slot: z.string(),
+    sync_distance: z.string(),
+    is_syncing: z.boolean(),
+    is_optimistic: z.boolean(),
+    el_offline: z.boolean(),
+  }),
+});
+
+export type BeaconSyncStatusResponse = z.infer<typeof BeaconSyncStatusSchema>;
+
 export class BeaconClient {
   private baseUrl: string;
 
@@ -104,6 +116,13 @@ export class BeaconClient {
       BeaconHeadCheckpointSchema,
     );
     return Number.parseInt(response.data.current_justified.epoch, 10);
+  }
+
+  public async getSyncStatus(): Promise<BeaconSyncStatusResponse> {
+    return this.fetchAndValidate(
+      `${this.baseUrl}/eth/v1/node/syncing`,
+      BeaconSyncStatusSchema,
+    );
   }
 
   public async getValidators(

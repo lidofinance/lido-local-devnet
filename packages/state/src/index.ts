@@ -1,10 +1,13 @@
 import { DepositData, DepositDataResult, Keystores } from "@devnet/keygen";
 import { ChainRoot, NetworkArtifactRoot } from "@devnet/types";
 import { isEmptyObject } from "@devnet/utils";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 import { BaseState } from "./base-state.js";
 import { WALLET_KEYS_COUNT } from "./constants.js";
 import {
+  ChainMode,
   ChainState,
   DataBusConfigSchema,
   ParsedConsensusGenesisStateSchema,
@@ -12,8 +15,12 @@ import {
 } from "./schemas.js";
 import { sharedWallet } from "./shared-wallet.js";
 import { generateKeysFromMnemonicOnce } from "./wallet/index.js";
+import { readWalletFile } from "./wallet-file.js";
 
-export { Config } from './schemas.js';
+export { ChainMode, ChainState, Config, NotificationsConfig } from './schemas.js';
+export { generateKeysFromMnemonic, generateMnemonicAndKeys } from './wallet/index.js';
+export type { NamedWallet } from './wallet-file.js';
+export { readWalletFile, writeWalletFile } from './wallet-file.js';
 
 export interface StateInterface extends State {
   // augmented in user code
@@ -24,11 +31,6 @@ export class State extends BaseState {
     super(rawConfig, networkArtifactsRoot, chainRoot);
   }
 
-  async isChainDeployed() {
-    const state = await this.getChain(false);
-    return state && !isEmptyObject(state);
-  }
-
   async getChain<M extends boolean = true>(must: M = true as M) {
     return this.getProperties(
       "chain",
@@ -36,6 +38,19 @@ export class State extends BaseState {
       ChainState,
       must,
     );
+  }
+
+  async getChainMode(): Promise<ChainMode> {
+    if (this.config.chainMode) return this.config.chainMode;
+
+    const stored = await this.getProperties(
+      "chainMode",
+      "chainMode",
+      ChainMode,
+      false,
+    );
+
+    return (stored as ChainMode) || "kurtosis";
   }
 
   async getDataBus<M extends boolean = true>(must: M = true as M) {
@@ -51,15 +66,44 @@ export class State extends BaseState {
 
   async getDepositData() {
     const currentState = await this.validators.read();
-    return currentState?.depositData as ({ used?: boolean } & DepositData)[];
+    if (currentState?.depositData) {
+      return currentState.depositData as ({ used?: boolean } & DepositData)[];
+    }
+
+    try {
+      const fallbackPath = path.join(this.chainRoot, "kurtosis/validators.json");
+      const raw = await fs.readFile(fallbackPath, "utf-8");
+      const parsed = JSON.parse(raw);
+      return parsed?.depositData as ({ used?: boolean } & DepositData)[];
+    } catch {
+      
+    }
   }
 
   async getKeystores() {
     const currentState = await this.validators.read();
-    return currentState?.keystores as Keystores[];
+    if (currentState?.keystores) {
+      return currentState.keystores as Keystores[];
+    }
+
+    try {
+      const fallbackPath = path.join(this.chainRoot, "kurtosis/validators.json");
+      const raw = await fs.readFile(fallbackPath, "utf-8");
+      const parsed = JSON.parse(raw);
+      return parsed?.keystores as Keystores[];
+    } catch {
+      
+    }
   }
 
   async getNamedWallet() {
+    const chainMode = await this.getChainMode();
+
+    if (chainMode === "self-hosted" || chainMode === "external") {
+      const fileWallet = await readWalletFile(this.artifactsRoot);
+      if (fileWallet) return fileWallet;
+    }
+
     const [
       deployer,
       secondDeployer,
@@ -109,14 +153,23 @@ export class State extends BaseState {
     return WalletSchema.parseAsync(wallet ?? sharedWallet);
   }
 
-
+  async isChainDeployed() {
+    const state = await this.getChain(false);
+    return state && !isEmptyObject(state);
+  }
 
   async removeChain() {
     await this.updateProperties("chain", {});
   }
 
+
+
   async updateChain(state: ChainState) {
     await this.updateProperties("chain", state);
+  }
+
+  async updateChainMode(mode: ChainMode) {
+    await this.updateProperties("chainMode", mode);
   }
 
   async updateDataBus(jsonData: unknown) {

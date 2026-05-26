@@ -76,11 +76,17 @@
       "chain": {
         "description": "Command set for managing EL (Execution) and CL (Consensus) nodes."
       },
+      "dashboard": {
+        "description": "Command set for managing the DevNet Dashboard web UI."
+      },
       "config": {
         "description": "Print public DevNet config."
       },
       "council": {
         "description": "Command set for managing Council."
+      },
+      "cmv2": {
+        "description": "Command set for managing CMv2 (Curated Module v2), deploying smart contracts, and configuring the environment based on the current network state."
       },
       "csm": {
         "description": "Command set for managing CSM, deploying smart contracts, and configuring the environment based on the current network state."
@@ -94,14 +100,29 @@
       "dsm-bots": {
         "description": "Command set for managing DSM-Bots."
       },
+      "ehw": {
+        "description": "Command set for managing Ethereum Head Watcher in Kubernetes."
+      },
       "git": {
         "description": "Switch the Git branch in the specified service."
+      },
+      "grafana": {
+        "description": "Command set for managing Grafana dashboards."
       },
       "install": {
         "description": "Start DevNet from scratch."
       },
+      "logging": {
+        "description": "Command set for managing centralized logging (Loki + Promtail)."
+      },
       "kapi": {
         "description": "Command set for managing Kapi."
+      },
+      "onchain-mon-k8s": {
+        "description": "Command set for managing onchain feeder/forwarder in Kubernetes."
+      },
+      "vroom-onchain-mon-k8s": {
+        "description": "Command set for managing VROOM onchain monitoring bot in Kubernetes."
       },
       "lido-cli": {
         "description": "Command set for managing Lido-CLI dependencies."
@@ -111,6 +132,9 @@
       },
       "oracles": {
         "description": "Command set for managing Oracles."
+      },
+      "test": {
+        "description": "Inspect and validate spec-driven test scenarios and suites."
       },
       "stands": {
         "description": "A collection of ready-made environments for testing."
@@ -126,6 +150,9 @@
       },
       "voting": {
         "description": "Command set for managing Voting scripts."
+      },
+      "wallet": {
+        "description": "Command set for managing wallets: creating wallets, checking balances, and transferring ETH."
       }
     },
     "hooks": {}

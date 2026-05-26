@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-alertmanager
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: alertmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: alertmanager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: alertmanager
+    spec:
+      containers:
+        - name: alertmanager
+          image: {{ printf "%s:%s" .Values.alertmanager.image.repository .Values.alertmanager.image.tag | quote }}
+          imagePullPolicy: {{ .Values.alertmanager.image.pullPolicy }}
+          args:
+            - --config.file=/etc/alertmanager/alertmanager.yml
+            - --storage.path=/alertmanager
+            - --log.format=json
+          ports:
+            - name: http
+              containerPort: {{ .Values.alertmanager.port }}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+{{ toYaml .Values.alertmanager.resources | indent 12 }}
+          volumeMounts:
+            - name: alertmanager-config
+              mountPath: /etc/alertmanager/alertmanager.yml
+              subPath: alertmanager.yml
+              readOnly: true
+{{- if .Values.alertmanager.slack.secretData }}
+{{- if gt (len .Values.alertmanager.slack.secretData) 0 }}
+            - name: alertmanager-slack-secret
+              mountPath: /etc/alertmanager/secrets
+              readOnly: true
+{{- end }}
+{{- end }}
+      volumes:
+        - name: alertmanager-config
+          configMap:
+            name: {{ .Release.Name }}-alertmanager-config
+{{- if .Values.alertmanager.slack.secretData }}
+{{- if gt (len .Values.alertmanager.slack.secretData) 0 }}
+        - name: alertmanager-slack-secret
+          secret:
+            secretName: {{ .Release.Name }}-alertmanager-slack
+{{- end }}
+{{- end }}

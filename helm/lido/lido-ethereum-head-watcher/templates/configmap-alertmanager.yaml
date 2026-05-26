@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-alertmanager-config
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: alertmanager
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: {{ .Values.alertmanager.global.resolveTimeout | quote }}
+    route:
+      group_by:
+{{ toYaml .Values.alertmanager.route.groupBy | indent 8 }}
+      receiver: {{ .Values.alertmanager.route.receiver | quote }}
+{{- if .Values.alertmanager.slack.routes }}
+      routes:
+{{- range .Values.alertmanager.slack.routes }}
+        - receiver: {{ .receiverName | quote }}
+{{- if .groupWait }}
+          group_wait: {{ .groupWait | quote }}
+{{- end }}
+{{- if .groupInterval }}
+          group_interval: {{ .groupInterval | quote }}
+{{- end }}
+{{- if .repeatInterval }}
+          repeat_interval: {{ .repeatInterval | quote }}
+{{- end }}
+{{- if .matchers }}
+          matchers:
+{{- range .matchers }}
+            - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+    receivers:
+      - name: "empty"
+{{- range .Values.alertmanager.slack.receivers }}
+      - name: {{ .name | quote }}
+        slack_configs:
+          - api_url_file: {{ printf "/etc/alertmanager/secrets/%s.url" .name | quote }}
+            send_resolved: {{ default false .sendResolved }}
+{{- if .channel }}
+            channel: {{ .channel | quote }}
+{{- end }}
+{{- if .username }}
+            username: {{ .username | quote }}
+{{- end }}
+{{- if .iconEmoji }}
+            icon_emoji: {{ .iconEmoji | quote }}
+{{- end }}
+{{- end }}

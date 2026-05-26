@@ -151,9 +151,178 @@ To stop the DevNet and remove all services, run:
 
 ---
 
+## Node Source Modes
+
+The devnet supports three modes for how EL/CL nodes are provided:
+
+### 1. Kurtosis (default)
+
+Full local devnet with Kurtosis-managed nodes. This is the legacy mode.
+
+```sh
+./bin/run.js chain up                          # default, same as kurtosis
+./bin/run.js chain up --mode kurtosis          # explicit
+./bin/run.js chain up --mode kurtosis --preset fusaka-devnet2
+```
+
+### 2. Self-Hosted
+
+Deploy your own EL/CL nodes in Kubernetes using Helm charts (`lido-el-node`, `lido-cl-node`). Useful for running on real testnets (Hoodi, Holesky) or custom ethpandaops devnets.
+
+```sh
+# Deploy nodes on Hoodi
+./bin/run.js chain up --mode self-hosted --network hoodi --elClient geth --clClient lighthouse
+```
+
+#### Custom ethpandaops devnets
+
+For custom devnets (e.g., ethpandaops ePBS/Fusaka devnets), you need to:
+
+1. **Download network config** from the ethpandaops GitHub:
+```sh
+./bin/run.js chain fetch-network-config --repo epbs-devnets --devnet devnet-0
+```
+This downloads `genesis.json`, `config.yaml`, `genesis.ssz`, `enodes.txt`, `bootstrap_nodes.yaml` into `artifacts/<stand>/network-config/`.
+
+2. **Deploy with custom Docker images** and genesis.ssz URL (for large genesis files that exceed the 1MB K8s ConfigMap limit):
+```sh
+./bin/run.js chain up --mode self-hosted \
+  --network epbs-devnet-0 \
+  --elClient geth --clClient prysm \
+  --elImage ethpandaops/geth:epbs-devnet-0 \
+  --clImage ethpandaops/prysm-beacon-chain:epbs-devnet-0-sync \
+  --genesisSSZUrl https://raw.githubusercontent.com/ethpandaops/epbs-devnets/master/network-configs/devnet-0/metadata/genesis.ssz
+```
+
+**Self-hosted flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--elClient` | EL client: `geth` (default) or `reth` |
+| `--clClient` | CL client: `lighthouse`, `prysm`, or `teku` |
+| `--elImage` | Custom Docker image for EL (e.g., `ethpandaops/geth:epbs-devnet-0`) |
+| `--clImage` | Custom Docker image for CL (e.g., `ethpandaops/prysm-beacon-chain:epbs-devnet-0-sync`) |
+| `--genesisSSZUrl` | URL to download genesis.ssz (for files >1MB, downloaded via init container) |
+| `--checkpointSyncUrl` | Checkpoint sync URL for the CL client |
+
+**Notes on custom devnets:**
+- Bootnodes are automatically read from `enodes.txt` (EL) and `bootstrap_nodes.yaml` (CL) in the network-config directory
+- For custom networks, geth uses `--syncmode=full` (not snap) to enable sequential block processing
+- For ePBS devnets, use **Prysm** with the `-sync` tag instead of Lighthouse (Lighthouse has a known sync stall at the Gloas fork boundary)
+- Lighthouse requires `--epochs-per-migration=99999` for ePBS networks (added automatically)
+
+#### ⚠️ Caveats when deploying Lido protocol on public ethpandaops devnets
+
+- **Deploy is slow.** `stands glamsterdam-full` / `stands glamsterdam-kurtosis` runs `lidoCore` `dao-deploy.sh` end-to-end:
+  - `yarn install` + `yarn build` of `lido-core` (~3-5 min, ~1300 packages)
+  - 12+ migration scripts deploying ~50 contracts via hardhat + forge (~10-20 min)
+  - Plus CSM contracts + CMv2 contracts + activations + operators + KAPI startup (~5-10 min)
+  - **Expect 20-40 min** end-to-end for a clean run. Retries take ≈ as long because `git reset --hard origin/<ref>` runs each invocation (see "State preservation" below).
+- **Deployer ETH is limited on public devnets — full redeploy is
+  EXPENSIVE.** On public ethpandaops devnets, the deployer is a
+  **dedicated wallet** that gets a fixed ETH allocation at devnet
+  genesis (defined in the network's `genesis.json` initial allocations).
+  Its private key + address live in **1Password** and in
+  `artifacts/<devnet>/wallets.yml` (synced into the cli-pod via
+  `chain wallet-sync-from-k8s-configmap`). The initial allocation is
+  typically enough for **1-3 full Lido protocol deploys**, not
+  unlimited — there is no faucet top-up on most ethpandaops devnets,
+  the wallet is one-shot. Every failed deploy retry consumes real
+  ETH for tx fees + contract creation; under EIP-8037 contract-creation
+  costs are higher than mainnet (CodeDepositGas raised), so each full
+  pass burns through a non-trivial fraction of the deployer balance.
+  Several full retries WILL deplete the balance and leave you unable
+  to continue. **Mitigations:**
+  - Check deployer balance before each retry — address from
+    `artifacts/<devnet>/wallets.yml` (`deployer` entry), then
+    `eth_getBalance` against the EL ingress.
+  - Some ethpandaops devnets ship a faucet (look at the relevant
+    devnet's homepage under `ethpandaops.io/networks`); not all do.
+    If no faucet, you only get what the genesis allocation gave you.
+  - Avoid full retries when only a late step (e.g. `0100-deploy-circuit-breaker.ts`)
+    fails — back up `lidoCore/deployed-local-devnet.json` and rerun only the
+    broken step manually (see "State preservation" below)
+- **State preservation across retries.** The deploy state file
+  `lidoCore/deployed-local-devnet.json` is gitignored — `git reset --hard`
+  in `GitCheckout` does NOT touch it, so previously-deployed contract
+  addresses persist across stand retries automatically. **Do NOT manually
+  `rm` this file between retries** unless you actually want a fresh
+  full redeploy; each step (`0010-...`, `0020-...`, etc.) checks the state
+  and skips if its output is already populated. If you must reset, save
+  a backup first: `cp deployed-local-devnet.json /tmp/state-backup-$(date +%s).json`.
+- **Forge-driven steps don't honor stand `gasLimit` param.**
+  `0100-deploy-circuit-breaker.ts` (and any other step that clones a
+  separate repo and runs `forge script`) uses forge's own gas estimator,
+  which on EIP-8037 chains under-estimates because it doesn't account
+  for the raised `CodeDepositGas`. Pass `--gas-limit 50000000` (or
+  similar high value) explicitly to such forge invocations — otherwise
+  the tx gets `gas_limit ≈ 1.4M`, the EIP-7825 split leaves
+  `state_reservoir = 0`, and code-deposit OOGs. See
+  `FINDING-EIP7825-dao-factory.md` in `~/Projects/Lido/artifacts/glamsterdam-devnet-4/`
+  for the analysis.
+- **Patches to `lidoCore` scripts are blown away each stand run.**
+  The stand calls `GitCheckout { service: "lidoCore", ref: "develop" }`
+  which performs `git reset --hard origin/develop`. Any inline edits to
+  `lidoCore/scripts/*` are wiped on the next run. If you need a
+  persistent fix, fork `lidoCore` and change the stand's `lidoCore`
+  ref to the fork's branch.
+
+### 3. External
+
+Attach to already running external nodes without launching anything.
+
+```sh
+./bin/run.js chain up --mode external --el-url http://my-el:8545 --cl-url http://my-cl:5052
+./bin/run.js chain up --mode external --el-url http://my-el:8545 --cl-url http://my-cl:5052 --el-ws-url ws://my-el:8546
+```
+
+### Wallet Management
+
+For self-hosted and external modes, wallets can be managed via `wallets.yml`:
+
+```yaml
+# artifacts/<stand>/wallets.yml
+deployer:
+  privateKey: "0x..."
+  publicKey: "0x..."
+oracle1:
+  privateKey: "0x..."
+  publicKey: "0x..."
+# ... etc.
+```
+
+Sync wallets from/to K8s ConfigMap:
+```sh
+./bin/run.js chain wallet-sync-from-k8s-configmap
+./bin/run.js chain wallet-sync-to-k8s-configmap
+```
+
+Sync state from/to K8s ConfigMap:
+```sh
+./bin/run.js chain state-sync-from-k8s-configmap
+./bin/run.js chain state-sync-to-k8s-configmap
+```
+
+### Hoodi Example
+
+See `config.hoodi.example.yml` for a complete Hoodi testnet configuration with real contract addresses from [docs.lido.fi](https://docs.lido.fi/deployed-contracts/hoodi).
+
+```sh
+# Quick start with the Hoodi stand
+./bin/run.js stands hoodi-self-hosted
+
+# Or step by step:
+./bin/run.js chain up --mode self-hosted --network hoodi
+./bin/run.js kapi-k8s up
+```
+
+---
+
 ## Running Multiple Environments
 
-To run multiple devnets on a single cluster, change the `DEVNET_NAME=<another_devnet>` variable in `.env` file
+To run multiple devnets on a single cluster, change the `DEVNET_NAME=<another_devnet>` variable in `.env` file.
+If `DEVNET_NAME` is empty, root deploy commands such as `stands ...` or `chain up` will auto-generate a readable name and save it to `.env`.
+You can still override the name manually with `--network <name>`; that flag also works for service build/rebuild commands.
 All the commands will be executed in the context of the current devnet.
 ---
 

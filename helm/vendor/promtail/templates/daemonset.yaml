@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}
+      initContainers:
+        - name: seed-positions
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              printf 'positions:\n' > /tmp/positions.yaml
+              find /var/log/pods -type f -name '*.log' | while read -r file; do
+                size="$(wc -c < "$file" | tr -d ' ')"
+                printf '  %s: "%s"\n' "$file" "$size" >> /tmp/positions.yaml
+              done
+          volumeMounts:
+            - name: positions
+              mountPath: /tmp
+            - name: pods-logs
+              mountPath: /var/log/pods
+              readOnly: true
+      containers:
+        - name: promtail
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - -config.file=/etc/promtail/promtail.yaml
+          ports:
+            - name: http
+              containerPort: 9080
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/promtail
+            - name: positions
+              mountPath: /tmp
+            - name: pods-logs
+              mountPath: /var/log/pods
+              readOnly: true
+            - name: docker-logs
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-config
+        - name: positions
+          emptyDir: {}
+        - name: pods-logs
+          hostPath:
+            path: /var/log/pods
+        - name: docker-logs
+          hostPath:
+            path: /var/lib/docker/containers

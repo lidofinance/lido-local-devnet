@@ -1,4 +1,7 @@
 import { Params, command } from "@devnet/command";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { getAddress } from "viem";
 
 import { lidoCoreExtension } from "./extensions/lido-core.extension.js";
 import { PrepareLidoCore } from "./prepare-repository.js";
@@ -12,6 +15,7 @@ type DeployEnvRequired = {
   GAS_MAX_FEE: string;
   GAS_PRIORITY_FEE: string;
   GENESIS_TIME: string;
+  LOCAL_DEVNET_CHAIN_ID: string;
   LOCAL_DEVNET_PK: string;
   NETWORK: string;
   NETWORK_STATE_DEFAULTS_FILE: string;
@@ -28,6 +32,11 @@ export const DeployLidoContracts = command.cli({
     configFile: Params.string({
       description: "Path to configuration file (supports .toml and .json)",
       required: true,
+    }),
+    voteDuration: Params.integer({
+      description: "Aragon voting duration in seconds",
+      default: 60,
+      required: false,
     }),
     verify: Params.boolean({
       description: "Verify smart contracts",
@@ -84,6 +93,22 @@ export const DeployLidoContracts = command.cli({
       default: 7200,
       required: false,
     }),
+    gasMaxFee: Params.string({
+      description: "Max fee per gas in gwei (overrides config)",
+      required: false,
+    }),
+    gasPriorityFee: Params.string({
+      description: "Max priority fee per gas in gwei (overrides config)",
+      required: false,
+    }),
+    gasLimit: Params.string({
+      description: "Gas limit for deployments (overrides config)",
+      required: false,
+    }),
+    consolidationMigratorTargetModuleId: Params.integer({
+      description: "Target module ID for consolidation migrator (e.g., 4 for CMv2).",
+      required: false,
+    }),
   },
   extensions:[lidoCoreExtension],
   async handler({ dre, dre: { logger }, params }) {
@@ -111,7 +136,7 @@ export const DeployLidoContracts = command.cli({
     await dre.runCommand(PrepareLidoCore, {
       configFile: params.configFile,
       objectionPhaseDuration: 5,
-      voteDuration: 60,
+      voteDuration: params.voteDuration,
       vesting: "820000000000000000000000",
       normalizedClRewardPerEpoch: params.normalizedClRewardPerEpoch,
       normalizedClRewardMistakeRateBp: params.normalizedClRewardMistakeRateBp,
@@ -125,15 +150,26 @@ export const DeployLidoContracts = command.cli({
       exitEventsLookbackWindowInSlots: params.exitEventsLookbackWindowInSlots,
     });
 
-    const DEPOSIT_CONTRACT_ADDRESS = await dre.services.kurtosis.config.getters.DEPOSIT_CONTRACT_ADDRESS(dre.services.kurtosis);
+    let DEPOSIT_CONTRACT_ADDRESS: string;
+
+    const networkConfigGenesis = path.join(state.artifactsRoot, "network-config", "genesis.json");
+    try {
+      const genesis = JSON.parse(await readFile(networkConfigGenesis, "utf-8"));
+      DEPOSIT_CONTRACT_ADDRESS = getAddress(genesis.config.depositContractAddress);
+    } catch {
+      DEPOSIT_CONTRACT_ADDRESS = await dre.services.kurtosis.config.getters.DEPOSIT_CONTRACT_ADDRESS(dre.services.kurtosis);
+    }
 
     logger.log(DEPOSIT_CONTRACT_ADDRESS);
+
+    const chainId = await network.getChainId();
 
     const deployEnv: DeployEnvRequired = {
       DEPLOYER: deployer.publicKey,
       DEPOSIT_CONTRACT: DEPOSIT_CONTRACT_ADDRESS,
-      GAS_MAX_FEE: constants.GAS_MAX_FEE,
-      GAS_PRIORITY_FEE: constants.GAS_PRIORITY_FEE,
+      GAS_MAX_FEE: params.gasMaxFee ?? constants.GAS_MAX_FEE,
+      GAS_PRIORITY_FEE: params.gasPriorityFee ?? constants.GAS_PRIORITY_FEE,
+      LOCAL_DEVNET_CHAIN_ID: String(chainId),
       LOCAL_DEVNET_PK: deployer.privateKey,
       NETWORK: constants.NETWORK,
       NETWORK_STATE_DEFAULTS_FILE: constants.NETWORK_STATE_DEFAULTS_FILE,
@@ -142,7 +178,10 @@ export const DeployLidoContracts = command.cli({
       GENESIS_TIME: genesis_time,
       RPC_URL: elPublic,
       SLOTS_PER_EPOCH: constants.SLOTS_PER_EPOCH,
-      GAS_LIMIT: '16000000',
+      GAS_LIMIT: params.gasLimit ?? '16000000',
+      ...(params.consolidationMigratorTargetModuleId != null && {
+        CONSOLIDATION_MIGRATOR_TARGET_MODULE_ID: String(params.consolidationMigratorTargetModuleId),
+      }),
     };
 
     // print git branch information

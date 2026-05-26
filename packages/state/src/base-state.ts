@@ -6,6 +6,8 @@ import { JsonDb } from "./json-db/index.js";
 import { Config, ConfigValidator } from "./schemas.js";
 
 export abstract class BaseState {
+  public readonly artifactsRoot: NetworkArtifactRoot;
+  protected readonly chainRoot: ChainRoot;
   protected readonly config: Config;
   protected parsedConsensusGenesisState: JsonDb;
   protected validators: JsonDb;
@@ -13,6 +15,8 @@ export abstract class BaseState {
 
   public constructor(rawConfig: unknown, artifactsRoot: NetworkArtifactRoot, chainRoot: ChainRoot) {
     this.config = ConfigValidator.validate(rawConfig);
+    this.chainRoot = chainRoot;
+    this.artifactsRoot = artifactsRoot;
     this.appState = new JsonDb(path.join(artifactsRoot, "state.json"));
     this.parsedConsensusGenesisState = new JsonDb(
       path.join(chainRoot, "parsed_consensus_genesis.json"),

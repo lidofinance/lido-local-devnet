@@ -1,5 +1,4 @@
 import {
-  DEFAULT_NETWORK_NAME,
   NETWORK_NAME_SUBSTITUTION,
   command,
 } from "@devnet/command";
@@ -10,6 +9,7 @@ import {
 } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { KapiK8sBuild } from "./build.js";
 import { NAMESPACE, SERVICE_NAME } from "./constants/kapi-k8s.constants.js";
@@ -33,10 +33,6 @@ export const KapiK8sUp = command.cli({
       throw new DevNetError("Lido is not deployed");
     }
 
-    if (!(await state.isCSMDeployed())) {
-      throw new DevNetError("CSM is not deployed");
-    }
-
     await dre.runCommand(KapiK8sBuild, {});
 
     if (!(await state.isKapiK8sImageReady())) {
@@ -44,16 +40,21 @@ export const KapiK8sUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
+    const chainId = await dre.network.getChainId();
 
     const { locator, stakingRouter, curatedModule } = await state.getLido();
-    const { module: csmModule } = await state.getCSM();
+
+    // CSM is optional — fall back to zero address if not deployed
+    const csmModule = (await state.isCSMDeployed())
+      ? (await state.getCSM()).module
+      : "0x0000000000000000000000000000000000000000";
     const { image, tag, registryHostname } = await state.getKapiK8sImage();
 
     const env: Record<string, number | string> = {
       ...kapi.config.constants,
 
       IS_DEVNET_MODE: "1",
-      CHAIN_ID: "32382",
+      CHAIN_ID: chainId,
       CSM_MODULE_DEVNET_ADDRESS: csmModule,
       CURATED_MODULE_DEVNET_ADDRESS: curatedModule,
       LIDO_LOCATOR_DEVNET_ADDRESS: locator,
@@ -63,13 +64,15 @@ export const KapiK8sUp = command.cli({
     };
 
     const hostname = process.env.KAPI_INGRESS_HOSTNAME?.
-      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+      replace(NETWORK_NAME_SUBSTITUTION, dre.network.name);
 
     if (!hostname) {
       throw new DevNetError(`KAPI_INGRESS_HOSTNAME env variable is not set`);
     }
 
     const INGRESS_HOSTNAME = addPrefixToIngressHostname(hostname);
+
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(kapi.artifact.root);
 
     const HELM_RELEASE = 'lido-kapi-1';
     const helmSh = kapi.sh({
@@ -83,6 +86,8 @@ export const KapiK8sUp = command.cli({
         REGISTRY_HOSTNAME: registryHostname,
         INGRESS_HOSTNAME,
         DB_HOST: `${HELM_RELEASE}-postgresql`,
+        DEPLOY_COMMIT,
+        DEPLOY_TIME,
       },
     });
 

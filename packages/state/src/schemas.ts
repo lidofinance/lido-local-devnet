@@ -19,16 +19,21 @@ export const NodesChainConfigSchema = z.object({
   clNodesSpecs: z.array(ContainerInfoSchema),
 });
 
+export const ChainMode = z.enum(["kurtosis", "self-hosted", "external"]);
+export type ChainMode = z.infer<typeof ChainMode>;
+
 export const ChainState = z.object({
   clPrivate: z.string().url(),
   clPublic: z.string().url(),
   elClientType: z.string(), // geth | reth | ...
   elPrivate: z.string().url(),
   elPublic: z.string().url(),
-  elWsPublic: z.string().url(),
   elWsPrivate: z.string().url(),
-  validatorsApiPublic: z.string().url(),
-  validatorsApiPrivate: z.string().url(),
+  elWsPublic: z.string().url(),
+  validatorsApiPrivate: z.string().url().optional(),
+  validatorsApiPublic: z.string().url().optional(),
+  vcClientType: z.string().optional(), // lighthouse | teku | prysm
+  vcRelease: z.string().optional(), // Helm release name
 });
 
 export type ChainState = z.infer<typeof ChainState>;
@@ -50,13 +55,69 @@ export const WalletSchema = z
 
 export const WalletMnemonic = z.string();
 
+export const NotificationsSlackConfigSchema = z.object({
+  enabled: z.boolean().optional(),
+  webhookUrlEnv: z.string().optional(),
+  channel: z.string().optional(),
+  username: z.string().optional(),
+  iconEmoji: z.string().optional(),
+});
+
+export const NotificationsEventsConfigSchema = z.object({
+  deploy: z.boolean().optional(),
+  redeploy: z.boolean().optional(),
+  delete: z.boolean().optional(),
+  serviceUp: z.boolean().optional(),
+  serviceDown: z.boolean().optional(),
+  serviceRestart: z.boolean().optional(),
+});
+
+export const NotificationsFiltersConfigSchema = z.object({
+  allowCommands: z.array(z.string()).optional(),
+  ignoreCommands: z.array(z.string()).optional(),
+});
+
+export const NotificationsConfigSchema = z.object({
+  slack: NotificationsSlackConfigSchema.optional(),
+  events: NotificationsEventsConfigSchema.optional(),
+  filters: NotificationsFiltersConfigSchema.optional(),
+});
+
+export type NotificationsConfig = z.infer<typeof NotificationsConfigSchema>;
+
+export const EthereumHeadWatcherSlackRouteSchema = z.object({
+  id: z.string().optional(),
+  enabled: z.boolean().optional(),
+  webhookUrlEnv: z.string().optional(),
+  channel: z.string().optional(),
+  matchers: z.array(z.string()).optional(),
+  sendResolved: z.boolean().optional(),
+  username: z.string().optional(),
+  iconEmoji: z.string().optional(),
+  groupWait: z.string().optional(),
+  groupInterval: z.string().optional(),
+  repeatInterval: z.string().optional(),
+});
+
+export const EthereumHeadWatcherConfigSchema = z.object({
+  alerting: z.object({
+    slack: z.object({
+      enabled: z.boolean().optional(),
+      routes: z.array(EthereumHeadWatcherSlackRouteSchema).optional(),
+    }).optional(),
+  }).optional(),
+});
+
 const ConfigSchema = z.object({
+  chainMode: ChainMode.optional(),
   chain: ChainState.partial().optional(),
   wallet: WalletSchema.optional(),
   walletMnemonic: WalletMnemonic.optional(),
   parsedConsensusGenesisState:
     ParsedConsensusGenesisStateSchema.partial().optional(),
   dataBus: DataBusConfigSchema.optional(),
+  notifications: NotificationsConfigSchema.optional(),
+  ethereumHeadWatcher: EthereumHeadWatcherConfigSchema.optional(),
 });
 
 export type ChainConfig = z.infer<typeof ChainState>;

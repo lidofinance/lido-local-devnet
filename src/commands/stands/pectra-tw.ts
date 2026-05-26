@@ -14,6 +14,14 @@ export const PectraTWDevNetUp = command.cli({
       description: "Use full DSM setup.",
       default: false,
     }),
+    evm: Params.boolean({
+      description: "Start Ethereum Validators Monitoring.",
+      default: false,
+    }),
+    grafana: Params.boolean({
+      description: "Start Grafana dashboards.",
+      default: false,
+    }),
     preset: Params.string({
       description: "Kurtosis preset name",
       default: "pectra-stable",

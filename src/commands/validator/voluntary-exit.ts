@@ -31,11 +31,12 @@ export const VoluntaryExit = command.cli({
     );
 
     const { elPublic, clPublic } = await state.getChain();
+    const chainId = await network.getChainId();
     const { deployer } = await state.getNamedWallet();
 
     await lidoCLI.sh({
       env: {
-        EL_CHAIN_ID: "32382",
+        EL_CHAIN_ID: chainId,
         EL_NETWORK_NAME: network.name,
         EL_API_PROVIDER: elPublic,
         CL_API_PROVIDER: clPublic,

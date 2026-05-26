@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-forwarder
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: forwarder
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: forwarder
+  ports:
+    - name: http
+      port: {{ .Values.forwarder.port }}
+      targetPort: {{ .Values.forwarder.port }}
+      protocol: TCP

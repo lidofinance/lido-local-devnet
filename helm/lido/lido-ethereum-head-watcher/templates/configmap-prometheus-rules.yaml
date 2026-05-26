@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-prometheus-rules
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: prometheus
+data:
+  common.yml: |
+    groups:
+      - name: CommonAlerts
+        rules:
+          - alert: HeadBlockIsNotChanging
+            expr: absent(ethereum_head_watcher_slot_number) OR changes(ethereum_head_watcher_slot_number[25m]) == 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Head block doesn't change for more than 30 minutes"
+              description: "Please check app health"
+
+          - alert: ValidatorsIndexSlotIsNotChanging
+            expr: absent(ethereum_head_watcher_validators_index_slot_number) OR changes(ethereum_head_watcher_validators_index_slot_number[1h]) == 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Validators index slot doesn't change for more than 1 hour"
+              description: "Please check app health"
+
+          - alert: KeysAPISlotIsNotChanging
+            expr: absent(ethereum_head_watcher_keys_source_slot_number) OR changes(ethereum_head_watcher_keys_api_slot_number[1h]) == 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Keys source index slot doesn't change for more than 1 hour"
+              description: "Please check app health"

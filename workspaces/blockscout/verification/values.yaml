@@ -143,10 +143,15 @@ smartContractVerifier:
     SMART_CONTRACT_VERIFIER__SOLIDITY__ENABLED: true
     SMART_CONTRACT_VERIFIER__SOLIDITY__COMPILERS_DIR: "/tmp/solidity-compilers"
     SMART_CONTRACT_VERIFIER__SOLIDITY__REFRESH_VERSIONS_SCHEDULE: "0 0 * * * * *"
-    # It depends on the OS you are running the service on
-    SMART_CONTRACT_VERIFIER__SOLIDITY__FETCHER__LIST__LIST_URL: https://solc-bin.ethereum.org/linux-amd64/list.json
-    #SMART_CONTRACT_VERIFIER__SOLIDITY__FETCHER__LIST__LIST_URL: https://solc-bin.ethereum.org/macosx-amd64/list.json
-    #SMART_CONTRACT_VERIFIER__SOLIDITY__FETCHER__LIST__LIST_URL: https://solc-bin.ethereum.org/windows-amd64/list.json
+    # solc-bin.ethereum.org was decommissioned by Ethereum Foundation; use the
+    # canonical Solidity binaries mirror instead. It depends on the OS you are
+    # running the service on.
+    SMART_CONTRACT_VERIFIER__SOLIDITY__FETCHER__LIST__LIST_URL: https://binaries.soliditylang.org/linux-amd64/list.json
+    #SMART_CONTRACT_VERIFIER__SOLIDITY__FETCHER__LIST__LIST_URL: https://binaries.soliditylang.org/macosx-amd64/list.json
+    #SMART_CONTRACT_VERIFIER__SOLIDITY__FETCHER__LIST__LIST_URL: https://binaries.soliditylang.org/windows-amd64/list.json
+    # zkSync solc fetcher hardcodes the same dead solc-bin.ethereum.org URL and
+    # crashes the pod at startup; we don't verify zk contracts here.
+    SMART_CONTRACT_VERIFIER__ZKSYNC_SOLIDITY__ENABLED: false
     SMART_CONTRACT_VERIFIER__VYPER__ENABLED: true
     SMART_CONTRACT_VERIFIER__VYPER__COMPILERS_DIR: "/tmp/vyper-compilers"
     SMART_CONTRACT_VERIFIER__VYPER__REFRESH_VERSIONS_SCHEDULE: 0 0 * * * * *

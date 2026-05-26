@@ -1,0 +1,25 @@
+{{- if .Values.nats.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-nats
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: nats
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: nats
+  ports:
+    - name: client
+      port: {{ .Values.nats.port }}
+      targetPort: {{ .Values.nats.port }}
+      protocol: TCP
+    - name: monitor
+      port: {{ .Values.nats.monitorPort }}
+      targetPort: {{ .Values.nats.monitorPort }}
+      protocol: TCP
+{{- end }}

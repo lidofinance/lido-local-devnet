@@ -1,0 +1,7 @@
+apiVersion: v2
+name: clickhouse
+description: Minimal ClickHouse Helm chart for devnet
+type: application
+version: 1.0.0
+appVersion: "latest"
+kubeVersion: '>=1.19.0-0'

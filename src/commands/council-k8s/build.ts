@@ -14,7 +14,7 @@ export const CouncilK8sBuild = command.cli({
 
     await dre.runCommand(GitCheckout, {
       service: "council",
-      ref: "feat/devnet", // TODO make configurable from global yaml config
+      ref: "feat/sr-67-wc-two-types-devnet", // TODO make configurable from global yaml config
     });
 
     await buildAndPushDockerImage({

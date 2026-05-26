@@ -1,0 +1,226 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lido-cl-node.fullname" . }}
+  labels:
+    {{- include "lido-cl-node.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  {{- if .Values.persistence.enabled }}
+  strategy:
+    type: Recreate
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "lido-cl-node.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "lido-cl-node.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.hostNetwork }}
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      {{- end }}
+      {{- if and .Values.customNetwork .Values.genesisSSZUrl }}
+      initContainers:
+        - name: fetch-genesis-ssz
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "Copying config files from ConfigMap..."
+              cp /network-config-cm/* /network-config/ 2>/dev/null || true
+              echo "Downloading genesis.ssz from {{ .Values.genesisSSZUrl }}..."
+              wget -q -O /network-config/genesis.ssz "{{ .Values.genesisSSZUrl }}"
+              echo "genesis.ssz downloaded ($(wc -c < /network-config/genesis.ssz) bytes)."
+              ls -la /network-config/
+          volumeMounts:
+            - name: network-config-cm
+              mountPath: /network-config-cm
+              readOnly: true
+            - name: network-config
+              mountPath: /network-config
+      {{- end }}
+      containers:
+        - name: {{ .Values.client }}
+          {{- if eq .Values.client "lighthouse" }}
+          image: "{{ .Values.image.lighthouse.registry }}/{{ .Values.image.lighthouse.repository }}:{{ .Values.image.lighthouse.tag }}"
+          {{- else if eq .Values.client "teku" }}
+          image: "{{ .Values.image.teku.registry }}/{{ .Values.image.teku.repository }}:{{ .Values.image.teku.tag }}"
+          {{- else if eq .Values.client "prysm" }}
+          image: "{{ .Values.image.prysm.registry }}/{{ .Values.image.prysm.repository }}:{{ .Values.image.prysm.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if eq .Values.client "lighthouse" }}
+          command:
+            - lighthouse
+            - bn
+          args:
+            {{- if .Values.customNetwork }}
+            - --testnet-dir=/network-config
+            {{- else }}
+            - --network={{ .Values.network }}
+            {{- end }}
+            - --execution-endpoint={{ .Values.executionEndpoint }}
+            - --execution-jwt=/jwt/jwt.hex
+            - --http
+            - --http-address=0.0.0.0
+            - --http-port={{ .Values.ports.http }}
+            - --http-allow-origin=*
+            - --metrics
+            - --metrics-address=0.0.0.0
+            - --metrics-port={{ .Values.ports.metrics }}
+            - --datadir=/data
+            {{- if .Values.checkpointSyncUrl }}
+            - --checkpoint-sync-url={{ .Values.checkpointSyncUrl }}
+            {{- end }}
+            {{- if .Values.bootnodes }}
+            - --boot-nodes={{ .Values.bootnodes }}
+            {{- end }}
+            {{- range .Values.extraArgs }}
+            - {{ . }}
+            {{- end }}
+          {{- else if eq .Values.client "teku" }}
+          command:
+            - teku
+          args:
+            {{- if .Values.customNetwork }}
+            - --network=/network-config/config.yaml
+            - --initial-state=/network-config/genesis.ssz
+            {{- else }}
+            - --network={{ .Values.network }}
+            {{- end }}
+            - --ee-endpoint={{ .Values.executionEndpoint }}
+            - --ee-jwt-secret-file=/jwt/jwt.hex
+            - --rest-api-enabled=true
+            - --rest-api-interface=0.0.0.0
+            - --rest-api-port={{ .Values.ports.http }}
+            - --rest-api-host-allowlist=*
+            - --metrics-enabled=true
+            - --metrics-interface=0.0.0.0
+            - --metrics-port={{ .Values.ports.metrics }}
+            - --data-path=/data
+            {{- if .Values.checkpointSyncUrl }}
+            - --checkpoint-sync-url={{ .Values.checkpointSyncUrl }}
+            {{- end }}
+            {{- if .Values.bootnodes }}
+            - --p2p-discovery-bootnodes={{ .Values.bootnodes }}
+            {{- end }}
+            {{- range .Values.extraArgs }}
+            - {{ . }}
+            {{- end }}
+          {{- else if eq .Values.client "prysm" }}
+          args:
+            {{- if .Values.customNetwork }}
+            - --chain-config-file=/network-config/config.yaml
+            - --genesis-state=/network-config/genesis.ssz
+            {{- else }}
+            - --{{ .Values.network }}
+            {{- end }}
+            - --execution-endpoint={{ .Values.executionEndpoint }}
+            - --jwt-secret=/jwt/jwt.hex
+            - --rpc-host=0.0.0.0
+            - --rpc-port={{ .Values.ports.grpc }}
+            - --grpc-gateway-host=0.0.0.0
+            - --grpc-gateway-port={{ .Values.ports.http }}
+            - --grpc-gateway-corsdomain=*
+            - --monitoring-host=0.0.0.0
+            - --monitoring-port={{ .Values.ports.metrics }}
+            - --datadir=/data
+            - --accept-terms-of-use
+            {{- if .Values.checkpointSyncUrl }}
+            - --checkpoint-sync-url={{ .Values.checkpointSyncUrl }}
+            {{- end }}
+            {{- if .Values.bootnodes }}
+            - --bootstrap-node={{ .Values.bootnodes }}
+            {{- end }}
+            {{- range .Values.extraArgs }}
+            - {{ . }}
+            {{- end }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.ports.http }}
+              protocol: TCP
+            {{- if eq .Values.client "prysm" }}
+            - name: grpc
+              containerPort: {{ .Values.ports.grpc }}
+              protocol: TCP
+            {{- end }}
+            - name: metrics
+              containerPort: {{ .Values.ports.metrics }}
+              protocol: TCP
+            - name: p2p-tcp
+              containerPort: {{ .Values.ports.p2p }}
+              protocol: TCP
+            - name: p2p-udp
+              containerPort: {{ .Values.ports.p2p }}
+              protocol: UDP
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: jwt
+              mountPath: /jwt
+              readOnly: true
+            {{- if .Values.customNetwork }}
+            {{- if .Values.genesisSSZUrl }}
+            - name: network-config
+              mountPath: /network-config
+              readOnly: true
+            {{- else }}
+            - name: network-config-cm
+              mountPath: /network-config
+              readOnly: true
+            {{- end }}
+            {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: jwt
+          secret:
+            {{- if .Values.jwt.existingSecret }}
+            secretName: {{ .Values.jwt.existingSecret }}
+            {{- else }}
+            secretName: {{ include "lido-cl-node.fullname" . }}-jwt
+            {{- end }}
+        {{- if .Values.customNetwork }}
+        - name: network-config-cm
+          configMap:
+            name: {{ .Values.networkConfigMapName }}
+        {{- if .Values.genesisSSZUrl }}
+        - name: network-config
+          emptyDir: {}
+        {{- end }}
+        {{- end }}
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "lido-cl-node.fullname" . }}-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

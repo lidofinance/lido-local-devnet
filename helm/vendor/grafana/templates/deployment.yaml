@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-grafana
+  labels:
+    app: {{ .Release.Name }}-grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-grafana
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-grafana
+    spec:
+      containers:
+        - name: grafana
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: {{ .Values.adminPassword | quote }}
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              value: "Viewer"
+            {{- if .Values.plugins }}
+            - name: GF_INSTALL_PLUGINS
+              value: {{ .Values.plugins | quote }}
+            {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          volumeMounts:
+            - name: datasource-provisioning
+              mountPath: /etc/grafana/provisioning/datasources
+            {{- if .Values.dashboardProviders }}
+            - name: dashboard-provider-provisioning
+              mountPath: /etc/grafana/provisioning/dashboards
+            {{- end }}
+            {{- range .Values.dashboardProviders }}
+            - name: dashboards-{{ .name }}
+              mountPath: /var/lib/grafana/dashboards/{{ .name }}
+            {{- end }}
+      volumes:
+        - name: datasource-provisioning
+          configMap:
+            name: {{ .Release.Name }}-datasources
+        {{- if .Values.dashboardProviders }}
+        - name: dashboard-provider-provisioning
+          configMap:
+            name: {{ .Release.Name }}-dashboard-providers
+        {{- end }}
+        {{- range .Values.dashboardProviders }}
+        - name: dashboards-{{ .name }}
+          configMap:
+            name: {{ .configMapName }}
+            optional: true
+        {{- end }}

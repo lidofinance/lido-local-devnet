@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  labels:
+    app: {{ .Release.Name }}
+    component: alertmanager
+data:
+  alertmanager.yml: |
+{{- if .Values.configOverride }}
+{{ .Values.configOverride | indent 4 }}
+{{- else }}
+    global:
+      resolve_timeout: {{ .Values.config.resolveTimeout | quote }}
+    route:
+      receiver: discord_default
+      group_by:
+        - alertname
+      group_wait: {{ .Values.config.groupWait | quote }}
+      group_interval: {{ .Values.config.groupInterval | quote }}
+      repeat_interval: {{ .Values.config.repeatInterval | quote }}
+      routes:
+        - receiver: discord_send_resolved
+          matchers:
+            - alertname =~ "DataActuality"
+        - receiver: discord_default
+    receivers:
+      - name: discord_default
+        webhook_configs:
+          - url: "http://{{ .Release.Name }}-discord:{{ .Values.discord.port }}/hook/{{ .Values.discord.hookSlug }}"
+            send_resolved: false
+      - name: discord_send_resolved
+        webhook_configs:
+          - url: "http://{{ .Release.Name }}-discord:{{ .Values.discord.port }}/hook/{{ .Values.discord.hookSlug }}"
+            send_resolved: true
+{{- end }}

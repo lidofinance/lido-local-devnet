@@ -1,0 +1,86 @@
+lido-app:
+  nameOverride: lido-vroom-onchain-mon
+
+  replicaCount: 1
+
+  image:
+    registry: docker.io
+    repository: lido/vroom-onchain-mon
+    tag: "dev"
+    pullPolicy: Always
+    imagePullSecrets:
+    - name: registry-pull-secret
+
+  service:
+    type: ClusterIP
+    ports:
+      - name: http
+        port: 3000
+        targetPort: 3000
+        protocol: TCP
+
+  command: [ ]
+
+  args: [ ]
+
+  env:
+    variables:
+      APP_NAME: ${APP_NAME}
+      TEAM_NAME: ${TEAM_NAME}
+      PORT: ${PORT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      LOG_FORMAT: ${LOG_FORMAT}
+      EL_API_URLS: ${EL_API_URLS}
+      CHAIN_ID: ${CHAIN_ID}
+      CONTRACT_ADDRESSES_NETWORK: ${CONTRACT_ADDRESSES_NETWORK}
+      KEYS_API_URL: ${KEYS_API_URL}
+      NATS_SERVERS: ${NATS_SERVERS}
+      NATS_LISTEN_TOPIC: ${NATS_LISTEN_TOPIC}
+      NATS_PUBLISH_TOPIC: ${NATS_PUBLISH_TOPIC}
+      ENABLED_AGENTS: ${ENABLED_AGENTS}
+      CURATED_NODE_OPERATOR_REGISTRY_MODULE_ID: ${CURATED_NODE_OPERATOR_REGISTRY_MODULE_ID}
+      SIMPLE_DVT_NODE_OPERATOR_REGISTRY_MODULE_ID: ${SIMPLE_DVT_NODE_OPERATOR_REGISTRY_MODULE_ID}
+      CSM_NODE_OPERATOR_REGISTRY_MODULE_ID: ${CSM_NODE_OPERATOR_REGISTRY_MODULE_ID}
+
+  resources: { }
+
+  nodeSelector: { }
+
+  tolerations: [ ]
+
+  affinity: { }
+
+  securityContext: { }
+
+  podSecurityContext: { }
+
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+  additionalLabels: { }
+
+  additionalAnnotations: { }
+
+  pvcs: [ ]
+
+nats:
+  enabled: false
+  image: nats:2.10.29-alpine
+  pullPolicy: IfNotPresent
+  port: 4222
+  monitorPort: 8222
+  resources: {}

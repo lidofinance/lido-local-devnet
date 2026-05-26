@@ -1,0 +1,13 @@
+image:
+  repository: grafana/promtail
+  tag: 3.4.2
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
+lokiUrl: ""

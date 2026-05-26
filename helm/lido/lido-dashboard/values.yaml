@@ -1,0 +1,90 @@
+web:
+  nameOverride: lido-dashboard
+
+  replicaCount: 1
+
+  image:
+    registry: docker.io
+    repository: lido/dashboard
+    tag: "dev"
+    pullPolicy: Always
+    imagePullSecrets:
+      - name: registry-pull-secret
+
+  service:
+    type: ClusterIP
+    ports:
+     - name: http
+       port: 80
+       targetPort: 80
+       protocol: TCP
+
+  command: [ ]
+  args: []
+
+  ingress:
+    enabled: true
+    className: "public"
+    annotations: {}
+    hosts:
+      - host: dashboard.devnet.local
+        paths:
+          - path: /
+            pathType: Prefix
+            port: http
+    tls: []
+
+  env:
+    variables: {}
+
+  resources: { }
+  nodeSelector: { }
+  tolerations: [ ]
+  affinity: { }
+  securityContext: { }
+  podSecurityContext: { }
+
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 3
+    periodSeconds: 5
+
+  additionalLabels: { }
+  additionalAnnotations: { }
+  pvcs: [ ]
+
+  # Mount data files from ConfigMap so they can be refreshed without rebuilding the image
+  configMapVolumes:
+    - name: state-data
+      configMapName: devnet-state
+      items:
+        - key: state.json
+          path: state.json
+      mountPath: /usr/share/nginx/html/data/state.json
+      subPath: state.json
+      readOnly: true
+    - name: deployed-config
+      configMapName: devnet-state
+      items:
+        - key: deployed-local-devnet.json
+          path: deployed-local-devnet.json
+      mountPath: /usr/share/nginx/html/data/configs/deployed-local-devnet.json
+      subPath: deployed-local-devnet.json
+      readOnly: true
+    - name: extra-deployed-config
+      configMapName: devnet-state
+      items:
+        - key: extra-deployed-local-devnet.json
+          path: extra-deployed-local-devnet.json
+      mountPath: /usr/share/nginx/html/data/configs/extra-deployed-local-devnet.json
+      subPath: extra-deployed-local-devnet.json
+      readOnly: true

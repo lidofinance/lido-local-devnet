@@ -8,6 +8,8 @@ export const dsmBots = new DevnetServiceConfig({
   workspace: "workspaces/dsm-bots",
   name: "dsmBots" as const,
   constants: {},
+  installCommand: "yarn",
+  k8sTopic: "dsm-bots-k8s",
   labels: {},
   getters: {},
 });

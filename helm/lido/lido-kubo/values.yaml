@@ -4,6 +4,9 @@ lido-app:
   # Number of replicas for the backend deployment
   replicaCount: 1
 
+  deploymentStrategy:
+    type: Recreate
+
   # Image configuration
   image:
     registry: docker.io
@@ -24,6 +27,14 @@ lido-app:
        port: 5001
        targetPort: 5001
        protocol: TCP
+     - name: swarm-tcp
+       port: 4001
+       targetPort: 4001
+       protocol: TCP
+     - name: swarm-udp
+       port: 4001
+       targetPort: 4001
+       protocol: UDP
 
   # Ingress configuration
   ingress:
@@ -52,11 +63,19 @@ lido-app:
   # Container args
   args: ["daemon", "--migrate=true", "--agent-version-suffix=docker"]
 
+  initCommands:
+    - 'if [ ! -f /data/ipfs/config ]; then ipfs init --profile=server; fi'
+    - 'if [ -n "${KUBO_SWARM_EXTERNAL_HOST:-}" ]; then ipfs config --json Addresses.AppendAnnounce "[\"/ip4/${KUBO_SWARM_EXTERNAL_HOST}/tcp/${KUBO_SWARM_EXTERNAL_TCP_PORT}\",\"/ip4/${KUBO_SWARM_EXTERNAL_HOST}/udp/${KUBO_SWARM_EXTERNAL_UDP_PORT}/quic-v1\"]"; fi'
+    - 'chown -R 1000:100 /data/ipfs'
+
   # Environment variables
   env:
     # Static environment variables
     variables:
       CHAIN: ${CHAIN}
+      KUBO_SWARM_EXTERNAL_HOST: ""
+      KUBO_SWARM_EXTERNAL_TCP_PORT: "32355"
+      KUBO_SWARM_EXTERNAL_UDP_PORT: "32355"
 
   # Resource limits and requests
   resources: { }
@@ -113,3 +132,23 @@ lido-app:
        - ReadWriteOnce
      size: 16Gi
      mountPath: /data/ipfs
+
+swarmExternalService:
+  enabled: true
+  type: NodePort
+  # Local preserves client source IP — required for libp2p/bitswap over NodePort.
+  # Cluster does SNAT, which breaks identify/ObservedAddress and stalls bitswap streams.
+  externalTrafficPolicy: Local
+  annotations: {}
+  labels: {}
+  ports:
+    - name: swarm-tcp
+      port: 4001
+      targetPort: 4001
+      protocol: TCP
+      nodePort: 32355
+    - name: swarm-udp
+      port: 4001
+      targetPort: 4001
+      protocol: UDP
+      nodePort: 32355

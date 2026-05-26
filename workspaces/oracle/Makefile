@@ -7,6 +7,7 @@ NAMESPACE ?= test-namespace
 # Helm chart paths
 HELM_CHART_ROOT_PATH ?= ../../helm
 HELM_CHART_PATH = $(HELM_CHART_ROOT_PATH)/lido/lido-oracle
+HELM_VENDOR_CHART_PATH = $(HELM_CHART_ROOT_PATH)/vendor
 HELM_VALUES_PATH ?=
 
 ifneq ($(HELM_VALUES_PATH),)
@@ -32,6 +33,12 @@ endif
 # Default values for chart versions (empty means latest)
 HELM_CHART_VERSION ?=
 
+# Extra helm set overrides (optional)
+HELM_EXTRA_SET ?=
+
+# Performance DB release name
+PERFORMANCE_DB_RELEASE ?= oracle-performance-db
+
 # Version flags (only add if version is specified)
 ifneq ($(HELM_CHART_VERSION),)
 	HELM_VERSION_FLAG = --version $(HELM_CHART_VERSION)
@@ -47,6 +54,9 @@ PROVIDERS_URLS ?= http://execution
 CL_API_URLS ?= http://consensus
 CHAIN_ID ?= 32382
 
+DEPLOY_COMMIT ?=
+DEPLOY_TIME ?=
+
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
 define HELM_CHART_VALUES_OVERRIDES
@@ -59,12 +69,21 @@ define HELM_CHART_VALUES_OVERRIDES
 	--set lido-app.env.variables.KEYS_API_URI="${KEYS_API_URI}" \
 	--set lido-app.env.variables.MEMBER_PRIV_KEY="${MEMBER_PRIV_KEY}" \
 	--set lido-app.env.variables.LIDO_LOCATOR_ADDRESS="${LIDO_LOCATOR_ADDRESS}" \
+	--set lido-app.env.variables.STAKING_MODULE_ADDRESS="${STAKING_MODULE_ADDRESS}" \
 	--set lido-app.env.variables.CSM_MODULE_ADDRESS="${CSM_MODULE_ADDRESS}" \
 	--set lido-app.env.variables.CSM_ORACLE_MAX_CONCURRENCY="${CSM_ORACLE_MAX_CONCURRENCY}" \
 	--set lido-app.env.variables.SUBMIT_DATA_DELAY_IN_SLOTS="${SUBMIT_DATA_DELAY_IN_SLOTS}" \
 	--set lido-app.env.variables.ALLOW_REPORTING_IN_BUNKER_MODE="${ALLOW_REPORTING_IN_BUNKER_MODE}" \
 	--set lido-app.env.variables.PINATA_JWT="${PINATA_JWT}" \
-	--set lido-app.env.variables.KUBO_HOST="${KUBO_HOST}"
+	--set lido-app.env.variables.KUBO_HOST="${KUBO_HOST}" \
+	--set lido-app.env.variables.PERFORMANCE_COLLECTOR_URI="${PERFORMANCE_COLLECTOR_URI}" \
+	--set lido-app.env.variables.PERFORMANCE_DB_HOST="${PERFORMANCE_DB_HOST}" \
+	--set lido-app.env.variables.PERFORMANCE_DB_PORT="${PERFORMANCE_DB_PORT}" \
+	--set lido-app.env.variables.PERFORMANCE_DB_NAME="${PERFORMANCE_DB_NAME}" \
+	--set lido-app.env.variables.PERFORMANCE_DB_USER="${PERFORMANCE_DB_USER}" \
+	--set lido-app.env.variables.PERFORMANCE_DB_PASSWORD="${PERFORMANCE_DB_PASSWORD}" \
+	--set lido-app.deployMeta.commit="${DEPLOY_COMMIT}" \
+	--set lido-app.deployMeta.deployedAt="${DEPLOY_TIME}"
 endef
 
 # Lint Helm chart
@@ -79,19 +98,20 @@ debug:
 # Lint Helm chart
 .PHONY: lint
 lint:
-	helm lint $(HELM_CHART_PATH) $(HELM_VALUES) $(HELM_CHART_VALUES_OVERRIDES)
+	helm lint $(HELM_CHART_PATH) $(HELM_VALUES) $(HELM_CHART_VALUES_OVERRIDES) $(HELM_EXTRA_SET)
 
 # Print rendered Helm chart templates to stdout
 .PHONY: template
 template:
 	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) $(HELM_VALUES) --namespace $(NAMESPACE) \
-		$(HELM_CHART_VALUES_OVERRIDES) $(HELM_DEBUG_FLAG)
+		$(HELM_CHART_VALUES_OVERRIDES) $(HELM_EXTRA_SET) $(HELM_DEBUG_FLAG)
 
 # Dry-run Helm chart install into K8s
 .PHONY: dry-run
 dry-run:
 	helm template $(HELM_RELEASE) $(HELM_CHART_PATH) $(HELM_VALUES) --namespace $(NAMESPACE) \
 		$(HELM_CHART_VALUES_OVERRIDES) \
+		$(HELM_EXTRA_SET) \
 	| kubectl apply --dry-run=client -f -
 
 # Helm chart install into K8s
@@ -100,6 +120,7 @@ install:
 	helm install $(HELM_RELEASE) $(HELM_CHART_PATH) \
 		$(HELM_VALUES) \
 		$(HELM_CHART_VALUES_OVERRIDES) \
+		$(HELM_EXTRA_SET) \
 		--namespace $(NAMESPACE) \
 		--create-namespace \
 		--timeout $(TIMEOUT) \
@@ -112,6 +133,7 @@ upgrade:
 	helm upgrade $(HELM_RELEASE) $(HELM_CHART_PATH) \
 		$(HELM_VALUES) \
 		$(HELM_CHART_VALUES_OVERRIDES) \
+		$(HELM_EXTRA_SET) \
 		--namespace $(NAMESPACE) \
 		--timeout $(TIMEOUT) \
 		$(HELM_VERSION_FLAG) \
@@ -121,3 +143,20 @@ upgrade:
 .PHONY: uninstall
 uninstall:
 	helm uninstall $(HELM_RELEASE) --namespace $(NAMESPACE) --ignore-not-found
+
+# ── Infrastructure targets ─────────────────────────────────────────
+
+# Install Performance DB (PostgreSQL)
+.PHONY: install-performance-db
+install-performance-db:
+	helm upgrade --install $(PERFORMANCE_DB_RELEASE) $(HELM_VENDOR_CHART_PATH)/postgresql \
+		--namespace $(NAMESPACE) \
+		--set auth.username=performance \
+		--set auth.password=performance \
+		--set auth.database=performance \
+		--set auth.postgresPassword=postgres
+
+# Uninstall Performance DB
+.PHONY: uninstall-performance-db
+uninstall-performance-db:
+	helm uninstall $(PERFORMANCE_DB_RELEASE) --namespace $(NAMESPACE) --ignore-not-found

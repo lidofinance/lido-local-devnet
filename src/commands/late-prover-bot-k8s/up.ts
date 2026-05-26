@@ -3,6 +3,7 @@ import { HELM_VENDOR_CHARTS_ROOT_PATH } from "@devnet/helm";
 import { createNamespaceIfNotExists } from "@devnet/k8s";
 import { DevNetError } from "@devnet/utils";
 
+import { getDeployMeta } from "../../shared/deploy-meta.js";
 import { DockerRegistryPushPullSecretToK8s } from "../docker-registry/push-pull-secret-to-k8s.js";
 import { LateProverBotK8sBuild } from "./build.js";
 import { NAMESPACE, SERVICE_NAME } from "./constants/late-prover-bot-k8s.constants.js";
@@ -33,18 +34,21 @@ export const LateProverBotK8sUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
+    const chainId = await dre.network.getChainId();
     const { locator } = await state.getLido();
     const { deployer } = await state.getNamedWallet();
     const { image, tag, registryHostname } = await state.getLateProverBotK8sImage();
     const env: Record<string, number | string> = {
       ...lateProverBot.config.constants,
 
-      CHAIN_ID: "32382",
+      CHAIN_ID: chainId,
       LIDO_LOCATOR_ADDRESS: locator,
       EL_RPC_URLS: elPrivate,
       CL_API_URLS: clPrivate,
       TX_SIGNER_PRIVATE_KEY: deployer.privateKey,
     };
+
+    const { DEPLOY_COMMIT, DEPLOY_TIME } = await getDeployMeta(lateProverBot.artifact.root);
 
     const HELM_RELEASE = 'lido-late-prover-bot';
     const helmSh = lateProverBot.sh({
@@ -56,6 +60,8 @@ export const LateProverBotK8sUp = command.cli({
         IMAGE: image,
         TAG: tag,
         REGISTRY_HOSTNAME: registryHostname,
+        DEPLOY_COMMIT,
+        DEPLOY_TIME,
       },
     });
 

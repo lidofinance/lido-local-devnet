@@ -134,6 +134,7 @@ export async function generateDepositData(
     networkName?: string;
     numValidators: number;
     wcAddress: string;
+    wcType?: string;
   },
 ): Promise<DepositDataResult> {
   if (!keyOptions.mnemonic || typeof keyOptions.mnemonic !== "string") {
@@ -162,6 +163,12 @@ export async function generateDepositData(
     throw new Error("Invalid withdrawal credentials format");
   }
 
+  const wcType = (validatorOptions.wcType ?? "0x01").toLowerCase();
+  if (wcType !== "0x01" && wcType !== "0x02") {
+    throw new Error("wcType must be 0x01 or 0x02");
+  }
+  const wcTypeByte = wcType === "0x02" ? 0x02 : 0x01;
+
   const forkVersion = Version.fromJson(validatorOptions.forkVersionString);
   const masterSK = await deriveKeyFromMnemonic(keyOptions.mnemonic);
   const results: DepositDataResult = [];
@@ -177,7 +184,7 @@ export async function generateDepositData(
     const publicKey = secretKey.toPublicKey();
 
     const withdrawalCredentials = Uint8Array.from([
-      0x01,
+      wcTypeByte,
       ...new Uint8Array(11),
       ...Uint8Array.from(
         Buffer.from(validatorOptions.wcAddress.slice(2), "hex"),

@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-forwarder
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: forwarder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: forwarder
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: forwarder
+    spec:
+{{- if .Values.image.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.image.imagePullSecrets | indent 8 }}
+{{- end }}
+      containers:
+        - name: forwarder
+          image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["./forwarder"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.forwarder.port }}
+              protocol: TCP
+          env:
+            - name: READ_ENV_FROM_SHELL
+              value: "true"
+            - name: APP_NAME
+              value: {{ .Values.forwarder.appName | quote }}
+            - name: SOURCE
+              value: {{ .Values.forwarder.source | quote }}
+            - name: ENV
+              value: {{ .Values.forwarder.envName | quote }}
+            - name: PORT
+              value: {{ .Values.forwarder.port | quote }}
+            - name: LOG_FORMAT
+              value: {{ .Values.forwarder.logFormat | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.forwarder.logLevel | quote }}
+            - name: NATS_DEFAULT_URL
+              value: {{ .Values.forwarder.natsDefaultUrl | quote }}
+            - name: REDIS_ADDRESS
+              value: {{ .Values.forwarder.redisAddress | quote }}
+            - name: REDIS_DB
+              value: {{ .Values.forwarder.redisDb | quote }}
+            - name: QUORUM_SIZE
+              value: {{ .Values.forwarder.quorumSize | quote }}
+            - name: BLOCK_EXPLORER
+              value: {{ .Values.forwarder.blockExplorer | quote }}
+          volumeMounts:
+            - name: notification-config
+              mountPath: /etc/forwarder/notification.yaml
+              subPath: notification.yaml
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          resources:
+{{ toYaml .Values.forwarder.resources | indent 12 }}
+      volumes:
+        - name: notification-config
+          configMap:
+            name: {{ .Release.Name }}-forwarder-notification

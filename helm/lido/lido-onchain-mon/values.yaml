@@ -1,0 +1,76 @@
+image:
+  registry: docker.io
+  repository: lido/onchain-mon
+  tag: "dev"
+  pullPolicy: Always
+  imagePullSecrets:
+    - name: registry-pull-secret
+
+feeder:
+  appName: onchain-mon-feeder
+  port: 8080
+  envName: development
+  logFormat: simple
+  logLevel: debug
+  natsDefaultUrl: nats://nats:4222
+  jsonRpcUrl: http://execution
+  blockTopic: blocks.devnet.l1
+  source: devnet-feeder
+  redisAddress: redis:6379
+  redisDb: 0
+  resources: {}
+
+forwarder:
+  appName: onchain-mon-forwarder
+  port: 8080
+  envName: development
+  logFormat: simple
+  logLevel: debug
+  natsDefaultUrl: nats://nats:4222
+  source: devnet-forwarder
+  redisAddress: redis:6379
+  redisDb: 0
+  quorumSize: 1
+  blockExplorer: etherscan.io
+  findingsTopic: findings.onchain.vroom
+  resources: {}
+  notificationConfig:
+    severity_levels:
+      - id: Unknown
+      - id: Info
+      - id: Low
+      - id: Medium
+      - id: High
+      - id: Critical
+    telegram_channels:
+      - id: DevChannel
+        description: Telegram channel
+        bot_token: bot-token
+        chat_id: chat-id
+    discord_channels:
+      - id: DevChannel
+        description: Discord channel
+        webhook_url: http://127.0.0.1:9
+    opsgenie_channels:
+      - id: DevChannel
+        description: OpsGenie channel
+        api_key: opsgenie-api-key
+    slack_channels:
+      - id: DevChannel
+        description: Slack channel
+        webhook_url: http://127.0.0.1:9
+    consumers:
+      - consumerName: Development
+        type: Discord
+        channel_id: DevChannel
+        severities: []
+        by_quorum: false
+        subjects:
+          - findings.onchain.vroom
+
+redis:
+  enabled: true
+  image: redis:7.2-alpine
+  pullPolicy: IfNotPresent
+  port: 6379
+  resources: {}

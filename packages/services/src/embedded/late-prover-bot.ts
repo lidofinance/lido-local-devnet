@@ -12,6 +12,8 @@ export const lateProverBot = new DevnetServiceConfig({
     LOG_FORMAT: "simple",
     LOG_LEVEL: "debug",
   },
+  installCommand: "yarn",
+  k8sTopic: "late-prover-bot-k8s",
   labels: {},
   getters: {},
 });

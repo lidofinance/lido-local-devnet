@@ -2,9 +2,12 @@ import { Params, command } from "@devnet/command";
 
 import { CouncilK8sDown } from "./council-k8s/down.js";
 import { DSMBotsK8sDown } from "./dsm-bots-k8s/down.js";
+import { EhwDown } from "./ehw/down.js";
 import { K8sPing } from "./k8s/ping.js";
 import { KapiK8sDown } from "./kapi-k8s/down.js";
+import { OnchainMonK8sDown } from "./onchain-mon-k8s/down.js";
 import { OracleK8sDown } from "./oracles-k8s/down.js";
+import { VroomOnchainMonK8sDown } from "./vroom-onchain-mon-k8s/down.js";
 
 export const DevNetStopOffchain = command.cli({
   description: "Stop offchain apps in DevNet",
@@ -27,7 +30,10 @@ export const DevNetStopOffchain = command.cli({
 
     const downFns = [
       () => dre.runCommand(KapiK8sDown, { force: params.force }),
-      () => dre.runCommand(OracleK8sDown, { force: params.force }),
+      () => dre.runCommand(OnchainMonK8sDown, { force: params.force }),
+      () => dre.runCommand(OracleK8sDown, { force: params.force, keepDb: false }),
+      () => dre.runCommand(VroomOnchainMonK8sDown, { force: params.force }),
+      () => dre.runCommand(EhwDown, { force: params.force }),
       () => dre.runCommand(CouncilK8sDown, { force: params.force }),
       () => dre.runCommand(DSMBotsK8sDown, { force: params.force }),
     ];

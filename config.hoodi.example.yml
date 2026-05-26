@@ -1,0 +1,62 @@
+# Hoodi Self-Hosted Example Configuration
+#
+# This config demonstrates running Lido services on the Hoodi testnet
+# with self-hosted EL/CL nodes in Kubernetes.
+#
+# Usage:
+#   1. Copy this file to config.yml
+#   2. Set your wallet mnemonic
+#   3. Run: devnet chain self-hosted up --network hoodi
+#   4. Run: devnet kapi-k8s up
+#
+# Contract addresses from: https://docs.lido.fi/deployed-contracts/hoodi
+
+networks:
+  - name: hoodi
+    chainMode: self-hosted
+    chain:
+      elPrivate: "http://hoodi-el-lido-el-node.kt-hoodi.svc.cluster.local:8545"
+      clPrivate: "http://hoodi-cl-lido-cl-node.kt-hoodi.svc.cluster.local:5052"
+      elPublic: "http://hoodi-el-lido-el-node.kt-hoodi.svc.cluster.local:8545"
+      clPublic: "http://hoodi-cl-lido-cl-node.kt-hoodi.svc.cluster.local:5052"
+
+    lido:
+      # Aragon Agent
+      agent: "0x0534aA41907c9631fae990960bCC72d75fA7cfeD"
+      # Aragon Voting
+      voting: "0x49B3512c44891bef83F8967d075121Bd1b07a01B"
+      # Aragon Token Manager
+      tokenManager: "0x8ab4a56721Ad8e68c6Ad86F9D9929782A78E39E5"
+      # OracleReportSanityChecker
+      sanityChecker: "0x53417BA942bC86492bAF46FAbA8769f246422388"
+      # Accounting Oracle (proxy)
+      accountingOracle: "0xcb883B1bD0a41512b42D2dB267F2A2cd919FB216"
+      # Validators Exit Bus Oracle (proxy)
+      validatorExitBus: "0x8664d394C2B3278F26A1B44B967aEf99707eeAB2"
+      # Lido Locator (proxy)
+      locator: "0xe2EF9536DAAAEBFf5b1c130957AB3E80056b06D8"
+      # Staking Router (proxy)
+      stakingRouter: "0xCc820558B39ee15C7C45B59390B503b83fb499A8"
+      # Node Operators Registry (proxy) - Curated Module
+      curatedModule: "0x5cDbE1590c083b5A2A64427fAA63A7cfDB91FbB5"
+
+    csm:
+      # CSModule (proxy)
+      module: "0x79CEf36D84743222f37765204Bec41E92a93E59d"
+      # CSAccounting (proxy)
+      accounting: "0xA54b90BA34C5f326BC1485054080994e38FB4C60"
+      # Placeholder — fill from docs.lido.fi
+      earlyAdoption: false
+      feeDistributor: 0
+      feeOracle: "0x0000000000000000000000000000000000000000"
+      verifier: "0x0000000000000000000000000000000000000000"
+      gateSeal: "0x0000000000000000000000000000000000000000"
+      hashConsensus: "0x0000000000000000000000000000000000000000"
+      lidoLocator: "0xe2EF9536DAAAEBFf5b1c130957AB3E80056b06D8"
+
+    walletMnemonic: "<your-mnemonic-here>"
+
+    notifications:
+      slack:
+        enabled: false
+        webhookUrlEnv: "SLACK_WEBHOOK_URL"

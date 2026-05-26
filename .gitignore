@@ -15,5 +15,10 @@ artifacts
 
 dist
 
+tsconfig.tsbuildinfo
+**/tsconfig.tsbuildinfo
+
 devnet-dc/dora/config/explorer-config.yaml
 .env
+.env.*
+!.env.sample

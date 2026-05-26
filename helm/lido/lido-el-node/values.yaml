@@ -1,0 +1,78 @@
+# Execution Layer Node configuration
+# Supports geth, reth, ethrex, nethermind
+
+client: geth
+
+# Network name: hoodi, holesky, mainnet, or custom devnet name
+network: hoodi
+
+# For custom devnets: set to true to mount genesis from ConfigMap
+customNetwork: false
+# ConfigMap name containing genesis.json (used when customNetwork=true)
+networkConfigMapName: ""
+
+replicaCount: 1
+
+image:
+  geth:
+    registry: docker.io
+    repository: ethereum/client-go
+    tag: "v1.15.3"
+  reth:
+    registry: ghcr.io
+    repository: paradigmxyz/reth
+    tag: "v1.2.0"
+  ethrex:
+    registry: docker.io
+    repository: ethpandaops/ethrex
+    tag: "latest"
+  nethermind:
+    registry: docker.io
+    repository: ethpandaops/nethermind
+    tag: "latest"
+  pullPolicy: IfNotPresent
+
+# JWT secret for EL<->CL authentication
+jwt:
+  # Existing secret name containing jwt.hex key
+  existingSecret: ""
+  # Or provide hex value directly (without 0x prefix)
+  secret: ""
+
+# Ports
+ports:
+  rpc: 8545
+  ws: 8546
+  authrpc: 8551
+  metrics: 6060
+  p2p: 30303
+
+# Sync mode for geth: snap (default) or full (recommended for custom devnets)
+syncMode: snap
+
+# Bootnodes for peer discovery (comma-separated enode URLs)
+bootnodes: ""
+
+# Extra arguments for the client
+extraArgs: []
+
+# Persistent volume for chain data
+persistence:
+  enabled: true
+  size: 100Gi
+  storageClass: ""
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: false
+  className: "public"
+  annotations: {}
+  hosts: []
+  tls: []
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

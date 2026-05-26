@@ -2,7 +2,7 @@ import { Params, command } from "@devnet/command";
 
 import { BlockscoutUp } from "../blockscout/up.js";
 import { ChainGetInfo } from "../chain/info.js";
-import { ChainUp } from "../chain/up.js";
+import { ChainKurtosisUp } from "../chain/kurtosis-up.js";
 import { CouncilK8sUp } from "../council-k8s/up.js";
 import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
@@ -10,6 +10,8 @@ import { DeployCSVerifier } from "../csm/add-verifier.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
 import { DataBusDeploy } from "../data-bus/deploy.js";
 import { DSMBotsK8sUp } from "../dsm-bots-k8s/up.js";
+import { EvmUp } from "../evm/up.js";
+import { GrafanaUp } from "../grafana/up.js";
 import { GitCheckout } from "../git/checkout.js";
 import { KapiK8sUp } from "../kapi-k8s/up.js";
 import { ActivateLidoProtocol } from "../lido-core/activate.js";
@@ -34,6 +36,14 @@ export const PectraDevNetUp = command.cli({
       description: "Use full DSM setup.",
       default: false,
     }),
+    evm: Params.boolean({
+      description: "Start Ethereum Validators Monitoring.",
+      default: false,
+    }),
+    grafana: Params.boolean({
+      description: "Start Grafana dashboards.",
+      default: false,
+    }),
     preset: Params.string({
       description: "Kurtosis preset name",
       default: "pectra-stable",
@@ -50,7 +60,7 @@ export const PectraDevNetUp = command.cli({
       ref: "main",
     });
 
-    await dre.runCommand(ChainUp, { preset: params.preset });
+    await dre.runCommand(ChainKurtosisUp, { preset: params.preset });
     logger.log("✅ Network initialized.");
 
     const deployArgs = { verify: params.verify };
@@ -59,6 +69,10 @@ export const PectraDevNetUp = command.cli({
     logger.log("🚀 Deploying Lido Core contracts...");
     await dre.runCommand(DeployLidoContracts, {
       ...deployArgs,
+      voteDuration: 60,
+      gasMaxFee: dre.services.lidoCore.config.constants.GAS_MAX_FEE,
+      gasPriorityFee: dre.services.lidoCore.config.constants.GAS_PRIORITY_FEE,
+      gasLimit: "16000000",
       configFile: dre.services.lidoCore.config.constants.NETWORK_STATE_DEFAULTS_FILE,
       normalizedClRewardPerEpoch: 64,
       normalizedClRewardMistakeRateBp: 1000,
@@ -70,11 +84,12 @@ export const PectraDevNetUp = command.cli({
       predictionDurationInSlots: 50_400,
       finalizationMaxNegativeRebaseEpochShift: 1350,
       exitEventsLookbackWindowInSlots: 7200,
+      consolidationMigratorTargetModuleId: undefined,
     });
     logger.log("✅ Lido contracts deployed.");
 
     logger.log("🚀 Deploying CSM contracts...");
-    await dre.runCommand(DeployCSMContracts, deployArgs);
+    await dre.runCommand(DeployCSMContracts, { ...deployArgs, verifierUrl: undefined });
     logger.log("✅ CSM contracts deployed.");
 
     logger.log("🚀 Activating Lido Core protocol...");
@@ -99,13 +114,13 @@ export const PectraDevNetUp = command.cli({
     const CSM_DEVNET_OPERATOR = "devnet_csm_1";
 
     logger.log("🚀 Generating and allocating keys for NOR Module...");
-    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
-    await dre.runCommand(UseLidoDevNetKeys, { name: NOR_DEVNET_OPERATOR });
+    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30, wcType: "0x01" });
+    await dre.runCommand(UseLidoDevNetKeys, { name: NOR_DEVNET_OPERATOR, wcType: "0x01" });
     logger.log("✅ NOR Module keys generated and allocated.");
 
     logger.log("🚀 Generating and allocating keys for CSM Module...");
-    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30 });
-    await dre.runCommand(UseLidoDevNetKeys, { name: CSM_DEVNET_OPERATOR });
+    await dre.runCommand(GenerateLidoDevNetKeys, { validators: 30, wcType: "0x01" });
+    await dre.runCommand(UseLidoDevNetKeys, { name: CSM_DEVNET_OPERATOR, wcType: "0x01" });
     logger.log("✅ CSM Module keys generated and allocated.");
 
     logger.log("🚀 Adding NOR operator...");
@@ -130,7 +145,33 @@ export const PectraDevNetUp = command.cli({
     await dre.runCommand(KapiK8sUp, {});
 
     logger.log("🚀 Run Oracle service.");
-    await dre.runCommand(OracleK8sUp, {tag: '', build: true });
+    await dre.runCommand(OracleK8sUp, {
+      image: "lidofinance/oracle",
+      registryHostname: undefined,
+      tag: "",
+      accountingImage: undefined,
+      accountingTag: undefined,
+      csmImage: undefined,
+      csmTag: undefined,
+      consensusClientUris: undefined,
+      performanceConsensusClientUri: undefined,
+      ejectorImage: undefined,
+      ejectorTag: undefined,
+      build: true,
+      releaseSuffix: undefined,
+    });
+
+    if (params.evm) {
+      logger.log("🚀 Starting Ethereum Validators Monitoring...");
+      await dre.runCommand(EvmUp, {});
+      logger.log("✅ Ethereum Validators Monitoring started.");
+    }
+
+    if (params.grafana) {
+      logger.log("🚀 Starting Grafana dashboards...");
+      await dre.runCommand(GrafanaUp, {});
+      logger.log("✅ Grafana dashboards started.");
+    }
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");
@@ -147,11 +188,11 @@ export const PectraDevNetUp = command.cli({
     }
 
     logger.log("🚀 Making deposit to NOR...");
-    await dre.runCommand(LidoDeposit, { id: 1, deposits: 30, ...depositArgs });
+    await dre.runCommand(LidoDeposit, { id: 1, deposits: 30, amount: 10000, ...depositArgs });
     logger.log("✅ Deposit to NOR completed.");
 
     logger.log("🚀 Making deposit to CSM...");
-    await dre.runCommand(LidoDeposit, { id: 3, deposits: 30, ...depositArgs });
+    await dre.runCommand(LidoDeposit, { id: 3, deposits: 30, amount: 10000, ...depositArgs });
     logger.log("✅ Deposit to CSM completed.");
 
     logger.log("🚀 Adding keys to the validator...");

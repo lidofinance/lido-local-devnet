@@ -23,6 +23,8 @@ export const kapi = new DevnetServiceConfig({
     PROVIDER_JSON_RPC_MAX_BATCH_SIZE: "100",
     VALIDATOR_REGISTRY_ENABLE: "false",
   },
+  installCommand: "yarn",
+  k8sTopic: "kapi-k8s",
   labels: { kapi: "devnet_service_name=kapi" },
   getters: {},
 });

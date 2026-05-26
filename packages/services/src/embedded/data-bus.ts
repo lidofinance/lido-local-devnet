@@ -9,6 +9,7 @@ export const dataBus = new DevnetServiceConfig({
   constants: {
     DEPLOYED_FILE: "deployed/local-devnet.json",
   },
+  installCommand: "yarn",
   labels: {},
   getters: {},
 });

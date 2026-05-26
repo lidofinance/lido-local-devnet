@@ -27,6 +27,24 @@ DESCRIPTION
   Switching the Git branch in the specified service
 ```
 
+### Behavior notes
+
+`git checkout` mirrors the working copy under `artifacts/<network>/<service>` to
+the latest state of the requested ref:
+
+- runs `git fetch origin --prune`;
+- if there are uncommitted changes — wipes them with `git reset --hard && git clean -fd`;
+- checks out the branch and fast-forwards it to `origin/<branch>` via
+  `git reset --hard origin/<branch>`. **Local commits in this clone are
+  discarded** — the working copy is treated as a deployable mirror of origin,
+  not a place for local development.
+- if `--ref` is `branch:<commitHash>`, the branch is fast-forwarded first and
+  then the working copy is detached at the given commit.
+
+This means `git checkout` (and `service rebuild`, which calls it) always pulls
+the latest commits from origin for an existing local branch — older versions of
+the command did not do that and could silently rebuild against stale code.
+
 ## `./bin/run.js git pull`
 
 Retrieve changes from a Git branch in a specified service.

@@ -1,5 +1,4 @@
 import {
-  DEFAULT_NETWORK_NAME,
   NETWORK_NAME_SUBSTITUTION,
   command,
 } from "@devnet/command";
@@ -29,7 +28,7 @@ export const KurtosisK8sNodesIngressUp = command.cli({
     const k8sNetworkApi = kc.makeApiClient(k8s.NetworkingV1Api);
 
     const ETH_NODES_INGRESS_HOSTNAME = process.env.ETH_NODES_INGRESS_HOSTNAME?.
-      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+      replace(NETWORK_NAME_SUBSTITUTION, dre.network.name);
 
     if (!ETH_NODES_INGRESS_HOSTNAME) {
       throw new DevNetError(`ETH_NODES_INGRESS_HOSTNAME env variable is not set`);
@@ -64,36 +63,67 @@ export const KurtosisK8sNodesIngressUp = command.cli({
     );
 
 
-    const vcIngresses = await pipe(
-      nodes.vc,
-      NEA.mapWithIndex((index, node) => {
-        const hostname = `${process.env.GLOBAL_INGRESS_HOST_PREFIX}-validator${index > 0 ? index : ''}.${ETH_NODES_INGRESS_HOSTNAME}`;
+    const applyIngress = async (ingress: k8s.V1Ingress) => {
+      const ingressName = ingress.metadata?.name;
+      const ingressHost = ingress.spec?.rules?.[0]?.host;
+      const namespace = `kt-${dre.network.name}`;
 
-        return { ...node, hostname };
-      }),
-      NEA.mapWithIndex((index, node) =>
-        TE.tryCatchK(validatorClientIngressTmpl, E.toError)(dre, node.k8sService, node.httpValidatorPort, index, node.hostname)
-      ),
-      NEA.sequence(TE.ApplicativeSeq),
-      TE.execute
-    );
+      if (!ingressName || !ingressHost) {
+        throw new DevNetError("Generated ingress is missing required metadata.name or spec.rules[0].host.");
+      }
 
-    await Promise.all([...elIngresses, ...clIngresses, ...vcIngresses].map(async (ingress) => {
-      const url = `http://${ingress.spec.rules[0].host}`;
+      const url = `http://${ingressHost}`;
 
-      const exists = await checkK8sIngressExists(dre, { name: ingress.metadata.name});
+      const exists = await checkK8sIngressExists(dre, { name: ingressName });
 
       if (exists) {
-        logger.log(`Ingress with name ${ingress.metadata.name} already exists. URL: [${url}]. Skipping creation.`);
+        const existingIngress = await k8sNetworkApi.readNamespacedIngress({
+          namespace,
+          name: ingressName,
+        });
+
+        await k8sNetworkApi.replaceNamespacedIngress({
+          namespace,
+          name: ingressName,
+          body: {
+            ...ingress,
+            metadata: {
+              ...ingress.metadata,
+              resourceVersion: existingIngress.metadata?.resourceVersion,
+            },
+          },
+        });
+
+        logger.log(`Ingress with name ${ingressName} already exists. URL: [${url}]. Updated.`);
         return;
       }
 
       const result = await k8sNetworkApi.createNamespacedIngress(
-        { namespace: `kt-${dre.network.name}` , body: ingress },
+        { namespace, body: ingress },
       );
 
       logger.log(`Successfully created Ingress: [${result.metadata?.name}]. URL: [${url}]`);
-    }));
+    };
+
+    await Promise.all([...elIngresses, ...clIngresses].map((element) => applyIngress(element)));
+
+    let vcIngresses: Awaited<ReturnType<typeof validatorClientIngressTmpl>>[] | undefined;
+    if (nodes.vc) {
+      vcIngresses = await pipe(
+        nodes.vc,
+        NEA.mapWithIndex((index, node) => {
+          const hostname = `${process.env.GLOBAL_INGRESS_HOST_PREFIX}-validator${index > 0 ? index : ''}.${ETH_NODES_INGRESS_HOSTNAME}`;
+
+          return { ...node, hostname };
+        }),
+        NEA.mapWithIndex((index, node) =>
+          TE.tryCatchK(validatorClientIngressTmpl, E.toError)(dre, node.k8sService, node.httpValidatorPort, index, node.hostname)
+        ),
+        NEA.sequence(TE.ApplicativeSeq),
+        TE.execute
+      );
+      await Promise.all(vcIngresses.map((element) => applyIngress(element)));
+    }
 
     const el = pipe(elIngresses, NEA.map(ingress => ({
       publicIngressUrl: `http://${ingress.spec.rules[0].host}`,
@@ -103,16 +133,20 @@ export const KurtosisK8sNodesIngressUp = command.cli({
       publicIngressUrl: `http://${ingress.spec.rules[0].host}`,
     })));
 
-    const vc = pipe(vcIngresses, NEA.map(ingress => ({
-      publicIngressUrl: `http://${ingress.spec.rules[0].host}`,
-    })));
-
-    await state.updateNodesIngress(
-      {
+    if (vcIngresses) {
+      const vc = vcIngresses.map(ingress => ({
+        publicIngressUrl: `http://${ingress.spec.rules[0].host}`,
+      }));
+      await state.updateNodesIngress({
         el: assertNonEmpty(el),
         cl: assertNonEmpty(cl),
-        vc: assertNonEmpty(vc)
-      }
-    );
+        vc: assertNonEmpty(vc),
+      });
+    } else {
+      await state.updateNodesIngress({
+        el: assertNonEmpty(el),
+        cl: assertNonEmpty(cl),
+      });
+    }
   },
 });

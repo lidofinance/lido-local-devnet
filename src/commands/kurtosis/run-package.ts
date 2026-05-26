@@ -25,6 +25,7 @@ export const KurtosisRunPackage = command.isomorphic({
     }
 
     logger.log(`Running Ethereum package with preset [${preset}] in Kurtosis...`);
+    await kurtosis.applyWorkspace();
     const configFileName = `${preset}.yml`;
     const file = await kurtosis.readYaml(configFileName).catch((error: any) => {
       logger.warn(

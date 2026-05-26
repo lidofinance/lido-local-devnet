@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-datasources
+  labels:
+    app: {{ .Release.Name }}-grafana
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+    {{- range .Values.datasources }}
+      - name: {{ .name }}
+        type: {{ .type }}
+        uid: {{ .uid }}
+        url: {{ .url }}
+        access: {{ .access | default "proxy" }}
+        isDefault: {{ .isDefault | default false }}
+        editable: true
+        {{- if .jsonData }}
+        jsonData:
+          {{- toYaml .jsonData | nindent 10 }}
+        {{- end }}
+    {{- end }}
+    {{- if not .Values.datasources }}
+      []
+    {{- end }}

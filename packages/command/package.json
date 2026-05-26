@@ -17,6 +17,7 @@
   "dependencies": {
     "@devnet/cl-client": "workspace:*",
     "@devnet/logger": "workspace:*",
+    "@devnet/notifications": "workspace:*",
     "@devnet/service": "workspace:*",
     "@devnet/state": "workspace:*",
     "@devnet/types": "workspace:*",

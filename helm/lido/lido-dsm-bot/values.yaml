@@ -62,21 +62,11 @@ lido-app:
   # Pod security context
   podSecurityContext: { }
 
-  # Liveness probe
-  livenessProbe:
-    httpGet:
-      path: /
-      port: http-health
-    initialDelaySeconds: 30
-    periodSeconds: 10
+  # Liveness probe (disabled — bot does not expose health endpoint on this branch)
+  livenessProbe: {}
 
-  # Readiness probe
-  readinessProbe:
-    httpGet:
-      path: /
-      port: http-health
-    initialDelaySeconds: 5
-    periodSeconds: 5
+  # Readiness probe (disabled — bot does not expose health endpoint on this branch)
+  readinessProbe: {}
 
   # Additional labels
   additionalLabels: { }

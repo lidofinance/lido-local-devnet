@@ -44,6 +44,12 @@ IMAGE ?= lidofinance/depositor-bot
 TAG ?= dev
 REGISTRY_HOSTNAME ?= docker.io
 WEB3_RPC_ENDPOINTS ?= http://execution
+KEYS_API_URL ?=
+CL_API_URLS ?=
+BOT_ROLE ?= unknown
+DEPLOY_COMMIT ?= unknown
+DEPLOY_TIME ?= unknown
+ENABLE_TOP_UP ?=
 
 # HELM overrides
 # Provides a easy way to override values in helm chart by they path in YAML file
@@ -64,7 +70,13 @@ define HELM_CHART_VALUES_OVERRIDES
     --set lido-app.env.variables.RABBIT_MQ_PASSWORD="${RABBIT_MQ_PASSWORD}" \
     --set lido-app.env.variables.CREATE_TRANSACTIONS="${CREATE_TRANSACTIONS}" \
     --set lido-app.env.variables.DEPOSIT_MODULES_WHITELIST="${DEPOSIT_MODULES_WHITELIST}" \
-    --set lido-app.env.variables.PROMETHEUS_PREFIX="${PROMETHEUS_PREFIX}"
+    --set lido-app.env.variables.PROMETHEUS_PREFIX="${PROMETHEUS_PREFIX}" \
+    --set lido-app.env.variables.KEYS_API_URL="${KEYS_API_URL}" \
+    --set lido-app.env.variables.CL_API_URLS="${CL_API_URLS}" \
+    --set lido-app.env.variables.ENABLE_TOP_UP="${ENABLE_TOP_UP}" \
+    --set lido-app.additionalLabels.bot-role="${BOT_ROLE}" \
+    --set lido-app.additionalLabels.deploy-commit="${DEPLOY_COMMIT}" \
+    --set lido-app.additionalLabels.deploy-time="${DEPLOY_TIME}"
 endef
 
 # Lint Helm chart

@@ -1,4 +1,5 @@
 import { DevNetLogger } from "@devnet/logger";
+import { DevNetNotifier, NotificationEvent, createNotifier } from "@devnet/notifications";
 import { DevnetServiceRegistry } from "@devnet/service";
 import { State, StateInterface } from "@devnet/state";
 import { ChainRoot, Network } from "@devnet/types";
@@ -9,7 +10,7 @@ import { readFile, rm } from "node:fs/promises";
 import * as YAML from "yaml";
 import { z } from "zod";
 
-import { CmdReturn, FactoryResult } from "./command.js";
+import { FactoryResult } from "./command.js";
 import { USER_CONFIG_PATH } from "./constants.js";
 import { DevNetDRENetwork } from "./network/index.js";
 
@@ -24,6 +25,8 @@ const YamlConfig = z.object({
       lido: z.record(z.string(), z.any()).optional(),
       csm: z.record(z.string(), z.any()).optional(),
       walletMnemonic: z.string().optional(),
+      notifications: z.record(z.string(), z.any()).optional(),
+      ethereumHeadWatcher: z.record(z.string(), z.any()).optional(),
     })
   )
 });
@@ -41,11 +44,15 @@ export interface DevNetRuntimeEnvironmentInterface {
   clone(commandName: string): DevNetRuntimeEnvironmentInterface;
   readonly logger: DevNetLogger;
   readonly network: DevNetDRENetwork;
+  notify(event: NotificationEvent): Promise<void>;
+
   runCommand<
     F extends Record<string, any>,
     R,
     CMD extends FactoryResult<F, R>,
   >(cmd: CMD, args: CMD["_internalParams"]): Promise<R>;
+
+  runCommandByName(commandName: string, params: Record<string, any>): Promise<unknown>;
 
   runHooks(): Promise<void>;
 
@@ -59,8 +66,10 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
   public readonly network: DevNetDRENetwork;
   public readonly services: DevnetServiceRegistry["services"];
   public readonly state: StateInterface;
-
+  private readonly notifier: DevNetNotifier;
   private readonly oclifConfig: OclifConfig;
+
+  private readonly rawConfig: unknown;
 
   private readonly registry: DevnetServiceRegistry;
 
@@ -77,12 +86,18 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
       // TODO make this dynamic (get rid of kurtosis knowledge here)
       ChainRoot.parse(registry.services.kurtosis.artifact.root),
     );
+    this.rawConfig = rawConfig;
     this.network = new DevNetDRENetwork(network, this.state, logger);
     this.services = registry.services;
 
     this.registry = registry;
 
     this.logger = logger;
+    this.notifier = createNotifier({
+      config: (rawConfig as { notifications?: unknown })?.notifications as any,
+      env: process.env,
+      logger,
+    });
 
     this.oclifConfig = oclifConfig;
   }
@@ -100,7 +115,7 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
     const networkConfig =
       userConfig?.networks?.find((net) => net?.name === network) ?? {};
 
-    const registry = await DevnetServiceRegistry.create(
+    const registry = DevnetServiceRegistry.create(
       network,
       commandName,
       logger,
@@ -114,15 +129,16 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
       oclifConfig,
     );
 
+    registry.hookRunner = async (cmds, serviceName) => {
+      for (const cmd of cmds) {
+        await dre.runCommandByString(cmd, serviceName);
+      }
+    };
+
     return dre;
   }
 
   public async clean() {
-    for (const service of Object.values(this.services)) {
-      // TODO: call destroy hook here
-      await service.artifact.clean();
-    }
-
     await rm(this.registry.root, { recursive: true, force: true });
   }
 
@@ -130,11 +146,15 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
     const newLogger = new DevNetLogger(this.network.name, commandName);
     return new DevNetRuntimeEnvironment(
       this.network.name,
-      this.state,
+      this.rawConfig,
       this.registry.clone(commandName, newLogger),
       newLogger,
       this.oclifConfig,
     );
+  }
+
+  public async notify(event: NotificationEvent): Promise<void> {
+    await this.notifier.notify(event);
   }
 
   public runCommand<
@@ -145,8 +165,29 @@ export class DevNetRuntimeEnvironment implements DevNetRuntimeEnvironmentInterfa
     return cmd.exec(this, args);
   }
 
+  public async runCommandByName(
+    commandName: string,
+    params: Record<string, any>,
+  ): Promise<unknown> {
+    const cmd = this.oclifConfig.findCommand(commandName);
+
+    assert(
+      cmd !== undefined,
+      `Command "${commandName}" does not exist`,
+    );
+
+    const CommandClass = (await cmd.load()) as FactoryResult<any, any>;
+
+    assert(
+      CommandClass.exec !== undefined,
+      `Command "${commandName}" cannot be invoked by name`,
+    );
+
+    return await CommandClass.exec(this.clone(commandName), params);
+  }
+
   public async runHooks() {
-    for (const service of Object.values(this.registry.services)) {
+    for (const service of this.registry.getMaterialized()) {
       for (const command of service.artifact.emittedCommands) {
         await this.runCommandByString(command, service.config.name);
       }

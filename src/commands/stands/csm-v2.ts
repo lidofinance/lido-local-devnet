@@ -2,7 +2,7 @@ import { Params, command } from "@devnet/command";
 
 import { BlockscoutUp } from "../blockscout/up.js";
 import { ChainGetInfo } from "../chain/info.js";
-import { ChainUp } from "../chain/up.js";
+import { ChainKurtosisUp } from "../chain/kurtosis-up.js";
 import { CouncilK8sUp } from "../council-k8s/up.js";
 import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
@@ -57,7 +57,7 @@ export const PectraDevNetUp = command.cli({
       ref: "develop",
     });
 
-    await dre.runCommand(ChainUp, { preset: "csm-v2" });
+    await dre.runCommand(ChainKurtosisUp, { preset: "csm-v2" });
     logger.log("✅ Network initialized.");
 
     // if (!params.full) {
@@ -71,6 +71,10 @@ export const PectraDevNetUp = command.cli({
     logger.log("🚀 Deploying Lido Core contracts...");
     await dre.runCommand(DeployLidoContracts, {
       ...deployArgs,
+      voteDuration: 60,
+      gasMaxFee: dre.services.lidoCore.config.constants.GAS_MAX_FEE,
+      gasPriorityFee: dre.services.lidoCore.config.constants.GAS_PRIORITY_FEE,
+      gasLimit: "16000000",
       configFile: dre.services.lidoCore.config.constants.NETWORK_STATE_DEFAULTS_FILE,
       normalizedClRewardPerEpoch: 64,
       normalizedClRewardMistakeRateBp: 1000,
@@ -82,11 +86,12 @@ export const PectraDevNetUp = command.cli({
       predictionDurationInSlots: 50_400,
       finalizationMaxNegativeRebaseEpochShift: 1350,
       exitEventsLookbackWindowInSlots: 7200,
+      consolidationMigratorTargetModuleId: undefined,
     });
     logger.log("✅ Lido contracts deployed.");
 
     logger.log("🚀 Deploying CSM contracts...");
-    await dre.runCommand(DeployCSMContracts, deployArgs);
+    await dre.runCommand(DeployCSMContracts, { ...deployArgs, verifierUrl: undefined });
     logger.log("✅ CSM contracts deployed.");
 
     await dre.runCommand(CSMUpdateState, {});
@@ -114,9 +119,10 @@ export const PectraDevNetUp = command.cli({
 
     logger.log("🚀 Generating and allocating keys for CSM Module...");
     for (let i = 0; i < CSM_OPERATORS_COUNT; i++) {
-      await dre.runCommand(GenerateLidoDevNetKeys, { validators: 25 });
+      await dre.runCommand(GenerateLidoDevNetKeys, { validators: 25, wcType: "0x01" });
       await dre.runCommand(UseLidoDevNetKeys, {
         name: `${CSM_OPERATOR_PREFIX}${i}`,
+        wcType: "0x01",
       });
     }
     logger.log("✅ CSM Module keys generated and allocated.");
@@ -133,7 +139,21 @@ export const PectraDevNetUp = command.cli({
     await dre.runCommand(KapiK8sUp, {});
 
     logger.log("🚀 Run Oracle service.");
-    await dre.runCommand(OracleK8sUp, { tag: "6.0.1", build: false });
+    await dre.runCommand(OracleK8sUp, {
+      image: "lidofinance/oracle",
+      registryHostname: undefined,
+      tag: "6.0.1",
+      accountingImage: undefined,
+      accountingTag: undefined,
+      csmImage: undefined,
+      csmTag: undefined,
+      consensusClientUris: undefined,
+      performanceConsensusClientUri: undefined,
+      ejectorImage: undefined,
+      ejectorTag: undefined,
+      build: false,
+      releaseSuffix: undefined,
+    });
 
     if (params.dsm) {
       logger.log("🚀 Deploying Data-bus...");
@@ -153,6 +173,7 @@ export const PectraDevNetUp = command.cli({
     await dre.runCommand(LidoDeposit, {
       id: 3,
       deposits: 100,
+      amount: 10000,
       ...depositArgs,
     });
     logger.log("✅ Deposit to CSM completed.");

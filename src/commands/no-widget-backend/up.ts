@@ -1,5 +1,4 @@
 import {
-  DEFAULT_NETWORK_NAME,
   NETWORK_NAME_SUBSTITUTION,
   command,
 } from "@devnet/command";
@@ -48,6 +47,7 @@ export const NoWidgetBackendUp = command.cli({
     }
 
     const { elPrivate, clPrivate } = await state.getChain();
+    const chainId = await dre.network.getChainId();
 
     const { locator, lido, stakingRouter, curatedModule } = await state.getLido();
     const { module: csmModule } = await state.getCSM();
@@ -59,7 +59,7 @@ export const NoWidgetBackendUp = command.cli({
     const env: Record<string, number | string> = {
       ...noWidgetBackend.config.constants,
       IS_DEVNET_MODE: "1",
-      CHAIN_ID: "32382",
+      CHAIN_ID: chainId,
       LIDO_DEVNET_ADDRESS: lido,
       DEVNET_GENESIS_FORK_VERSION: GENESIS_FORK_VERSION.replace("0x", ""),
       KEYS_API_HOST: privateUrl,
@@ -67,7 +67,7 @@ export const NoWidgetBackendUp = command.cli({
     };
 
     const hostname = process.env.NO_WIDGET_BACKEND_INGRESS_HOSTNAME?.
-      replace(NETWORK_NAME_SUBSTITUTION, DEFAULT_NETWORK_NAME);
+      replace(NETWORK_NAME_SUBSTITUTION, dre.network.name);
 
     if (!hostname) {
       throw new DevNetError(`NO_WIDGET_BACKEND_INGRESS_HOSTNAME env variable is not set`);

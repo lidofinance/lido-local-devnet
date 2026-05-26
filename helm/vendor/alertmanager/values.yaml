@@ -1,0 +1,43 @@
+alertmanager:
+  image:
+    repository: prom/alertmanager
+    tag: v0.28.1
+    pullPolicy: IfNotPresent
+  port: 9093
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      memory: 64Mi
+
+discord:
+  enabled: true
+  image:
+    repository: lidofinance/alertmanager-discord
+    tag: 2.7.0
+    pullPolicy: IfNotPresent
+  port: 5001
+  # Discord webhook URL — REQUIRED when discord.enabled=true
+  webhookUrl: ""
+  # Hook slug used in alertmanager-discord routing
+  hookSlug: "evm"
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      memory: 64Mi
+
+# Full alertmanager.yml override (passed via --set-file configOverride=path/to/alertmanager.yml)
+# When set, replaces the default generated config entirely.
+configOverride: ""
+
+config:
+  resolveTimeout: 60m
+  groupWait: 25s
+  groupInterval: 35s
+  repeatInterval: 1h
+
+service:
+  type: ClusterIP

@@ -1,11 +1,13 @@
 import { command } from "@devnet/command";
 import * as keyManager from "@devnet/key-manager-api";
+import { DevNetError } from "@devnet/utils";
 
 export const ValidatorList = command.cli({
   description: "Lists all validator keystores in the system",
   params: {},
   async handler({ dre: { logger, state } }) {
     const { validatorsApiPublic } = await state.getChain();
+    if (!validatorsApiPublic) throw new DevNetError("Validators API not configured");
     const keystoresResponse = await keyManager.fetchKeystores(
       validatorsApiPublic,
       keyManager.KEY_MANAGER_DEFAULT_API_TOKEN,

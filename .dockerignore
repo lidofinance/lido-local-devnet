@@ -1,0 +1,10 @@
+artifacts
+node_modules
+.git
+*.log
+*.tar.gz
+.env
+.env.*
+!.env.sample
+!workspaces/cli-pod/.env
+dist
