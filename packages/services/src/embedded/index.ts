@@ -8,6 +8,7 @@ import { dashboard } from "./dashboard.js";
 import { dataBus } from "./data-bus.js";
 import { dockerRegistry } from "./docker-registry.js";
 import { dsmBots } from "./dsm-bots.js";
+import { dualGovernance } from "./dual-governance.js";
 import { easyTrack } from "./easy-track.js";
 import { ehw } from "./ethereum-head-watcher.js";
 import { evm } from "./evm.js";
@@ -48,6 +49,7 @@ export const serviceConfigs = {
   dataBus,
   dsmBots,
   dockerRegistry,
+  dualGovernance,
   easyTrack,
   kubo,
   noWidgetBackend,
