@@ -1,5 +1,5 @@
 # Execution Layer Node configuration
-# Supports geth, reth
+# Supports geth, reth, ethrex, nethermind
 
 client: geth
 
@@ -22,6 +22,14 @@ image:
     registry: ghcr.io
     repository: paradigmxyz/reth
     tag: "v1.2.0"
+  ethrex:
+    registry: docker.io
+    repository: ethpandaops/ethrex
+    tag: "latest"
+  nethermind:
+    registry: docker.io
+    repository: ethpandaops/nethermind
+    tag: "latest"
   pullPolicy: IfNotPresent
 
 # JWT secret for EL<->CL authentication

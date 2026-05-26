@@ -28,6 +28,10 @@ export const GlamsterdamDevNetUp = command.cli({
       description: "CL client type (prysm | lighthouse | lodestar | teku).",
       default: "prysm",
     }),
+    elClient: Params.string({
+      description: "EL client type (geth | reth | ethrex).",
+      default: "geth",
+    }),
     checkpointSyncUrl: Params.string({
       description: "CL checkpoint sync URL for faster initial sync.",
       default: "https://checkpoint-sync.glamsterdam-devnet-3.ethpandaops.io",
@@ -52,7 +56,7 @@ export const GlamsterdamDevNetUp = command.cli({
 
       logger.log("🔗 Deploying self-hosted EL/CL nodes...");
       await dre.runCommand(ChainSelfHostedUp, {
-        elClient: "geth",
+        elClient: params.elClient,
         clClient: params.clClient,
         network: dre.network.name,
         elImage: params.elImage,

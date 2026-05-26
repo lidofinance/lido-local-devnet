@@ -34,11 +34,11 @@ declare module "@devnet/state" {
 
 export const CMv2State = z.object({
   accounting: z.string(),
-  earlyAdoption: z.string(),
+  earlyAdoption: z.string().optional(),
   ejector: z.string().optional(),
   feeDistributor: z.string(),
   feeOracle: z.string(),
-  gateSeal: z.string(),
+  gateSeal: z.string().optional(),
   hashConsensus: z.string(),
   lidoLocator: z.string(),
   module: z.string(),
@@ -46,7 +46,7 @@ export const CMv2State = z.object({
   verifier: z.string(),
   permissionlessGate: z.string(),
   vettedGate: z.string(),
-  curatedGate: z.string(),
+  curatedGate: z.string().optional(),
 });
 
 export type CMv2State = z.infer<typeof CMv2State>;

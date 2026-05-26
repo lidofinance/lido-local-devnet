@@ -31,8 +31,8 @@ image:
     repository: consensys/teku
     tag: "24.12.0"
   prysm:
-    registry: docker.io
-    repository: gcr.io/prysmatic-labs/prysm/beacon-chain
+    registry: gcr.io
+    repository: prysmatic-labs/prysm/beacon-chain
     tag: "v5.2.0"
   pullPolicy: IfNotPresent
 

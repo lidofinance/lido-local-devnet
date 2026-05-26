@@ -42,6 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ssh \
     ca-certificates \
     gnupg \
+    tmux \
     && rm -rf /var/lib/apt/lists/*
 
 # kubectl

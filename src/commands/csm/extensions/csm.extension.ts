@@ -34,11 +34,11 @@ declare module "@devnet/state" {
 
 export const CSMState = z.object({
   accounting: z.string(),
-  earlyAdoption: z.string(),
+  earlyAdoption: z.string().optional(),
   ejector: z.string().optional(),
   feeDistributor: z.string(),
   feeOracle: z.string(),
-  gateSeal: z.string(),
+  gateSeal: z.string().optional(),
   hashConsensus: z.string(),
   lidoLocator: z.string(),
   module: z.string(),

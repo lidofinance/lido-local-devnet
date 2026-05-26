@@ -15,6 +15,7 @@ type DeployEnvRequired = {
   GAS_MAX_FEE: string;
   GAS_PRIORITY_FEE: string;
   GENESIS_TIME: string;
+  LOCAL_DEVNET_CHAIN_ID: string;
   LOCAL_DEVNET_PK: string;
   NETWORK: string;
   NETWORK_STATE_DEFAULTS_FILE: string;
@@ -161,11 +162,14 @@ export const DeployLidoContracts = command.cli({
 
     logger.log(DEPOSIT_CONTRACT_ADDRESS);
 
+    const chainId = await network.getChainId();
+
     const deployEnv: DeployEnvRequired = {
       DEPLOYER: deployer.publicKey,
       DEPOSIT_CONTRACT: DEPOSIT_CONTRACT_ADDRESS,
       GAS_MAX_FEE: params.gasMaxFee ?? constants.GAS_MAX_FEE,
       GAS_PRIORITY_FEE: params.gasPriorityFee ?? constants.GAS_PRIORITY_FEE,
+      LOCAL_DEVNET_CHAIN_ID: String(chainId),
       LOCAL_DEVNET_PK: deployer.privateKey,
       NETWORK: constants.NETWORK,
       NETWORK_STATE_DEFAULTS_FILE: constants.NETWORK_STATE_DEFAULTS_FILE,

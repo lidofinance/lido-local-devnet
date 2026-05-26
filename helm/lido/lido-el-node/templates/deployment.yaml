@@ -45,6 +45,10 @@ spec:
           image: "{{ .Values.image.geth.registry }}/{{ .Values.image.geth.repository }}:{{ .Values.image.geth.tag }}"
           {{- else if eq .Values.client "reth" }}
           image: "{{ .Values.image.reth.registry }}/{{ .Values.image.reth.repository }}:{{ .Values.image.reth.tag }}"
+          {{- else if eq .Values.client "ethrex" }}
+          image: "{{ .Values.image.ethrex.registry }}/{{ .Values.image.ethrex.repository }}:{{ .Values.image.ethrex.tag }}"
+          {{- else if eq .Values.client "nethermind" }}
+          image: "{{ .Values.image.nethermind.registry }}/{{ .Values.image.nethermind.repository }}:{{ .Values.image.nethermind.tag }}"
           {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if eq .Values.client "geth" }}
@@ -107,6 +111,67 @@ spec:
             - --metrics=0.0.0.0:{{ .Values.ports.metrics }}
             {{- if .Values.bootnodes }}
             - --bootnodes={{ .Values.bootnodes }}
+            {{- end }}
+            {{- range .Values.extraArgs }}
+            - {{ . }}
+            {{- end }}
+          {{- else if eq .Values.client "ethrex" }}
+          command:
+            - ethrex
+          args:
+            - --datadir=/data
+            {{- if .Values.customNetwork }}
+            - --network=/network-config/genesis.json
+            {{- else }}
+            - --network={{ .Values.network }}
+            {{- end }}
+            - --syncmode={{ .Values.syncMode }}
+            - --http.addr=0.0.0.0
+            - --http.port={{ .Values.ports.rpc }}
+            - --http.api=eth,net,web3,debug,admin,txpool
+            - --authrpc.addr=0.0.0.0
+            - --authrpc.port={{ .Values.ports.authrpc }}
+            - --authrpc.jwtsecret=/jwt/jwt.hex
+            - --p2p.port={{ .Values.ports.p2p }}
+            - --discovery.port={{ .Values.ports.p2p }}
+            - --metrics
+            - --metrics.addr=0.0.0.0
+            - --metrics.port={{ .Values.ports.metrics }}
+            {{- if .Values.bootnodes }}
+            - --bootnodes={{ .Values.bootnodes }}
+            {{- end }}
+            {{- range .Values.extraArgs }}
+            - {{ . }}
+            {{- end }}
+          {{- else if eq .Values.client "nethermind" }}
+          command:
+            - /nethermind/nethermind
+          args:
+            - --datadir=/data
+            {{- if .Values.customNetwork }}
+            - --config=none.cfg
+            - --Init.ChainSpecPath=/network-config/chainspec.json
+            {{- else }}
+            - --config={{ .Values.network }}
+            {{- end }}
+            - --JsonRpc.Enabled=true
+            - --JsonRpc.Host=0.0.0.0
+            - --JsonRpc.Port={{ .Values.ports.rpc }}
+            - --JsonRpc.EnabledModules=net,eth,consensus,subscribe,web3,admin,debug,txpool,trace
+            - --Init.WebSocketsEnabled=true
+            - --JsonRpc.WebSocketsPort={{ .Values.ports.ws }}
+            - --JsonRpc.EngineHost=0.0.0.0
+            - --JsonRpc.EnginePort={{ .Values.ports.authrpc }}
+            - --JsonRpc.JwtSecretFile=/jwt/jwt.hex
+            - --Network.DiscoveryPort={{ .Values.ports.p2p }}
+            - --Network.P2PPort={{ .Values.ports.p2p }}
+            - --Metrics.Enabled=true
+            - --Metrics.ExposeHost=0.0.0.0
+            - --Metrics.ExposePort={{ .Values.ports.metrics }}
+            - --Sync.SnapSync=false
+            {{- if .Values.bootnodes }}
+            - --Discovery.Bootnodes={{ .Values.bootnodes }}
+            - --Network.StaticPeers={{ .Values.bootnodes }}
             {{- end }}
             {{- range .Values.extraArgs }}
             - {{ . }}

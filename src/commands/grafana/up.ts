@@ -51,6 +51,13 @@ export const GrafanaUp = command.cli({
     const hostname = process.env.GRAFANA_INGRESS_HOSTNAME?.
       replace(NETWORK_NAME_SUBSTITUTION, network.name);
 
+    if (!hostname) {
+      logger.warn(
+        `GRAFANA_INGRESS_HOSTNAME is not set in .env — falling back to "grafana-${network.name}.local". ` +
+        `Set GRAFANA_INGRESS_HOSTNAME=grafana.$(DEVNET_NAME).<cluster-suffix> for cluster-reachable ingress.`,
+      );
+    }
+
     const INGRESS_HOSTNAME = hostname
       ? addPrefixToIngressHostname(hostname)
       : `grafana-${network.name}.local`;

@@ -2,18 +2,47 @@ import { command } from "@devnet/command";
 import * as keyManager from "@devnet/key-manager-api";
 import { assert, DevNetError, sleep } from "@devnet/utils";
 import { pipe, A, RA, TE, NEA, E } from "@devnet/fp";
+import { $ } from "execa";
 
+import { nodesExtension } from "../chain/extensions/nodes.extension.js";
 import { ValidatorRestart } from "./restart.js";
+
+// Prysm validator refuses to import keystores into the unified wallet file
+// (`all-accounts.keystore.json`) unless it has 0600 permissions. Kurtosis
+// `ethereum-package` initialises the wallet with 0644, so the first
+// `validator add` against a fresh prysm VC fails with HTTP 500
+// "could not write accounts: file already exists without proper 0600 permissions".
+// We chmod the wallet tree before importing.
+const ensurePrysmWalletPermissions = async (
+  networkName: string,
+  k8sService: string,
+  logger: { log: (msg: string) => void; warn: (msg: string) => void },
+) => {
+  const namespace = `kt-${networkName}`;
+  const cmd =
+    "chmod 600 /validator-keys/prysm/direct/accounts/all-accounts.keystore.json && " +
+    "chmod 700 /validator-keys/prysm/direct/accounts /validator-keys/prysm/direct /validator-keys/prysm";
+  try {
+    await $`kubectl -n ${namespace} exec ${k8sService} -- sh -c ${cmd}`;
+    logger.log(`Prysm wallet permissions normalized in ${namespace}/${k8sService}.`);
+  } catch (error) {
+    logger.warn(
+      `Failed to chmod prysm wallet (${namespace}/${k8sService}): ${(error as Error).message}`,
+    );
+  }
+};
 
 export const ValidatorAdd = command.cli({
   description:
     "Finds available keys in the state, adds them to the validator, and restarts it.",
   params: {},
+  extensions: [nodesExtension],
   async handler({
     dre,
     dre: {
       logger,
       state,
+      network,
     },
   }) {
     const { validatorsApiPublic } = await dre.state.getChain();
@@ -69,6 +98,12 @@ export const ValidatorAdd = command.cli({
 
     logger.log(`Detected new keystores: ${actualKeystores.length}`);
 
+    const nodes = await state.getNodes(false);
+    const vc0 = nodes?.vc?.[0];
+    if (vc0?.clientType === "prysm") {
+      await ensurePrysmWalletPermissions(network.name, vc0.k8sService, logger);
+    }
+
     await sleep(25_000);
 
     const keystoresStrings = actualKeystores.map((v) => JSON.stringify(v));
@@ -82,12 +117,13 @@ export const ValidatorAdd = command.cli({
         const keystoresChunkPasswords = keystoresChunk.map((_) => "12345678");
 
         return TE.tryCatch(async () => {
-          await keyManager.importKeystores(
+          const response = await keyManager.importKeystores(
             validatorsApiPublic,
             keystoresChunk,
             keystoresChunkPasswords,
             token,
           );
+          logger.log(`Chunk ${index} keymanager response: ${JSON.stringify(response)}`);
         }, E.toError);
       }),
       A.sequence(TE.ApplicativeSeq), // sequential execution

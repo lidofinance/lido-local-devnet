@@ -28,7 +28,7 @@ export const ChainSelfHostedUp = command.isomorphic({
   description:
     "Starts self-hosted EL/CL nodes in Kubernetes via Helm charts.",
   params: {
-    elClient: Params.string({ description: "EL client: geth | reth", default: "geth" }),
+    elClient: Params.string({ description: "EL client: geth | reth | ethrex", default: "geth" }),
     clClient: Params.string({ description: "CL client: lighthouse | teku | prysm", default: "lighthouse" }),
     network: Params.string({ description: "Target network (hoodi, holesky, or custom devnet name)." }),
     checkpointSyncUrl: Params.string({ description: "CL checkpoint sync URL for faster sync." }),
