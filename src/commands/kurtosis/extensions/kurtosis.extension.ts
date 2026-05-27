@@ -72,15 +72,12 @@ export const startKurtosisGateway = async (dre: DevNetRuntimeEnvironmentInterfac
     return;
   }
 
-  // Skip gateway when running inside the k8s cluster (e.g. cli-pod): gateway
-  // is only needed to access the engine from outside the cluster, and it
-  // crashes with "dial tcp: connection refused" when trying to reach
-  // kubernetes.default.svc without a proper external kubeconfig.
-  if (isInCluster()) {
-    dre.logger.log(`Skipping kurtosis gateway — running in-cluster`);
-    return;
-  }
-
+  // kurtosis CLI always dials localhost:9710 (see kurtosis-tech/kurtosis
+  // cli/cli/helpers/engine_manager/engine_manager.go: hostMachineIpAndPort
+  // defaults to localhost). Without `kurtosis gateway` running, the CLI gets
+  // CONTAINER_RUNNING_BUT_SERVER_NOT_RESPONDING even when the engine is
+  // healthy on its ClusterIP. This is true both inside and outside the
+  // cluster. See docs/troubleshooting/kurtosis-engine-server-not-responding.md.
   dre.logger.log(`Starting kurtosis gateway in the background`);
   kurtosisGatewayProcess = execa('kurtosis', ['gateway'], { detached: true, stdio: 'ignore' });
   // Swallow rejection so a dead gateway doesn't crash the whole process

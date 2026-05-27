@@ -88,12 +88,15 @@ const renderDeployConfig = ({
       max_after_submit_delay: 1800,
       max_after_schedule_delay: 1800,
       max_emergency_mode_duration: 86_400,
-      max_emergency_protection_duration: 31_536_000,
+      max_emergency_protection_duration: 63_072_000,
     },
     emergency_protection: {
       emergency_mode_duration: 3600,
+      // 30 days — well within max_emergency_protection_duration (2 years)
+      // so block.timestamp drift between TOML render and forge execution
+      // doesn't push end_date past the sanity check window.
       emergency_protection_end_date:
-        Math.floor(Date.now() / 1000) + 365 * 24 * 3600,
+        Math.floor(Date.now() / 1000) + 30 * 24 * 3600,
       emergency_governance_proposer: deployer,
       emergency_activation_committee: deployer,
       emergency_execution_committee: deployer,
