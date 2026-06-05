@@ -6,9 +6,16 @@ On a Glamsterdam-fork chain, code-deposit costs are raised (EIP-8037) and per-tx
 execution gas is capped at 16M (EIP-7825), with the remainder of `tx.gas_limit`
 above 16M funneled into the `state_reservoir` used to pay for code deposit.
 
+> **⚠️ KEY GOTCHA: the Core deploy does NOT resume from the last step.**
+> Any failure during Core (e.g. the circuit-breaker step below) means the
+> **entire** Core deploy re-runs from scratch on the next attempt (~50 min) —
+> `0000-populate-deploy-artifact-from-env.ts` re-initializes the deploy artifact,
+> so completed steps are NOT skipped. Therefore: **apply every known gas fix
+> BEFORE the first `stands glamsterdam-full` run** so Core completes in one pass.
+> See "No incremental resume" below.
+
 There are **two gas footguns**. Apply **both** before the first
-`stands glamsterdam-full` run — see "No incremental resume" below for why a
-late failure is expensive.
+`stands glamsterdam-full` run.
 
 ## Footgun 1 — DAO factory (hardhat step, `0020-deploy-aragon-env.ts`)
 
@@ -61,18 +68,24 @@ this forge invocation.
 
 ### Fix
 
-Add `--gas-limit 50000000` (any value > 16M; 50M leaves `state_reservoir ≈ 34M`)
-to the `forgeArgs` array in `0100-deploy-circuit-breaker.ts`, right after
-`"--broadcast"`:
+Add `--gas-estimate-multiplier 5000` to the `forgeArgs` array in
+`0100-deploy-circuit-breaker.ts`, right after `"--broadcast"`:
 
 ```ts
 const forgeArgs = [
   "forge script script/Deploy.s.sol:Deploy",
   // ...
   "--broadcast",
-  "--gas-limit 50000000",   // EIP-8037: forge under-estimates → state_reservoir=0 → code-deposit OOG
+  "--gas-estimate-multiplier 5000",  // ×50: forge under-estimates → tx.gas ~54M > 16M → state_reservoir covers code deposit
 ];
 ```
+
+> **`--gas-limit <N>` does NOT work here** (verified on forge 1.7.1): `forge script`
+> ignores it for the broadcast tx and still uses `estimate × multiplier`
+> (`isFixedGasLimit=false`). The only lever for broadcast-tx gas is
+> `--gas-estimate-multiplier`. circuit-breaker has a single small contract, so a
+> blanket ×50 works. For a multi-contract deploy with a wide size range (CSM),
+> a single multiplier can't work — see next section.
 
 This step lives in **lidoCore** (cloned at deploy time), not in this repo. The
 stand's `GitCheckout { service: "lidoCore", ref: "develop" }` does
@@ -115,3 +128,62 @@ Consequences:
 4. `wallet fund` (seeds role accounts from the genesis-funded deployer).
 5. `stands glamsterdam-full [--dsm]` — Core (50M everywhere) + CSM + CMv2 +
    activations + operators + KAPI in a single pass.
+
+## CSM (multi-contract forge deploy) — single multiplier can't work; use fixed-gas replay
+
+CSM (`community-staking-module`, `just deploy-csm-live-no-confirm` →
+`forge script script/csm/DeployLocalDevNet.s.sol --broadcast -g 200 --legacy`)
+deploys ~135 txs (31 CREATE + 104 CALL) in one `vm.startBroadcast()`. Every CREATE
+needs `gas_limit > 16M` (EIP-8037 reservoir). But `forge script` only scales gas
+by a single `-g` / `--gas-estimate-multiplier`, and the contracts span a wide
+estimate range (small libs ~0.4M … CSModule). No single multiplier fits:
+
+- small libs need ≈ ×46 to clear 16M;
+- the biggest CREATE × that multiplier blows past the 150M block gas limit.
+
+Symptoms seen: with `-g 200`, forge fires txs without verifying receipts — small
+CREATEs silently revert (status 0, reservoir 0) and it later dies with a
+misleading `intrinsic gas too low` on a send. Adding `--slow` (forge waits for
+each receipt) surfaces the real first failure: `AssetRecovererLib` CREATE,
+status 0. Raising `-g` to ×10 makes the big CREATE exceed the block limit → forge
+stalls retrying.
+
+(Note: `--legacy` is tx type, not gas limit — irrelevant here.
+`FOUNDRY_BLOCK_GAS_LIMIT=1e9` is the simulation block gas, not the broadcast tx gas.)
+
+### Workaround — fixed-gas replay (`tools/replay-forge-plan-fixedgas.cjs`)
+
+forge can't set a per-tx gas floor, so we let forge build the **plan** and send the
+txs ourselves with a fixed/floored gas. Works for any forge-script deploy that hits
+this wall.
+
+```sh
+# In the CSM repo dir, with the deploy env set (RPC_URL, DEPLOYER_PRIVATE_KEY,
+# CSM_* addresses, FOUNDRY_PROFILE=deploy, ARTIFACTS_DIR — the same env the
+# `csm deploy` command logs via logJson):
+
+# 1. Dry-run forge (NO --broadcast) WITH --sender <deployer> so CREATE addresses
+#    are computed for the real deployer at its real nonce (else forge uses its
+#    default sender 0x1804…@nonce0 and the plan's baked addresses won't match).
+forge script script/csm/DeployLocalDevNet.s.sol:DeployLocalDevNet \
+  --sig="run(string)" --force --rpc-url "$RPC_URL" --sender "$DEPLOYER_ADDR" \
+  -- $(git rev-parse HEAD)
+#    → writes broadcast/DeployLocalDevNet.s.sol/<chainid>/dry-run/run-latest.json
+
+# 2. Replay each tx with fixed gas (floor 50M, cap 145M), sequential, status-checked.
+#    Run from a dir whose node_modules has ethers v6 (e.g. the cli-pod /app).
+RPC_URL="$RPC_URL" DEPLOYER_PRIVATE_KEY="$PK" \
+  node tools/replay-forge-plan-fixedgas.cjs \
+  <path>/dry-run/run-latest.json 50000000 145000000
+```
+
+`gas_limit = clamp(planGas, 50M, 145M)` → every CREATE gets ≥50M (16M exec cap +
+34M reservoir for code deposit), and nothing exceeds the 150M block. Replay is
+sequential (one tx per block, ~20-30 min for 135 txs). Constraint: do not let any
+other tx use the deployer between the dry-run and the replay, or the CREATE
+addresses (`addr(deployer, nonce)`) shift and baked args mismatch.
+
+Verified on glamsterdam-devnet-5: `AssetRecovererLib` (which reverts in the normal
+forge deploy) deploys `status=1` under the replay. Proper long-term fix belongs in
+the CSM deploy script (per-contract gas / size-grouped forge runs) — file with the
+CSM team.
