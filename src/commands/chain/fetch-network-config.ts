@@ -25,6 +25,11 @@ const METADATA_FILES = [
   "deposit_contract.txt",
   "deploy_block.txt",
   "bootstrap_nodes.txt",
+  // chainspec.json is required by the nethermind EL client
+  // (--Init.ChainSpecPath=/network-config/chainspec.json). Optional file:
+  // download is best-effort and skipped with a warning on devnets that
+  // don't ship it.
+  "chainspec.json",
 ];
 
 export const ChainFetchNetworkConfig = command.isomorphic({
