@@ -177,13 +177,81 @@ RPC_URL="$RPC_URL" DEPLOYER_PRIVATE_KEY="$PK" \
   <path>/dry-run/run-latest.json 50000000 145000000
 ```
 
-`gas_limit = clamp(planGas, 50M, 145M)` → every CREATE gets ≥50M (16M exec cap +
-34M reservoir for code deposit), and nothing exceeds the 150M block. Replay is
-sequential (one tx per block, ~20-30 min for 135 txs). Constraint: do not let any
-other tx use the deployer between the dry-run and the replay, or the CREATE
-addresses (`addr(deployer, nonce)`) shift and baked args mismatch.
+`gas_limit = clamp(planGas, 50M, 145M)` floors **every** tx (CREATE *and* CALL) to
+≥50M (16M exec cap + 34M reservoir for code deposit) and caps under the 150M block.
+Floor ALL txs, not just CREATEs: some CALLs (e.g. `proxy__upgradeToAndCall`
+initializers) internally deploy contracts, so they also need the reservoir —
+forge's `eth_estimateGas` under-reports them on EIP-7825, so trusting the CALL
+estimate makes the internal CREATE OOG and the CALL reverts.
+
+Set `WINDOW=N` (env) to keep N txs in flight instead of strictly sequential. At a
+50M floor a 150M block fits ~3 txs, so `WINDOW≈8-12` saturates that (~3 tx/block,
+~3× faster than sequential); larger windows don't help (block-gas-bound).
+
+Constraint: do not let any other tx use the deployer between the dry-run and the
+replay, or the CREATE addresses (`addr(deployer, nonce)`) shift and baked args
+mismatch.
 
 Verified on glamsterdam-devnet-5: `AssetRecovererLib` (which reverts in the normal
 forge deploy) deploys `status=1` under the replay. Proper long-term fix belongs in
 the CSM deploy script (per-contract gas / size-grouped forge runs) — file with the
 CSM team.
+
+> **CMv2 hits the identical wall.** The `cmv2` service uses the same
+> `community-staking-module` repo, and `cmv2 deploy` runs
+> `just deploy-curated-live-no-confirm -g 200 --legacy` (forge `script/curated/`,
+> same pattern as CSM). Same fix: dry-run the `deploy-curated` forge script with
+> `--sender <deployer>`, then replay with the wrapper. In `stands glamsterdam-full`
+> CMv2 is deployed right after CSM. A CSM-side per-contract-gas fix covers both
+> (shared `DeployBase`).
+
+## Live-run gotchas (glamsterdam-devnet-5, 2026-06)
+
+- **Capture the deploy env WITHOUT broadcasting.** The `csm deploy` / `cmv2 deploy`
+  commands log their full env via `logJson` before the forge call — grab it from
+  the log. Do NOT re-run `*deploy` just to get the env: its `forge ... --broadcast`
+  child gets orphaned (survives the `kubectl exec` that launched it) and keeps
+  firing txs from the deployer, flooding the txpool. Those compete with the replay
+  → `transaction was replaced`, and pollute nonces. Before replaying, confirm the
+  deployer txpool is empty and its `latest`==`pending` nonce is stable; `ps` in the
+  pod for stray `forge`/`node`/`just`.
+- **Run long replays in tmux, not a raw `kubectl exec`.** The SSH tunnel to the
+  cluster drops intermittently (`i/o timeout` on the API port); a streamed
+  `kubectl exec` dies with it (and may orphan its child). `tmux new-session -d` in
+  the pod survives the disconnect — reattach / tail the log to monitor.
+- **nethermind EL can wedge on this ePBS chain.** Symptom: `eth_blockNumber`
+  frozen, `eth_syncing=false`, logs spam `No state available for block N`, while
+  the CL (prysm) keeps `Synced new block` / `Processed execution payload envelope`
+  at the live slot. The EL stops importing payloads. Fix: `kubectl rollout restart`
+  the EL deployment — the healthy CL re-drives it via engine API and it catches up.
+  (Deployed contracts persist; the PVC + CL re-sync restore state.)
+- **Resume vs fresh.** A mid-replay interruption (EL wedge / orphan collision) can
+  leave a partial, possibly reorged module state — resuming with `startIdx` then
+  hit a revert on a CALL whose dependency wasn't applied. When in doubt, re-dry-run
+  from the current nonce and replay the whole module fresh (orphaned partial
+  contracts are abandoned; deployer ETH on devnet is plentiful). To resume
+  deliberately: `startIdx = currentNonce − planStartNonce`.
+- **deploy-config for activation: written by forge `vm.writeJson`, not the replay
+  — and a path bug sent CMv2's to the wrong file.** `*-update-state` and the
+  activation omnibus (`devnetCMv2Start`'s `isPaused()` etc.) read the
+  `DEPLOY_CONFIG` path. The deploy script writes the name→address config via
+  `vm.writeJson(ARTIFACTS_DIR + "deploy-" + chain + ".json")`. **Root cause of the
+  CMv2 activation failure (FIXED):** the cmv2 service had
+  `ARTIFACTS_DIR="artifacts/latest/curated"` *without a trailing slash*, so the
+  config landed at `…/curateddeploy-local-devnet.json` while `DEPLOY_CONFIG` was
+  `…/curated/deploy-local-devnet.json` (a subdir) — so update-state read a stale
+  config and activation called `isPaused()` on a codeless address
+  (`could not decode result data … isPaused`, `value=0x`). CSM worked because its
+  `ARTIFACTS_DIR="artifacts/latest/"` is correct. Fix: add the trailing slash
+  (`"artifacts/latest/curated/"`). The config IS consistent with the plan (proxy
+  and impl are separate keys; 21/23 addresses are CREATEs in the plan, the other
+  2 are external — LidoLocator and CircuitBreaker=0).
+  - Since the replay (not forge) deploys, you still must **bridge** the config the
+    dry-run's `vm.writeJson` wrote into the `DEPLOY_CONFIG` path for an
+    already-replayed module: `cp <ARTIFACTS_DIR>deploy-<chain>.json
+    <DEPLOY_CONFIG>` then `node script/mergeExternalLibraries.js <DEPLOY_CONFIG>
+    <broadcast/.../run-latest.json>` (merges `ExternalLibraries`), then
+    `*-update-state` + `activate`. With the trailing-slash fix the `cp` is a
+    no-op (vm.writeJson already writes to DEPLOY_CONFIG).
+  - **Outcome on glamsterdam-devnet-5: Core + CSM + CMv2 all deployed AND
+    activated** (CMv2 via the bridge above + the trailing-slash fix).
