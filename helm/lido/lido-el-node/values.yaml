@@ -50,6 +50,15 @@ ports:
 # Sync mode for geth: snap (default) or full (recommended for custom devnets)
 syncMode: snap
 
+# geth-specific state/sync settings (consumed by the geth args + init block).
+# Defaults preserve the archive/hash node used for deploy + eth_getProof.
+# For a deep historical-state node (e.g. oracle): syncMode=snap, gcmode="", stateScheme=path, historyState=90000.
+geth:
+  syncMode: full      # geth --syncmode
+  gcmode: archive     # geth --gcmode (set "" to omit, e.g. for a pruned path node)
+  stateScheme: hash   # geth --state.scheme (hash|path); also used by `geth init`
+  historyState: ""    # geth --history.state (path-scheme state-history window in blocks; "" omits)
+
 # Bootnodes for peer discovery (comma-separated enode URLs)
 bootnodes: ""
 

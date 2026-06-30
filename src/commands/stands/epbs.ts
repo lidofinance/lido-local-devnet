@@ -92,6 +92,11 @@ export const EPBSDevNetUp = command.cli({
         checkpointSyncUrl: undefined,
         genesisSSZUrl: undefined,
         ingress: true,
+        suffix: undefined,
+        stateScheme: undefined,
+        historyState: undefined,
+        syncMode: undefined,
+        gcmode: undefined,
       });
       logger.log("✅ Chain nodes deployed.");
     }

@@ -64,6 +64,11 @@ export const GlamsterdamDevNetUp = command.cli({
         checkpointSyncUrl: params.checkpointSyncUrl,
         genesisSSZUrl: params.genesisSSZUrl,
         ingress: true,
+        suffix: undefined,
+        stateScheme: undefined,
+        historyState: undefined,
+        syncMode: undefined,
+        gcmode: undefined,
       });
       logger.log("✅ Chain nodes deployed.");
     }

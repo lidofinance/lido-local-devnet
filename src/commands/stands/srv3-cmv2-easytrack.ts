@@ -254,6 +254,7 @@ export const SRv3CMv2EasyTrackDevnetUp = command.cli({
       channel: undefined,
       skipDashboardRefresh: false,
       webhookUrl: undefined,
+      stdout: false,
     });
 
     await dre.runCommand(ChainGetInfo, {});

@@ -190,9 +190,13 @@ export const ChainPublishDigestToSlack = command.cli({
       description: "Slack webhook URL (overrides SLACK_WEBHOOK_URL env)",
       required: false,
     }),
+    stdout: Params.boolean({
+      description: "Print the digest to the terminal instead of posting to Slack (no webhook required)",
+      required: false,
+    }),
   },
   async handler({ dre: { logger, network, state, services }, params }) {
-    const webhookUrl = resolveWebhookUrl(params.webhookUrl);
+    const webhookUrl = params.stdout ? undefined : resolveWebhookUrl(params.webhookUrl);
     const dashboardNs = `kt-${network.name}-dashboard`;
 
     // 1. Read fresh state.json from disk
@@ -278,7 +282,12 @@ export const ChainPublishDigestToSlack = command.cli({
       }
     }
 
-    await postMessageViaWebhook(webhookUrl, lines.join("\n"), logger);
-    logger.log("Digest published to Slack");
+    const digest = lines.join("\n");
+    if (params.stdout || !webhookUrl) {
+      logger.log(`\n${digest}`);
+    } else {
+      await postMessageViaWebhook(webhookUrl, digest, logger);
+      logger.log("Digest published to Slack");
+    }
   },
 });

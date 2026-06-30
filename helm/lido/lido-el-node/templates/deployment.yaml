@@ -28,7 +28,7 @@ spec:
             - |
               if [ ! -d /data/geth/chaindata ]; then
                 echo "Initializing geth with custom genesis..."
-                geth init --datadir /data /network-config/genesis.json
+                geth init --state.scheme={{ .Values.geth.stateScheme }} --datadir /data /network-config/genesis.json
               else
                 echo "Datadir already initialized, skipping."
               fi
@@ -78,7 +78,15 @@ spec:
             - --metrics
             - --metrics.addr=0.0.0.0
             - --metrics.port={{ .Values.ports.metrics }}
-            - --syncmode={{ .Values.syncMode }}
+            - --syncmode={{ .Values.geth.syncMode }}
+            {{- if .Values.geth.gcmode }}
+            - --gcmode={{ .Values.geth.gcmode }}
+            {{- end }}
+            - --state.scheme={{ .Values.geth.stateScheme }}
+            {{- if .Values.geth.historyState }}
+            - --history.state={{ .Values.geth.historyState }}
+            {{- end }}
+            - --rpc.txfeecap=0
             {{- if .Values.bootnodes }}
             - --bootnodes={{ .Values.bootnodes }}
             {{- end }}
@@ -168,7 +176,7 @@ spec:
             - --Metrics.Enabled=true
             - --Metrics.ExposeHost=0.0.0.0
             - --Metrics.ExposePort={{ .Values.ports.metrics }}
-            - --Sync.SnapSync=false
+            - --Sync.SnapSync=true
             {{- if .Values.bootnodes }}
             - --Discovery.Bootnodes={{ .Values.bootnodes }}
             - --Network.StaticPeers={{ .Values.bootnodes }}

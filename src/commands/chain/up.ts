@@ -45,6 +45,11 @@ export const ChainUp = command.isomorphic({
           clImage: params.clImage,
           genesisSSZUrl: params.genesisSSZUrl,
           ingress: params.ingress,
+          suffix: undefined,
+          stateScheme: undefined,
+          historyState: undefined,
+          syncMode: undefined,
+          gcmode: undefined,
         });
 
         // Deploy validator client if vcClient is specified
