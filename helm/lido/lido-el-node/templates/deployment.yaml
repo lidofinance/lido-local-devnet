@@ -49,6 +49,8 @@ spec:
           image: "{{ .Values.image.ethrex.registry }}/{{ .Values.image.ethrex.repository }}:{{ .Values.image.ethrex.tag }}"
           {{- else if eq .Values.client "nethermind" }}
           image: "{{ .Values.image.nethermind.registry }}/{{ .Values.image.nethermind.repository }}:{{ .Values.image.nethermind.tag }}"
+          {{- else if eq .Values.client "besu" }}
+          image: "{{ .Values.image.besu.registry }}/{{ .Values.image.besu.repository }}:{{ .Values.image.besu.tag }}"
           {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if eq .Values.client "geth" }}
@@ -180,6 +182,40 @@ spec:
             {{- if .Values.bootnodes }}
             - --Discovery.Bootnodes={{ .Values.bootnodes }}
             - --Network.StaticPeers={{ .Values.bootnodes }}
+            {{- end }}
+            {{- range .Values.extraArgs }}
+            - {{ . }}
+            {{- end }}
+          {{- else if eq .Values.client "besu" }}
+          command:
+            - besu
+          args:
+            - --data-path=/data
+            {{- if .Values.customNetwork }}
+            - --genesis-file=/network-config/genesis.json
+            {{- end }}
+            # FOREST + FULL = archive node (retains full historical state for any block)
+            - --data-storage-format=FOREST
+            - --sync-mode=FULL
+            - --rpc-http-enabled
+            - --rpc-http-host=0.0.0.0
+            - --rpc-http-port={{ .Values.ports.rpc }}
+            - --rpc-http-api=ETH,NET,WEB3,DEBUG,ADMIN,TXPOOL
+            - --rpc-http-cors-origins=all
+            - --host-allowlist=*
+            - --rpc-ws-enabled
+            - --rpc-ws-host=0.0.0.0
+            - --rpc-ws-port={{ .Values.ports.ws }}
+            - --engine-rpc-enabled
+            - --engine-jwt-secret=/jwt/jwt.hex
+            - --engine-rpc-port={{ .Values.ports.authrpc }}
+            - --engine-host-allowlist=*
+            - --p2p-port={{ .Values.ports.p2p }}
+            - --metrics-enabled
+            - --metrics-host=0.0.0.0
+            - --metrics-port={{ .Values.ports.metrics }}
+            {{- if .Values.bootnodes }}
+            - --bootnodes={{ .Values.bootnodes }}
             {{- end }}
             {{- range .Values.extraArgs }}
             - {{ . }}

@@ -1,5 +1,5 @@
 # Execution Layer Node configuration
-# Supports geth, reth, ethrex, nethermind
+# Supports geth, reth, ethrex, nethermind, besu
 
 client: geth
 
@@ -29,6 +29,10 @@ image:
   nethermind:
     registry: docker.io
     repository: ethpandaops/nethermind
+    tag: "latest"
+  besu:
+    registry: docker.io
+    repository: ethpandaops/besu
     tag: "latest"
   pullPolicy: IfNotPresent
 
