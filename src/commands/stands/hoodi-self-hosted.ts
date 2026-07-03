@@ -20,6 +20,11 @@ export const HoodiSelfHostedUp = command.cli({
       clImage: undefined,
       genesisSSZUrl: undefined,
       ingress: false,
+      suffix: undefined,
+      stateScheme: undefined,
+      historyState: undefined,
+      syncMode: undefined,
+      gcmode: undefined,
     });
     logger.log("EL/CL nodes deployed.");
 

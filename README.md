@@ -213,6 +213,11 @@ This downloads `genesis.json`, `config.yaml`, `genesis.ssz`, `enodes.txt`, `boot
 
 #### ⚠️ Caveats when deploying Lido protocol on public ethpandaops devnets
 
+> Glamsterdam / ePBS devnets (EIP-7825 × EIP-8037): see
+> [docs/troubleshooting/glamsterdam-external-devnet-deploy.md](./docs/troubleshooting/glamsterdam-external-devnet-deploy.md)
+> for the two gas footguns (DAO factory + circuit-breaker forge step) and why a
+> late failure forces a full Core redeploy (no incremental resume).
+
 - **Deploy is slow.** `stands glamsterdam-full` / `stands glamsterdam-kurtosis` runs `lidoCore` `dao-deploy.sh` end-to-end:
   - `yarn install` + `yarn build` of `lido-core` (~3-5 min, ~1300 packages)
   - 12+ migration scripts deploying ~50 contracts via hardhat + forge (~10-20 min)

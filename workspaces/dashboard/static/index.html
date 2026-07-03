@@ -221,9 +221,9 @@ function renderStatus(state) {
   if (state.nodesIngress) {
     const ni = state.nodesIngress;
     let rows = '';
-    if (ni.el) ni.el.forEach((n, i) => rows += kvRow(`EL ${i}`, n.publicIngressUrl, true));
-    if (ni.cl) ni.cl.forEach((n, i) => rows += kvRow(`CL ${i}`, n.publicIngressUrl, true));
-    if (ni.vc) ni.vc.forEach((n, i) => rows += kvRow(`VC ${i}`, n.publicIngressUrl, true));
+    if (ni.el) ni.el.forEach((n, i) => rows += kvRow(n.label ? `EL ${i} (${n.label})` : `EL ${i}`, n.publicIngressUrl, true));
+    if (ni.cl) ni.cl.forEach((n, i) => rows += kvRow(n.label ? `CL ${i} (${n.label})` : `CL ${i}`, n.publicIngressUrl, true));
+    if (ni.vc) ni.vc.forEach((n, i) => rows += kvRow(n.label ? `VC ${i} (${n.label})` : `VC ${i}`, n.publicIngressUrl, true));
     if (rows) html += card('Node Ingress URLs', rows);
   }
 

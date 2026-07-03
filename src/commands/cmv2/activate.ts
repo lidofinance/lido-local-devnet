@@ -106,25 +106,19 @@ export const ActivateCMv2 = command.cli({
     logger.logJson(env);
 
     logger.log("Deploying and configuring CMv2 components...");
+    // devnetCMv2Start now bundles grant MANAGE_OPERATOR_GROUPS_ROLE on MetaRegistry
+    // and grant MANAGE_KEYS_LIMIT_ROLE on ParametersRegistry into the same vote.
+    // After this single vote (DG or direct), the deployer holds both roles and
+    // `cmv2 set-default-keys-limit` (direct tx) below works without another vote.
     await lidoCLI.sh({ env })`./run.sh omnibus script devnetCMv2Start`;
 
-    logger.log("Granting MANAGE_OPERATOR_GROUPS_ROLE on CMv2 MetaRegistry...");
-    try {
-      await lidoCLI.sh({ env })`./run.sh cmv2 grant-manage-operator-groups-role-vote`;
-    } catch {
-      logger.warn("Failed to grant MANAGE_OPERATOR_GROUPS_ROLE; proceed manually if needed");
-    }
-
     if (params.defaultKeysLimit !== "skip") {
-      logger.log(
-        `Granting MANAGE_KEYS_LIMIT_ROLE and setting defaultKeysLimit=${params.defaultKeysLimit} on CMv2 ParametersRegistry...`,
-      );
+      logger.log(`Setting defaultKeysLimit=${params.defaultKeysLimit} on CMv2 ParametersRegistry...`);
       try {
-        await lidoCLI.sh({ env })`./run.sh cmv2 grant-manage-keys-limit-role-vote`;
         await lidoCLI.sh({ env })`./run.sh cmv2 set-default-keys-limit ${params.defaultKeysLimit}`;
       } catch {
         logger.warn(
-          "Failed to raise defaultKeysLimit; large add-keys batches may revert with KeysLimitExceeded. Run lidoCLI `cmv2 grant-manage-keys-limit-role-vote` + `cmv2 set-default-keys-limit <limit>` manually.",
+          "Failed to set defaultKeysLimit; large add-keys batches may revert with KeysLimitExceeded. Run lidoCLI `cmv2 set-default-keys-limit <limit>` manually.",
         );
       }
     } else {

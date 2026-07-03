@@ -36,11 +36,20 @@ export const ChainSelfHostedUp = command.isomorphic({
     clImage: Params.string({ description: "Custom CL Docker image (e.g. ethpandaops/lighthouse:epbs-devnet-0)." }),
     genesisSSZUrl: Params.string({ description: "URL to download genesis.ssz (for large files that exceed ConfigMap 1MB limit)." }),
     ingress: Params.boolean({ description: "Enable ingress for EL/CL APIs. Uses ETH_NODES_INGRESS_HOSTNAME from .env.", default: true }),
+    suffix: Params.string({ description: "Release-name suffix for an additional EL/CL pair (e.g. '2' -> <net>-el2/<net>-cl2). Auxiliary pair: ingress and canonical state-write are skipped so the primary pair is untouched." }),
+    stateScheme: Params.string({ description: "geth state scheme: hash | path. Default (chart) hash. Use 'path' for a node serving deep historical state reads (oracle)." }),
+    historyState: Params.string({ description: "geth --history.state value (blocks of state history to retain; path-scheme). E.g. 90000." }),
+    syncMode: Params.string({ description: "geth --syncmode override: snap | full. Default (chart) full." }),
+    gcmode: Params.string({ description: "geth --gcmode override: archive | full | '' to omit. Default (chart) archive." }),
   },
   extensions: [nodesIngressExtension],
   async handler({ dre: { logger, state, network: dreNetwork }, params }) {
     const { elClient, clClient, checkpointSyncUrl, elImage, clImage, genesisSSZUrl } = params;
-    const enableIngress = params.ingress ?? false;
+    const suffix = params.suffix ?? "";
+    const isAux = suffix !== "";
+    // Auxiliary pair (suffix set): never claim the shared ingress hostname, and don't
+    // overwrite the primary pair's canonical node state below.
+    const enableIngress = (params.ingress ?? false) && !isAux;
     const targetNetwork = params.network;
 
     if (!targetNetwork) {
@@ -64,8 +73,8 @@ export const ChainSelfHostedUp = command.isomorphic({
     const jwtSecretName = await ensureJwtSecret(namespace, dreNetwork.name, state.artifactsRoot, logger);
 
     // 3. Deploy EL & CL Helm charts
-    const elRelease = `${dreNetwork.name}-el`;
-    const clRelease = `${dreNetwork.name}-cl`;
+    const elRelease = `${dreNetwork.name}-el${suffix}`;
+    const clRelease = `${dreNetwork.name}-cl${suffix}`;
 
     const ingressArgs = enableIngress
       ? { el: buildIngressArgs("execution", dreNetwork.name), cl: buildIngressArgs("consensus", dreNetwork.name) }
@@ -74,6 +83,8 @@ export const ChainSelfHostedUp = command.isomorphic({
     await deployElNode({
       release: elRelease, namespace, elClient: elClient!, targetNetwork,
       isCustomNetwork, jwtSecretName, netConfig, elImage, ingressArgs: ingressArgs.el, logger,
+      stateScheme: params.stateScheme, historyState: params.historyState,
+      syncMode: params.syncMode, gcmode: params.gcmode,
     });
 
     await deployClNode({
@@ -86,12 +97,16 @@ export const ChainSelfHostedUp = command.isomorphic({
     const elIngressHostname = enableIngress ? buildIngressHostname("execution", dreNetwork.name) : "";
     const clIngressHostname = enableIngress ? buildIngressHostname("consensus", dreNetwork.name) : "";
 
-    // 6. Save state and deploy info
-    await saveDeployState({
-      state, namespace, elRelease, clRelease, elClient: elClient!, clClient: clClient!,
-      targetNetwork, isCustomNetwork, elImage, clImage,
-      elIngressHostname, clIngressHostname, logger,
-    });
+    // 6. Save state and deploy info (skip for auxiliary pair so the primary stays canonical)
+    if (isAux) {
+      logger.log(`Auxiliary pair '${elRelease}'/'${clRelease}' deployed; skipping canonical state write and ingress.`);
+    } else {
+      await saveDeployState({
+        state, namespace, elRelease, clRelease, elClient: elClient!, clClient: clClient!,
+        targetNetwork, isCustomNetwork, elImage, clImage,
+        elIngressHostname, clIngressHostname, logger,
+      });
+    }
 
     // 7. Update ingress state if enabled
     if (enableIngress) {
@@ -184,16 +199,25 @@ async function ensureJwtSecret(
 // ── Helm deploy helpers ─────────────────────────────────────────────────────
 
 async function deployElNode(opts: {
-  elClient: string; elImage?: string; ingressArgs: string[]; isCustomNetwork: boolean;
-  jwtSecretName: string; logger: Logger; namespace: string;
-  netConfig: NetworkConfig; release: string; targetNetwork: string;
+  elClient: string; elImage?: string; gcmode?: string; historyState?: string;
+  ingressArgs: string[]; isCustomNetwork: boolean; jwtSecretName: string;
+  logger: Logger; namespace: string; netConfig: NetworkConfig; release: string;
+  stateScheme?: string; syncMode?: string; targetNetwork: string;
 }) {
-  const { release, namespace, elClient, targetNetwork, isCustomNetwork, jwtSecretName, netConfig, elImage, ingressArgs, logger } = opts;
+  const { release, namespace, elClient, targetNetwork, isCustomNetwork, jwtSecretName, netConfig, elImage, ingressArgs, logger, stateScheme, historyState, syncMode, gcmode } = opts;
   const chartPath = path.join(HELM_VENDOR_CHARTS_ROOT_PATH, "lido/lido-el-node");
   const imageArgs = elImage ? parseImageOverride(elImage, elClient) : [];
 
   logger.log(`Deploying EL node (${elClient}) as Helm release '${release}'...`);
   if (elImage) logger.log(`  Using custom EL image: ${elImage}`);
+
+  // geth state/sync overrides (chart defaults: full / archive / hash). Only emitted when provided.
+  const gethArgs = [
+    ...(syncMode !== undefined ? [`geth.syncMode=${syncMode}`] : []),
+    ...(gcmode !== undefined ? [`geth.gcmode=${gcmode}`] : []),
+    ...(stateScheme !== undefined ? [`geth.stateScheme=${stateScheme}`] : []),
+    ...(historyState !== undefined ? [`geth.historyState=${historyState}`] : []),
+  ];
 
   const setArgs = [
     `client=${elClient}`,
@@ -202,6 +226,7 @@ async function deployElNode(opts: {
     `jwt.existingSecret=${jwtSecretName}`,
     ...(isCustomNetwork ? [`networkConfigMapName=${netConfig.configMapName}`, `syncMode=full`] : []),
     ...(netConfig.elBootnodes ? [`bootnodes=${netConfig.elBootnodes}`] : []),
+    ...gethArgs,
     ...imageArgs,
     ...ingressArgs,
   ];

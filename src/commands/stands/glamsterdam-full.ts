@@ -12,6 +12,8 @@ import { CMv2SetGateTree } from "../cmv2/set-gate-tree.js";
 import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
+import { DGDeploy } from "../dg/deploy.js";
+import { DGHandover } from "../dg/handover.js";
 import { GitCheckout } from "../git/checkout.js";
 import { LidoCLIInstall } from "../lido-cli/install.js";
 import { ActivateLidoProtocol } from "../lido-core/activate.js";
@@ -57,6 +59,10 @@ export const GlamsterdamFullDevNetUp = command.cli({
     }),
     vcImage: Params.string({
       description: "Custom validator-client Docker image (e.g. ethpandaops/prysm-validator:glamsterdam-devnet-4).",
+    }),
+    withDg: Params.boolean({
+      description: "Deploy Dual Governance contracts and grant AdminExecutor RUN_SCRIPT_ROLE on Agent after Lido activation. Set USE_DG=1 in shell to route subsequent omnibus scripts through DG.",
+      default: false,
     }),
   },
   async handler({ params, dre, dre: { logger } }) {
@@ -134,6 +140,20 @@ export const GlamsterdamFullDevNetUp = command.cli({
     logger.log("🚀 Activating Lido Core protocol...");
     await dre.runCommand(ActivateLidoProtocol, {});
     logger.log("✅ Lido Core protocol activated.");
+
+    if (params.withDg) {
+      logger.log("🚀 Deploying Dual Governance contracts...");
+      await dre.runCommand(DGDeploy, {
+        afterSubmitDelay: undefined,
+        afterScheduleDelay: undefined,
+        minExecutionDelay: undefined,
+      });
+      logger.log("✅ Dual Governance contracts deployed.");
+
+      logger.log("🚀 Performing DG handover (grant RUN_SCRIPT_ROLE on Agent to AdminExecutor)...");
+      await dre.runCommand(DGHandover, {});
+      logger.log("✅ DG handover complete. To route omnibus through DG, set USE_DG=1 in shell.");
+    }
 
     logger.log("🚀 Activating CSM module...");
     await dre.runCommand(ActivateCSM, {

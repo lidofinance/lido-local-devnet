@@ -68,7 +68,7 @@ RUN ARCH=$(dpkg --print-architecture) \
 # Kurtosis
 RUN echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" \
     > /etc/apt/sources.list.d/kurtosis.list \
-    && apt-get update && apt-get install -y --no-install-recommends kurtosis-cli \
+    && apt-get update && apt-get install -y --no-install-recommends kurtosis-cli=1.12.1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Foundry (only forge and cast — anvil and chisel not needed in pod)

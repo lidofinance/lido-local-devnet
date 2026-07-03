@@ -26,6 +26,10 @@ export const PectraTWDevNetUp = command.cli({
       description: "Kurtosis preset name",
       default: "pectra-stable",
     }),
+    withDg: Params.boolean({
+      description: "Deploy Dual Governance contracts and grant AdminExecutor RUN_SCRIPT_ROLE on Agent after Lido activation (forwarded to underlying pectra stand).",
+      default: false,
+    }),
   },
   async handler({ params, dre, dre: { logger } }) {
     await dre.runCommand(PectraDevNetUp, { ...params });

@@ -13,6 +13,8 @@ import { ActivateCSM } from "../csm/activate.js";
 import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
 import { DataBusDeploy } from "../data-bus/deploy.js";
+import { DGDeploy } from "../dg/deploy.js";
+import { DGHandover } from "../dg/handover.js";
 import { DSMBotsK8sUp } from "../dsm-bots-k8s/up.js";
 import { EhwUp } from "../ehw/up.js";
 import { GitCheckout } from "../git/checkout.js";
@@ -47,6 +49,10 @@ export const SRv3CMv2DevnetUp = command.cli({
       description: "Run Ethereum Head Watcher in Kubernetes.",
       default: false,
     }),
+    withDg: Params.boolean({
+      description: "Deploy Dual Governance contracts and grant AdminExecutor RUN_SCRIPT_ROLE on Agent after Lido activation. To route subsequent omnibus through DG, set USE_DG=1 (requires lido-cli with forwardVoteFromTmDG).",
+      default: false,
+    }),
   },
   async handler({ params, dre, dre: { logger } }) {
     const deployArgs = { verify: params.verify };
@@ -54,7 +60,7 @@ export const SRv3CMv2DevnetUp = command.cli({
 
     await dre.runCommand(GitCheckout, {
       service: "lidoCore",
-      ref: "feat/staking-router-3.0",
+      ref: "develop",
     });
 
     await dre.runCommand(GitCheckout, {
@@ -102,13 +108,27 @@ export const SRv3CMv2DevnetUp = command.cli({
 
     await dre.runCommand(GitCheckout, {
       service: "lidoCLI",
-      ref: "feature/vroom-435-staking-router-v3-devnet1-with-cmv2",
+      ref: "develop",
     });
     await dre.runCommand(LidoCLIInstall, {});
 
     logger.log("🚀 Activating Lido Core protocol...");
     await dre.runCommand(ActivateLidoProtocol, {});
     logger.log("✅ Lido Core protocol activated.");
+
+    if (params.withDg) {
+      logger.log("🚀 Deploying Dual Governance contracts...");
+      await dre.runCommand(DGDeploy, {
+        afterSubmitDelay: undefined,
+        afterScheduleDelay: undefined,
+        minExecutionDelay: undefined,
+      });
+      logger.log("✅ Dual Governance contracts deployed.");
+
+      logger.log("🚀 Performing DG handover (grant RUN_SCRIPT_ROLE on Agent to AdminExecutor)...");
+      await dre.runCommand(DGHandover, {});
+      logger.log("✅ DG handover complete. To route omnibus through DG, set USE_DG=1 in shell (requires patched lido-cli).");
+    }
 
     logger.log("🚀 Activating CSM module...");
     await dre.runCommand(ActivateCSM, {

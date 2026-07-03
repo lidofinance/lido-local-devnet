@@ -9,6 +9,8 @@ import { LidoAddCSMOperatorWithKeys } from "../csm/add-operator.js";
 import { DeployCSVerifier } from "../csm/add-verifier.js";
 import { DeployCSMContracts } from "../csm/deploy.js";
 import { DataBusDeploy } from "../data-bus/deploy.js";
+import { DGDeploy } from "../dg/deploy.js";
+import { DGHandover } from "../dg/handover.js";
 import { DSMBotsK8sUp } from "../dsm-bots-k8s/up.js";
 import { EvmUp } from "../evm/up.js";
 import { GrafanaUp } from "../grafana/up.js";
@@ -47,6 +49,10 @@ export const PectraDevNetUp = command.cli({
     preset: Params.string({
       description: "Kurtosis preset name",
       default: "pectra-stable",
+    }),
+    withDg: Params.boolean({
+      description: "Deploy Dual Governance contracts and grant AdminExecutor RUN_SCRIPT_ROLE on Agent after Lido activation. Set USE_DG=1 in shell to route subsequent omnibus scripts through DG.",
+      default: false,
     }),
   },
   async handler({ params, dre, dre: { logger } }) {
@@ -95,6 +101,20 @@ export const PectraDevNetUp = command.cli({
     logger.log("🚀 Activating Lido Core protocol...");
     await dre.runCommand(ActivateLidoProtocol, {});
     logger.log("✅ Lido Core protocol activated.");
+
+    if (params.withDg) {
+      logger.log("🚀 Deploying Dual Governance contracts...");
+      await dre.runCommand(DGDeploy, {
+        afterSubmitDelay: undefined,
+        afterScheduleDelay: undefined,
+        minExecutionDelay: undefined,
+      });
+      logger.log("✅ Dual Governance contracts deployed.");
+
+      logger.log("🚀 Performing DG handover (grant RUN_SCRIPT_ROLE on Agent to AdminExecutor)...");
+      await dre.runCommand(DGHandover, {});
+      logger.log("✅ DG handover complete. To route omnibus through DG, set USE_DG=1 in shell.");
+    }
 
     logger.log("🚀 Activating CSM protocol...");
     await dre.runCommand(ActivateCSM, {
