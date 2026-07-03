@@ -25,6 +25,10 @@ Bring the component up using the operational checklist in `knowledge/`.
   historical state at the depth implied by the checkpoint, and that oracle
   `initialEpoch` will be set `>= checkpoint`. Do not deploy the protocol until
   both hold — getting them wrong forces a CSM/CMv2 HashConsensus redeploy later.
+- **Fund the wallets before the protocol deploy**: ensure `wallets.yml` is at
+  `artifacts/<net>/wallets.yml` (from 1Password), then `./bin/run.js wallet fund`
+  (~1000 ETH to each named account) so Core deploy and oracle ops have gas. Never
+  print or commit `wallets.yml` — it holds private keys.
 - **Front-load every known fix before the first attempt** (checklist tooling /
   consensus / gas sections): merge required branches, set oracle
   `initialEpoch >= checkpoint`, apply gas fixes, pin moving-tag digests.
@@ -34,8 +38,9 @@ Bring the component up using the operational checklist in `knowledge/`.
 - **Idempotent**: check on-chain / cluster state first
   (`isLidoDeployed`, `getStakingModulesCount`, pod phase, ...) and skip work
   already done. Never blindly repeat a completed step.
-- **Log everything, every run** (this feeds future diagnosis): tee each step to
-  `artifacts/<net>/NN-<step>.log` (numbered, timestamped), AND record in a
+- **Log everything, every run** (this feeds future diagnosis): run each step
+  through `dlog.sh` (→ `artifacts/<net>/NN-<step>.log`, timestamped + `exit=<rc>`),
+  append your action to `agent-trace.jsonl` (see AGENTS §Logging), AND record in a
   per-run `FINDING-*.md` / notes file what was attempted, the outcome, and how a
   problem was (or was not) solved — mirroring the devnet-4/5/6 artifacts. Per-tx
   logs are the evidence trail for upstream bug reports; never delete them.

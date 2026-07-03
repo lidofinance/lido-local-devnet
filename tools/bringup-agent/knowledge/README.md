@@ -3,8 +3,9 @@
 Two tiers feed `diagnosis`, plus the operational checklist for `maker`.
 
 - **Curated tier** — `saga-eval.jsonl` below: labeled, cross-devnet, small.
-- **Raw tier** — `artifacts/<net>/` (per-run numbered logs + `FINDING-*.md`
-  notes): larger, unlabeled, optional (absent on a fresh devnet). `maker` writes
+- **Raw tier** — `artifacts/<net>/` (per-run numbered logs via `dlog.sh` +
+  `agent-trace.jsonl` decision trace + `FINDING-*.md` notes): larger, unlabeled,
+  optional (absent on a fresh devnet). `maker` writes
   it every run; `diagnosis` greps it for a matching signal and reuses the
   resolution that worked. After a run, distill notable incidents from the raw
   tier into `saga-eval.jsonl` — that is how the labeled set grows each devnet.

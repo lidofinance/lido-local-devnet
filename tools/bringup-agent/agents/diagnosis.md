@@ -23,13 +23,34 @@ You are diagnosis — the most important role. Read `AGENTS.md` first. Input:
 | `governance-gate`     | on-chain revert on role/member (IsNotMember, role gate)| **human** — recommend omnibus/vote; do not execute       |
 | `config-front-loadable`| wrong config, fixable before a run                    | see redeploy rule below                                  |
 | `converging-wait`     | floor/sync **inside** the expected window (not a fail) | wait; expected_time_to_green = window                    |
+| `oracle-depth-insufficient` | EL prunes historical state / no `eth_getProof` at depth (`nodes[]` servesOracleDepth / servesGetProof false) — a report cannot be collected | try ANOTHER pair (besu FOREST archive / geth hash+archive) and re-probe, BEFORE any protocol deploy (autonomous) |
+
+## Precedence — rule out cheap autonomous causes FIRST
+
+Decode / `INVALID` / `EOF` / missing-field / selector / type errors are AMBIGUOUS
+on a moving-tag devnet. Do NOT jump to `version-mismatch` / `upstream-code-bug`
+(-> human); those are the RESIDUAL after the cheap autonomous causes are ruled out:
+
+1. `image-tag-drift` — compare each pod's image digest to the CURRENT moving tag
+   (ethpandaops re-pushes `:<devnet>`), on ALL clients, not just the one that
+   erred (the fix is often bumping the OTHER client). Fix = bump digest.
+2. `wrong-branch` — is the service/tool on the expected ref? A tool encoding an
+   old selector/signature is usually a stale checkout, not a true version skew.
+   Fix = re-checkout + rebuild.
+3. Only if digests match the current tags AND the ref is correct (re-checkout
+   does not resolve it) is it `version-mismatch` / `upstream-code-bug` -> human.
+
+Prefer the autonomous-fixable class when the signal is ambiguous; escalate to the
+STOP-class only once the cheap fixes are exhausted. Mis-escalating a
+fixable-autonomously fault to a human wastes the whole point.
 
 ## STOP-and-ask-a-human classes
 
-`upstream-code-bug` and `version-mismatch`. A code fault or an oracle<->contract
-version disagreement is NOT fixed by swapping node pairs or restarting — do not
-burn attempts on infra; escalate immediately with the evidence (stack trace,
-mismatched selector/type). Oracle failures read operationally: CrashLoopBackOff
+`upstream-code-bug` and `version-mismatch` share ONE remedy (human, STOP, flag the
+owning team, do NOT retry infra) — do not agonize over which; the split is only
+informational. Neither is fixed by swapping node pairs or restarting — escalate
+with the evidence (stack trace, mismatched selector/type), but only AFTER the
+precedence check above. Oracle failures read operationally: CrashLoopBackOff
 + fresh traceback => code / version-mismatch (human); up-clean but no report
 inside the window => `converging-wait`; `IsNotMember` / role revert in logs =>
 `governance-gate`. A kube-API connection failure (tunnel down) is NOT a class

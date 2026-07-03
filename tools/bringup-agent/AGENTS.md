@@ -1,6 +1,15 @@
 # Devnet bring-up agent fleet — constitution
 
-All roles (director / maker / diagnosis / verifier) read this file first.
+All roles read this file first. This directory is **SELF-CONTAINED**: a fresh AI
+with no prior context (no session history, no external/personal vault) can drive
+the whole flow from these files alone. Everything operational lives here.
+
+**Reading order (fresh context):** this file → `RUNBOOK.md` (operator flow,
+step by step) → `CLUSTERS.md` (env / tunnel-port / kube-context map) →
+`agents/<role>.md` as each role is dispatched → `knowledge/saga-eval.jsonl`
+(labeled past incidents, the `diagnosis` reference) + `lib/verify-state.ts`
+(the read-only goal-state probe). Roles: director / maker / diagnosis /
+verifier / plumber / cleaner.
 
 ## Goal (definition of done) — machine-verifiable via lib/verify-state.ts
 
@@ -49,11 +58,22 @@ Verify BEFORE deploying — getting either wrong forces a costly CSM/CMv2
 HashConsensus redeploy afterward (deploy new HashConsensus + `setConsensusContract`
 + vote, and a convergence cycle):
 
-- An **archive node** is up and serves historical state at the depth implied by
-  the chosen checkpoint (besu FOREST archive or equivalent; probe `getBalance`
-  at a deep block).
+- **Oracle depth:** an EL serves historical state at the depth a report needs
+  (`verify-state.ts` `nodes[]`: `servesOracleDepth`, `window` = `deep`|`archive`).
+  A pruned EL (~128 blocks) CANNOT collect a report. If the current pair fails,
+  try ANOTHER pair (besu FOREST archive, geth hash+archive via `--suffix`) and
+  re-probe — do this BEFORE deploying the protocol, never after.
+- **getProof:** the EL serves `eth_getProof` at that depth (`nodes[].servesGetProof`)
+  for the CSM prover. geth path scheme does not serve historical proofs → a
+  hash-scheme / archive pair is needed (may be a separate proofs pair).
 - Oracle HashConsensus **initialEpoch will be set >= checkpoint** — front-loaded,
   never below (it locks once the epoch arrives).
+- **Funding:** `wallets.yml` (deployer + named roles) is present at
+  `artifacts/<net>/wallets.yml` — source it from 1Password (a copy sits in the
+  cli-pod artifacts). Genesis pre-funds the deployer (`0x11…`); then run
+  `./bin/run.js wallet fund` (default ~1000 ETH to every named account) BEFORE the
+  protocol deploy — Core deploy and oracle ops pay gas from these. (Not needed for
+  a bare chain-healthy EL/CL pair.)
 
 ## Invariants (never violate)
 
@@ -65,10 +85,13 @@ HashConsensus redeploy afterward (deploy new HashConsensus + `setConsensusContra
 3. **Autonomy boundary.** Autonomous: pod restart, node-pair swap, moving-tag
    digest bump, branch re-checkout, image rebuild, single-service redeploy.
    Human-gated (recommend, do not execute): protocol redeploy, governance
-   (vote / role grant / contract deploy).
-4. **No secrets in escalation.** Never emit private addresses, keys, or local
-   paths. Escalations must be self-contained and actionable by any on-call
-   engineer, not one specific person.
+   (vote / role grant / contract deploy), and deleting stands / namespaces /
+   cluster-scoped resources (the `cleaner`'s domain — always confirm keep-vs-delete).
+4. **No secrets in escalation, and `wallets.yml` is secret.** Never emit private
+   addresses, keys, or local paths in escalations. `wallets.yml` holds the devnet
+   funding **private keys** (deployer + named roles) — never commit, print, log,
+   or copy it into the repo / vault / escalations. It lives in 1Password (and,
+   ephemerally, the cli-pod artifacts).
 5. **`converging-wait` is not a failure.** Do not act inside the expected
    convergence window (see diagnosis timing model). Premature action wastes
    time and can undo a convergence that would have completed on its own.
@@ -90,6 +113,25 @@ HashConsensus redeploy afterward (deploy new HashConsensus + `setConsensusContra
    does NOT diagnose or work around it — a dropped tunnel is a prerequisite
    failure, not a bring-up fault. Never route it to `diagnosis`.
 
+## Logging (two layers — both feed `diagnosis`'s prior-run archive)
+
+Everything is journaled so a run can be replayed and debugged after the fact.
+
+- **A. Command output** → `artifacts/<net>/NN-<step>.log` (numbered, timestamped).
+  Run every deploy / omnibus / replay / probe through `dlog.sh` (ships in this
+  dir): `dlog.sh NN-step.log {pod|local} <cmd>` captures full output + `exit=<rc>`.
+  Do NOT trust the exit code alone (some commands exit 0 on failure) — the log has
+  the real output. Never delete these; they are the evidence for upstream reports.
+- **B. Agent action trace** (optional; default-on for unattended runs) →
+  `artifacts/<net>/agent-trace.jsonl`. After each meaningful action or decision,
+  every role appends ONE line:
+  `{"ts","role","phase","action","detail","result","logref?"}` — e.g.
+  `{"role":"diagnosis","action":"classify","detail":"lighthouse SSZ invalid","result":"image-tag-drift -> fork-aware image","logref":"14-cl.log"}`.
+  This is the replayable trace of the fleet's LOGIC (who did what, why, in what
+  order), separate from raw command output — for debugging the orchestration.
+  **The `director`'s trace is MANDATORY** (it is the run's decision spine — see
+  director.md); leaf roles append when tracing is on.
+
 ## Roster
 
 - `director`  — orchestrator / main loop. Owns the goal graph and escalation.
@@ -97,11 +139,15 @@ HashConsensus redeploy afterward (deploy new HashConsensus + `setConsensusContra
 - `diagnosis` — fault classifier. Failure signal -> class + remediation + ETA.
 - `verifier`  — independent goal-state verdict via `lib/verify-state.ts`.
 - `plumber`   — guards the kube-API tunnel (prerequisite for cluster access); detects when it is down and helps the human (re)establish it.
+- `cleaner`   — inventories leftovers from previous devnets, confirms keep/delete with the human, removes only what is approved (destroys; never builds).
 
 ## Shared references
 
 - `knowledge/` — bring-up checklist (operational playbook) and the labeled
   incident corpus (`saga-eval.jsonl`) used to calibrate `diagnosis`.
+- `CLUSTERS.md` — env / tunnel-port / kube-context / ingress mapping. Names do
+  NOT line up (valset-02 = context `tooling-holesky-sandbox-0`); match by tunnel
+  port. A missing context is not created by the tunnel — escalate for kubeconfig.
 - `artifacts/<net>/` — accumulated per-run logs + `FINDING-*.md` notes from
   prior attempts (this and past nets): an optional, richer knowledge source for
   `diagnosis`. Every run appends to it; notable incidents get distilled into

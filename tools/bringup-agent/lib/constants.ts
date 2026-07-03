@@ -2,6 +2,9 @@
 
 export const VALIDATOR_BALANCE_FLOOR = 31.5e9; // gwei; below => leaking / slashed
 export const LOG_TAIL = 500;                    // log lines scanned per reporter pod
+// proxy depth for "deeper than a report's frame lookback"; true oracles want full
+// archive (state at genesis). AO/VEBO frame ~256 slots, CSM ~768 -> 1024 covers it.
+export const ORACLE_LOOKBACK_BLOCKS = 1024;
 
 // LOGS-FIRST "report sent" tokens (lido-oracle: tx_utils.py / consensus.py)
 export const REPORT_SENT_TOKENS = [

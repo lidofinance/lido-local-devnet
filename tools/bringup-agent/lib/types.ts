@@ -82,11 +82,26 @@ export interface ObservabilityResult {
   pass: boolean;
 }
 
+// Per-EL capability probe (pre-deploy gate for oracles): does it serve the
+// historical state DEPTH a report needs, and eth_getProof at depth (CSM prover)?
+export interface NodeCapability {
+  el: string;
+  getProofDeep: boolean;
+  headBlock: null | number;
+  servesGetProof: boolean;
+  servesOracleDepth: boolean;
+  stateArchive: boolean;
+  stateDeep: boolean;
+  stateRecent: boolean;
+  window: "archive" | "deep" | "pruned" | "unknown";
+}
+
 export interface Snapshot {
   allGreen?: boolean;
   chain: ChainResult;
   kapi: KapiResult;
   net: null | string;
+  nodes: NodeCapability[];
   observability: ObservabilityResult;
   oracles: OraclesResult;
   ts: string;

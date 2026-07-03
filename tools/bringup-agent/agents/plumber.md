@@ -53,8 +53,12 @@ Applying the chosen cluster = putting its values in BOTH places:
 
 Canon: repo `README.md` (§ SSH Tunnel / set context) + `docs/commands/tunnel.md`.
 
-3. **kube context:** `kubectl config get-contexts` -> `kubectl config use-context
-   <K8S_KUBECTL_DEFAULT_CONTEXT>`.
+3. **kube context:** match by **tunnel port, not name** — the context whose
+   server is `127.0.0.1:<SSH_TUNNEL_LOCAL_PORT>` (see `CLUSTERS.md`; names do not
+   line up — e.g. valset-02 = context `tooling-holesky-sandbox-0` @ 16443).
+   `kubectl config use-context <that context>`. If NO context maps to that port,
+   it is not in the kubeconfig (the tunnel does not create it) → **escalate**:
+   get the kubeconfig entry from the cluster admin before proceeding.
 4. **Tunnel:** `./bin/run.js ssh tunnel` (now targets the cluster's `SSH_HOST`).
    May need interactive SSH auth on the operator's machine — guide the human;
    start it in the background only if that works.

@@ -19,6 +19,7 @@ import type { Snapshot } from "./types.js";
 
 import { checkChain } from "./checks/chain.js";
 import { checkKapi } from "./checks/kapi.js";
+import { checkNodes } from "./checks/nodes.js";
 import { checkObservability } from "./checks/observability.js";
 import { checkOracles } from "./checks/oracles.js";
 import { checkValidators } from "./checks/validators.js";
@@ -31,13 +32,14 @@ async function main(): Promise<void> {
   const net = arg("--net") ?? networkName(s);
 
   const kapi = await checkKapi(s);
-  const [chain, oracles, validators, observability] = await Promise.all([
+  const [chain, oracles, validators, observability, nodes] = await Promise.all([
     checkChain(s),
     checkOracles(s, net),
     checkValidators(s, kapi.url),
     checkObservability(s),
+    checkNodes(s),
   ]);
-  const snap: Snapshot = { chain, kapi, net, observability, oracles, ts: new Date().toISOString(), validators };
+  const snap: Snapshot = { chain, kapi, net, nodes, observability, oracles, ts: new Date().toISOString(), validators };
 
   // steady = second confirmation across two snapshots (the only stateful part)
   const dir = snapshotDir(net);
